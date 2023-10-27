@@ -53,7 +53,7 @@ public class ConfigurationBasedPipelineBuilder
     private void RegisterPipelineStep<T>() where T : IAICentralPipelineStep =>
         PipelineConfigurations.Add(T.ConfigName, T.BuildFromConfig);
 
-    public AICentralOptions BuildPipelinesFromConfig(ILogger startupLogger, IConfigurationSection configurationSection, ConfigurationTypes.AICentralConfig configSection)
+    public AICentralOptions BuildPipelinesFromConfig(ILogger startupLogger, IConfigurationSection configurationSection, ConfigurationTypes.AICentralConfig? configSection)
     {
         RegisterEndpointSelector<RandomEndpointSelector>();
         RegisterEndpointSelector<SingleEndpointSelector>();
@@ -65,6 +65,8 @@ public class ConfigurationBasedPipelineBuilder
         RegisterRateLimitingProvider<NoRateLimitingProvider>();
         RegisterRouter<SimplePathMatchRouter>();
         
+        configSection ??= new ConfigurationTypes.AICentralConfig(); 
+
         var configEndpoints =
             configSection.Endpoints ?? Array.Empty<ConfigurationTypes.AICentralPipelineEndpointConfig>();
 
