@@ -66,12 +66,10 @@ public class ConfigurationBasedPipelineBuilder
         RegisterRouter<SimplePathMatchRouter>();
         
         var configEndpoints =
-            configSection.Endpoints ?? throw new ArgumentException("No Endpoints specified in config");
-        if (configEndpoints.Length == 0) throw new ArgumentException("No Endpoints specified in config");
+            configSection.Endpoints ?? Array.Empty<ConfigurationTypes.AICentralPipelineEndpointConfig>();
 
         var configEndpointSelectors = configSection.EndpointSelectors ??
-                                      throw new ArgumentException("No Endpoint Selectors specified in config");
-        if (configEndpointSelectors.Length == 0) throw new ArgumentException("No Endpoints specified in config");
+                                      Array.Empty<ConfigurationTypes.AICentralPipelineEndpointSelectorConfig>();
 
         var endpoints = configEndpoints.ToDictionary(
             x => x.Name ?? throw new ArgumentException("Missing Name for Endpoint"), x =>
@@ -109,8 +107,7 @@ public class ConfigurationBasedPipelineBuilder
                 });
 
         var configPipelines =
-            configSection.Pipelines ?? throw new ArgumentException("No Pipelines specified in config");
-        if (configPipelines.Length == 0) throw new ArgumentException("No Pipelines specified in config");
+            configSection.Pipelines ?? Array.Empty<ConfigurationTypes.AICentralPipelineConfig>();
 
         var pipelines = configPipelines.Select(x =>
         {
