@@ -21,9 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
+      <None Remove="Properties\launchSettings.json" />
     </ItemGroup>
 
 </Project>

@@ -26,8 +26,7 @@ builder.Services.AddAICentral(
                 },
                 new RandomEndpointSelector(
                     new List<IAICentralEndpoint>()))
-        },
-        ExposeTestPage = true
+        }
     });
 
 app.UseAICentral();

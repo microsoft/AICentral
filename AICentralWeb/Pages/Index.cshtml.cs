@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace AICentral.Pages.Test;
+namespace AICentralWeb.Pages;
 
 public class Index : PageModel
 {

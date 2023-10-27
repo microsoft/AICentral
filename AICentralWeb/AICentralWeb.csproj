@@ -16,4 +16,8 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <AdditionalFiles Include="Pages\Index.cshtml" />
+    </ItemGroup>
+
 </Project>

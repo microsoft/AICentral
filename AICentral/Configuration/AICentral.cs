@@ -1,15 +1,14 @@
 ﻿using AICentral.Pipelines;
+using Newtonsoft.Json.Linq;
 
 namespace AICentral.Configuration;
 
 public class AICentral
 {
-    private readonly bool _exposeTestPage;
     private readonly AICentralPipeline[] _pipelines;
 
     public AICentral(AICentralOptions options)
     {
-        _exposeTestPage = options.ExposeTestPage;
         _pipelines = options.Pipelines.ToArray();
     }
 
@@ -19,12 +18,6 @@ public class AICentral
         {
             pipeline.MapRoutes(webApplication, logger);
         }
-
-        if (_exposeTestPage)
-        {
-            logger.LogInformation("Exposing test page");
-            webApplication.MapRazorPages();
-        }
     }
 
     public void AddServices(IServiceCollection services)
@@ -33,18 +26,13 @@ public class AICentral
         {
             pipeline.AddServices(services);
         }
-
-        if (_exposeTestPage)
-        {
-            services.AddRazorPages();
-        }
     }
 
-    public object WriteDebug()
+    public JObject WriteDebug()
     {
-        return new
+        return JObject.FromObject(new
         {
             Pipelines = _pipelines.Select(x => x.WriteDebug()),
-        };
+        });
     }
 }

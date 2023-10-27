@@ -161,8 +161,7 @@ public class ConfigurationBasedPipelineBuilder
 
         return new AICentralOptions()
         {
-            Pipelines = pipelines,
-            ExposeTestPage = configSection.ExposeTestPage
+            Pipelines = pipelines
         };
     }
 }
