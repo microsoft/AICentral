@@ -26,7 +26,6 @@ public static class ConfigurationEx
         logger.LogInformation("AICentral - Initialising pipelines");
 
         var configSection = configuration.GetSection(configSectionName);
-        if (!configSection.Exists()) throw new ArgumentException($"Cannot find config section {configSectionName}");
         var optionsFromConfig = new ConfigurationBasedPipelineBuilder().BuildPipelinesFromConfig(logger,
             configuration.GetSection(configSectionName),
             configSection.Get<ConfigurationTypes.AICentralConfig>()!);
