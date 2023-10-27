@@ -1,0 +1,28 @@
+﻿@page
+@using AICentral.Configuration
+@using Newtonsoft.Json
+@model global::AICentral.Pages.Test.Index
+@inject AICentral AiCentral
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>AICentral Pipelines Information</title>
+</head>
+<body>
+<div>
+    <h1>AI Central</h1>
+    <h2>Configured Pipelines</h2>
+    <p>
+        <pre>
+@JsonConvert.SerializeObject(AiCentral.WriteDebug(), Formatting.Indented)
+        </pre>
+    </p>
+</div>
+</body>
+</html>
