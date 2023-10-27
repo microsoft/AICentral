@@ -12,8 +12,7 @@ public class RandomEndpointSelector: IAICentralEndpointSelector
         _openAiServers = openAiServers.ToArray();
         
     }
-    public async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
-        CancellationToken cancellationToken)
+    public async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelector>>();
         var toTry = _openAiServers.ToList();

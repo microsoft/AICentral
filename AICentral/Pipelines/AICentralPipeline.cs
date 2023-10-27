@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using AICentral.Configuration;
 using AICentral.Pipelines.Auth;
+using AICentral.Pipelines.Endpoints;
 using AICentral.Pipelines.EndpointSelectors;
 using AICentral.Pipelines.RateLimiting;
 using AICentral.Pipelines.Routes;

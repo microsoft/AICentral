@@ -1,4 +1,5 @@
 ﻿using AICentral.Pipelines;
+using AICentral.Pipelines.Endpoints;
 using Newtonsoft.Json.Linq;
 
 namespace AICentral.Configuration;
@@ -22,6 +23,9 @@ public class AICentral
 
     public void AddServices(IServiceCollection services)
     {
+        services.AddTransient<IAIEndpointDispatcher, AIEndpointDispatcher>();
+        services.AddHttpClient<HttpAIEndpointDispatcher>((sp, client) => new HttpAIEndpointDispatcher(client, sp.GetRequiredService<IAIEndpointDispatcher>()));
+
         foreach (var pipeline in _pipelines)
         {
             pipeline.AddServices(services);

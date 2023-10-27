@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Primitives;
+﻿using System.Globalization;
+using System.Net.Http.Headers;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Pipelines.Endpoints.AzureOpenAI;
 
@@ -17,7 +19,7 @@ public class AzureOpenAIActionResultHandler: IResult, IDisposable
 
     public async Task ExecuteAsync(HttpContext context)
     {
-        context.Response.Headers.Add("x-aicentral-duration", _aiCentralUsageInformation.Duration.TotalMilliseconds.ToString());
+        context.Response.Headers.Add("x-aicentral-duration", _aiCentralUsageInformation.Duration.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
         
         foreach (var responseHeader in _openAiResponseMessage.Headers)
         {

@@ -24,3 +24,6 @@ app.MapRazorPages();
 app.UseAICentral();
 
 app.Run();
+
+public partial class Program
+{ }

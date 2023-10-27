@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Net;
-using System.Text;
 using System.Text.RegularExpressions;
 using AICentral.Pipelines.Endpoints.EndpointAuth;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -13,12 +12,11 @@ using Polly.Retry;
 
 namespace AICentral.Pipelines.Endpoints.AzureOpenAI;
 
-public class AzureOpenIaiEndpoint : IAICentralEndpoint
+public class AzureOpenAIEndpoint : IAICentralEndpoint
 {
     private readonly string _languageUrl;
     private readonly string _modelName;
     private readonly ResiliencePipeline<HttpResponseMessage> _retry;
-    private readonly HttpClient _client;
     private static readonly int StreamingLinePrefixLength = "data:".Length;
     private static readonly HttpStatusCode[] StatusCodesToRetry = { HttpStatusCode.TooManyRequests };
     private static readonly Regex OpenAiUrlRegex = new Regex("^/openai/deployments/(.*?)/(.*?)$");
@@ -31,28 +29,31 @@ public class AzureOpenIaiEndpoint : IAICentralEndpoint
     };
 
     private readonly IEndpointAuthorisationHandler _authHandler;
+    private readonly string _clientName;
 
-    public AzureOpenIaiEndpoint(
+    public AzureOpenAIEndpoint(
         string languageUrl,
         string modelName,
         AzureOpenAIAuthenticationType authenticationType,
         string? authenticationKey)
     {
+        _clientName = Guid.NewGuid().ToString();
         _languageUrl = languageUrl;
         _modelName = modelName;
-        _client = new HttpClient();
 
         _authHandler = authenticationType switch
         {
-            AzureOpenAIAuthenticationType.ApiKey => new KeyAuth(authenticationKey ?? throw new ArgumentException("Missing api-key for Authrntication Type")),
+            AzureOpenAIAuthenticationType.ApiKey => new KeyAuth(authenticationKey ??
+                                                                throw new ArgumentException(
+                                                                    "Missing api-key for Authrntication Type")),
             AzureOpenAIAuthenticationType.Entra => new EntraAuth(),
             AzureOpenAIAuthenticationType.EntraPassThrough => new BearerTokenPassThrough(),
             _ => throw new ArgumentOutOfRangeException(nameof(authenticationType), authenticationType, null)
         };
 
         var handler = new PredicateBuilder<HttpResponseMessage>()
-                .Handle<HttpRequestException>(e =>
-                    e.StatusCode.HasValue && StatusCodesToRetry.Contains(e.StatusCode.Value));
+            .Handle<HttpRequestException>(e =>
+                e.StatusCode.HasValue && StatusCodesToRetry.Contains(e.StatusCode.Value));
 
         _retry = new ResiliencePipelineBuilder<HttpResponseMessage>()
             .AddCircuitBreaker(new CircuitBreakerStrategyOptions<HttpResponseMessage>
@@ -77,21 +78,17 @@ public class AzureOpenIaiEndpoint : IAICentralEndpoint
 
     public static IAICentralEndpoint BuildFromConfig(Dictionary<string, string> parameters)
     {
-        return new AzureOpenIaiEndpoint(
+        return new AzureOpenAIEndpoint(
             parameters["LanguageEndpoint"],
             parameters["ModelName"],
             Enum.Parse<AzureOpenAIAuthenticationType>(parameters["AuthenticationType"]),
             parameters.TryGetValue("ApiKey", out var value) ? value : string.Empty);
     }
 
-    public async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
-        CancellationToken cancellationToken)
+    public async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<AzureOpenIaiEndpoint>>();
-        
-        var now = DateTimeOffset.Now;
-        var sw = new Stopwatch();
-        sw.Start();
+        var logger = context.RequestServices.GetRequiredService<ILogger<AzureOpenAIEndpoint>>();
+        var typedDispatcher = context.RequestServices.GetRequiredService<HttpAIEndpointDispatcher>();
 
         using var requestReader = new StreamReader(context.Request.Body);
         var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
@@ -104,22 +101,14 @@ public class AzureOpenIaiEndpoint : IAICentralEndpoint
         var newUri = $"{_languageUrl}/openai/deployments/{_modelName}/{openAiUriParts.Groups[2].Captures[0].Value}";
         logger.LogDebug("Rewritten URL from {OriginalUrl} to {NewUrl}", context.Request.GetEncodedUrl(), newUri);
 
-        var openAiResponse = await _retry.ExecuteAsync(async (state, _) =>
-        {
-            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, state)
-            {
-                Content = new StringContent(requestRawContent, Encoding.UTF8, "application/json")
-            };
-            await _authHandler.ApplyAuthorisationToRequest(context.Request, httpRequestMessage);
-
-            var response = await _client.SendAsync(httpRequestMessage, cancellationToken);
-            response.EnsureSuccessStatusCode();
-            return response;
-        }, new Uri(newUri), cancellationToken);
-
-        logger.LogDebug("Received Azure Open AI Response. Status Code: {StatusCode}", openAiResponse.StatusCode);
-
+        var now = DateTimeOffset.Now;
+        var sw = new Stopwatch();
+        sw.Start();
+        var openAiResponse = await typedDispatcher.Dispatch(context, _retry, newUri, requestRawContent, _authHandler, cancellationToken);
         sw.Stop();
+
+        //decision point... If this is a streaming request, then we should start streaming the result now.
+        logger.LogDebug("Received Azure Open AI Response. Status Code: {StatusCode}", openAiResponse.StatusCode);
 
         //decision point... If this is a streaming request, then we should start streaming the result now.
         if (openAiResponse.Headers.TransferEncodingChunked == true)
@@ -146,7 +135,7 @@ public class AzureOpenIaiEndpoint : IAICentralEndpoint
     }
 
     private async Task<AICentralResponse> HandleSynchronousEndpoint(
-        ILogger<AzureOpenIaiEndpoint> logger,
+        ILogger<AzureOpenAIEndpoint> logger,
         HttpContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
@@ -163,8 +152,9 @@ public class AzureOpenIaiEndpoint : IAICentralEndpoint
 
         //calculate prompt tokens
         var estimatedPromptTokens = Tokenisers["gpt-35-turbo"].Encode(promptText, Array.Empty<string>()).Count;
-        
-        logger.LogDebug("Full response. Estimated prompt tokens {EstimatedPromptTokens}. Actual {ActualPromptTokens}", estimatedPromptTokens, promptTokens);
+
+        logger.LogDebug("Full response. Estimated prompt tokens {EstimatedPromptTokens}. Actual {ActualPromptTokens}",
+            estimatedPromptTokens, promptTokens);
 
         var chatRequestInformation = new AICentralUsageInformation(
             _languageUrl,
@@ -183,8 +173,7 @@ public class AzureOpenIaiEndpoint : IAICentralEndpoint
             new AzureOpenAIActionResultHandler(openAiResponse, chatRequestInformation));
     }
 
-    private async Task<AICentralResponse> HandleStreamingEndpoint(
-        ILogger<AzureOpenIaiEndpoint> logger,
+    private async Task<AICentralResponse> HandleStreamingEndpoint(ILogger<AzureOpenAIEndpoint> logger,
         HttpContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
@@ -194,14 +183,20 @@ public class AzureOpenIaiEndpoint : IAICentralEndpoint
     {
         //calculate prompt tokens
         var estimatedPromptTokens = Tokenisers["gpt-35-turbo"].Encode(promptText, Array.Empty<string>()).Count;
+        
+        //send the headers down to the client
+        foreach (var header in openAiResponse.Headers)
+        {
+            context.Response.Headers.Add(header.Key, header.Value.ToArray());
+        }
 
         //squirt the response as it comes in:
-        using var incoming = new StreamReader(await openAiResponse.Content.ReadAsStreamAsync(cancellationToken));
+        using var openAiResponseReader = new StreamReader(await openAiResponse.Content.ReadAsStreamAsync(cancellationToken)); 
         await using var writer = new StreamWriter(context.Response.Body);
         var estimatedCompletionTokens = 0;
-        while (!incoming.EndOfStream)
+        while (!openAiResponseReader.EndOfStream)
         {
-            var line = (await incoming.ReadLineAsync(cancellationToken))!;
+            var line = (await openAiResponseReader.ReadLineAsync(cancellationToken))!;
 
             await writer.WriteLineAsync(line);
             await writer.FlushAsync();
@@ -216,8 +211,9 @@ public class AzureOpenIaiEndpoint : IAICentralEndpoint
             }
         }
 
-        logger.LogDebug("Streamed response. Estimated prompt tokens {EstimatedPromptTokens}. Estimated Completion Tokens {EstimatedCompletionTokens}", 
-            estimatedPromptTokens, 
+        logger.LogDebug(
+            "Streamed response. Estimated prompt tokens {EstimatedPromptTokens}. Estimated Completion Tokens {EstimatedCompletionTokens}",
+            estimatedPromptTokens,
             estimatedCompletionTokens);
 
         var chatRequestInformation = new AICentralUsageInformation(
@@ -231,8 +227,7 @@ public class AzureOpenIaiEndpoint : IAICentralEndpoint
             context.Connection.RemoteIpAddress?.ToString() ?? "",
             now,
             sw.Elapsed);
-
-
+        
         return new AICentralResponse(chatRequestInformation, new AzureOpenAIActionStreamingResultHandler());
     }
 }
