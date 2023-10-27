@@ -28,7 +28,7 @@ public static class ConfigurationEx
         var configSection = configuration.GetSection(configSectionName);
         var optionsFromConfig = new ConfigurationBasedPipelineBuilder().BuildPipelinesFromConfig(logger,
             configuration.GetSection(configSectionName),
-            configSection.Get<ConfigurationTypes.AICentralConfig>()!);
+            configSection.Get<ConfigurationTypes.AICentralConfig>());
         services.AddAICentral(optionsFromConfig, startupLogger);
 
         return services;
