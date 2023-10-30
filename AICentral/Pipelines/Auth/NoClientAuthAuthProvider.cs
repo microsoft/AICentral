@@ -1,7 +1,9 @@
 ﻿namespace AICentral.Pipelines.Auth;
 
-public class NoClientAuthAuthProvider: IAICentralClientAuthProvider, IAICentralClientAuth
+public class NoClientAuthAuthProvider: IAICentralClientAuthProvider
 {
+    private readonly NoClientAuth _builtProvider = new();
+
     public void RegisterServices(IServiceCollection services)
     {
     }
@@ -13,7 +15,7 @@ public class NoClientAuthAuthProvider: IAICentralClientAuthProvider, IAICentralC
 
     public IAICentralClientAuth Build()
     {
-        return this;
+        return _builtProvider;
     }
 
     public static IAICentralClientAuthProvider BuildFromConfig(IConfigurationSection configurationSection, Dictionary<string, string> parameters)
@@ -21,15 +23,20 @@ public class NoClientAuthAuthProvider: IAICentralClientAuthProvider, IAICentralC
         return new NoClientAuthAuthProvider();
     }
 
+    public static string ConfigName => "NoOp";
+}
+
+public class NoClientAuth : IAICentralClientAuth
+{
     public Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
     {
         return pipeline.Next(context, cancellationToken);
     }
 
+
     public object WriteDebug()
     {
-        return new { };
+        return new { auth = "No Consumer Auth" };
     }
 
-    public static string ConfigName => "NoOp";
 }
