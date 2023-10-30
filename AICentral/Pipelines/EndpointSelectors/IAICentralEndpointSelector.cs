@@ -2,16 +2,16 @@
 
 namespace AICentral.Pipelines.EndpointSelectors;
 
-public interface IAICentralEndpointSelector
+public interface IAICentralEndpointSelector: IAICentralPipelineStep<IAICentralEndpointSelectorRuntime>
 {
-    static virtual string ConfigName  => throw new NotImplementedException();
-
     static virtual IAICentralEndpointSelector BuildFromConfig(
         Dictionary<string, string> parameters,
         Dictionary<string, IAICentralEndpoint> aiCentralEndpoints) => throw new NotImplementedException();
 
-    Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
-        CancellationToken cancellationToken);
-
     object WriteDebug();
+}
+
+public interface IAICentralEndpointSelectorRuntime : IAICentralPipelineStepRuntime
+{
+    
 }

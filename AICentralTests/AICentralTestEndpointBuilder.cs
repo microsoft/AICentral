@@ -21,9 +21,8 @@ public class AICentralTestEndpointBuilder
         string path = "/deployments/test") => new(
         Guid.NewGuid().ToString(),
         new SimplePathMatchRouter(path),
-        new NoRateLimitingProvider(),
         new NoClientAuthAuthProvider(),
-        new List<IAICentralPipelineStep>(),
+        new List<IAICentralPipelineStep<IAICentralPipelineStepRuntime>>(),
         endpointSelector
     );
 }

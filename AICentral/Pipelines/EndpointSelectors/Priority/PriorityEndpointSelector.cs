@@ -3,7 +3,7 @@ using AICentral.Pipelines.EndpointSelectors.Random;
 
 namespace AICentral.Pipelines.EndpointSelectors.Priority;
 
-public class PriorityEndpointSelector : IAICentralEndpointSelector
+public class PriorityEndpointSelector : IAICentralEndpointSelector, IAICentralEndpointSelectorRuntime
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly RandomEndpointSelector _prioritisedOpenAiEndpoints;
@@ -50,10 +50,23 @@ public class PriorityEndpointSelector : IAICentralEndpointSelector
         };
     }
 
+    public IAICentralEndpointSelectorRuntime Build()
+    {
+        return this;
+    }
+
+    public void RegisterServices(IServiceCollection services)
+    {
+    }
+
+    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
+    {
+    }
+
     public static string ConfigName => "Prioritised";
 
     public static IAICentralEndpointSelector BuildFromConfig(Dictionary<string, string> parameters,
-        Dictionary<string, IAICentralEndpoint> endpoints)
+        Dictionary<string, IAICentralEndpointRuntime> endpoints)
     {
         return new PriorityEndpointSelector(
             new RandomEndpointSelector(

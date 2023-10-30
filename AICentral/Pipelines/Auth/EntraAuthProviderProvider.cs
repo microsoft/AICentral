@@ -2,7 +2,7 @@
 
 namespace AICentral.Pipelines.Auth;
 
-public class EntraAuthProviderProvider : IAICentralClientAuthProvider
+public class EntraAuthProviderProvider : IAICentralClientAuthProvider, IAICentralClientAuth
 {
     private readonly IConfigurationSection _configSection;
     private readonly string _id;
@@ -31,11 +31,21 @@ public class EntraAuthProviderProvider : IAICentralClientAuthProvider
 
     public static string ConfigName => "Entra";
 
+    public IAICentralClientAuth Build()
+    {
+        return this;
+    }
+
     public static IAICentralClientAuthProvider BuildFromConfig(
         IConfigurationSection configurationSection, 
         Dictionary<string, string> parameters)
     {
         return new EntraAuthProviderProvider(configurationSection);
+    }
+
+    public Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
+    {
+        return pipeline.Next(context, cancellationToken);
     }
 
     public object WriteDebug()

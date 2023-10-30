@@ -2,12 +2,12 @@
 
 namespace AICentral.Pipelines.EndpointSelectors.Random;
 
-public class RandomEndpointSelector: IAICentralEndpointSelector
+public class RandomEndpointSelector: IAICentralEndpointSelector, IAICentralEndpointSelectorRuntime
 {
-    private readonly IAICentralEndpoint[] _openAiServers;
+    private readonly IAICentralEndpointRuntime[] _openAiServers;
     private readonly System.Random _rnd = new(Environment.TickCount);
 
-    public RandomEndpointSelector(IList<IAICentralEndpoint> openAiServers)
+    public RandomEndpointSelector(IList<IAICentralEndpointRuntime> openAiServers)
     {
         _openAiServers = openAiServers.ToArray();
         
@@ -48,9 +48,22 @@ public class RandomEndpointSelector: IAICentralEndpointSelector
         };
     }
 
+    public IAICentralEndpointSelectorRuntime Build()
+    {
+        return this;
+    }
+
+    public void RegisterServices(IServiceCollection services)
+    {
+    }
+
+    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
+    {
+    }
+
     public static string ConfigName => "RoundRobinCluster";
 
-    public static IAICentralEndpointSelector BuildFromConfig(Dictionary<string, string> parameters, Dictionary<string, IAICentralEndpoint> endpoints)
+    public static IAICentralEndpointSelector BuildFromConfig(Dictionary<string, string> parameters, Dictionary<string, IAICentralEndpointRuntime> endpoints)
     {
         return new RandomEndpointSelector(
             parameters["Endpoints"].Split(',').Select(x => endpoints[x])

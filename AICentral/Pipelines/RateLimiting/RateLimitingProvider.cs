@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace AICentral.Pipelines.RateLimiting;
 
-public class RateLimitingProvider : IAICentralRateLimitingProvider
+public class RateLimitingProvider : IAICentralPipelineStep<IAICentralPipelineStepRuntime>, IAICentralPipelineStepRuntime
 {
     private readonly int _requestsPerWindow;
     private readonly string _id;
@@ -40,7 +40,7 @@ public class RateLimitingProvider : IAICentralRateLimitingProvider
 
     public static string ConfigName => "AspNetCoreRateLimiting";
 
-    public static IAICentralRateLimitingProvider BuildFromConfig(IConfigurationSection configSection, Dictionary<string, string> parameters)
+    public static IAICentralPipelineStep<IAICentralPipelineStepRuntime> BuildFromConfig(IConfigurationSection configSection, Dictionary<string, string> parameters)
     {
         return new RateLimitingProvider(
             parameters.TryGetValue("WindowTime", out var window)
@@ -51,8 +51,17 @@ public class RateLimitingProvider : IAICentralRateLimitingProvider
                 : throw new ArgumentException("Rate Limiting requires a RequestsPerWindow parameter")
         );
     }
-    
-    
+
+    public IAICentralPipelineStepRuntime Build()
+    {
+        return this;
+    }
+
+    public Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
+    {
+        return pipeline.Next(context, cancellationToken);
+    }
+
     public object WriteDebug()
     {
         return new

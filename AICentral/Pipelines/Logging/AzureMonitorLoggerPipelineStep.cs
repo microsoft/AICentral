@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using AICentral.Pipelines.Endpoints;
+using Serilog;
 using Serilog.Core;
 
 namespace AICentral.Pipelines.Logging;
@@ -6,7 +7,7 @@ namespace AICentral.Pipelines.Logging;
 /// <summary>
 /// Logs out usage information to Azure Monitor
 /// </summary>
-public class AzureMonitorLoggerPipelineStep : IAICentralPipelineStep
+public class AzureMonitorLoggerPipelineStep : IAICentralPipelineStep<IAICentralPipelineStepRuntime>, IAICentralPipelineStepRuntime
 {
     private readonly string _workspaceId;
     private readonly bool _logPrompt;
@@ -27,12 +28,25 @@ public class AzureMonitorLoggerPipelineStep : IAICentralPipelineStep
 
     public static string ConfigName => "AzureMonitorLogger";
 
-    public static IAICentralPipelineStep BuildFromConfig(Dictionary<string, string> parameters)
+    public static IAICentralPipelineStep<IAICentralPipelineStepRuntime> BuildFromConfig(Dictionary<string, string> parameters)
     {
         return new AzureMonitorLoggerPipelineStep(
             parameters["WorkspaceId"],
             parameters["Key"],
             bool.TryParse(parameters["LogPrompt"], out var result) ? result : false);
+    }
+
+    public IAICentralPipelineStepRuntime Build()
+    {
+        return this;
+    }
+
+    public void RegisterServices(IServiceCollection services)
+    {
+    }
+
+    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
+    {
     }
 
     public async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,

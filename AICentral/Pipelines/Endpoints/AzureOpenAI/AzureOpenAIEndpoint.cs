@@ -12,7 +12,7 @@ using Polly.Retry;
 
 namespace AICentral.Pipelines.Endpoints.AzureOpenAI;
 
-public class AzureOpenAIEndpoint : IAICentralEndpoint
+public class AzureOpenAIEndpoint : IAICentralEndpoint, IAICentralEndpointRuntime
 {
     private readonly string _languageUrl;
     private readonly string _modelName;
@@ -72,6 +72,14 @@ public class AzureOpenAIEndpoint : IAICentralEndpoint
             })
             .AddTimeout(TimeSpan.FromSeconds(30))
             .Build();
+    }
+
+    public void RegisterServices(IServiceCollection services)
+    {
+    }
+
+    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
+    {
     }
 
     public static string ConfigName => "AzureOpenAIEndpoint";
@@ -229,5 +237,10 @@ public class AzureOpenAIEndpoint : IAICentralEndpoint
             sw.Elapsed);
         
         return new AICentralResponse(chatRequestInformation, new AzureOpenAIActionStreamingResultHandler());
+    }
+
+    public IAICentralEndpointRuntime Build()
+    {
+        return this;
     }
 }

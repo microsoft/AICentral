@@ -20,7 +20,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 Pipelines = new List<AICentralPipeline>()
                 {
                     AICentralTestEndpointBuilder.Build(
-                        new RandomEndpointSelector(new List<IAICentralEndpoint>()
+                        new RandomEndpointSelector(new List<IAICentralEndpointRuntime>()
                             { AICentralTestEndpointBuilder.Random() }), "/openai/deployments/random/chat/completions")
                 }
             }));

@@ -1,9 +1,6 @@
 ﻿using System.Diagnostics;
-using AICentral.Configuration;
 using AICentral.Pipelines.Auth;
-using AICentral.Pipelines.Endpoints;
 using AICentral.Pipelines.EndpointSelectors;
-using AICentral.Pipelines.RateLimiting;
 using AICentral.Pipelines.Routes;
 
 namespace AICentral.Pipelines;
@@ -11,26 +8,29 @@ namespace AICentral.Pipelines;
 public class AICentralPipeline
 {
     private readonly IAICentralRouter _router;
-    private readonly IAICentralAspNetCoreMiddlewarePlugin _localRateLimiting;
-    private readonly IAICentralAspNetCoreMiddlewarePlugin _authProviderProvider;
+    private readonly IAICentralPipelineStepRuntime _authProviderProvider;
     private readonly string _name;
-    private readonly IList<IAICentralPipelineStep> _pipelineSteps;
-    private readonly IAICentralEndpointSelector _endpointSelector;
+    private readonly IList<IAICentralPipelineStepRuntime> _pipelineSteps;
+    private readonly IAICentralEndpointSelectorRuntime _endpointSelector;
+    private readonly IAICentralClientAuthProvider _ap1;
+    private readonly IList<IAICentralPipelineStep<IAICentralPipelineStepRuntime>> _ps1;
+    private readonly IAICentralEndpointSelector _es1;
 
     public AICentralPipeline(
         string name,
         IAICentralRouter router,
-        IAICentralRateLimitingProvider localRateLimiting,
         IAICentralClientAuthProvider authProviderProvider,
-        IList<IAICentralPipelineStep> pipelineSteps,
+        IList<IAICentralPipelineStep<IAICentralPipelineStepRuntime>> pipelineSteps,
         IAICentralEndpointSelector endpointSelector)
     {
         _router = router;
-        _localRateLimiting = localRateLimiting;
-        _authProviderProvider = authProviderProvider;
+        _ap1 = authProviderProvider;
+        _authProviderProvider = authProviderProvider.Build();
         _name = name;
-        _pipelineSteps = pipelineSteps;
-        _endpointSelector = endpointSelector;
+        _ps1 = pipelineSteps;
+        _pipelineSteps = pipelineSteps.Select(x => x.Build()).ToArray();
+        _es1 = endpointSelector;
+        _endpointSelector = endpointSelector.Build();
     }
 
     public async Task<AICentralResponse> Execute(HttpContext context, CancellationToken cancellationToken)
@@ -54,7 +54,6 @@ public class AICentralPipeline
         {
             Name = _name,
             PathMatch = _router.WriteDebug(),
-            RateLimiting = _localRateLimiting.WriteDebug(),
             ClientAuth = _authProviderProvider.WriteDebug(),
             Steps = _pipelineSteps.Select(x => x.WriteDebug()),
             Endpoint = _endpointSelector.WriteDebug()
@@ -63,8 +62,9 @@ public class AICentralPipeline
 
     public void AddServices(IServiceCollection services)
     {
-        _authProviderProvider.RegisterServices(services);
-        _localRateLimiting.RegisterServices(services);
+        _ap1.RegisterServices(services);
+        foreach(var step in _ps1) step.RegisterServices(services);
+        _es1.RegisterServices(services);
     }
 
     public void MapRoutes(WebApplication webApplication, ILogger<Configuration.AICentral> logger)
@@ -73,7 +73,7 @@ public class AICentralPipeline
         
         var route = _router.BuildRoute(webApplication, async (HttpContext ctx, CancellationToken token) => (await Execute(ctx, token)).ResultHandler);
 
-        _authProviderProvider.ConfigureRoute(webApplication, route);
-        _localRateLimiting.ConfigureRoute(webApplication, route);
+        _ap1.ConfigureRoute(webApplication, route);
+        foreach(var step in _ps1) step.ConfigureRoute(webApplication, route);
     }
 }

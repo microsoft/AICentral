@@ -24,16 +24,16 @@ public class ConfigurationBasedPipelineBuilder
         Dictionary<string, Func<Dictionary<string, string>, Dictionary<string, IAICentralEndpoint>,
             IAICentralEndpointSelector>> EndpointSelectorConfigurations = new();
 
-    private static readonly Dictionary<string, Func<Dictionary<string, string>, IAICentralPipelineStep>>
+    private static readonly Dictionary<string, Func<Dictionary<string, string>, IAICentralPipelineStep<IAICentralPipelineStepRuntime>>>
         PipelineConfigurations = new();
 
     private static readonly
         Dictionary<string, Func<IConfigurationSection, Dictionary<string, string>, IAICentralClientAuthProvider>>
         AuthProviders = new();
 
-    private static readonly
-        Dictionary<string, Func<IConfigurationSection, Dictionary<string, string>, IAICentralRateLimitingProvider>>
-        RateLimitingProviders = new();
+    // private static readonly
+    //     Dictionary<string, Func<IConfigurationSection, Dictionary<string, string>, IAICentralRateLimitingProvider>>
+    //     RateLimitingProviders = new();
 
     private void RegisterRouter<T>() where T : IAICentralRouter =>
         Routers.Add(T.ConfigName, T.BuildFromConfig);
@@ -41,16 +41,13 @@ public class ConfigurationBasedPipelineBuilder
     private void RegisterAuthProvider<T>() where T : IAICentralClientAuthProvider =>
         AuthProviders.Add(T.ConfigName, T.BuildFromConfig);
 
-    private void RegisterRateLimitingProvider<T>() where T : IAICentralRateLimitingProvider =>
-        RateLimitingProviders.Add(T.ConfigName, T.BuildFromConfig);
-
     private void RegisterEndpoint<T>() where T : IAICentralEndpoint =>
         EndpointConfigurations.Add(T.ConfigName, T.BuildFromConfig);
 
     private void RegisterEndpointSelector<T>() where T : IAICentralEndpointSelector =>
         EndpointSelectorConfigurations.Add(T.ConfigName, T.BuildFromConfig);
 
-    private void RegisterPipelineStep<T>() where T : IAICentralPipelineStep =>
+    private void RegisterPipelineStep<T>() where T : IAICentralPipelineStep<IAICentralPipelineStepRuntime> =>
         PipelineConfigurations.Add(T.ConfigName, T.BuildFromConfig);
 
     public AICentralOptions BuildPipelinesFromConfig(ILogger startupLogger, IConfigurationSection configurationSection, ConfigurationTypes.AICentralConfig? configSection)
@@ -61,8 +58,8 @@ public class ConfigurationBasedPipelineBuilder
         RegisterPipelineStep<AzureMonitorLoggerPipelineStep>();
         RegisterAuthProvider<NoClientAuthAuthProvider>();
         RegisterAuthProvider<EntraAuthProviderProvider>();
-        RegisterRateLimitingProvider<RateLimitingProvider>();
-        RegisterRateLimitingProvider<NoRateLimitingProvider>();
+        RegisterPipelineStep<RateLimitingProvider>();
+        RegisterPipelineStep<NoRateLimitingProvider>();
         RegisterRouter<SimplePathMatchRouter>();
         
         configSection ??= new ConfigurationTypes.AICentralConfig(); 
@@ -97,16 +94,16 @@ public class ConfigurationBasedPipelineBuilder
                     configurationSection.GetSection("AuthProviders:0"),
                     x.Properties ?? throw new ArgumentException("No Properties specified for Auth Provider"));
             });
-        var rateLimiters =
-            (configSection.RateLimitingProviders ?? Array.Empty<ConfigurationTypes.AICentralRateLimitingConfig>()).ToDictionary(
-                x => x.Name ?? throw new ArgumentException("No Name specified for Rate Limiter"), x =>
-                {
-                    startupLogger.LogInformation("Configuring Rate Limiter {Name}", x.Name);
-                    return RateLimitingProviders
-                        [x.Type ?? throw new ArgumentException("No Type specified for Rate Limiter")](
-                        configurationSection.GetSection("RateLimitingProviders:0"),
-                        x.Properties ?? throw new ArgumentException("No Properties specified for Rate Limimter"));
-                });
+        // var rateLimiters =
+        //     (configSection.RateLimitingProviders ?? Array.Empty<ConfigurationTypes.AICentralRateLimitingConfig>()).ToDictionary(
+        //         x => x.Name ?? throw new ArgumentException("No Name specified for Rate Limiter"), x =>
+        //         {
+        //             startupLogger.LogInformation("Configuring Rate Limiter {Name}", x.Name);
+        //             return RateLimitingProviders
+        //                 [x.Type ?? throw new ArgumentException("No Type specified for Rate Limiter")](
+        //                 configurationSection.GetSection("RateLimitingProviders:0"),
+        //                 x.Properties ?? throw new ArgumentException("No Properties specified for Rate Limimter"));
+        //         });
 
         var configPipelines =
             configSection.Pipelines ?? Array.Empty<ConfigurationTypes.AICentralPipelineConfig>();
@@ -115,8 +112,8 @@ public class ConfigurationBasedPipelineBuilder
         {
             startupLogger.LogInformation("Configuring Pipeline {Name} listening on Route {Route}", x.Name, x.Path);
 
-            TType GetMiddlewareOrNoOp<TType>(Dictionary<string, TType> providers, string? providerName, TType fallback)
-                where TType : IAICentralAspNetCoreMiddlewarePlugin
+            TType GetMiddlewareOrNoOp<TType, TRuntimeType>(Dictionary<string, TType> providers, string? providerName, TType fallback)
+                where TType : IAICentralPipelineStep<TRuntimeType> where TRuntimeType: IAICentralPipelineStepRuntime
             {
                 if (string.IsNullOrEmpty(providerName))
                     return fallback;
@@ -138,8 +135,7 @@ public class ConfigurationBasedPipelineBuilder
             return new AICentralPipeline(
                 pipelineName,
                 Routers[(x.Path?.Type ?? throw new ArgumentException("Missing Path for pipeline"))](x.Path.Properties ?? throw new ArgumentException("Missing properties for path")),
-                GetMiddlewareOrNoOp(rateLimiters, x.RateLimiter, new NoRateLimitingProvider()),
-                GetMiddlewareOrNoOp(authProviders, x.AuthProvider, new NoClientAuthAuthProvider()),
+                GetMiddlewareOrNoOp<IAICentralClientAuthProvider, IAICentralClientAuth>(authProviders, x.AuthProvider, new NoClientAuthAuthProvider()),
 
                 pipelineSteps.Select(step =>
                 {
