@@ -76,6 +76,8 @@ public class AzureOpenAIEndpoint : IAICentralEndpoint, IAICentralEndpointRuntime
 
     public void RegisterServices(IServiceCollection services)
     {
+        services.AddSingleton<IAIEndpointDispatcher, AIEndpointDispatcher>();
+        services.AddHttpClient<HttpAIEndpointDispatcher>();
     }
 
     public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)

@@ -7,14 +7,13 @@ public interface IAICentralPipelineStep<T> where T: IAICentralPipelineStepRuntim
     static virtual IAICentralPipelineStep<T> BuildFromConfig(
         Dictionary<string, string> parameters) => throw new NotImplementedException();
 
-    T Build();
-
     void RegisterServices(IServiceCollection services);
 
     void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route);
 
-}
+    T Build();
 
+}
 
 public interface IAICentralPipelineStepRuntime
 {

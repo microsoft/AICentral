@@ -25,7 +25,7 @@ public class ConfigurationBasedPipelineBuilder
             IAICentralEndpointSelector>> EndpointSelectorConfigurations = new();
 
     private static readonly Dictionary<string, Func<Dictionary<string, string>, IAICentralPipelineStep<IAICentralPipelineStepRuntime>>>
-        PipelineConfigurations = new();
+        GenericSteps = new();
 
     private static readonly
         Dictionary<string, Func<IConfigurationSection, Dictionary<string, string>, IAICentralClientAuthProvider>>
@@ -48,16 +48,16 @@ public class ConfigurationBasedPipelineBuilder
         EndpointSelectorConfigurations.Add(T.ConfigName, T.BuildFromConfig);
 
     private void RegisterPipelineStep<T>() where T : IAICentralPipelineStep<IAICentralPipelineStepRuntime> =>
-        PipelineConfigurations.Add(T.ConfigName, T.BuildFromConfig);
+        GenericSteps.Add(T.ConfigName, T.BuildFromConfig);
 
-    public AICentralOptions BuildPipelinesFromConfig(ILogger startupLogger, IConfigurationSection configurationSection, ConfigurationTypes.AICentralConfig? configSection)
+    public AICentralPipelineAssembler BuildPipelinesFromConfig(ILogger startupLogger, IConfigurationSection configurationSection, ConfigurationTypes.AICentralConfig? configSection)
     {
         RegisterEndpointSelector<RandomEndpointSelector>();
         RegisterEndpointSelector<SingleEndpointSelector>();
         RegisterEndpoint<AzureOpenAIEndpoint>();
         RegisterPipelineStep<AzureMonitorLoggerPipelineStep>();
         RegisterAuthProvider<NoClientAuthAuthProvider>();
-        RegisterAuthProvider<EntraAuthProviderProvider>();
+        RegisterAuthProvider<EntraAuthRuntimeProviderProvider>();
         RegisterPipelineStep<RateLimitingProvider>();
         RegisterPipelineStep<NoRateLimitingProvider>();
         RegisterRouter<SimplePathMatchRouter>();
@@ -77,6 +77,7 @@ public class ConfigurationBasedPipelineBuilder
                 return EndpointConfigurations[x.Type ?? throw new ArgumentException("No Type specified for Endpoint")](
                     x.Properties ?? throw new ArgumentException("No Properties specified for Endpoint"));
             });
+        
         var endpointSelectors = configEndpointSelectors.ToDictionary(
             x => x.Name ?? throw new ArgumentException("Missing Name for Endpoint"), x =>
             {
@@ -86,6 +87,7 @@ public class ConfigurationBasedPipelineBuilder
                     x.Properties ?? throw new ArgumentException("No Properties specified for Endpoint Selector"),
                     endpoints);
             });
+        
         var authProviders = (configSection.AuthProviders ?? Array.Empty<ConfigurationTypes.AICentralAuthConfig>())
             .ToDictionary(x => x.Name ?? throw new ArgumentException("No Name specified for Auth Provider"), x =>
             {
@@ -94,69 +96,27 @@ public class ConfigurationBasedPipelineBuilder
                     configurationSection.GetSection("AuthProviders:0"),
                     x.Properties ?? throw new ArgumentException("No Properties specified for Auth Provider"));
             });
-        // var rateLimiters =
-        //     (configSection.RateLimitingProviders ?? Array.Empty<ConfigurationTypes.AICentralRateLimitingConfig>()).ToDictionary(
-        //         x => x.Name ?? throw new ArgumentException("No Name specified for Rate Limiter"), x =>
-        //         {
-        //             startupLogger.LogInformation("Configuring Rate Limiter {Name}", x.Name);
-        //             return RateLimitingProviders
-        //                 [x.Type ?? throw new ArgumentException("No Type specified for Rate Limiter")](
-        //                 configurationSection.GetSection("RateLimitingProviders:0"),
-        //                 x.Properties ?? throw new ArgumentException("No Properties specified for Rate Limimter"));
-        //         });
+        
+        var genericSteps = (configSection.GenericSteps ?? Array.Empty<ConfigurationTypes.AICentralGenericStepConfig>())
+            .ToDictionary(x => x.Name ?? throw new ArgumentException("No Name specified for Generic Step"), x =>
+            {
+                startupLogger.LogInformation("Configuring Generic Step {Name}", x.Name);
+                return GenericSteps[x.Type ?? throw new ArgumentException("No Type specified for Generic Step")](
+                    x.Properties ?? throw new ArgumentException("No Properties specified for Generic Step"));
+            });
 
         var configPipelines =
             configSection.Pipelines ?? Array.Empty<ConfigurationTypes.AICentralPipelineConfig>();
+        
+        //create an object that can wire all this together
+        var builder = new AICentralPipelineAssembler(
+            Routers,
+            authProviders,
+            endpoints,
+            endpointSelectors,
+            genericSteps,
+            configPipelines);
 
-        var pipelines = configPipelines.Select(x =>
-        {
-            startupLogger.LogInformation("Configuring Pipeline {Name} listening on Route {Route}", x.Name, x.Path);
-
-            TType GetMiddlewareOrNoOp<TType, TRuntimeType>(Dictionary<string, TType> providers, string? providerName, TType fallback)
-                where TType : IAICentralPipelineStep<TRuntimeType> where TRuntimeType: IAICentralPipelineStepRuntime
-            {
-                if (string.IsNullOrEmpty(providerName))
-                    return fallback;
-                
-                return providers.TryGetValue(providerName, out var provider)
-                    ? provider
-                    : throw new ArgumentException(
-                        $"Can not satisfy request for middleware {providerName}. Did you forget to configure it?");
-            }
-
-            var pipelineName = string.IsNullOrEmpty(x.Name)
-                ? throw new ArgumentException("Missing Name for pipeline")
-                : x.Name!;
-            var pipelineSteps = x.Steps ??
-                                throw new ArgumentException(
-                                    $"No Pipelines steps specified in config for Pipeline {pipelineName}");
-            if (configPipelines.Length == 0) throw new ArgumentException("No Pipelines specified in config");
-
-            return new AICentralPipeline(
-                pipelineName,
-                Routers[(x.Path?.Type ?? throw new ArgumentException("Missing Path for pipeline"))](x.Path.Properties ?? throw new ArgumentException("Missing properties for path")),
-                GetMiddlewareOrNoOp<IAICentralClientAuthProvider, IAICentralClientAuth>(authProviders, x.AuthProvider, new NoClientAuthAuthProvider()),
-
-                pipelineSteps.Select(step =>
-                {
-                    startupLogger.LogInformation(" > Configuring Step {Name}", step.Type);
-                    return PipelineConfigurations[
-                        step.Type ??
-                        throw new ArgumentException($"Missing Type property in Step for Pipeline {pipelineName}")](
-                        step.Properties ??
-                        throw new ArgumentException($"Missing Properties in Step for Pipeline {pipelineName}"));
-                }).ToArray(),
-                endpointSelectors[
-                    x.EndpointSelector ??
-                    throw new ArgumentException($"Missing EndpointSelector for Pipeline {x.EndpointSelector}")]
-            );
-        }).ToArray();
-
-        startupLogger.LogInformation("AI Central has configured {Count} pipelines", pipelines.Length);
-
-        return new AICentralOptions()
-        {
-            Pipelines = pipelines
-        };
+        return builder;
     }
 }

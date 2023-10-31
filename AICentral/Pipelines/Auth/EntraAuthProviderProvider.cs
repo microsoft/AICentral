@@ -2,12 +2,12 @@
 
 namespace AICentral.Pipelines.Auth;
 
-public class EntraAuthProviderProvider : IAICentralClientAuthProvider, IAICentralClientAuth
+public class EntraAuthRuntimeProviderProvider : IAICentralClientAuthProvider, IAICentralClientAuthRuntime
 {
     private readonly IConfigurationSection _configSection;
     private readonly string _id;
 
-    public EntraAuthProviderProvider(IConfigurationSection configSection)
+    public EntraAuthRuntimeProviderProvider(IConfigurationSection configSection)
     {
         _configSection = configSection;
         _id = Guid.NewGuid().ToString();
@@ -16,7 +16,6 @@ public class EntraAuthProviderProvider : IAICentralClientAuthProvider, IAICentra
     /// <summary>
     /// Add an AAD provider for this particular config section.
     /// </summary>
-    /// <param name="builder"></param>`
     public void RegisterServices(IServiceCollection services)
     {
         services.AddAuthentication().AddMicrosoftIdentityWebApi(_configSection, "Properties", _id);
@@ -31,7 +30,7 @@ public class EntraAuthProviderProvider : IAICentralClientAuthProvider, IAICentra
 
     public static string ConfigName => "Entra";
 
-    public IAICentralClientAuth Build()
+    public IAICentralClientAuthRuntime Build()
     {
         return this;
     }
@@ -40,7 +39,7 @@ public class EntraAuthProviderProvider : IAICentralClientAuthProvider, IAICentra
         IConfigurationSection configurationSection, 
         Dictionary<string, string> parameters)
     {
-        return new EntraAuthProviderProvider(configurationSection);
+        return new EntraAuthRuntimeProviderProvider(configurationSection);
     }
 
     public Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)

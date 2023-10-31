@@ -7,12 +7,11 @@ public static class ConfigurationEx
 {
     public static IServiceCollection AddAICentral(
         this IServiceCollection services,
-        AICentralOptions providedOptions,
+        AICentralPipelineAssembler providedOptions,
         ILogger? startupLogger = null)
     {
-        var aiCentral = new AICentral(providedOptions);
-        aiCentral.AddServices(services);
-        services.AddSingleton(aiCentral);
+        var logger = startupLogger ?? NullLogger.Instance;
+        providedOptions.AddServices(services, logger);
         return services;
     }
 
@@ -29,17 +28,15 @@ public static class ConfigurationEx
         var optionsFromConfig = new ConfigurationBasedPipelineBuilder().BuildPipelinesFromConfig(logger,
             configuration.GetSection(configSectionName),
             configSection.Get<ConfigurationTypes.AICentralConfig>());
-        services.AddAICentral(optionsFromConfig, startupLogger);
+        
+        services.AddAICentral(optionsFromConfig);
 
         return services;
     }
 
-    public static WebApplication UseAICentral(
-        this WebApplication webApplication)
+    public static void UseAICentral(this WebApplication webApplication)
     {
-        var aiCentral = webApplication.Services.GetRequiredService<AICentral>();
-        var logger = webApplication.Services.GetRequiredService<ILogger<AICentral>>();
-        aiCentral.MapRoutes(webApplication, logger);
-        return webApplication;
+        var aiCentral = webApplication.Services.GetRequiredService<AICentralPipelines>();
+        aiCentral.BuildRoutes(webApplication);
     }
 }

@@ -2,17 +2,52 @@
 
 namespace AICentral.Pipelines.EndpointSelectors.Random;
 
-public class RandomEndpointSelector: IAICentralEndpointSelector, IAICentralEndpointSelectorRuntime
+public class RandomEndpointSelector : IAICentralEndpointSelector
 {
-    private readonly IAICentralEndpointRuntime[] _openAiServers;
-    private readonly System.Random _rnd = new(Environment.TickCount);
+    private readonly IAICentralEndpoint[] _openAiServers;
 
-    public RandomEndpointSelector(IList<IAICentralEndpointRuntime> openAiServers)
+    public RandomEndpointSelector(IList<IAICentralEndpoint> openAiServers)
     {
         _openAiServers = openAiServers.ToArray();
-        
     }
-    public async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
+
+    public IAICentralEndpointSelectorRuntime Build(
+        Dictionary<IAICentralEndpoint, IAICentralEndpointRuntime> builtEndpointDictionary)
+    {
+        return new RandomEndpointSelectorRuntime(_openAiServers.Select(x => builtEndpointDictionary[x]).ToArray());
+    }
+
+    public void RegisterServices(IServiceCollection services)
+    {
+    }
+
+    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
+    {
+    }
+
+    public static string ConfigName => "RoundRobinCluster";
+
+    public static IAICentralEndpointSelector BuildFromConfig(Dictionary<string, string> parameters,
+        Dictionary<string, IAICentralEndpoint> endpoints)
+    {
+        return new RandomEndpointSelector(
+            parameters["Endpoints"].Split(',').Select(x => endpoints[x])
+                .ToArray());
+    }
+}
+
+public class RandomEndpointSelectorRuntime : IAICentralEndpointSelectorRuntime
+{
+    private readonly System.Random _rnd = new(Environment.TickCount);
+    private readonly IAICentralEndpointRuntime[] _openAiServers;
+
+    public RandomEndpointSelectorRuntime(IAICentralEndpointRuntime[] openAiServers)
+    {
+        _openAiServers = openAiServers;
+    }
+
+    public async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
+        CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelector>>();
         var toTry = _openAiServers.ToList();
@@ -23,7 +58,7 @@ public class RandomEndpointSelector: IAICentralEndpointSelector, IAICentralEndpo
             toTry.Remove(chosen);
             try
             {
-                return await chosen.Handle(context, pipeline, cancellationToken);
+                return await chosen.Handle(context, pipeline, cancellationToken); //awaiting to unwrap any Aggregate Exceptions
             }
             catch (Exception e)
             {
@@ -31,7 +66,9 @@ public class RandomEndpointSelector: IAICentralEndpointSelector, IAICentralEndpo
                 {
                     logger.LogError(e, "Failed to handle request. Exhausted endpoints");
                     throw new InvalidOperationException("No available Open AI hosts", e);
-                };
+                }
+
+                ;
                 logger.LogWarning(e, "Failed to handle request. Trying another endpoint");
             }
         } while (toTry.Count > 0);
@@ -46,27 +83,5 @@ public class RandomEndpointSelector: IAICentralEndpointSelector, IAICentralEndpo
             Type = "Random Router",
             Endpoints = _openAiServers.Select(x => WriteDebug())
         };
-    }
-
-    public IAICentralEndpointSelectorRuntime Build()
-    {
-        return this;
-    }
-
-    public void RegisterServices(IServiceCollection services)
-    {
-    }
-
-    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
-    {
-    }
-
-    public static string ConfigName => "RoundRobinCluster";
-
-    public static IAICentralEndpointSelector BuildFromConfig(Dictionary<string, string> parameters, Dictionary<string, IAICentralEndpointRuntime> endpoints)
-    {
-        return new RandomEndpointSelector(
-            parameters["Endpoints"].Split(',').Select(x => endpoints[x])
-            .ToArray());
     }
 }

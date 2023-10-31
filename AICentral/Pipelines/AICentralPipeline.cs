@@ -7,30 +7,24 @@ namespace AICentral.Pipelines;
 
 public class AICentralPipeline
 {
-    private readonly IAICentralRouter _router;
-    private readonly IAICentralPipelineStepRuntime _authProviderProvider;
     private readonly string _name;
+    private readonly IAICentralRouter _router;
+    private readonly IAICentralClientAuthRuntime _authProviderProvider;
     private readonly IList<IAICentralPipelineStepRuntime> _pipelineSteps;
     private readonly IAICentralEndpointSelectorRuntime _endpointSelector;
-    private readonly IAICentralClientAuthProvider _ap1;
-    private readonly IList<IAICentralPipelineStep<IAICentralPipelineStepRuntime>> _ps1;
-    private readonly IAICentralEndpointSelector _es1;
 
     public AICentralPipeline(
         string name,
         IAICentralRouter router,
-        IAICentralClientAuthProvider authProviderProvider,
-        IList<IAICentralPipelineStep<IAICentralPipelineStepRuntime>> pipelineSteps,
-        IAICentralEndpointSelector endpointSelector)
+        IAICentralClientAuthRuntime authProviderProvider,
+        IList<IAICentralPipelineStepRuntime> pipelineSteps,
+        IAICentralEndpointSelectorRuntime endpointSelector)
     {
-        _router = router;
-        _ap1 = authProviderProvider;
-        _authProviderProvider = authProviderProvider.Build();
         _name = name;
-        _ps1 = pipelineSteps;
-        _pipelineSteps = pipelineSteps.Select(x => x.Build()).ToArray();
-        _es1 = endpointSelector;
-        _endpointSelector = endpointSelector.Build();
+        _router = router;
+        _authProviderProvider = authProviderProvider;
+        _pipelineSteps = pipelineSteps.Select(x => x).ToArray();
+        _endpointSelector = endpointSelector;
     }
 
     public async Task<AICentralResponse> Execute(HttpContext context, CancellationToken cancellationToken)
@@ -60,20 +54,8 @@ public class AICentralPipeline
         };
     }
 
-    public void AddServices(IServiceCollection services)
+    public void BuildRoute(WebApplication webApplication)
     {
-        _ap1.RegisterServices(services);
-        foreach(var step in _ps1) step.RegisterServices(services);
-        _es1.RegisterServices(services);
-    }
-
-    public void MapRoutes(WebApplication webApplication, ILogger<Configuration.AICentral> logger)
-    {
-        logger.LogInformation("Mapping route for Pipeline {Pipeline}", _name);
-        
-        var route = _router.BuildRoute(webApplication, async (HttpContext ctx, CancellationToken token) => (await Execute(ctx, token)).ResultHandler);
-
-        _ap1.ConfigureRoute(webApplication, route);
-        foreach(var step in _ps1) step.ConfigureRoute(webApplication, route);
+        _router.BuildRoute(webApplication, Execute);
     }
 }

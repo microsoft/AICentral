@@ -3,14 +3,54 @@ using AICentral.Pipelines.EndpointSelectors.Random;
 
 namespace AICentral.Pipelines.EndpointSelectors.Priority;
 
-public class PriorityEndpointSelector : IAICentralEndpointSelector, IAICentralEndpointSelectorRuntime
+public class PriorityEndpointSelector : IAICentralEndpointSelector
 {
-    private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly RandomEndpointSelector _prioritisedOpenAiEndpoints;
     private readonly RandomEndpointSelector _fallbackOpenAiEndpoints;
 
     public PriorityEndpointSelector(RandomEndpointSelector prioritisedOpenAiEndpoints,
         RandomEndpointSelector fallbackOpenAiEndpoints)
+    {
+        _prioritisedOpenAiEndpoints = prioritisedOpenAiEndpoints;
+        _fallbackOpenAiEndpoints = fallbackOpenAiEndpoints;
+    }
+
+    public void RegisterServices(IServiceCollection services)
+    {
+    }
+
+    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
+    {
+    }
+
+    public static string ConfigName => "Prioritised";
+
+    public static IAICentralEndpointSelector BuildFromConfig(Dictionary<string, string> parameters,
+        Dictionary<string, IAICentralEndpoint> endpoints)
+    {
+        return new PriorityEndpointSelector(
+            new RandomEndpointSelector(
+                parameters["PrioritisedEndpoints"].Split(',').Select(x => endpoints[x]).ToArray()),
+            new RandomEndpointSelector(parameters["FallbackEndpoints"].Split(',').Select(x => endpoints[x]).ToArray()));
+    }
+
+    public IAICentralEndpointSelectorRuntime Build(Dictionary<IAICentralEndpoint, IAICentralEndpointRuntime> builtEndpointDictionary)
+    {
+        return new PriorityEndpointSelectorRuntime(
+            (RandomEndpointSelectorRuntime)_prioritisedOpenAiEndpoints.Build(builtEndpointDictionary),
+            (RandomEndpointSelectorRuntime)_fallbackOpenAiEndpoints.Build(builtEndpointDictionary));
+    }
+}
+
+
+public class PriorityEndpointSelectorRuntime : IAICentralEndpointSelectorRuntime
+{
+    private readonly RandomEndpointSelectorRuntime _prioritisedOpenAiEndpoints;
+    private readonly RandomEndpointSelectorRuntime _fallbackOpenAiEndpoints;
+
+    public PriorityEndpointSelectorRuntime(
+        RandomEndpointSelectorRuntime prioritisedOpenAiEndpoints,
+        RandomEndpointSelectorRuntime fallbackOpenAiEndpoints)
     {
         _prioritisedOpenAiEndpoints = prioritisedOpenAiEndpoints;
         _fallbackOpenAiEndpoints = fallbackOpenAiEndpoints;
@@ -50,27 +90,4 @@ public class PriorityEndpointSelector : IAICentralEndpointSelector, IAICentralEn
         };
     }
 
-    public IAICentralEndpointSelectorRuntime Build()
-    {
-        return this;
-    }
-
-    public void RegisterServices(IServiceCollection services)
-    {
-    }
-
-    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
-    {
-    }
-
-    public static string ConfigName => "Prioritised";
-
-    public static IAICentralEndpointSelector BuildFromConfig(Dictionary<string, string> parameters,
-        Dictionary<string, IAICentralEndpointRuntime> endpoints)
-    {
-        return new PriorityEndpointSelector(
-            new RandomEndpointSelector(
-                parameters["PrioritisedEndpoints"].Split(',').Select(x => endpoints[x]).ToArray()),
-            new RandomEndpointSelector(parameters["FallbackEndpoints"].Split(',').Select(x => endpoints[x]).ToArray()));
-    }
 }

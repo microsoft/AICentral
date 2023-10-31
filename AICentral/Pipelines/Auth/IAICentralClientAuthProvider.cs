@@ -1,13 +1,16 @@
 ﻿namespace AICentral.Pipelines.Auth;
 
-public interface IAICentralClientAuthProvider : IAICentralPipelineStep<IAICentralClientAuth>
+public interface IAICentralClientAuthProvider : IAICentralPipelineStep<IAICentralClientAuthRuntime>
 {
     static virtual IAICentralClientAuthProvider BuildFromConfig(IConfigurationSection configurationSection, Dictionary<string, string> parameters)
     {
         throw new NotImplementedException();
     }
+    
+    IAICentralClientAuthRuntime Build();
+
 }
 
-public interface IAICentralClientAuth : IAICentralPipelineStepRuntime
+public interface IAICentralClientAuthRuntime : IAICentralPipelineStepRuntime
 {
 }

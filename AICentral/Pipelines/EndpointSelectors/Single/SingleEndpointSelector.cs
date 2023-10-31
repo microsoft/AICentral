@@ -2,14 +2,45 @@
 
 namespace AICentral.Pipelines.EndpointSelectors.Single;
 
-public class SingleEndpointSelector: IAICentralEndpointSelector, IAICentralEndpointSelectorRuntime
+public class SingleEndpointSelector: IAICentralEndpointSelector
 {
-    private readonly IAICentralEndpointRuntime _endpoint;
+    private readonly IAICentralEndpoint _endpoint;
 
-    public SingleEndpointSelector(IAICentralEndpointRuntime endpoint)
+    public SingleEndpointSelector(IAICentralEndpoint endpoint)
     {
         _endpoint = endpoint;
     }
+
+    public IAICentralEndpointSelectorRuntime Build(Dictionary<IAICentralEndpoint, IAICentralEndpointRuntime> buildEndpoints)
+    {
+        return new SingleEndpointSelectorRuntime(buildEndpoints[_endpoint]);
+    }
+
+    public void RegisterServices(IServiceCollection services)
+    {
+    }
+
+    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
+    {
+    }
+
+    public static string ConfigName => "SingleEndpoint";
+
+    public static IAICentralEndpointSelector BuildFromConfig(Dictionary<string, string> parameters, Dictionary<string, IAICentralEndpoint> endpoints)
+    {
+        return new SingleEndpointSelector(endpoints[parameters["Endpoint"]]);
+    }
+}
+
+public class SingleEndpointSelectorRuntime: IAICentralEndpointSelectorRuntime
+{
+    private readonly IAICentralEndpointRuntime _endpoint;
+
+    public SingleEndpointSelectorRuntime(IAICentralEndpointRuntime endpoint)
+    {
+        _endpoint = endpoint;
+    }
+    
     public async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
@@ -25,23 +56,5 @@ public class SingleEndpointSelector: IAICentralEndpointSelector, IAICentralEndpo
         };
     }
 
-    public IAICentralEndpointSelectorRuntime Build()
-    {
-        return this;
-    }
-
-    public void RegisterServices(IServiceCollection services)
-    {
-    }
-
-    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
-    {
-    }
-
-    public static string ConfigName => "SingleEndpoint";
-
-    public static IAICentralEndpointSelector BuildFromConfig(Dictionary<string, string> parameters, Dictionary<string, IAICentralEndpointRuntime> endpoints)
-    {
-        return new SingleEndpointSelector(endpoints[parameters["Endpoint"]]);
-    }
+    
 }

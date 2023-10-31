@@ -2,7 +2,6 @@
 using AICentral.Pipelines.Auth;
 using AICentral.Pipelines.Endpoints.AzureOpenAI;
 using AICentral.Pipelines.EndpointSelectors;
-using AICentral.Pipelines.RateLimiting;
 using AICentral.Pipelines.Routes;
 
 namespace AICentralTests;
@@ -17,12 +16,12 @@ public class AICentralTestEndpointBuilder
             Guid.NewGuid().ToString());
 
     public static AICentralPipeline Build(
-        IAICentralEndpointSelector endpointSelector,
+        IAICentralEndpointSelectorRuntime endpointSelector,
         string path = "/deployments/test") => new(
         Guid.NewGuid().ToString(),
         new SimplePathMatchRouter(path),
-        new NoClientAuthAuthProvider(),
-        new List<IAICentralPipelineStep<IAICentralPipelineStepRuntime>>(),
+        new NoClientAuthAuthRuntime(),
+        new List<IAICentralPipelineStepRuntime>(),
         endpointSelector
     );
 }

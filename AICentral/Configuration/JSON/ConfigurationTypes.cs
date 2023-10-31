@@ -4,7 +4,7 @@ public static class ConfigurationTypes
 {
     public class AICentralConfig
     {
-        public AICentralRateLimitingConfig[]? RateLimitingProviders { get; init; }
+        public AICentralGenericStepConfig[]? GenericSteps { get; init; }
         public AICentralAuthConfig[]? AuthProviders { get; init; }
         public AICentralPipelineEndpointConfig[]? Endpoints { get; init; }
         public AICentralPipelineEndpointSelectorConfig[]? EndpointSelectors { get; init; }
@@ -19,7 +19,7 @@ public static class ConfigurationTypes
         public Dictionary<string, string>? Properties { get; init; }
     }
 
-    public class AICentralRateLimitingConfig
+    public class AICentralGenericStepConfig
     {
         public string? Type { get; init; }
         public string? Name { get; init; }
@@ -48,7 +48,7 @@ public static class ConfigurationTypes
         public string? EndpointSelector { get; init; }
         public string? AuthProvider { get; set; }
         public string? RateLimiter { get; set; }
-        public AICentralComponentConfig[]? Steps { get; init; }
+        public string[]? Steps { get; init; }
     }
 
     public class AICentralComponentConfig

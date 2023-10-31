@@ -2,7 +2,7 @@
 
 public class NoClientAuthAuthProvider: IAICentralClientAuthProvider
 {
-    private readonly NoClientAuth _builtProvider = new();
+    private readonly NoClientAuthAuthRuntime _builtProvider = new();
 
     public void RegisterServices(IServiceCollection services)
     {
@@ -13,7 +13,7 @@ public class NoClientAuthAuthProvider: IAICentralClientAuthProvider
         //no-op
     }
 
-    public IAICentralClientAuth Build()
+    public IAICentralClientAuthRuntime Build()
     {
         return _builtProvider;
     }
@@ -26,7 +26,7 @@ public class NoClientAuthAuthProvider: IAICentralClientAuthProvider
     public static string ConfigName => "NoOp";
 }
 
-public class NoClientAuth : IAICentralClientAuth
+public class NoClientAuthAuthRuntime : IAICentralClientAuthRuntime
 {
     public Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
     {
