@@ -1,14 +1,15 @@
 ﻿using AICentral.Configuration.JSON;
-using AICentral.Pipelines;
-using AICentral.Pipelines.Auth;
-using AICentral.Pipelines.Endpoints;
-using AICentral.Pipelines.Endpoints.AzureOpenAI;
-using AICentral.Pipelines.EndpointSelectors;
-using AICentral.Pipelines.EndpointSelectors.Random;
-using AICentral.Pipelines.EndpointSelectors.Single;
-using AICentral.Pipelines.Logging;
-using AICentral.Pipelines.RateLimiting;
-using AICentral.Pipelines.Routes;
+using AICentral.PipelineComponents.Auth;
+using AICentral.PipelineComponents.Auth.AllowAnonymous;
+using AICentral.PipelineComponents.Auth.Entra;
+using AICentral.PipelineComponents.Endpoints;
+using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
+using AICentral.PipelineComponents.EndpointSelectors;
+using AICentral.PipelineComponents.EndpointSelectors.Random;
+using AICentral.PipelineComponents.EndpointSelectors.Single;
+using AICentral.PipelineComponents.Logging;
+using AICentral.PipelineComponents.RateLimiting;
+using AICentral.PipelineComponents.Routes;
 
 namespace AICentral.Configuration;
 
@@ -17,18 +18,18 @@ public class ConfigurationBasedPipelineBuilder
     private static readonly Dictionary<string, Func<Dictionary<string, string>, IAICentralRouter>>
         Routers = new();
 
-    private static readonly Dictionary<string, Func<Dictionary<string, string>, IAICentralEndpoint>>
+    private static readonly Dictionary<string, Func<Dictionary<string, string>, IAiCentralEndpointDispatcherBuilder>>
         EndpointConfigurations = new();
 
     private static readonly
-        Dictionary<string, Func<Dictionary<string, string>, Dictionary<string, IAICentralEndpoint>,
-            IAICentralEndpointSelector>> EndpointSelectorConfigurations = new();
+        Dictionary<string, Func<Dictionary<string, string>, Dictionary<string, IAiCentralEndpointDispatcherBuilder>,
+            IAICentralEndpointSelectorBuilder>> EndpointSelectorConfigurations = new();
 
-    private static readonly Dictionary<string, Func<Dictionary<string, string>, IAICentralPipelineStep<IAICentralPipelineStepRuntime>>>
+    private static readonly Dictionary<string, Func<Dictionary<string, string>, IAICentralPipelineStepBuilder<IAICentralPipelineStep>>>
         GenericSteps = new();
 
     private static readonly
-        Dictionary<string, Func<IConfigurationSection, Dictionary<string, string>, IAICentralClientAuthProvider>>
+        Dictionary<string, Func<IConfigurationSection, Dictionary<string, string>, IAICentralClientAuthBuilder>>
         AuthProviders = new();
 
     // private static readonly
@@ -38,28 +39,28 @@ public class ConfigurationBasedPipelineBuilder
     private void RegisterRouter<T>() where T : IAICentralRouter =>
         Routers.Add(T.ConfigName, T.BuildFromConfig);
 
-    private void RegisterAuthProvider<T>() where T : IAICentralClientAuthProvider =>
+    private void RegisterAuthProvider<T>() where T : IAICentralClientAuthBuilder =>
         AuthProviders.Add(T.ConfigName, T.BuildFromConfig);
 
-    private void RegisterEndpoint<T>() where T : IAICentralEndpoint =>
+    private void RegisterEndpoint<T>() where T : IAiCentralEndpointDispatcherBuilder =>
         EndpointConfigurations.Add(T.ConfigName, T.BuildFromConfig);
 
-    private void RegisterEndpointSelector<T>() where T : IAICentralEndpointSelector =>
+    private void RegisterEndpointSelector<T>() where T : IAICentralEndpointSelectorBuilder =>
         EndpointSelectorConfigurations.Add(T.ConfigName, T.BuildFromConfig);
 
-    private void RegisterPipelineStep<T>() where T : IAICentralPipelineStep<IAICentralPipelineStepRuntime> =>
+    private void RegisterGenericStep<T>() where T : IAICentralPipelineStepBuilder<IAICentralPipelineStep> =>
         GenericSteps.Add(T.ConfigName, T.BuildFromConfig);
 
     public AICentralPipelineAssembler BuildPipelinesFromConfig(ILogger startupLogger, IConfigurationSection configurationSection, ConfigurationTypes.AICentralConfig? configSection)
     {
-        RegisterEndpointSelector<RandomEndpointSelector>();
-        RegisterEndpointSelector<SingleEndpointSelector>();
-        RegisterEndpoint<AzureOpenAIEndpoint>();
-        RegisterPipelineStep<AzureMonitorLoggerPipelineStep>();
-        RegisterAuthProvider<NoClientAuthAuthProvider>();
-        RegisterAuthProvider<EntraAuthRuntimeProviderProvider>();
-        RegisterPipelineStep<RateLimitingProvider>();
-        RegisterPipelineStep<NoRateLimitingProvider>();
+        RegisterEndpointSelector<RandomEndpointSelectorBuilder>();
+        RegisterEndpointSelector<SingleEndpointSelectorBuilder>();
+        RegisterEndpoint<AzureOpenAIEndpointDispatcherBuilder>();
+        RegisterGenericStep<AzureMonitorLoggerBuilder>();
+        RegisterAuthProvider<AllowAnonymousClientAuthBuilder>();
+        RegisterAuthProvider<EntraClientAuthBuilder>();
+        RegisterGenericStep<RateLimitingProvider>();
+        RegisterGenericStep<NoRateLimitingProvider>();
         RegisterRouter<SimplePathMatchRouter>();
         
         configSection ??= new ConfigurationTypes.AICentralConfig(); 

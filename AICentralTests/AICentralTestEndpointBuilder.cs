@@ -1,27 +1,16 @@
-﻿using AICentral.Pipelines;
-using AICentral.Pipelines.Auth;
-using AICentral.Pipelines.Endpoints.AzureOpenAI;
-using AICentral.Pipelines.EndpointSelectors;
-using AICentral.Pipelines.Routes;
+﻿using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
+using AICentral.PipelineComponents.Endpoints.EndpointAuth;
+using Polly;
 
 namespace AICentralTests;
 
 public class AICentralTestEndpointBuilder
 {
-    public static AzureOpenAIEndpoint Random() =>
-        new AzureOpenAIEndpoint(
+    public static AzureOpenAIEndpointDispatcher Random() =>
+        new(
             $"https://{Guid.NewGuid().ToString()}",
             Guid.NewGuid().ToString(),
-            AzureOpenAIAuthenticationType.ApiKey,
-            Guid.NewGuid().ToString());
+            new KeyAuth("test"),
+            ResiliencePipeline<HttpResponseMessage>.Empty);
 
-    public static AICentralPipeline Build(
-        IAICentralEndpointSelectorRuntime endpointSelector,
-        string path = "/deployments/test") => new(
-        Guid.NewGuid().ToString(),
-        new SimplePathMatchRouter(path),
-        new NoClientAuthAuthRuntime(),
-        new List<IAICentralPipelineStepRuntime>(),
-        endpointSelector
-    );
 }

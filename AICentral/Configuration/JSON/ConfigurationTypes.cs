@@ -10,7 +10,7 @@ public static class ConfigurationTypes
         public AICentralPipelineEndpointSelectorConfig[]? EndpointSelectors { get; init; }
         public AICentralPipelineConfig[]? Pipelines { get; init; }
         public bool ExposeTestPage { get; set; }
-    };
+    }
 
     public class AICentralAuthConfig
     {
