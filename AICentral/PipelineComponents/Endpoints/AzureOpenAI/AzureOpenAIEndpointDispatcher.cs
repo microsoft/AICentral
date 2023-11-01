@@ -56,7 +56,7 @@ public class AzureOpenAIEndpointDispatcher : IAICentralEndpointDispatcher
                 Environment.NewLine,
                 deserializedRequestContent["messages"]?.Select(x => x.Value<string>("content")) ?? Array.Empty<string>()),
             "embeddings" => deserializedRequestContent.Value<string>("input"),
-            "completions" => deserializedRequestContent.Value<string>("prompt"),
+            "completions" => string.Join(Environment.NewLine, deserializedRequestContent["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
             _ => ""
         };
 
@@ -182,7 +182,7 @@ public class AzureOpenAIEndpointDispatcher : IAICentralEndpointDispatcher
         context.Response.StatusCode = (int)openAiResponse.StatusCode;
         foreach (var header in openAiResponse.Headers)
         {
-            context.Response.Headers.Add(header.Key, header.Value.ToArray());
+            context.Response.Headers.TryAdd(header.Key, header.Value.ToArray());
         }
 
         //squirt the response as it comes in:

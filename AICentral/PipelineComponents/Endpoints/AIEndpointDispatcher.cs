@@ -28,6 +28,7 @@ public class AIEndpointDispatcher : IAIEndpointDispatcher
             await authHandler.ApplyAuthorisationToRequest(context.Request, httpRequestMessage);
 
             var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
             _logger.LogDebug("Called {Endpoint}. Response Code: {ResponseCode}", endpointUrl, response.StatusCode);
             return response;
         }, new Uri(endpointUrl), cancellationToken);
