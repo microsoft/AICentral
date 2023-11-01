@@ -83,17 +83,10 @@ public abstract class EndpointSelectorBase : IEndpointSelector
             var totalTokens = usage.Value<int>("total_tokens");
             var completionTokens = usage.Value<int>("completion_tokens");
 
-            //calculate prompt tokens
-            var estimatedPromptTokens = Tokenisers["gpt-35-turbo"].Encode(requestInformation.Prompt, Array.Empty<string>()).Count;
-
-            logger.LogDebug(
-                "Full response. Estimated prompt tokens {EstimatedPromptTokens}. Actual {ActualPromptTokens}",
-                estimatedPromptTokens, promptTokens);
-
             var chatRequestInformation = new AICentralUsageInformation(
                 requestInformation.LanguageUrl,
                 requestInformation.Prompt,
-                estimatedPromptTokens,
+                0,
                 0,
                 promptTokens,
                 completionTokens,
