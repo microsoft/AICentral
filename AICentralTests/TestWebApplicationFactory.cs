@@ -33,7 +33,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                             }))
                     }));
 
-            services.Remove(services.Single(x => x.ServiceType == typeof(IAIEndpointDispatcher)));
+            services.AddHttpClient<HttpAIEndpointDispatcher>();
             services.AddTransient<IAIEndpointDispatcher, FakeEndpointDispatcher>();
         });
         return base.CreateHost(builder);

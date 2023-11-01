@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using Newtonsoft.Json;
 using Shouldly;
+using Xunit.Abstractions;
 
 namespace AICentralTests;
 

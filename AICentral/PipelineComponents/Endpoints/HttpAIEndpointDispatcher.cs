@@ -6,7 +6,7 @@ namespace AICentral.PipelineComponents.Endpoints;
 /// <summary>
 /// Registered as a Typed Http Client to leverage HttpClientFactory. Created with an IAIEndpointDispatcher to allow a fake for testing purposes
 /// </summary>
-internal class HttpAIEndpointDispatcher
+public class HttpAIEndpointDispatcher
 {
     private readonly HttpClient _httpClient;
     private readonly IAIEndpointDispatcher _innerDispatcher;
