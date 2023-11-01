@@ -97,8 +97,6 @@ public class AICentralPipelineAssembler
 
     private AICentralPipelines BuildPipelines(ILogger startupLogger)
     {
-        if (_configPipelines.Length == 0) throw new ArgumentException("No Pipelines specified in config");
-
         return new AICentralPipelines(
             
             _configPipelines.Select(pipelineConfig =>
