@@ -4,7 +4,7 @@ using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
 
-namespace AICentral.PipelineComponents.Endpoints.AzureOpenAI;
+namespace AICentral.PipelineComponents.Endpoints.OpenAI;
 
 public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuilder
 {

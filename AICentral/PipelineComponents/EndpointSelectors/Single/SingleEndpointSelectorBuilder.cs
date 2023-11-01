@@ -11,7 +11,7 @@ public class SingleEndpointSelectorBuilder: IAICentralEndpointSelectorBuilder
         _endpointDispatcherBuilder = endpointDispatcherBuilder;
     }
 
-    public IAICentralEndpointSelector Build(Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> buildEndpoints)
+    public IEndpointSelector Build(Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> buildEndpoints)
     {
         return new SingleEndpointSelector(buildEndpoints[_endpointDispatcherBuilder]);
     }

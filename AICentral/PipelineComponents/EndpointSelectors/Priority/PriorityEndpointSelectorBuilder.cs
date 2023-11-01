@@ -27,10 +27,11 @@ public class PriorityEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
         return new PriorityEndpointSelectorBuilder(
             new RandomEndpointSelectorBuilder(
                 parameters["PrioritisedEndpoints"].Split(',').Select(x => endpoints[x]).ToArray()),
-            new RandomEndpointSelectorBuilder(parameters["FallbackEndpoints"].Split(',').Select(x => endpoints[x]).ToArray()));
+            new RandomEndpointSelectorBuilder(parameters["FallbackEndpoints"].Split(',').Select(x => endpoints[x]).ToArray())
+            );
     }
 
-    public IAICentralEndpointSelector Build(Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> builtEndpointDictionary)
+    public IEndpointSelector Build(Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> builtEndpointDictionary)
     {
         return new PriorityEndpointSelector(
             (RandomEndpointSelector)_prioritisedOpenAiEndpoints.Build(builtEndpointDictionary),

@@ -2,17 +2,17 @@
 
 namespace AICentral.PipelineComponents.EndpointSelectors.Priority;
 
-public class PriorityEndpointSelector : IAICentralEndpointSelector
+public class PriorityEndpointSelector : IEndpointSelector
 {
-    private readonly RandomEndpointSelector _prioritisedOpenAiEndpoints;
-    private readonly RandomEndpointSelector _fallbackOpenAiEndpoints;
+    private readonly RandomEndpointSelector _prioritisedOpenAiEndpointSelector;
+    private readonly RandomEndpointSelector _fallbackOpenAiEndpointSelector;
 
     public PriorityEndpointSelector(
-        RandomEndpointSelector prioritisedOpenAiEndpoints,
-        RandomEndpointSelector fallbackOpenAiEndpoints)
+        RandomEndpointSelector prioritisedOpenAiEndpointSelector,
+        RandomEndpointSelector fallbackOpenAiEndpointSelector)
     {
-        _prioritisedOpenAiEndpoints = prioritisedOpenAiEndpoints;
-        _fallbackOpenAiEndpoints = fallbackOpenAiEndpoints;
+        _prioritisedOpenAiEndpointSelector = prioritisedOpenAiEndpointSelector;
+        _fallbackOpenAiEndpointSelector = fallbackOpenAiEndpointSelector;
     }
 
     public async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
@@ -22,14 +22,14 @@ public class PriorityEndpointSelector : IAICentralEndpointSelector
         try
         {
             logger.LogDebug("Prioritised Endpoint selector handling request");
-            return await _prioritisedOpenAiEndpoints.Handle(context, pipeline, cancellationToken);
+            return await _prioritisedOpenAiEndpointSelector.Handle(context, pipeline, cancellationToken);
         }
         catch (Exception)
         {
             try
             {
                 logger.LogWarning("e, Prioritised Endpoint selector failed with primary. Trying fallback servers");
-                return await _fallbackOpenAiEndpoints.Handle(context, pipeline, cancellationToken);
+                return await _fallbackOpenAiEndpointSelector.Handle(context, pipeline, cancellationToken);
             }
             catch (Exception e)
             {
@@ -44,12 +44,8 @@ public class PriorityEndpointSelector : IAICentralEndpointSelector
         return new
         {
             Type = "Priority Router",
-            PrioritisedEndpoints = _prioritisedOpenAiEndpoints.WriteDebug(),
-            FallbackEndpoints = _fallbackOpenAiEndpoints.WriteDebug(),
+            PrioritisedEndpoints = _prioritisedOpenAiEndpointSelector.WriteDebug(),
+            FallbackEndpoints = _fallbackOpenAiEndpointSelector.WriteDebug(),
         };
-    }
-
-    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
-    {
     }
 }

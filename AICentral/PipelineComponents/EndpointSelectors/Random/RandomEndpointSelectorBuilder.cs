@@ -11,7 +11,7 @@ public class RandomEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
         _openAiServers = openAiServers.ToArray();
     }
 
-    public IAICentralEndpointSelector Build(
+    public IEndpointSelector Build(
         Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> builtEndpointDictionary)
     {
         return new RandomEndpointSelector(_openAiServers.Select(x => builtEndpointDictionary[x]).ToArray());

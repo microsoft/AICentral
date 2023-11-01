@@ -2,7 +2,7 @@
 
 namespace AICentral.PipelineComponents.EndpointSelectors.Single;
 
-public class SingleEndpointSelector: IAICentralEndpointSelector
+public class SingleEndpointSelector : EndpointSelectorBase
 {
     private readonly IAICentralEndpointDispatcher _endpoint;
 
@@ -10,24 +10,27 @@ public class SingleEndpointSelector: IAICentralEndpointSelector
     {
         _endpoint = endpoint;
     }
-    
-    public async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
+
+    public override async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
-        return await _endpoint.Handle(context, pipeline, cancellationToken);
+        var responseMessage = await _endpoint.Handle(context, pipeline, cancellationToken);
+        responseMessage.Item2.EnsureSuccessStatusCode();
+        return await HandleResponse(
+            context.RequestServices.GetRequiredService<ILogger<SingleEndpointSelector>>(),
+            context,
+            responseMessage.Item1,
+            responseMessage.Item2,
+            cancellationToken
+        );
     }
 
-    public object WriteDebug()
+    public override object WriteDebug()
     {
         return new
         {
             Type = "SingleEndpoint",
-            Endpoint = _endpoint.WriteDebug()
+            Endpoints = new[] { _endpoint.WriteDebug() }
         };
     }
-
-    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
-    {
-    }
-    
 }

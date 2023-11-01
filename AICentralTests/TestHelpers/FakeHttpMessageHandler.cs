@@ -12,6 +12,10 @@ public class FakeHttpMessageHandler : HttpMessageHandler
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
+        if (request.RequestUri!.Host.Equals(AICentralTestEndpointBuilder.Endpoint404))
+        {
+            return Task.FromResult(AICentralTestEndpointBuilder.NotFoundResponse());
+        }
         return Task.FromResult(_fakeResponse);
     }
 }

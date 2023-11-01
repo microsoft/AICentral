@@ -25,7 +25,7 @@ public class AICentralPipelineAssembler
     private Dictionary<IAICentralPipelineStepBuilder<IAICentralPipelineStep>, IAICentralPipelineStep>
         _builtSteps;
 
-    private Dictionary<IAICentralEndpointSelectorBuilder, IAICentralEndpointSelector> _builtEndpointSelectors;
+    private Dictionary<IAICentralEndpointSelectorBuilder, IEndpointSelector> _builtEndpointSelectors;
     private bool _built;
 
     public AICentralPipelineAssembler(
@@ -80,11 +80,11 @@ public class AICentralPipelineAssembler
                 $"Can not satisfy request for middleware {providerName}. Did you forget to configure it?");
     }
 
-    private static IAICentralEndpointSelector GetEndpointSelector(
+    private static IEndpointSelector GetEndpointSelector(
         Dictionary<string, IAICentralEndpointSelectorBuilder> providers,
-        Dictionary<IAICentralEndpointSelectorBuilder, IAICentralEndpointSelector> runtime,
+        Dictionary<IAICentralEndpointSelectorBuilder, IEndpointSelector> runtime,
         string? providerName,
-        IAICentralEndpointSelector? fallback)
+        IEndpointSelector? fallback)
     {
         if (string.IsNullOrEmpty(providerName))
             return fallback ?? throw new ArgumentException($"Can not find pipeline step {providerName}");

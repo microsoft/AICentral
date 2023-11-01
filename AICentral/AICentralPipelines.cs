@@ -17,8 +17,8 @@ public class AICentralPipelines
         }
     }
 
-    public object WriteDebug()
+    public object[] WriteDebug()
     {
-        return _pipelines!.Select(x => x.WriteDebug()).ToArray();
+        return _pipelines.Select(x => x.WriteDebug()).ToArray();
     }
 }

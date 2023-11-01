@@ -1,22 +1,31 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
+using AICentral.PipelineComponents.Endpoints.OpenAI;
 using Newtonsoft.Json;
 
 namespace AICentralTests.TestHelpers;
 
 public class AICentralTestEndpointBuilder
 {
-    public static OpenAIEndpointDispatcher Random() =>
+    public static readonly string Endpoint404 = Guid.NewGuid().ToString(); 
+    public static readonly string Endpoint200 = Guid.NewGuid().ToString(); 
+    
+    public static OpenAIEndpointDispatcher Success200() =>
         new(
-            $"https://{Guid.NewGuid().ToString()}",
+            $"https://{Endpoint200}",
+            new Dictionary<string, string>(),
+            new KeyAuth("test"));
+
+    public static OpenAIEndpointDispatcher FailingModelNotFound() =>
+        new(
+            $"https://{Endpoint404}",
             new Dictionary<string, string>(),
             new KeyAuth("test"));
 
     public static HttpResponseMessage FakeResponse()
     {
         var response = new HttpResponseMessage();
-        response.Headers.Add("x-test", "test");
         response.Content = new StringContent(
             JsonConvert.SerializeObject(new
             {
@@ -47,6 +56,13 @@ public class AICentralTestEndpointBuilder
             })
             , Encoding.UTF8, "application/json");
 
+        return response;
+    }
+    
+    public static HttpResponseMessage NotFoundResponse()
+    {
+        var response = new HttpResponseMessage();
+        response.StatusCode = HttpStatusCode.NotFound;
         return response;
     }
 }

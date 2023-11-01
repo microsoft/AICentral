@@ -11,14 +11,14 @@ public class AICentralPipeline
     private readonly IAICentralRouter _router;
     private readonly IAICentralClientAuthStep _clientAuthStep;
     private readonly IList<IAICentralPipelineStep> _pipelineSteps;
-    private readonly IAICentralEndpointSelector _endpointSelector;
+    private readonly IEndpointSelector _endpointSelector;
 
     public AICentralPipeline(
         string name,
         IAICentralRouter router,
         IAICentralClientAuthStep clientAuthStep,
         IList<IAICentralPipelineStep> pipelineSteps,
-        IAICentralEndpointSelector endpointSelector)
+        IEndpointSelector endpointSelector)
     {
         _name = name;
         _router = router;
@@ -50,7 +50,7 @@ public class AICentralPipeline
             PathMatch = _router.WriteDebug(),
             ClientAuth = _clientAuthStep.WriteDebug(),
             Steps = _pipelineSteps.Select(x => x.WriteDebug()),
-            Endpoint = _endpointSelector.WriteDebug()
+            EndpointSelector = _endpointSelector.WriteDebug()
         };
     }
 

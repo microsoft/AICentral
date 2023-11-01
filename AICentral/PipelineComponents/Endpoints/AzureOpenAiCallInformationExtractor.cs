@@ -4,12 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace AICentral.PipelineComponents.Endpoints;
 
-public interface IExtractAICallInformation
-{
-    AICallInformation Extract(HttpRequest request, JObject content);
-}
-
-public class AzureOpenAiCallInformationExtractor : IExtractAICallInformation
+public class AzureOpenAiCallInformationExtractor
 {
     private static readonly Regex OpenAiUrlRegex = new("^/openai/deployments/(.*?)/(embeddings|chat|completions)(.*?)$");
 
@@ -37,13 +32,4 @@ public class AzureOpenAiCallInformationExtractor : IExtractAICallInformation
         return new AICallInformation(requestType, incomingModelName, promptText, $"{openAiUriParts.Groups[2].Captures[0]}{openAiUriParts.Groups[3].Captures[0].Value}");
 
     }
-}
-
-public record AICallInformation(AICallType AICallType, string IncomingModelName, string PromptText, string RemainingUrl);
-
-public enum AICallType
-{
-    Chat,
-    Completions,
-    Embeddings
 }
