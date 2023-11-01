@@ -8,10 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AICentral\AICentral.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
@@ -19,6 +15,10 @@
 
     <ItemGroup>
       <AdditionalFiles Include="Pages\Index.cshtml" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AICentral\AICentral.csproj" />
     </ItemGroup>
 
 </Project>

@@ -20,7 +20,11 @@ AI Central gives you control over your AI services.
         "Name": "openai-1",
         "Properties": {
           "LanguageEndpoint": "https://<my-ai>.openai.azure.com",
-          "ModelName": "<model-name>",
+          "ModelMappings": {
+            "e1-Gpt35Turbo0613": "Gpt35Turbo0613",
+            "e1-Gpt35Turbo0613_noauth": "Gpt35Turbo0613",
+            "e1-Ada002Embedding": "Ada002Embedding"
+          },
           "AuthenticationType": "Entra|EntraPassThrough|ApiKey"
         }
       }
@@ -46,6 +50,25 @@ AI Central gives you control over your AI services.
         }
       }
     ],
+    "GenericSteps": [
+      {
+        "Type": "LocalRateLimiting",
+        "Name": "window-rate-limiter",
+        "Properties": {
+          "WindowTime": 20,
+          "RequestsPerWindow": 1
+        }
+      },
+      {
+        "Type": "AzureMonitorLogger",
+        "Name": "azure-monitor-logger",
+        "Properties": {
+          "WorkspaceId": "<workspace-id>",
+          "Key": "<key>",
+          "LogPrompt": false
+        }
+      }
+    ],
     "Pipelines": [
       {
         "Name": "LoggedOpenAiPipeline",
@@ -53,14 +76,8 @@ AI Central gives you control over your AI services.
         "EndpointSelector": "default",
         "AuthProvider": "simple-aad",
         "Steps": [
-          {
-            "Type": "AzureMonitorLogger",
-            "Properties": {
-              "WorkspaceId": "<workspace-id>",
-              "Key": "<workspace-key>",
-              "LogPrompt": true
-            }
-          }
+          "window-rate-limiter",
+          "azure-monitor-logger"
         ]
       }
     ]
@@ -104,7 +121,7 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
           value: openAiUrl
         }
         {
-          name: 'AICentral__Endpoints__0__Properties__ModelName'
+          name: 'AICentral__Endpoints__0__Properties__ModelMappings__e1-Gpt35Turbo0613'
           value: openAiModelName
         }
         {
@@ -124,6 +141,26 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
           value: 'openai-1'
         }
         {
+          name: 'AICentral__GenericSteps__0__Type'
+          value: 'AzureMonitorLogger'
+        }
+        {
+          name: 'AICentral__GenericSteps__0__Name'
+          value: 'azure-monitor-logger'
+        }
+        {
+          name: 'AICentral__GenericSteps__0__Properties__WorkspaceId'
+          value: azureMonitorWorkspaceId
+        }
+        {
+          name: 'AICentral__GenericSteps__0__Properties__Key'
+          value: listKeys(lanalytics.id, '2020-08-01').primarySharedKey
+        }
+        {
+          name: 'AICentral__GenericSteps__0__Properties__LogPrompt'
+          value: 'true'
+        }
+        {
           name: 'AICentral__Pipelines__0__Name'
           value: 'SynchronousPipeline'
         }
@@ -136,20 +173,8 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
           value: 'default'
         }
         {
-          name: 'AICentral__Pipelines__0__Steps__0__Type'
-          value: 'AzureMonitorLogger'
-        }
-        {
-          name: 'AICentral__Pipelines__0__Steps__0__Properties__WorkspaceId'
-          value: azureMonitorWorkspaceId
-        }
-        {
-          name: 'AICentral__Pipelines__0__Steps__0__Properties__Key'
-          value: listKeys(lanalytics.id, '2020-08-01').primarySharedKey
-        }
-        {
-          name: 'AICentral__Pipelines__0__Steps__0__Properties__LogPrompt'
-          value: 'true'
+          name: 'AICentral__Pipelines__0__Steps__0'
+          value: 'azure-monitor-logger'
         }
         {
           name: 'DOCKER_REGISTRY_SERVER_URL'

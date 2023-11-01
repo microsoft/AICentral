@@ -1,4 +1,4 @@
-using AICentral.Configuration;
+using AICentral;
 using Serilog;
 using Serilog.Extensions.Logging;
 

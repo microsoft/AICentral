@@ -1,6 +1,6 @@
 ﻿using System.Text;
-using AICentral.Pipelines.Endpoints;
-using AICentral.Pipelines.Endpoints.EndpointAuth;
+using AICentral.PipelineComponents.Endpoints;
+using AICentral.PipelineComponents.Endpoints.EndpointAuth;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Polly;
