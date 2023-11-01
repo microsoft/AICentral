@@ -1,15 +1,13 @@
 ﻿using AICentral;
-using AICentral.Configuration;
 using AICentral.PipelineComponents.Auth.AllowAnonymous;
 using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 using AICentral.PipelineComponents.EndpointSelectors.Random;
 using AICentral.PipelineComponents.Routes;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace AICentralTests;
+namespace AICentralTests.TestHelpers;
 
 public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram> where TProgram : class
 {
@@ -34,7 +32,10 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                     }));
 
             services.AddHttpClient<HttpAIEndpointDispatcher>();
-            services.AddTransient<IAIEndpointDispatcher, FakeEndpointDispatcher>();
+            services.AddHttpClient<HttpAIEndpointDispatcher>()
+                .ConfigurePrimaryHttpMessageHandler(() =>
+                    new FakeHttpMessageHandler(AICentralTestEndpointBuilder.FakeResponse()));
+            
         });
         return base.CreateHost(builder);
     }

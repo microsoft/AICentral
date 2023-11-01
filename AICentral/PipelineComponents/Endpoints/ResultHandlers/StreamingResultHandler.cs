@@ -1,4 +1,4 @@
-﻿namespace AICentral.PipelineComponents.Endpoints;
+﻿namespace AICentral.PipelineComponents.Endpoints.ResultHandlers;
 
 public class StreamingResultHandler: IResult
 {

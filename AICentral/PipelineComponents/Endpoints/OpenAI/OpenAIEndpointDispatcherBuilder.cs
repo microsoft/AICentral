@@ -1,22 +1,20 @@
 ﻿using System.Net;
 using AICentral.Configuration.JSON;
-using AICentral.PipelineComponents.Endpoints.EndpointAuth;
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
 
 namespace AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 
-public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuilder
+public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuilder
 {
-    private readonly ResiliencePipeline<HttpResponseMessage> _resiliencyStrategy;
     private static readonly HttpStatusCode[] StatusCodesToRetry = { HttpStatusCode.TooManyRequests };
 
     private readonly IEndpointAuthorisationHandler _authHandler;
     private readonly string _languageUrl;
     private readonly Dictionary<string, string> _modelMappings;
 
-    public AzureOpenAIEndpointDispatcherBuilder(
+    public OpenAIEndpointDispatcherBuilder(
         string languageUrl,
         Dictionary<string, string> modelMappings,
         AuthenticationType authenticationType,
@@ -28,18 +26,25 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
         _authHandler = authenticationType switch
         {
             AuthenticationType.ApiKey => new KeyAuth(authenticationKey ??
-                                                                throw new ArgumentException(
-                                                                    "Missing api-key for Authrntication Type")),
+                                                     throw new ArgumentException(
+                                                         "Missing api-key for Authrntication Type")),
             AuthenticationType.Entra => new EntraAuth(),
-            AuthenticationType.EntraPassThrough => new BearerTokenPassThrough(),
+            AuthenticationType.EntraPassThrough => new BearerTokenPassThroughAuth(),
             _ => throw new ArgumentOutOfRangeException(nameof(authenticationType), authenticationType, null)
         };
 
+    }
+
+    public void RegisterServices(IServiceCollection services)
+    {
+        // services.AddSingleton<IAIEndpointDispatcher, ResilientEndpointDispatcher>();
+
         var handler = new PredicateBuilder<HttpResponseMessage>()
+            .HandleResult(r => StatusCodesToRetry.Contains(r.StatusCode))
             .Handle<HttpRequestException>(e =>
                 e.StatusCode.HasValue && StatusCodesToRetry.Contains(e.StatusCode.Value));
-
-        _resiliencyStrategy = new ResiliencePipelineBuilder<HttpResponseMessage>()
+        
+        var resiliencyStrategy = new ResiliencePipelineBuilder<HttpResponseMessage>()
             .AddCircuitBreaker(new CircuitBreakerStrategyOptions<HttpResponseMessage>
             {
                 FailureRatio = 0.5,
@@ -56,19 +61,16 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
             })
             .AddTimeout(TimeSpan.FromSeconds(30))
             .Build();
-    }
 
-    public void RegisterServices(IServiceCollection services)
-    {
-        services.AddSingleton<IAIEndpointDispatcher, AIEndpointDispatcher>();
-        services.AddHttpClient<HttpAIEndpointDispatcher>();
+        services.AddHttpClient<HttpAIEndpointDispatcher>()
+            .AddPolicyHandler(resiliencyStrategy.AsAsyncPolicy());
     }
 
     public static string ConfigName => "AzureOpenAIEndpoint";
 
     public static IAICentralEndpointDispatcherBuilder BuildFromConfig(ConfigurationTypes.AICentralPipelineEndpointPropertiesConfig parameters)
     {
-        return new AzureOpenAIEndpointDispatcherBuilder(
+        return new OpenAIEndpointDispatcherBuilder(
             parameters.LanguageEndpoint!,
             parameters.ModelMappings!,
             parameters.AuthenticationType,
@@ -77,6 +79,6 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
 
     public IAICentralEndpointDispatcher Build()
     {
-        return new AzureOpenAIEndpointDispatcher(_languageUrl, _modelMappings, _authHandler, _resiliencyStrategy);
+        return new OpenAIEndpointDispatcher(_languageUrl, _modelMappings, _authHandler);
     }
 }
