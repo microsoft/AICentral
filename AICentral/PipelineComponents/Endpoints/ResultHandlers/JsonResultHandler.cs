@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using Microsoft.Extensions.Primitives;
 
-namespace AICentral.PipelineComponents.Endpoints;
+namespace AICentral.PipelineComponents.Endpoints.ResultHandlers;
 
 public class JsonResultHandler: IResult, IDisposable
 {

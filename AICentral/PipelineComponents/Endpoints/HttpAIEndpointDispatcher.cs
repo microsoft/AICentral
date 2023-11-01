@@ -1,5 +1,4 @@
-﻿using AICentral.PipelineComponents.Endpoints.EndpointAuth;
-using Polly;
+﻿using System.Text;
 
 namespace AICentral.PipelineComponents.Endpoints;
 
@@ -9,20 +8,32 @@ namespace AICentral.PipelineComponents.Endpoints;
 public class HttpAIEndpointDispatcher
 {
     private readonly HttpClient _httpClient;
-    private readonly IAIEndpointDispatcher _innerDispatcher;
+    private readonly ILogger<HttpAIEndpointDispatcher> _logger;
 
-    public HttpAIEndpointDispatcher(HttpClient httpClient,
-        IAIEndpointDispatcher innerDispatcher)
+    public HttpAIEndpointDispatcher(
+        HttpClient httpClient,
+        ILogger<HttpAIEndpointDispatcher> logger)
     {
         _httpClient = httpClient;
-        _innerDispatcher = innerDispatcher;
+        _logger = logger;
     }
 
-    public Task<HttpResponseMessage> Dispatch(HttpContext context, ResiliencePipeline<HttpResponseMessage> retry,
+    public async Task<HttpResponseMessage> Dispatch(HttpContext context,
         string endpointUrl, string requestRawContent, IEndpointAuthorisationHandler authHandler,
         CancellationToken cancellationToken)
     {
-        return _innerDispatcher.Dispatch(_httpClient, context, retry, endpointUrl, requestRawContent, authHandler,
-            cancellationToken);
+        _logger.LogDebug("Making call to {Endpoint}", endpointUrl);
+
+        var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, new Uri(endpointUrl))
+        {
+            Content = new StringContent(requestRawContent, Encoding.UTF8, "application/json")
+        };
+
+        await authHandler.ApplyAuthorisationToRequest(context.Request, httpRequestMessage);
+
+        var response = await _httpClient.SendAsync(httpRequestMessage, cancellationToken);
+
+        _logger.LogDebug("Called {Endpoint}. Response Code: {ResponseCode}", endpointUrl, response.StatusCode);
+        return response;
     }
 }

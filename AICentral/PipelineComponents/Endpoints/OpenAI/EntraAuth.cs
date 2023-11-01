@@ -2,7 +2,7 @@
 using Azure.Core;
 using Azure.Identity;
 
-namespace AICentral.PipelineComponents.Endpoints.EndpointAuth;
+namespace AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 
 public class EntraAuth : IEndpointAuthorisationHandler
 {

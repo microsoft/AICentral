@@ -55,7 +55,7 @@ public class ConfigurationBasedPipelineBuilder
     {
         RegisterEndpointSelector<RandomEndpointSelectorBuilder>();
         RegisterEndpointSelector<SingleEndpointSelectorBuilder>();
-        RegisterEndpoint<AzureOpenAIEndpointDispatcherBuilder>();
+        RegisterEndpoint<OpenAIEndpointDispatcherBuilder>();
         RegisterGenericStep<AzureMonitorLoggerBuilder>();
         RegisterAuthProvider<AllowAnonymousClientAuthBuilder>();
         RegisterAuthProvider<EntraClientAuthBuilder>();

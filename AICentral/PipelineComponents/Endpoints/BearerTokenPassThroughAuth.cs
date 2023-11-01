@@ -1,8 +1,8 @@
 ﻿using System.Net.Http.Headers;
 
-namespace AICentral.PipelineComponents.Endpoints.EndpointAuth;
+namespace AICentral.PipelineComponents.Endpoints;
 
-public class BearerTokenPassThrough : IEndpointAuthorisationHandler
+public class BearerTokenPassThroughAuth : IEndpointAuthorisationHandler
 {
     public Task ApplyAuthorisationToRequest(HttpRequest incomingRequest,
         HttpRequestMessage outgoingRequest)

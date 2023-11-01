@@ -1,4 +1,4 @@
-﻿namespace AICentral.PipelineComponents.Endpoints.EndpointAuth;
+﻿namespace AICentral.PipelineComponents.Endpoints;
 
 public interface IEndpointAuthorisationHandler
 {
