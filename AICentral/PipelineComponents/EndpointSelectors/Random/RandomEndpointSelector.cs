@@ -2,7 +2,7 @@
 
 namespace AICentral.PipelineComponents.EndpointSelectors.Random;
 
-public class RandomEndpointSelector : IAICentralEndpointSelector
+public class RandomEndpointSelector : EndpointSelectorBase
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IAICentralEndpointDispatcher[] _openAiServers;
@@ -12,7 +12,9 @@ public class RandomEndpointSelector : IAICentralEndpointSelector
         _openAiServers = openAiServers;
     }
 
-    public async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
+    public override async Task<AICentralResponse> Handle(
+        HttpContext context,
+        AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelectorBuilder>>();
@@ -24,7 +26,16 @@ public class RandomEndpointSelector : IAICentralEndpointSelector
             toTry.Remove(chosen);
             try
             {
-                return await chosen.Handle(context, pipeline, cancellationToken); //awaiting to unwrap any Aggregate Exceptions
+                var responseMessage =
+                    await chosen.Handle(context, pipeline,
+                        cancellationToken); //awaiting to unwrap any Aggregate Exceptions
+                return await HandleResponse(
+                    logger,
+                    context,
+                    responseMessage.Item1,
+                    responseMessage.Item2,
+                    !toTry.Any(),
+                    cancellationToken);
             }
             catch (Exception e)
             {
@@ -34,7 +45,6 @@ public class RandomEndpointSelector : IAICentralEndpointSelector
                     throw new InvalidOperationException("No available Open AI hosts", e);
                 }
 
-                ;
                 logger.LogWarning(e, "Failed to handle request. Trying another endpoint");
             }
         } while (toTry.Count > 0);
@@ -42,7 +52,7 @@ public class RandomEndpointSelector : IAICentralEndpointSelector
         throw new InvalidOperationException("Failed to satisfy request");
     }
 
-    public object WriteDebug()
+    public override object WriteDebug()
     {
         return new
         {
@@ -50,9 +60,4 @@ public class RandomEndpointSelector : IAICentralEndpointSelector
             Endpoints = _openAiServers.Select(x => WriteDebug())
         };
     }
-    
-    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
-    {
-    }
-
 }

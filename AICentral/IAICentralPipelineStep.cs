@@ -2,7 +2,8 @@
 
 public interface IAICentralPipelineStep
 {
-    Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
+    Task<AICentralResponse> Handle(
+        HttpContext context, AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken);
 
     object WriteDebug();

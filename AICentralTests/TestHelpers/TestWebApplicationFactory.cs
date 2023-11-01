@@ -1,6 +1,8 @@
 ﻿using AICentral;
 using AICentral.PipelineComponents.Auth.AllowAnonymous;
 using AICentral.PipelineComponents.Endpoints;
+using AICentral.PipelineComponents.Endpoints.OpenAI;
+using AICentral.PipelineComponents.EndpointSelectors.Priority;
 using AICentral.PipelineComponents.EndpointSelectors.Random;
 using AICentral.PipelineComponents.Routes;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -22,20 +24,34 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                     {
                         new AICentralPipeline(
                             "Test",
-                            new SimplePathMatchRouter("/openai/deployments/random/chat/completions"),
+                            new SimplePathMatchRouter("/openai/deployments/random/{*prefix}"),
                             new AllowAnonymousClientAuthProvider(),
                             Array.Empty<IAICentralPipelineStep>(),
                             new RandomEndpointSelector(new IAICentralEndpointDispatcher[]
                             {
-                                AICentralTestEndpointBuilder.Random()
-                            }))
+                                AICentralTestEndpointBuilder.Success200()
+                            })),
+                        new AICentralPipeline(
+                            "Test",
+                            new SimplePathMatchRouter("/openai/deployments/priority/{*prefix}"),
+                            new AllowAnonymousClientAuthProvider(),
+                            Array.Empty<IAICentralPipelineStep>(),
+                            new PriorityEndpointSelector(
+                                new IAICentralEndpointDispatcher[]
+                                {
+                                    AICentralTestEndpointBuilder.FailingModelNotFound(),
+                                    AICentralTestEndpointBuilder.FailingModelInternalServerError(),
+                                },
+                                new[]
+                                {
+                                    AICentralTestEndpointBuilder.Success200()
+                                })),
                     }));
 
             services.AddHttpClient<HttpAIEndpointDispatcher>();
             services.AddHttpClient<HttpAIEndpointDispatcher>()
                 .ConfigurePrimaryHttpMessageHandler(() =>
                     new FakeHttpMessageHandler(AICentralTestEndpointBuilder.FakeResponse()));
-            
         });
         return base.CreateHost(builder);
     }

@@ -10,7 +10,7 @@ public interface IAICentralEndpointSelectorBuilder
         Dictionary<string, string> parameters,
         Dictionary<string, IAICentralEndpointDispatcherBuilder> aiCentralEndpoints) => throw new NotImplementedException();
 
-    IAICentralEndpointSelector Build(Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> builtEndpointDictionary);
+    IEndpointSelector Build(Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> builtEndpointDictionary);
 
     void RegisterServices(IServiceCollection services);
 }

@@ -5,11 +5,12 @@ namespace AICentral.PipelineComponents.EndpointSelectors.Priority;
 
 public class PriorityEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
 {
-    private readonly RandomEndpointSelectorBuilder _prioritisedOpenAiEndpoints;
-    private readonly RandomEndpointSelectorBuilder _fallbackOpenAiEndpoints;
+    private readonly IAICentralEndpointDispatcherBuilder[] _prioritisedOpenAiEndpoints;
+    private readonly IAICentralEndpointDispatcherBuilder[] _fallbackOpenAiEndpoints;
 
-    public PriorityEndpointSelectorBuilder(RandomEndpointSelectorBuilder prioritisedOpenAiEndpoints,
-        RandomEndpointSelectorBuilder fallbackOpenAiEndpoints)
+    public PriorityEndpointSelectorBuilder(
+        IAICentralEndpointDispatcherBuilder[] prioritisedOpenAiEndpoints,
+        IAICentralEndpointDispatcherBuilder[] fallbackOpenAiEndpoints)
     {
         _prioritisedOpenAiEndpoints = prioritisedOpenAiEndpoints;
         _fallbackOpenAiEndpoints = fallbackOpenAiEndpoints;
@@ -25,15 +26,16 @@ public class PriorityEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
         Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
     {
         return new PriorityEndpointSelectorBuilder(
-            new RandomEndpointSelectorBuilder(
-                parameters["PrioritisedEndpoints"].Split(',').Select(x => endpoints[x]).ToArray()),
-            new RandomEndpointSelectorBuilder(parameters["FallbackEndpoints"].Split(',').Select(x => endpoints[x]).ToArray()));
+            parameters["PrioritisedEndpoints"].Split(',').Select(x => endpoints[x]).ToArray(),
+            parameters["FallbackEndpoints"].Split(',').Select(x => endpoints[x]).ToArray()
+        );
     }
 
-    public IAICentralEndpointSelector Build(Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> builtEndpointDictionary)
+    public IEndpointSelector Build(
+        Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> builtEndpointDictionary)
     {
         return new PriorityEndpointSelector(
-            (RandomEndpointSelector)_prioritisedOpenAiEndpoints.Build(builtEndpointDictionary),
-            (RandomEndpointSelector)_fallbackOpenAiEndpoints.Build(builtEndpointDictionary));
+            _prioritisedOpenAiEndpoints.Select(x => builtEndpointDictionary[x]).ToArray(),
+            _fallbackOpenAiEndpoints.Select(x => builtEndpointDictionary[x]).ToArray());
     }
 }
