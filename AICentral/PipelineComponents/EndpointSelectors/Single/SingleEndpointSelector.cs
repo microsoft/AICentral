@@ -15,12 +15,12 @@ public class SingleEndpointSelector : EndpointSelectorBase
         CancellationToken cancellationToken)
     {
         var responseMessage = await _endpoint.Handle(context, pipeline, cancellationToken);
-        responseMessage.Item2.EnsureSuccessStatusCode();
         return await HandleResponse(
             context.RequestServices.GetRequiredService<ILogger<SingleEndpointSelector>>(),
             context,
             responseMessage.Item1,
             responseMessage.Item2,
+            true,
             cancellationToken
         );
     }

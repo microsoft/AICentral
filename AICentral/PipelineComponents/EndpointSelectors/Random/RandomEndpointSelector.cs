@@ -12,7 +12,9 @@ public class RandomEndpointSelector : EndpointSelectorBase
         _openAiServers = openAiServers;
     }
 
-    public override async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
+    public override async Task<AICentralResponse> Handle(
+        HttpContext context,
+        AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelectorBuilder>>();
@@ -24,12 +26,15 @@ public class RandomEndpointSelector : EndpointSelectorBase
             toTry.Remove(chosen);
             try
             {
-                var responseMessage = await chosen.Handle(context, pipeline, cancellationToken); //awaiting to unwrap any Aggregate Exceptions
+                var responseMessage =
+                    await chosen.Handle(context, pipeline,
+                        cancellationToken); //awaiting to unwrap any Aggregate Exceptions
                 return await HandleResponse(
                     logger,
-                    context, 
-                    responseMessage.Item1, 
+                    context,
+                    responseMessage.Item1,
                     responseMessage.Item2,
+                    !toTry.Any(),
                     cancellationToken);
             }
             catch (Exception e)
@@ -40,7 +45,6 @@ public class RandomEndpointSelector : EndpointSelectorBase
                     throw new InvalidOperationException("No available Open AI hosts", e);
                 }
 
-                ;
                 logger.LogWarning(e, "Failed to handle request. Trying another endpoint");
             }
         } while (toTry.Count > 0);

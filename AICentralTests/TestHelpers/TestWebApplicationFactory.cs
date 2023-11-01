@@ -1,6 +1,7 @@
 ﻿using AICentral;
 using AICentral.PipelineComponents.Auth.AllowAnonymous;
 using AICentral.PipelineComponents.Endpoints;
+using AICentral.PipelineComponents.Endpoints.OpenAI;
 using AICentral.PipelineComponents.EndpointSelectors.Priority;
 using AICentral.PipelineComponents.EndpointSelectors.Random;
 using AICentral.PipelineComponents.Routes;
@@ -12,7 +13,6 @@ namespace AICentralTests.TestHelpers;
 
 public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram> where TProgram : class
 {
-    
     protected override IHost CreateHost(IHostBuilder builder)
     {
         builder.ConfigureServices(services =>
@@ -37,15 +37,15 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                             new AllowAnonymousClientAuthProvider(),
                             Array.Empty<IAICentralPipelineStep>(),
                             new PriorityEndpointSelector(
-                                new RandomEndpointSelector(
-                                    new IAICentralEndpointDispatcher[]
-                                    {
-                                        AICentralTestEndpointBuilder.FailingModelNotFound()
-                                    }),
-                                new RandomEndpointSelector(new[]
+                                new IAICentralEndpointDispatcher[]
+                                {
+                                    AICentralTestEndpointBuilder.FailingModelNotFound(),
+                                    AICentralTestEndpointBuilder.FailingModelInternalServerError(),
+                                },
+                                new[]
                                 {
                                     AICentralTestEndpointBuilder.Success200()
-                                }))),
+                                })),
                     }));
 
             services.AddHttpClient<HttpAIEndpointDispatcher>();

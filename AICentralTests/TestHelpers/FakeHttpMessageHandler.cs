@@ -16,6 +16,11 @@ public class FakeHttpMessageHandler : HttpMessageHandler
         {
             return Task.FromResult(AICentralTestEndpointBuilder.NotFoundResponse());
         }
+
+        if (request.RequestUri!.Host.Equals(AICentralTestEndpointBuilder.Endpoint500))
+        {
+            return Task.FromResult(AICentralTestEndpointBuilder.InternalServerErrorResponse());
+        }
         return Task.FromResult(_fakeResponse);
     }
 }

@@ -8,6 +8,7 @@ namespace AICentralTests.TestHelpers;
 
 public class AICentralTestEndpointBuilder
 {
+    public static readonly string Endpoint500 = Guid.NewGuid().ToString(); 
     public static readonly string Endpoint404 = Guid.NewGuid().ToString(); 
     public static readonly string Endpoint200 = Guid.NewGuid().ToString(); 
     
@@ -20,6 +21,12 @@ public class AICentralTestEndpointBuilder
     public static OpenAIEndpointDispatcher FailingModelNotFound() =>
         new(
             $"https://{Endpoint404}",
+            new Dictionary<string, string>(),
+            new KeyAuth("test"));
+
+    public static OpenAIEndpointDispatcher FailingModelInternalServerError() =>
+        new(
+            $"https://{Endpoint500}",
             new Dictionary<string, string>(),
             new KeyAuth("test"));
 
@@ -63,6 +70,13 @@ public class AICentralTestEndpointBuilder
     {
         var response = new HttpResponseMessage();
         response.StatusCode = HttpStatusCode.NotFound;
+        return response;
+    }
+    
+    public static HttpResponseMessage InternalServerErrorResponse()
+    {
+        var response = new HttpResponseMessage();
+        response.StatusCode = HttpStatusCode.InternalServerError;
         return response;
     }
 }

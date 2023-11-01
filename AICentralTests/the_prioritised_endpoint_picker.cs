@@ -36,7 +36,10 @@ public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationF
             }), Encoding.UTF8, "application/json"));
         
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
-        result.Headers.GetValues("x-aicentral-failed-servers").Single().ShouldBe($"https://{AICentralTestEndpointBuilder.Endpoint404}");
+        
+        result.Headers.GetValues("x-aicentral-failed-servers").ShouldContain($"https://{AICentralTestEndpointBuilder.Endpoint404}");
+        result.Headers.GetValues("x-aicentral-failed-servers").ShouldContain($"https://{AICentralTestEndpointBuilder.Endpoint500}");
+
         result.Headers.GetValues("x-aicentral-server").Single().ShouldBe($"https://{AICentralTestEndpointBuilder.Endpoint200}");
     }
 }

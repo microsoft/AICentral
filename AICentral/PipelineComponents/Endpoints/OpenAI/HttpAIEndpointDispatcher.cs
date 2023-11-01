@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace AICentral.PipelineComponents.Endpoints;
+namespace AICentral.PipelineComponents.Endpoints.OpenAI;
 
 /// <summary>
 /// Registered as a Typed Http Client to leverage HttpClientFactory. Created with an IAIEndpointDispatcher to allow a fake for testing purposes
@@ -31,7 +31,8 @@ public class HttpAIEndpointDispatcher
 
         await authHandler.ApplyAuthorisationToRequest(context.Request, httpRequestMessage);
 
-        var response = await _httpClient.SendAsync(httpRequestMessage, cancellationToken);
+        //HttpCompletionOption.ResponseHeadersRead ensures we can get to streaming results much quicker.
+        var response = await _httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
         _logger.LogDebug("Called {Endpoint}. Response Code: {ResponseCode}", endpointUrl, response.StatusCode);
         return response;
