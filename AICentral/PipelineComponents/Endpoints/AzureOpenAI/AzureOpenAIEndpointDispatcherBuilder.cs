@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using AICentral.Configuration.JSON;
 using AICentral.PipelineComponents.Endpoints.EndpointAuth;
 using Polly;
 using Polly.CircuitBreaker;
@@ -6,25 +7,23 @@ using Polly.Retry;
 
 namespace AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 
-public class AzureOpenAIEndpointDispatcherBuilder : IAiCentralEndpointDispatcherBuilder
+public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuilder
 {
     private readonly ResiliencePipeline<HttpResponseMessage> _resiliencyStrategy;
     private static readonly HttpStatusCode[] StatusCodesToRetry = { HttpStatusCode.TooManyRequests };
 
     private readonly IEndpointAuthorisationHandler _authHandler;
     private readonly string _languageUrl;
-    private readonly string _modelName;
-
+    private readonly Dictionary<string, string> _modelMappings;
 
     public AzureOpenAIEndpointDispatcherBuilder(
         string languageUrl,
-        string modelName,
+        Dictionary<string, string> modelMappings,
         AuthenticationType authenticationType,
         string? authenticationKey)
     {
-        Guid.NewGuid().ToString();
         _languageUrl = languageUrl;
-        _modelName = modelName;
+        _modelMappings = modelMappings;
 
         _authHandler = authenticationType switch
         {
@@ -67,17 +66,17 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAiCentralEndpointDispatcher
 
     public static string ConfigName => "AzureOpenAIEndpoint";
 
-    public static IAiCentralEndpointDispatcherBuilder BuildFromConfig(Dictionary<string, string> parameters)
+    public static IAICentralEndpointDispatcherBuilder BuildFromConfig(ConfigurationTypes.AICentralPipelineEndpointPropertiesConfig parameters)
     {
         return new AzureOpenAIEndpointDispatcherBuilder(
-            parameters["LanguageEndpoint"],
-            parameters["ModelName"],
-            Enum.Parse<AuthenticationType>(parameters["AuthenticationType"]),
-            parameters.TryGetValue("ApiKey", out var value) ? value : string.Empty);
+            parameters.LanguageEndpoint!,
+            parameters.ModelMappings!,
+            parameters.AuthenticationType,
+            parameters.ApiKey);
     }
 
     public IAICentralEndpointDispatcher Build()
     {
-        return new AzureOpenAIEndpointDispatcher(_languageUrl, _modelName, _authHandler, _resiliencyStrategy);
+        return new AzureOpenAIEndpointDispatcher(_languageUrl, _modelMappings, _authHandler, _resiliencyStrategy);
     }
 }

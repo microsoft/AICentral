@@ -8,9 +8,9 @@ public interface IAICentralEndpointSelectorBuilder
 
     static virtual IAICentralEndpointSelectorBuilder BuildFromConfig(
         Dictionary<string, string> parameters,
-        Dictionary<string, IAiCentralEndpointDispatcherBuilder> aiCentralEndpoints) => throw new NotImplementedException();
+        Dictionary<string, IAICentralEndpointDispatcherBuilder> aiCentralEndpoints) => throw new NotImplementedException();
 
-    IAICentralEndpointSelector Build(Dictionary<IAiCentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> builtEndpointDictionary);
+    IAICentralEndpointSelector Build(Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> builtEndpointDictionary);
 
     void RegisterServices(IServiceCollection services);
 }

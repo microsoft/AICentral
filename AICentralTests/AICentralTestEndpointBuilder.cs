@@ -9,8 +9,7 @@ public class AICentralTestEndpointBuilder
     public static AzureOpenAIEndpointDispatcher Random() =>
         new(
             $"https://{Guid.NewGuid().ToString()}",
-            Guid.NewGuid().ToString(),
+            new Dictionary<string, string>(),
             new KeyAuth("test"),
             ResiliencePipeline<HttpResponseMessage>.Empty);
-
 }

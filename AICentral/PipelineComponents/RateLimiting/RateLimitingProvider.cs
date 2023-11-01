@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace AICentral.PipelineComponents.RateLimiting;
 
-public class RateLimitingProvider : IAICentralPipelineStepBuilder<IAICentralPipelineStep>, IAICentralPipelineStep
+public class RateLimitingProvider : IAICentralGenericStepBuilder<IAICentralPipelineStep>, IAICentralPipelineStep
 {
     private readonly int _requestsPerWindow;
     private readonly string _id;
@@ -39,7 +39,7 @@ public class RateLimitingProvider : IAICentralPipelineStepBuilder<IAICentralPipe
 
     public static string ConfigName => "LocalRateLimiting";
 
-    public static IAICentralPipelineStepBuilder<IAICentralPipelineStep> BuildFromConfig(Dictionary<string, string> parameters)
+    public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(Dictionary<string, string> parameters)
     {
         return new RateLimitingProvider(
             parameters.TryGetValue("WindowTime", out var window)

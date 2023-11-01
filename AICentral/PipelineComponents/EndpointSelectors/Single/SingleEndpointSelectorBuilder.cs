@@ -4,14 +4,14 @@ namespace AICentral.PipelineComponents.EndpointSelectors.Single;
 
 public class SingleEndpointSelectorBuilder: IAICentralEndpointSelectorBuilder
 {
-    private readonly IAiCentralEndpointDispatcherBuilder _endpointDispatcherBuilder;
+    private readonly IAICentralEndpointDispatcherBuilder _endpointDispatcherBuilder;
 
-    public SingleEndpointSelectorBuilder(IAiCentralEndpointDispatcherBuilder endpointDispatcherBuilder)
+    public SingleEndpointSelectorBuilder(IAICentralEndpointDispatcherBuilder endpointDispatcherBuilder)
     {
         _endpointDispatcherBuilder = endpointDispatcherBuilder;
     }
 
-    public IAICentralEndpointSelector Build(Dictionary<IAiCentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> buildEndpoints)
+    public IAICentralEndpointSelector Build(Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> buildEndpoints)
     {
         return new SingleEndpointSelector(buildEndpoints[_endpointDispatcherBuilder]);
     }
@@ -22,7 +22,7 @@ public class SingleEndpointSelectorBuilder: IAICentralEndpointSelectorBuilder
 
     public static string ConfigName => "SingleEndpoint";
 
-    public static IAICentralEndpointSelectorBuilder BuildFromConfig(Dictionary<string, string> parameters, Dictionary<string, IAiCentralEndpointDispatcherBuilder> endpoints)
+    public static IAICentralEndpointSelectorBuilder BuildFromConfig(Dictionary<string, string> parameters, Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
     {
         return new SingleEndpointSelectorBuilder(endpoints[parameters["Endpoint"]]);
     }

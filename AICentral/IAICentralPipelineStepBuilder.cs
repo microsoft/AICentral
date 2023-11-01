@@ -8,9 +8,6 @@ public interface IAICentralPipelineStepBuilder<out T> where T: IAICentralPipelin
 {
     static virtual string ConfigName  => throw new NotImplementedException();
 
-    static virtual IAICentralPipelineStepBuilder<T> BuildFromConfig(
-        Dictionary<string, string> parameters) => throw new NotImplementedException();
-
     void RegisterServices(IServiceCollection services);
 
     T Build();

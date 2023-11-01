@@ -13,11 +13,11 @@ namespace AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 public class AzureOpenAIEndpointDispatcher : IAICentralEndpointDispatcher
 {
     private readonly string _languageUrl;
-    private readonly string _modelName;
+    private readonly Dictionary<string, string> _modelMappings;
     private readonly IEndpointAuthorisationHandler _authHandler;
     private readonly ResiliencePipeline<HttpResponseMessage> _endpointResiliencyStrategy;
     private static readonly int StreamingLinePrefixLength = "data:".Length;
-    private static readonly Regex OpenAiUrlRegex = new("^/openai/deployments/(.*?)/(.*?)$");
+    private static readonly Regex OpenAiUrlRegex = new("^/openai/deployments/(.*?)/(embeddings|chat|completions)(.*?)$");
     
     private static readonly Dictionary<string, ITokenizer> Tokenisers = new()
     {
@@ -28,12 +28,12 @@ public class AzureOpenAIEndpointDispatcher : IAICentralEndpointDispatcher
 
     public AzureOpenAIEndpointDispatcher(
         string languageUrl, 
-        string modelName, 
+        Dictionary<string, string> modelMappings, 
         IEndpointAuthorisationHandler authHandler,
         ResiliencePipeline<HttpResponseMessage> endpointResiliencyStrategy)
     {
         _languageUrl = languageUrl;
-        _modelName = modelName;
+        _modelMappings = modelMappings;
         _authHandler = authHandler;
         _endpointResiliencyStrategy = endpointResiliencyStrategy;
     }
@@ -46,13 +46,32 @@ public class AzureOpenAIEndpointDispatcher : IAICentralEndpointDispatcher
         using var requestReader = new StreamReader(context.Request.Body);
         var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
         var deserializedRequestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
-        var promptText = string.Join(
-            Environment.NewLine,
-            deserializedRequestContent["messages"]?.Select(x => x.Value<string>("content")) ?? Array.Empty<string>());
-
+        
         var openAiUriParts = OpenAiUrlRegex.Match(context.Request.GetEncodedPathAndQuery());
-        var newUri = $"{_languageUrl}/openai/deployments/{_modelName}/{openAiUriParts.Groups[2].Captures[0].Value}";
-        logger.LogDebug("Rewritten URL from {OriginalUrl} to {NewUrl}", context.Request.GetEncodedUrl(), newUri);
+
+        var requestType = openAiUriParts.Groups[2].Captures[0].Value;
+        var promptText = requestType switch
+        {
+            "chat" => string.Join(
+                Environment.NewLine,
+                deserializedRequestContent["messages"]?.Select(x => x.Value<string>("content")) ?? Array.Empty<string>()),
+            "embeddings" => deserializedRequestContent.Value<string>("input"),
+            "completions" => deserializedRequestContent.Value<string>("prompt"),
+            _ => ""
+        };
+
+        var incomingModelName = openAiUriParts.Groups[1].Captures[0].Value;
+        
+        var mappedModelName = _modelMappings.TryGetValue(incomingModelName, out var mapping)
+            ? mapping
+            : incomingModelName;
+
+        var newUri = $"{_languageUrl}/openai/deployments/{mappedModelName}/{openAiUriParts.Groups[2].Captures[0]}{openAiUriParts.Groups[3].Captures[0].Value}";
+        logger.LogDebug("Rewritten URL from {OriginalUrl} to {NewUrl}. Incoming Model: {IncomingModelName}. Mapped Model: {MappedModelName}", 
+            context.Request.GetEncodedUrl(), 
+            newUri,
+            incomingModelName,
+            mappedModelName);
 
         var now = DateTimeOffset.Now;
         var sw = new Stopwatch();
@@ -82,7 +101,7 @@ public class AzureOpenAIEndpointDispatcher : IAICentralEndpointDispatcher
         {
             Type = "AzureOpenAI",
             Url = _languageUrl,
-            Model = _modelName,
+            ModelMappings = _modelMappings,
             Auth = _authHandler.WriteDebug()
         };
     }

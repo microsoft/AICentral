@@ -1,6 +1,6 @@
 ﻿namespace AICentral.PipelineComponents.RateLimiting;
 
-public class NoRateLimitingProvider : IAICentralPipelineStepBuilder<IAICentralPipelineStep>, IAICentralPipelineStep
+public class NoRateLimitingProvider : IAICentralGenericStepBuilder<IAICentralPipelineStep>, IAICentralPipelineStep
 {
     public void RegisterServices(IServiceCollection services)
     {
@@ -11,7 +11,7 @@ public class NoRateLimitingProvider : IAICentralPipelineStepBuilder<IAICentralPi
         //no-op
     }
 
-    public static IAICentralPipelineStepBuilder<IAICentralPipelineStep> BuildFromConfig(Dictionary<string, string> parameters)
+    public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(Dictionary<string, string> parameters)
     {
         return new NoRateLimitingProvider();
     }

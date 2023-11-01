@@ -1,8 +1,10 @@
-﻿namespace AICentral.PipelineComponents.Endpoints;
+﻿using AICentral.Configuration.JSON;
 
-public interface IAiCentralEndpointDispatcherBuilder: IAICentralPipelineStepBuilder<IAICentralEndpointDispatcher>
+namespace AICentral.PipelineComponents.Endpoints;
+
+public interface IAICentralEndpointDispatcherBuilder: IAICentralPipelineStepBuilder<IAICentralEndpointDispatcher>
 {
-    static virtual IAiCentralEndpointDispatcherBuilder BuildFromConfig(Dictionary<string, string> parameters)
+    static virtual IAICentralEndpointDispatcherBuilder BuildFromConfig(ConfigurationTypes.AICentralPipelineEndpointPropertiesConfig parameters)
     {
         throw new NotImplementedException();
     }

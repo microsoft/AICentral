@@ -22,7 +22,7 @@ public class PriorityEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
     public static string ConfigName => "Prioritised";
 
     public static IAICentralEndpointSelectorBuilder BuildFromConfig(Dictionary<string, string> parameters,
-        Dictionary<string, IAiCentralEndpointDispatcherBuilder> endpoints)
+        Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
     {
         return new PriorityEndpointSelectorBuilder(
             new RandomEndpointSelectorBuilder(
@@ -30,7 +30,7 @@ public class PriorityEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
             new RandomEndpointSelectorBuilder(parameters["FallbackEndpoints"].Split(',').Select(x => endpoints[x]).ToArray()));
     }
 
-    public IAICentralEndpointSelector Build(Dictionary<IAiCentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> builtEndpointDictionary)
+    public IAICentralEndpointSelector Build(Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> builtEndpointDictionary)
     {
         return new PriorityEndpointSelector(
             (RandomEndpointSelector)_prioritisedOpenAiEndpoints.Build(builtEndpointDictionary),

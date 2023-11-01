@@ -1,4 +1,6 @@
-﻿namespace AICentral.Configuration.JSON;
+﻿using AICentral.PipelineComponents.Endpoints;
+
+namespace AICentral.Configuration.JSON;
 
 public static class ConfigurationTypes
 {
@@ -30,7 +32,15 @@ public static class ConfigurationTypes
     {
         public string? Type { get; init; }
         public string? Name { get; init; }
-        public Dictionary<string, string>? Properties { get; init; }
+        public AICentralPipelineEndpointPropertiesConfig Properties { get; init; }
+    }
+
+    public class AICentralPipelineEndpointPropertiesConfig
+    {
+        public string? LanguageEndpoint { get; init; }
+        public Dictionary<string, string>? ModelMappings { get; init; }
+        public AuthenticationType AuthenticationType { get; init; }
+        public string? ApiKey { get; set; }
     }
 
     public class AICentralPipelineEndpointSelectorConfig
@@ -47,7 +57,6 @@ public static class ConfigurationTypes
         public AICentralComponentConfig? Path { get; init; }
         public string? EndpointSelector { get; init; }
         public string? AuthProvider { get; set; }
-        public string? RateLimiter { get; set; }
         public string[]? Steps { get; init; }
     }
 

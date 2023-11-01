@@ -6,7 +6,7 @@ namespace AICentral.PipelineComponents.Logging;
 /// <summary>
 /// Logs out usage information to Azure Monitor
 /// </summary>
-public class AzureMonitorLoggerBuilder : IAICentralPipelineStepBuilder<IAICentralPipelineStep>
+public class AzureMonitorLoggerBuilder : IAICentralGenericStepBuilder<IAICentralPipelineStep>
 {
     private readonly string _workspaceId;
     private readonly string _key;
@@ -25,7 +25,7 @@ public class AzureMonitorLoggerBuilder : IAICentralPipelineStepBuilder<IAICentra
 
     public static string ConfigName => "AzureMonitorLogger";
 
-    public static IAICentralPipelineStepBuilder<IAICentralPipelineStep> BuildFromConfig(Dictionary<string, string> parameters)
+    public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(Dictionary<string, string> parameters)
     {
         return new AzureMonitorLoggerBuilder(
             parameters["WorkspaceId"],

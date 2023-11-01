@@ -15,12 +15,12 @@ public class AICentralPipelineAssembler
 {
     private readonly Dictionary<string, Func<Dictionary<string, string>, IAICentralRouter>> _routeBuilders;
     private readonly Dictionary<string, IAICentralClientAuthBuilder> _authProviders;
-    private readonly Dictionary<string, IAiCentralEndpointDispatcherBuilder> _endpoints;
+    private readonly Dictionary<string, IAICentralEndpointDispatcherBuilder> _endpoints;
     private readonly Dictionary<string, IAICentralEndpointSelectorBuilder> _endpointSelectors;
     private readonly Dictionary<string, IAICentralPipelineStepBuilder<IAICentralPipelineStep>> _genericSteps;
     private readonly ConfigurationTypes.AICentralPipelineConfig[] _configPipelines;
     private Dictionary<IAICentralClientAuthBuilder, IAICentralClientAuthStep> _builtAuthProviders;
-    private Dictionary<IAiCentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> _builtEndpoints;
+    private Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> _builtEndpoints;
 
     private Dictionary<IAICentralPipelineStepBuilder<IAICentralPipelineStep>, IAICentralPipelineStep>
         _builtSteps;
@@ -31,7 +31,7 @@ public class AICentralPipelineAssembler
     public AICentralPipelineAssembler(
         Dictionary<string, Func<Dictionary<string, string>, IAICentralRouter>> routeBuilders,
         Dictionary<string, IAICentralClientAuthBuilder> authProviders,
-        Dictionary<string, IAiCentralEndpointDispatcherBuilder> endpoints,
+        Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints,
         Dictionary<string, IAICentralEndpointSelectorBuilder> endpointSelectors,
         Dictionary<string, IAICentralPipelineStepBuilder<IAICentralPipelineStep>> genericSteps,
         ConfigurationTypes.AICentralPipelineConfig[] configPipelines)

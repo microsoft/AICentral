@@ -18,11 +18,11 @@ public class ConfigurationBasedPipelineBuilder
     private static readonly Dictionary<string, Func<Dictionary<string, string>, IAICentralRouter>>
         Routers = new();
 
-    private static readonly Dictionary<string, Func<Dictionary<string, string>, IAiCentralEndpointDispatcherBuilder>>
+    private static readonly Dictionary<string, Func<ConfigurationTypes.AICentralPipelineEndpointPropertiesConfig, IAICentralEndpointDispatcherBuilder>>
         EndpointConfigurations = new();
 
     private static readonly
-        Dictionary<string, Func<Dictionary<string, string>, Dictionary<string, IAiCentralEndpointDispatcherBuilder>,
+        Dictionary<string, Func<Dictionary<string, string>, Dictionary<string, IAICentralEndpointDispatcherBuilder>,
             IAICentralEndpointSelectorBuilder>> EndpointSelectorConfigurations = new();
 
     private static readonly Dictionary<string, Func<Dictionary<string, string>, IAICentralPipelineStepBuilder<IAICentralPipelineStep>>>
@@ -42,13 +42,13 @@ public class ConfigurationBasedPipelineBuilder
     private void RegisterAuthProvider<T>() where T : IAICentralClientAuthBuilder =>
         AuthProviders.Add(T.ConfigName, T.BuildFromConfig);
 
-    private void RegisterEndpoint<T>() where T : IAiCentralEndpointDispatcherBuilder =>
+    private void RegisterEndpoint<T>() where T : IAICentralEndpointDispatcherBuilder =>
         EndpointConfigurations.Add(T.ConfigName, T.BuildFromConfig);
 
     private void RegisterEndpointSelector<T>() where T : IAICentralEndpointSelectorBuilder =>
         EndpointSelectorConfigurations.Add(T.ConfigName, T.BuildFromConfig);
 
-    private void RegisterGenericStep<T>() where T : IAICentralPipelineStepBuilder<IAICentralPipelineStep> =>
+    private void RegisterGenericStep<T>() where T : IAICentralGenericStepBuilder<IAICentralPipelineStep> =>
         GenericSteps.Add(T.ConfigName, T.BuildFromConfig);
 
     public AICentralPipelineAssembler BuildPipelinesFromConfig(ILogger startupLogger, IConfigurationSection configurationSection, ConfigurationTypes.AICentralConfig? configSection)
