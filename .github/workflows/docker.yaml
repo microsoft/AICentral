@@ -7,6 +7,8 @@ jobs:
   build-and-publish-docker-container:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    permissions: 
+      packages: write
     
     steps:
       - name: Checkout
