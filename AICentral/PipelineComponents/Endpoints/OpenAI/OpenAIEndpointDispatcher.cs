@@ -30,7 +30,10 @@ public class OpenAIEndpointDispatcher : IAICentralEndpointDispatcher
         context.Request.EnableBuffering(); //we may need to re-read the request if it fails.
         context.Request.Body.Position = 0;
 
-        using var requestReader = new StreamReader(context.Request.Body, leaveOpen: true); //leave open in-case we need to re-read it. TODO, optimise this and read it once.
+        using var
+            requestReader =
+                new StreamReader(context.Request.Body,
+                    leaveOpen: true); //leave open in-case we need to re-read it. TODO, optimise this and read it once.
         var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
         var deserializedRequestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
 
@@ -64,7 +67,8 @@ public class OpenAIEndpointDispatcher : IAICentralEndpointDispatcher
         logger.LogDebug("Received Azure Open AI Response. Status Code: {StatusCode}", openAiResponse.StatusCode);
 
         var requestInformation =
-            new AICentralRequestInformation(_languageUrl, callInformation.PromptText, now, sw.Elapsed);
+            new AICentralRequestInformation(_languageUrl, callInformation.AICallType, callInformation.PromptText, now,
+                sw.Elapsed);
 
         return (requestInformation, openAiResponse);
     }

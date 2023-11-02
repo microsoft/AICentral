@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Security.Claims;
 using System.Text;
 using AICentral.PipelineComponents.Endpoints.ResultHandlers;
 using Microsoft.DeepDev;
@@ -11,7 +12,7 @@ namespace AICentral.PipelineComponents.EndpointSelectors;
 public abstract class EndpointSelectorBase : IEndpointSelector
 {
     private static readonly int StreamingLinePrefixLength = "data:".Length;
-    private static readonly string[] HeaderPrefixesToCopy =  { "x-", "apim" };
+    private static readonly string[] HeaderPrefixesToCopy = { "x-", "apim" };
 
     private static readonly Dictionary<string, ITokenizer> Tokenisers = new()
     {
@@ -34,8 +35,10 @@ public abstract class EndpointSelectorBase : IEndpointSelector
         }
         else
         {
-            if (context.Response.Headers.TryGetValue("x-aicentral-failed-servers", out var header)) context.Response.Headers.Remove("x-aicentral-failed-servers");
-            var added = context.Response.Headers.TryAdd("x-aicentral-failed-servers", StringValues.Concat(header, requestInformation.LanguageUrl));
+            if (context.Response.Headers.TryGetValue("x-aicentral-failed-servers", out var header))
+                context.Response.Headers.Remove("x-aicentral-failed-servers");
+            var added = context.Response.Headers.TryAdd("x-aicentral-failed-servers",
+                StringValues.Concat(header, requestInformation.LanguageUrl));
         }
 
         //Now blow up if we didn't succeed
@@ -78,6 +81,7 @@ public abstract class EndpointSelectorBase : IEndpointSelector
 
         if (openAiResponse.StatusCode == HttpStatusCode.OK)
         {
+            var model = response.Value<string>("model")!;
             var usage = response["usage"]!;
             var promptTokens = usage.Value<int>("prompt_tokens");
             var totalTokens = usage.Value<int>("total_tokens");
@@ -85,6 +89,9 @@ public abstract class EndpointSelectorBase : IEndpointSelector
 
             var chatRequestInformation = new AICentralUsageInformation(
                 requestInformation.LanguageUrl,
+                model,
+                context.User.Identity?.Name ?? "unknown",
+                requestInformation.CallType,
                 requestInformation.Prompt,
                 0,
                 0,
@@ -103,6 +110,9 @@ public abstract class EndpointSelectorBase : IEndpointSelector
         {
             var chatRequestInformation = new AICentralUsageInformation(
                 requestInformation.LanguageUrl,
+                string.Empty,
+                context.User.Identity?.Name ?? "unknown",
+                requestInformation.CallType,
                 requestInformation.Prompt,
                 0,
                 0,
@@ -112,8 +122,9 @@ public abstract class EndpointSelectorBase : IEndpointSelector
                 context.Connection.RemoteIpAddress?.ToString() ?? "",
                 requestInformation.StartDate,
                 requestInformation.Duration);
-            
-            return new AICentralResponse(chatRequestInformation, new JsonResultHandler(openAiResponse, chatRequestInformation));
+
+            return new AICentralResponse(chatRequestInformation,
+                new JsonResultHandler(openAiResponse, chatRequestInformation));
         }
     }
 
@@ -130,7 +141,8 @@ public abstract class EndpointSelectorBase : IEndpointSelector
         CopyHeaderToResponse(context, openAiResponse);
 
         //squirt the response as it comes in:
-        using var openAiResponseReader = new StreamReader(await openAiResponse.Content.ReadAsStreamAsync(cancellationToken));
+        using var openAiResponseReader =
+            new StreamReader(await openAiResponse.Content.ReadAsStreamAsync(cancellationToken));
         await using var responseWriter = new StreamWriter(context.Response.Body);
         context.Response.ContentType = "text/event-stream";
 
@@ -155,7 +167,8 @@ public abstract class EndpointSelectorBase : IEndpointSelector
         }
 
         //calculate prompt tokens
-        var estimatedPromptTokens = Tokenisers["gpt-35-turbo"].Encode(requestInformation.Prompt, Array.Empty<string>()).Count;
+        var estimatedPromptTokens =
+            Tokenisers["gpt-35-turbo"].Encode(requestInformation.Prompt, Array.Empty<string>()).Count;
         var estimatedCompletionTokens = Tokenisers[model].Encode(content.ToString(), Array.Empty<string>()).Count;
 
         logger.LogDebug(
@@ -165,6 +178,9 @@ public abstract class EndpointSelectorBase : IEndpointSelector
 
         var chatRequestInformation = new AICentralUsageInformation(
             requestInformation.LanguageUrl,
+            "",
+            context.User.Identity?.Name ?? "unknown",
+            requestInformation.CallType,
             requestInformation.Prompt,
             estimatedPromptTokens,
             estimatedCompletionTokens,
@@ -180,8 +196,9 @@ public abstract class EndpointSelectorBase : IEndpointSelector
 
     private static void CopyHeaderToResponse(HttpContext context, HttpResponseMessage openAiResponse)
     {
-        foreach (var header in 
-                 openAiResponse.Headers.Where(x => HeaderPrefixesToCopy.Any(p => x.Key.StartsWith(p, StringComparison.InvariantCultureIgnoreCase))))
+        foreach (var header in
+                 openAiResponse.Headers.Where(x =>
+                     HeaderPrefixesToCopy.Any(p => x.Key.StartsWith(p, StringComparison.InvariantCultureIgnoreCase))))
         {
             context.Response.Headers.TryAdd(header.Key, header.Value.ToArray());
         }

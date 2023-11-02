@@ -21,7 +21,15 @@ public class TestAICentralPipelineBuilder
 
     public TestAICentralPipelineBuilder WithApiKeyAuth(string header, string key1, string key2)
     {
-        _auth = new ApiKeyClientAuthBuilder(header, key1, key2);
+        _auth = new ApiKeyClientAuthBuilder(header, new[]
+        {
+            new ConfigurationTypes.ApiKeyClientAuth()
+            {
+                ClientName = "test-client",
+                Key1 = key1,
+                key2 = key2
+            }
+        });
         return this;
     }
 
@@ -71,7 +79,7 @@ public class TestAICentralPipelineBuilder
 
         _openAiEndpointDispatcherBuilders = priorityOpenAiEndpointDispatcherBuilder
             .Union(fallbackOpenAiEndpointDispatcherBuilder).ToArray();
-        
+
         _endpointBuilder = new PriorityEndpointSelectorBuilder(priorityOpenAiEndpointDispatcherBuilder,
             fallbackOpenAiEndpointDispatcherBuilder);
 

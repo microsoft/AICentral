@@ -88,12 +88,13 @@ public class ConfigurationBasedPipelineBuilder
             });
 
         var authProviders = (configSection.AuthProviders ?? Array.Empty<ConfigurationTypes.AICentralAuthConfig>())
-            .ToDictionary(x => x.Name ?? throw new ArgumentException("No Name specified for Auth Provider"), x =>
+            .Select((x, idx) => new { Config = x, Index = idx })
+            .ToDictionary(x => x.Config.Name ?? throw new ArgumentException("No Name specified for Auth Provider"), x =>
             {
-                startupLogger.LogInformation("Configuring Auth Provider {Name}", x.Name);
-                return _authProviderBuilders[x.Type ?? throw new ArgumentException("No Type specified for Auth Provider")](
-                    configurationSection.GetSection("AuthProviders:0"),
-                    x.Properties ?? throw new ArgumentException("No Properties specified for Auth Provider"));
+                startupLogger.LogInformation("Configuring Auth Provider {Name}", x.Config.Name);
+                return _authProviderBuilders[x.Config.Type ?? throw new ArgumentException("No Type specified for Auth Provider")](
+                    configurationSection.GetSection($"AuthProviders:{x.Index}"),
+                    x.Config.Properties ?? throw new ArgumentException("No Properties specified for Auth Provider"));
             });
 
         var genericSteps = (configSection.GenericSteps ?? Array.Empty<ConfigurationTypes.AICentralGenericStepConfig>())
