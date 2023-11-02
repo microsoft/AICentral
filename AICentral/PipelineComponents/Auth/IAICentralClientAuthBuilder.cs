@@ -6,7 +6,4 @@ public interface IAICentralClientAuthBuilder : IAICentralPipelineStepBuilder<IAI
     {
         throw new NotImplementedException();
     }
-    
-    IAICentralClientAuthStep Build();
-
 }

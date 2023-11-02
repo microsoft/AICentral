@@ -1,5 +1,4 @@
 ﻿using Serilog;
-using Serilog.Core;
 
 namespace AICentral.PipelineComponents.Logging;
 
@@ -11,7 +10,6 @@ public class AzureMonitorLoggerBuilder : IAICentralGenericStepBuilder<IAICentral
     private readonly string _workspaceId;
     private readonly string _key;
     private readonly bool _logPrompt;
-    private readonly Logger _azureMonitorLogger;
 
     public AzureMonitorLoggerBuilder(
         string workspaceId,

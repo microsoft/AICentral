@@ -27,7 +27,7 @@ public class TestAICentralPipelineBuilder
             {
                 ClientName = "test-client",
                 Key1 = key1,
-                key2 = key2
+                Key2 = key2
             }
         });
         return this;

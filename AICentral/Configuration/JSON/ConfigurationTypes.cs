@@ -11,7 +11,6 @@ public static class ConfigurationTypes
         public AICentralPipelineEndpointConfig[]? Endpoints { get; init; }
         public AICentralPipelineEndpointSelectorConfig[]? EndpointSelectors { get; init; }
         public AICentralPipelineConfig[]? Pipelines { get; init; }
-        public bool ExposeTestPage { get; set; }
     }
 
     public class AICentralAuthConfig
@@ -32,7 +31,7 @@ public static class ConfigurationTypes
     {
         public string? Type { get; init; }
         public string? Name { get; init; }
-        public AICentralPipelineEndpointPropertiesConfig Properties { get; init; }
+        public AICentralPipelineEndpointPropertiesConfig? Properties { get; init; }
     }
 
     public class AICentralPipelineEndpointPropertiesConfig
@@ -56,7 +55,7 @@ public static class ConfigurationTypes
         public string? Name { get; init; }
         public AICentralComponentConfig? Path { get; init; }
         public string? EndpointSelector { get; init; }
-        public string? AuthProvider { get; set; }
+        public string? AuthProvider { get; init; }
         public string[]? Steps { get; init; }
     }
 
@@ -68,8 +67,8 @@ public static class ConfigurationTypes
 
     public class ApiKeyClientAuth
     {
-        public string ClientName { get; set; }
-        public string Key1 { get; set; }
-        public string key2 { get; set; }
+        public string? ClientName { get; init; }
+        public string? Key1 { get; init; }
+        public string? Key2 { get; init; }
     }
 }

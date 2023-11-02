@@ -150,19 +150,22 @@ public abstract class EndpointSelectorBase : IEndpointSelector
         var model = string.Empty;
         while (!openAiResponseReader.EndOfStream)
         {
-            var line = (await openAiResponseReader.ReadLineAsync(cancellationToken));
+            var line = await openAiResponseReader.ReadLineAsync(cancellationToken);
 
-            await responseWriter.WriteAsync(line);
-            await responseWriter.WriteAsync("\n");
-            await responseWriter.FlushAsync();
-
-            if (line.StartsWith("data:", StringComparison.InvariantCultureIgnoreCase) &&
-                !line.EndsWith("[done]", StringComparison.InvariantCultureIgnoreCase))
+            if (line != null)
             {
-                var lineObject = (JObject)JsonConvert.DeserializeObject(line.Substring(StreamingLinePrefixLength))!;
-                model = lineObject.Value<string>("model")!;
-                var completions = lineObject["choices"]?[0]?["delta"]?.Value<string>("content") ?? "";
-                content.AppendLine(completions);
+                await responseWriter.WriteAsync(line);
+                await responseWriter.WriteAsync("\n");
+                await responseWriter.FlushAsync();
+
+                if (line.StartsWith("data:", StringComparison.InvariantCultureIgnoreCase) &&
+                    !line.EndsWith("[done]", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var lineObject = (JObject)JsonConvert.DeserializeObject(line.Substring(StreamingLinePrefixLength))!;
+                    model = lineObject.Value<string>("model")!;
+                    var completions = lineObject["choices"]?[0]?["delta"]?.Value<string>("content") ?? "";
+                    content.AppendLine(completions);
+                }
             }
         }
 
