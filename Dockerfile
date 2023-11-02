@@ -5,7 +5,7 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
-COPY ["AICentralWeb/AICentralWeb.csproj", "AICentralApi/"]
+COPY ["AICentralWeb/AICentralWeb.csproj", "AICentralWeb/"]
 RUN dotnet restore "AICentralWeb/AICentralWeb.csproj"
 COPY . .
 WORKDIR "/src/AICentralWeb"
