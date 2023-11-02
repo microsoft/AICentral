@@ -37,7 +37,7 @@ public class RandomEndpointSelector : EndpointSelectorBase
                     !toTry.Any(),
                     cancellationToken);
             }
-            catch (Exception e)
+            catch (HttpRequestException e)
             {
                 if (!toTry.Any())
                 {

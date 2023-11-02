@@ -22,9 +22,7 @@ public class AICentralPipelineAssembler
     private Dictionary<IAICentralClientAuthBuilder, IAICentralClientAuthStep> _builtAuthProviders;
     private Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> _builtEndpoints;
 
-    private Dictionary<IAICentralPipelineStepBuilder<IAICentralPipelineStep>, IAICentralPipelineStep>
-        _builtSteps;
-
+    private Dictionary<IAICentralPipelineStepBuilder<IAICentralPipelineStep>, IAICentralPipelineStep> _builtSteps;
     private Dictionary<IAICentralEndpointSelectorBuilder, IEndpointSelector> _builtEndpointSelectors;
     private bool _built;
 
