@@ -40,5 +40,5 @@ jobs:
           push: true
           build-args: NUGET_VERSION=${{ steps.gitversion.outputs.NuGetVersionV2 }}
           tags: |
-            ghcr.io/graemefoster/azurediagrams:latest
-            ghcr.io/graemefoster/azurediagrams:${{ steps.gitversion.outputs.NuGetVersionV2 }}
+            ghcr.io/graemefoster/aicentral:latest
+            ghcr.io/graemefoster/aicentral:${{ steps.gitversion.outputs.NuGetVersionV2 }}
