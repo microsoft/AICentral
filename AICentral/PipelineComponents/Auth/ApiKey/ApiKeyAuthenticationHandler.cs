@@ -19,10 +19,10 @@ internal class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyOptions
     {
         if (Request.Headers.TryGetValue(Options.HeaderName, out var key))
         {
-            var client = Options.Clients.SingleOrDefault(x => x.Key1 == key || x.key2 == key);
+            var client = Options.Clients.SingleOrDefault(x => x.Key1 == key || x.Key2 == key);
             if (client != null)
             {
-                var claims = new[] { new Claim(ClaimTypes.Name, client.ClientName) };
+                var claims = new[] { new Claim(ClaimTypes.Name, client.ClientName!) };
                 var identity = new ClaimsIdentity(claims, Scheme.Name);
                 var principal = new ClaimsPrincipal(identity);
                 var ticket = new AuthenticationTicket(principal, Scheme.Name);

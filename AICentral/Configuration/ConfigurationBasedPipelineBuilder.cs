@@ -1,42 +1,29 @@
 ﻿using System.Reflection;
 using AICentral.Configuration.JSON;
 using AICentral.PipelineComponents.Auth;
-using AICentral.PipelineComponents.Auth.AllowAnonymous;
-using AICentral.PipelineComponents.Auth.Entra;
 using AICentral.PipelineComponents.Endpoints;
 using AICentral.PipelineComponents.Endpoints.OpenAI;
 using AICentral.PipelineComponents.EndpointSelectors;
-using AICentral.PipelineComponents.EndpointSelectors.Random;
-using AICentral.PipelineComponents.EndpointSelectors.Single;
-using AICentral.PipelineComponents.Logging;
-using AICentral.PipelineComponents.RateLimiting;
 using AICentral.PipelineComponents.Routes;
 
 namespace AICentral.Configuration;
 
 public class ConfigurationBasedPipelineBuilder
 {
-    private readonly Dictionary<string, Func<Dictionary<string, string>, IAICentralRouter>>
-        _routerBuilders = new();
-
-    private readonly Dictionary<string, Func<ConfigurationTypes.AICentralPipelineEndpointPropertiesConfig,
-            IAICentralEndpointDispatcherBuilder>>
+    private readonly Dictionary<string, Func<IConfigurationSection, IAICentralEndpointDispatcherBuilder>>
         _endpointConfigurationBuilders = new();
 
     private readonly
-        Dictionary<string, Func<Dictionary<string, string>, Dictionary<string, IAICentralEndpointDispatcherBuilder>,
+        Dictionary<string, Func<IConfigurationSection, Dictionary<string, IAICentralEndpointDispatcherBuilder>,
             IAICentralEndpointSelectorBuilder>> _endpointSelectorConfigurations = new();
 
     private readonly Dictionary<string,
-            Func<Dictionary<string, string>, IAICentralPipelineStepBuilder<IAICentralPipelineStep>>>
+            Func<IConfigurationSection, IAICentralPipelineStepBuilder<IAICentralPipelineStep>>>
         _genericStepBuilders = new();
 
     private readonly
-        Dictionary<string, Func<IConfigurationSection, Dictionary<string, string>, IAICentralClientAuthBuilder>>
+        Dictionary<string, Func<IConfigurationSection, IAICentralClientAuthBuilder>>
         _authProviderBuilders = new();
-
-    private void RegisterRouter<T>() where T : IAICentralRouter =>
-        _routerBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
     private void RegisterAuthProvider<T>() where T : IAICentralClientAuthBuilder =>
         _authProviderBuilders.Add(T.ConfigName, T.BuildFromConfig);
@@ -52,70 +39,105 @@ public class ConfigurationBasedPipelineBuilder
         _genericStepBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
     public AICentralPipelineAssembler BuildPipelinesFromConfig(ILogger startupLogger,
-        IConfigurationSection configurationSection, ConfigurationTypes.AICentralConfig? configSection,
+        IConfigurationSection configurationSection,
         params Assembly[] additionalAssembliesToScan)
     {
-        RegisterBuilders<IAICentralEndpointSelectorBuilder>(additionalAssembliesToScan, nameof(RegisterEndpointSelector));
+        RegisterBuilders<IAICentralEndpointSelectorBuilder>(additionalAssembliesToScan,
+            nameof(RegisterEndpointSelector));
         RegisterBuilders<IAICentralEndpointDispatcherBuilder>(additionalAssembliesToScan, nameof(RegisterEndpoint));
-        RegisterBuilders<IAICentralGenericStepBuilder<IAICentralPipelineStep>>(additionalAssembliesToScan, nameof(RegisterGenericStep));
+        RegisterBuilders<IAICentralGenericStepBuilder<IAICentralPipelineStep>>(additionalAssembliesToScan,
+            nameof(RegisterGenericStep));
         RegisterBuilders<IAICentralClientAuthBuilder>(additionalAssembliesToScan, nameof(RegisterAuthProvider));
-        RegisterBuilders<IAICentralRouter>(additionalAssembliesToScan, nameof(RegisterRouter));
 
-        configSection ??= new ConfigurationTypes.AICentralConfig();
+        var endpoints =
+            configurationSection
+                .GetSection("Endpoints")
+                .GetChildren()
+                .Select(x => new
+                {
+                    TypeInfo = x.Get<ConfigurationTypes.AICentralTypeAndNameConfig>(),
+                    Config = x.GetRequiredSection("Properties")
+                })
+                .ToDictionary(
+                    x => Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name"),
+                    x =>
+                    {
+                        startupLogger.LogInformation("Configuring Endpoint {Name}", x.TypeInfo!.Name);
+                        return _endpointConfigurationBuilders[
+                            Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
+                            throw new ArgumentException("No Type specified for Endpoint")](
+                            x.Config);
+                    });
 
-        var configEndpoints =
-            configSection.Endpoints ?? Array.Empty<ConfigurationTypes.AICentralPipelineEndpointConfig>();
+        var endpointSelectors =
+            configurationSection
+                .GetSection("EndpointSelectors")
+                .GetChildren()
+                .Select(x => new
+                {
+                    TypeInfo = x.Get<ConfigurationTypes.AICentralTypeAndNameConfig>(),
+                    Config = x.GetRequiredSection("Properties")
+                })
+                .ToDictionary(
+                    x => Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name"),
+                    x =>
+                    {
+                        startupLogger.LogInformation("Configuring Endpoint Selector {Name}", x.TypeInfo!.Name);
+                        return _endpointSelectorConfigurations[
+                            Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
+                            throw new ArgumentException("No Type specified for Endpoint")](x.Config, endpoints);
+                    });
 
-        var configEndpointSelectors = configSection.EndpointSelectors ??
-                                      Array.Empty<ConfigurationTypes.AICentralPipelineEndpointSelectorConfig>();
+        var authProviders =
+            configurationSection
+                .GetSection("AuthProviders")
+                .GetChildren()
+                .Select(x => new
+                {
+                    TypeInfo = x.Get<ConfigurationTypes.AICentralTypeAndNameConfig>(),
+                    Config = x.GetRequiredSection("Properties")
+                })
+                .ToDictionary(
+                    x => Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name"),
+                    x =>
+                    {
+                        startupLogger.LogInformation("Configuring AuthProviders {Name}", x.TypeInfo!.Name);
+                        return _authProviderBuilders[
+                            Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
+                            throw new ArgumentException("No Type specified for Endpoint")](x.Config);
+                    });
 
-        var endpoints = configEndpoints.ToDictionary(
-            x => x.Name ?? throw new ArgumentException("Missing Name for Endpoint"), x =>
-            {
-                startupLogger.LogInformation("Configuring Endpoint {Name}", x.Name);
-                return _endpointConfigurationBuilders[x.Type ?? throw new ArgumentException("No Type specified for Endpoint")](
-                    x.Properties ?? throw new ArgumentException("No Properties specified for Endpoint"));
-            });
+        var genericSteps =
+            configurationSection
+                .GetSection("GenericSteps")
+                .GetChildren()
+                .Select(x => new
+                {
+                    TypeInfo = x.Get<ConfigurationTypes.AICentralTypeAndNameConfig>(),
+                    Config = x.GetRequiredSection("Properties")
+                })
+                .ToDictionary(
+                    x => Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name"),
+                    x =>
+                    {
+                        startupLogger.LogInformation("Configuring AuthProviders {Name}", x.TypeInfo!.Name);
+                        return _genericStepBuilders[
+                            Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
+                            throw new ArgumentException("No Type specified for Endpoint")](x.Config);
+                    });
 
-        var endpointSelectors = configEndpointSelectors.ToDictionary(
-            x => x.Name ?? throw new ArgumentException("Missing Name for Endpoint"), x =>
-            {
-                startupLogger.LogInformation("Configuring Endpoint Selector {Name}", x.Name);
-                return _endpointSelectorConfigurations
-                    [x.Type ?? throw new ArgumentException("No Type specified for Endpoint Selector")](
-                    x.Properties ?? throw new ArgumentException("No Properties specified for Endpoint Selector"),
-                    endpoints);
-            });
-
-        var authProviders = (configSection.AuthProviders ?? Array.Empty<ConfigurationTypes.AICentralAuthConfig>())
-            .Select((x, idx) => new { Config = x, Index = idx })
-            .ToDictionary(x => x.Config.Name ?? throw new ArgumentException("No Name specified for Auth Provider"), x =>
-            {
-                startupLogger.LogInformation("Configuring Auth Provider {Name}", x.Config.Name);
-                return _authProviderBuilders[x.Config.Type ?? throw new ArgumentException("No Type specified for Auth Provider")](
-                    configurationSection.GetSection($"AuthProviders:{x.Index}"),
-                    x.Config.Properties ?? throw new ArgumentException("No Properties specified for Auth Provider"));
-            });
-
-        var genericSteps = (configSection.GenericSteps ?? Array.Empty<ConfigurationTypes.AICentralGenericStepConfig>())
-            .ToDictionary(x => x.Name ?? throw new ArgumentException("No Name specified for Generic Step"), x =>
-            {
-                startupLogger.LogInformation("Configuring Generic Step {Name}", x.Name);
-                return _genericStepBuilders[x.Type ?? throw new ArgumentException("No Type specified for Generic Step")](
-                    x.Properties ?? throw new ArgumentException("No Properties specified for Generic Step"));
-            });
-
-        var configPipelines =
-            configSection.Pipelines ?? Array.Empty<ConfigurationTypes.AICentralPipelineConfig>();
+        var typedConfig = configurationSection
+            .Get<ConfigurationTypes.AICentralConfig>();
 
         //create an object that can wire all this together
         var builder = new AICentralPipelineAssembler(
-            _routerBuilders,
+            PathMatchRouter.BuildFromConfig,
             authProviders,
             endpoints,
             endpointSelectors,
             genericSteps,
-            configPipelines);
+            typedConfig?.Pipelines ?? Array.Empty<ConfigurationTypes.AICentralPipelineConfig>()
+        );
 
         return builder;
     }
@@ -136,8 +158,8 @@ public class ConfigurationBasedPipelineBuilder
         var testEndpointSelectors = additionalAssembliesToScan
             .Union(new[] { typeof(ConfigurationBasedPipelineBuilder).Assembly }).SelectMany(
                 x => x.ExportedTypes
-                    .Where(x => x is { IsInterface: false, IsAbstract: false })
-                    .Where(x => x.IsAssignableTo(typeof(T))))
+                    .Where(x1 => x1 is { IsInterface: false, IsAbstract: false })
+                    .Where(x1 => x1.IsAssignableTo(typeof(T))))
             .ToArray();
         return testEndpointSelectors;
     }

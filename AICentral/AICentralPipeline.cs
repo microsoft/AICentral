@@ -8,14 +8,14 @@ namespace AICentral;
 public class AICentralPipeline
 {
     private readonly string _name;
-    private readonly IAICentralRouter _router;
+    private readonly PathMatchRouter _router;
     private readonly IAICentralClientAuthStep _clientAuthStep;
     private readonly IList<IAICentralPipelineStep> _pipelineSteps;
     private readonly IEndpointSelector _endpointSelector;
 
     public AICentralPipeline(
         string name,
-        IAICentralRouter router,
+        PathMatchRouter router,
         IAICentralClientAuthStep clientAuthStep,
         IList<IAICentralPipelineStep> pipelineSteps,
         IEndpointSelector endpointSelector)

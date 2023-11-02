@@ -1,5 +1,6 @@
-﻿using Serilog;
-using Serilog.Core;
+﻿using AICentral.Configuration.JSON;
+using AICentral.PipelineComponents.Endpoints.OpenAI;
+using Serilog;
 
 namespace AICentral.PipelineComponents.Logging;
 
@@ -11,7 +12,6 @@ public class AzureMonitorLoggerBuilder : IAICentralGenericStepBuilder<IAICentral
     private readonly string _workspaceId;
     private readonly string _key;
     private readonly bool _logPrompt;
-    private readonly Logger _azureMonitorLogger;
 
     public AzureMonitorLoggerBuilder(
         string workspaceId,
@@ -25,12 +25,15 @@ public class AzureMonitorLoggerBuilder : IAICentralGenericStepBuilder<IAICentral
 
     public static string ConfigName => "AzureMonitorLogger";
 
-    public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(Dictionary<string, string> parameters)
+    public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(
+        IConfigurationSection configurationSection)
     {
+        var properties = configurationSection.Get<ConfigurationTypes.AzureMonitorLoggingConfig>()!;
+
         return new AzureMonitorLoggerBuilder(
-            parameters["WorkspaceId"],
-            parameters["Key"],
-            bool.TryParse(parameters["LogPrompt"], out var result) ? result : false);
+            Guard.NotNull(properties.WorkspaceId, configurationSection, nameof(properties.WorkspaceId)),
+            Guard.NotNull(properties.Key, configurationSection, nameof(properties.Key)),
+            Guard.NotNull(properties.LogPrompt, configurationSection, nameof(properties.LogPrompt))!.Value);
     }
 
     public IAICentralPipelineStep Build()

@@ -1,5 +1,4 @@
 ﻿using AICentral.Configuration;
-using AICentral.Configuration.JSON;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AICentral;
@@ -25,10 +24,8 @@ public static class ConfigurationEx
         var logger = startupLogger ?? NullLogger.Instance;
         logger.LogInformation("AICentral - Initialising pipelines");
 
-        var configSection = configuration.GetSection(configSectionName);
         var optionsFromConfig = new ConfigurationBasedPipelineBuilder().BuildPipelinesFromConfig(logger,
-            configuration.GetSection(configSectionName),
-            configSection.Get<ConfigurationTypes.AICentralConfig>());
+            configuration.GetSection(configSectionName));
         
         services.AddAICentral(optionsFromConfig);
 

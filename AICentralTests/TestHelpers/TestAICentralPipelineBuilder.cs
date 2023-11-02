@@ -10,6 +10,7 @@ using AICentral.PipelineComponents.EndpointSelectors.Priority;
 using AICentral.PipelineComponents.EndpointSelectors.Random;
 using AICentral.PipelineComponents.EndpointSelectors.Single;
 using AICentral.PipelineComponents.Routes;
+using Microsoft.Extensions.Configuration;
 
 namespace AICentralTests.TestHelpers;
 
@@ -23,11 +24,11 @@ public class TestAICentralPipelineBuilder
     {
         _auth = new ApiKeyClientAuthBuilder(header, new[]
         {
-            new ConfigurationTypes.ApiKeyClientAuth()
+            new ConfigurationTypes.ApiKeyClientAuthClientConfig()
             {
                 ClientName = "test-client",
                 Key1 = key1,
-                key2 = key2
+                Key2 = key2
             }
         });
         return this;
@@ -107,10 +108,7 @@ public class TestAICentralPipelineBuilder
     {
         var id = Guid.NewGuid().ToString();
         return new AICentralPipelineAssembler(
-            new Dictionary<string, Func<Dictionary<string, string>, IAICentralRouter>>()
-            {
-                ["PathMatch"] = SimplePathMatchRouter.BuildFromConfig
-            },
+            PathMatchRouter.BuildFromConfig,
             new Dictionary<string, IAICentralClientAuthBuilder>()
             {
                 [id] = _auth!,
@@ -126,14 +124,7 @@ public class TestAICentralPipelineBuilder
                 new ConfigurationTypes.AICentralPipelineConfig()
                 {
                     Name = Guid.NewGuid().ToString(),
-                    Path = new ConfigurationTypes.AICentralComponentConfig()
-                    {
-                        Type = "PathMatch",
-                        Properties = new Dictionary<string, string>
-                        {
-                            ["Path"] = path,
-                        }
-                    },
+                    Path = path,
                     AuthProvider = id,
                     Steps = Array.Empty<string>(),
                     EndpointSelector = id

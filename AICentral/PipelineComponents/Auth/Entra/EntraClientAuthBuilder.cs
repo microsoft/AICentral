@@ -30,8 +30,7 @@ public class EntraClientAuthBuilder : IAICentralClientAuthBuilder
     }
 
     public static IAICentralClientAuthBuilder BuildFromConfig(
-        IConfigurationSection configurationSection,
-        Dictionary<string, string> parameters)
+        IConfigurationSection configurationSection)
     {
         return new EntraClientAuthBuilder(configurationSection);
     }

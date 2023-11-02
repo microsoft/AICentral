@@ -1,4 +1,6 @@
 ﻿using System.Threading.RateLimiting;
+using AICentral.Configuration.JSON;
+using AICentral.PipelineComponents.Endpoints.OpenAI;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace AICentral.PipelineComponents.RateLimiting;
@@ -25,7 +27,8 @@ public class RateLimitingProvider : IAICentralGenericStepBuilder<IAICentralPipel
             {
                 window.Window = TimeSpan.FromSeconds(_windowTime);
                 window.PermitLimit = _requestsPerWindow;
-                window.QueueLimit = 0; //for now respond with 429 immediately if we've hit the limit. If this is set to > 0, then the middleware will hold the request waiting for the window to end.  
+                window.QueueLimit =
+                    0; //for now respond with 429 immediately if we've hit the limit. If this is set to > 0, then the middleware will hold the request waiting for the window to end.  
                 window.QueueProcessingOrder = QueueProcessingOrder.NewestFirst;
             });
         });
@@ -39,16 +42,13 @@ public class RateLimitingProvider : IAICentralGenericStepBuilder<IAICentralPipel
 
     public static string ConfigName => "LocalRateLimiting";
 
-    public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(Dictionary<string, string> parameters)
+    public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(
+        IConfigurationSection configurationSection)
     {
+        var parameters = configurationSection.Get<ConfigurationTypes.WindowRateLimitingConfig>()!;
         return new RateLimitingProvider(
-            parameters.TryGetValue("WindowTime", out var window)
-                ? int.Parse(window)
-                : throw new ArgumentException("Rate Limiting requires a WindowTime parameter"),
-            parameters.TryGetValue("RequestsPerWindow", out var rpw)
-                ? int.Parse(rpw)
-                : throw new ArgumentException("Rate Limiting requires a RequestsPerWindow parameter")
-        );
+            Guard.NotNull(parameters.WindowTime, configurationSection, nameof(parameters.WindowTime))!.Value,
+            Guard.NotNull(parameters.RequestsPerWindow, configurationSection, nameof(parameters.RequestsPerWindow))!.Value);
     }
 
     public IAICentralPipelineStep Build()
@@ -56,7 +56,8 @@ public class RateLimitingProvider : IAICentralGenericStepBuilder<IAICentralPipel
         return this;
     }
 
-    public Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
+    public Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
+        CancellationToken cancellationToken)
     {
         return pipeline.Next(context, cancellationToken);
     }
@@ -70,4 +71,3 @@ public class RateLimitingProvider : IAICentralGenericStepBuilder<IAICentralPipel
         };
     }
 }
-

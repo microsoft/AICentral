@@ -5,6 +5,6 @@ namespace AICentral.PipelineComponents.Auth.ApiKey;
 
 internal class ApiKeyOptions : AuthenticationSchemeOptions
 {
-    public string HeaderName { get; set; }
-    public ConfigurationTypes.ApiKeyClientAuth[] Clients { get; set; }
+    public string HeaderName { get; set; } = default!;
+    public ConfigurationTypes.ApiKeyClientAuthClientConfig[] Clients { get; set; } = default!;
 }

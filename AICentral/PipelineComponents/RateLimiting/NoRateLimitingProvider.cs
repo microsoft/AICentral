@@ -11,7 +11,7 @@ public class NoRateLimitingProvider : IAICentralGenericStepBuilder<IAICentralPip
         //no-op
     }
 
-    public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(Dictionary<string, string> parameters)
+    public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(IConfigurationSection configurationSection)
     {
         return new NoRateLimitingProvider();
     }

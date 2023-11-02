@@ -2,11 +2,8 @@
 
 public interface IAICentralClientAuthBuilder : IAICentralPipelineStepBuilder<IAICentralClientAuthStep>
 {
-    static virtual IAICentralClientAuthBuilder BuildFromConfig(IConfigurationSection configurationSection, Dictionary<string, string> parameters)
+    static virtual IAICentralClientAuthBuilder BuildFromConfig(IConfigurationSection configurationSection)
     {
         throw new NotImplementedException();
     }
-    
-    IAICentralClientAuthStep Build();
-
 }

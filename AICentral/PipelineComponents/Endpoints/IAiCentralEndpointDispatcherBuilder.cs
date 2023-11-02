@@ -10,7 +10,7 @@ public interface IAICentralEndpointDispatcherBuilder
 
     IAICentralEndpointDispatcher Build();
 
-    static virtual IAICentralEndpointDispatcherBuilder BuildFromConfig(ConfigurationTypes.AICentralPipelineEndpointPropertiesConfig parameters)
+    static virtual IAICentralEndpointDispatcherBuilder BuildFromConfig(IConfigurationSection configurationSection)
     {
         throw new NotImplementedException();
     }

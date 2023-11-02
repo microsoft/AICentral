@@ -6,33 +6,13 @@ public static class ConfigurationTypes
 {
     public class AICentralConfig
     {
-        public AICentralGenericStepConfig[]? GenericSteps { get; init; }
-        public AICentralAuthConfig[]? AuthProviders { get; init; }
-        public AICentralPipelineEndpointConfig[]? Endpoints { get; init; }
-        public AICentralPipelineEndpointSelectorConfig[]? EndpointSelectors { get; init; }
-        public AICentralPipelineConfig[]? Pipelines { get; init; }
-        public bool ExposeTestPage { get; set; }
+        public AICentralPipelineConfig[] Pipelines { get; init; }
     }
-
-    public class AICentralAuthConfig
+    
+    public class AICentralTypeAndNameConfig
     {
         public string? Type { get; init; }
         public string? Name { get; init; }
-        public Dictionary<string, string>? Properties { get; init; }
-    }
-
-    public class AICentralGenericStepConfig
-    {
-        public string? Type { get; init; }
-        public string? Name { get; init; }
-        public Dictionary<string, string>? Properties { get; init; }
-    }
-
-    public class AICentralPipelineEndpointConfig
-    {
-        public string? Type { get; init; }
-        public string? Name { get; init; }
-        public AICentralPipelineEndpointPropertiesConfig Properties { get; init; }
     }
 
     public class AICentralPipelineEndpointPropertiesConfig
@@ -43,33 +23,54 @@ public static class ConfigurationTypes
         public string? ApiKey { get; set; }
     }
 
-    public class AICentralPipelineEndpointSelectorConfig
-    {
-        public string? Type { get; init; }
-        public string? Name { get; init; }
-        public Dictionary<string, string>? Properties { get; init; }
-    }
-
-
     public class AICentralPipelineConfig
     {
         public string? Name { get; init; }
-        public AICentralComponentConfig? Path { get; init; }
+        public string? Path { get; init; }
         public string? EndpointSelector { get; init; }
-        public string? AuthProvider { get; set; }
+        public string? AuthProvider { get; init; }
         public string[]? Steps { get; init; }
     }
 
-    public class AICentralComponentConfig
+    public class ApiKeyClientAuthConfig
     {
-        public string? Type { get; init; }
-        public Dictionary<string, string>? Properties { get; init; }
+        public string? HeaderName { get; init; }
+        public ApiKeyClientAuthClientConfig[]? Clients { get; init; }
     }
 
-    public class ApiKeyClientAuth
+    public class ApiKeyClientAuthClientConfig
     {
-        public string ClientName { get; set; }
-        public string Key1 { get; set; }
-        public string key2 { get; set; }
+        public string? ClientName { get; init; }
+        public string? Key1 { get; init; }
+        public string? Key2 { get; init; }
+    }
+
+    public class PriorityEndpointConfig
+    {
+        public string[]? PriorityEndpoints { get; init; }
+        public string[]? FallbackEndpoints { get; init; }
+    }
+
+    public class RandomEndpointConfig
+    {
+        public string[]? Endpoints { get; init; }
+    }
+
+    public class AzureMonitorLoggingConfig
+    {
+        public string? WorkspaceId { get; init; }
+        public string? Key { get; init; }
+        public bool? LogPrompt { get; init; }
+    }
+
+    public class WindowRateLimitingConfig
+    {
+        public int? WindowTime { get; init; }
+        public int? RequestsPerWindow { get; init; }
+    }
+
+    public class SimplePathMatchConfig
+    {
+        public string? Path { get; init; }
     }
 }
