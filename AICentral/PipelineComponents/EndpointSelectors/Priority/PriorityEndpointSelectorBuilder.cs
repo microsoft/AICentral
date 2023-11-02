@@ -1,4 +1,6 @@
-﻿using AICentral.PipelineComponents.Endpoints;
+﻿using AICentral.Configuration.JSON;
+using AICentral.PipelineComponents.Endpoints;
+using AICentral.PipelineComponents.Endpoints.OpenAI;
 using AICentral.PipelineComponents.EndpointSelectors.Random;
 
 namespace AICentral.PipelineComponents.EndpointSelectors.Priority;
@@ -22,12 +24,30 @@ public class PriorityEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
 
     public static string ConfigName => "Prioritised";
 
-    public static IAICentralEndpointSelectorBuilder BuildFromConfig(Dictionary<string, string> parameters,
+    public static IAICentralEndpointSelectorBuilder BuildFromConfig(
+        IConfigurationSection section,
         Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
     {
+        if (!section.Exists()) throw new ArgumentException($"Missing configuration section {section.Path}");
+        var config = section.Get<ConfigurationTypes.PriorityEndpointConfig>()!;
+
+        var prioritisedEndpoints =
+            Guard.NotNull(
+                    config.PriorityEndpoints,
+                    section,
+                    nameof(config.PriorityEndpoints))
+                .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, section, "PrioritisedEndpoint"));
+
+        var fallbackEndpoints =
+            Guard.NotNull(
+                    config.FallbackEndpoints,
+                    section,
+                    nameof(config.FallbackEndpoints))
+                .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, section, ""));
+
         return new PriorityEndpointSelectorBuilder(
-            parameters["PrioritisedEndpoints"].Split(',').Select(x => endpoints[x]).ToArray(),
-            parameters["FallbackEndpoints"].Split(',').Select(x => endpoints[x]).ToArray()
+            prioritisedEndpoints.ToArray(),
+            fallbackEndpoints.ToArray()
         );
     }
 

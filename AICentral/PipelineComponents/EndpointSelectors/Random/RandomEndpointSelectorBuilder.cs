@@ -1,4 +1,6 @@
-﻿using AICentral.PipelineComponents.Endpoints;
+﻿using AICentral.Configuration.JSON;
+using AICentral.PipelineComponents.Endpoints;
+using AICentral.PipelineComponents.Endpoints.OpenAI;
 
 namespace AICentral.PipelineComponents.EndpointSelectors.Random;
 
@@ -21,13 +23,18 @@ public class RandomEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
     {
     }
 
-    public static string ConfigName => "RoundRobinCluster";
+    public static string ConfigName => "RandomCluster";
 
-    public static IAICentralEndpointSelectorBuilder BuildFromConfig(Dictionary<string, string> parameters,
+    public static IAICentralEndpointSelectorBuilder BuildFromConfig(
+        IConfigurationSection configSection,
         Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
     {
+        if (!configSection.Exists()) throw new ArgumentException($"Missing configuration section {configSection.Path}");
+        var config = configSection.Get<ConfigurationTypes.RandomEndpointConfig>()!;
+
         return new RandomEndpointSelectorBuilder(
-            parameters["Endpoints"].Split(',').Select(x => endpoints[x])
+            Guard.NotNull(config.Endpoints, configSection, "Endpoints")
+                .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, configSection, "Endpoint"))
                 .ToArray());
     }
 }

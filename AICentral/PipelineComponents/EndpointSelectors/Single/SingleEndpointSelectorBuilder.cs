@@ -1,4 +1,5 @@
 ﻿using AICentral.PipelineComponents.Endpoints;
+using AICentral.PipelineComponents.Endpoints.OpenAI;
 
 namespace AICentral.PipelineComponents.EndpointSelectors.Single;
 
@@ -22,8 +23,10 @@ public class SingleEndpointSelectorBuilder: IAICentralEndpointSelectorBuilder
 
     public static string ConfigName => "SingleEndpoint";
 
-    public static IAICentralEndpointSelectorBuilder BuildFromConfig(Dictionary<string, string> parameters, Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
+    public static IAICentralEndpointSelectorBuilder BuildFromConfig(IConfigurationSection configSection, Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
     {
-        return new SingleEndpointSelectorBuilder(endpoints[parameters["Endpoint"]]);
+        var endpoint = configSection.GetValue<string>("Endpoint");
+        endpoint = Guard.NotNull(endpoint, configSection, "Endpoint");
+        return new SingleEndpointSelectorBuilder(endpoints[endpoint]);
     }
 }

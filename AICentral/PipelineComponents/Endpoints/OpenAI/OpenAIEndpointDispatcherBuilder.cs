@@ -25,25 +25,20 @@ public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuild
 
         _authHandler = authenticationType switch
         {
-            AuthenticationType.ApiKey => new KeyAuth(authenticationKey ??
-                                                     throw new ArgumentException(
-                                                         "Missing api-key for Authrntication Type")),
+            AuthenticationType.ApiKey => new KeyAuth(authenticationKey ?? throw new ArgumentException("Missing api-key for Authentication Type")),
             AuthenticationType.Entra => new EntraAuth(),
             AuthenticationType.EntraPassThrough => new BearerTokenPassThroughAuth(),
             _ => throw new ArgumentOutOfRangeException(nameof(authenticationType), authenticationType, null)
         };
-
     }
 
     public void RegisterServices(IServiceCollection services)
     {
-        // services.AddSingleton<IAIEndpointDispatcher, ResilientEndpointDispatcher>();
-
         var handler = new PredicateBuilder<HttpResponseMessage>()
             .HandleResult(r => StatusCodesToRetry.Contains(r.StatusCode))
             .Handle<HttpRequestException>(e =>
                 e.StatusCode.HasValue && StatusCodesToRetry.Contains(e.StatusCode.Value));
-        
+
         var resiliencyStrategy = new ResiliencePipelineBuilder<HttpResponseMessage>()
             .AddCircuitBreaker(new CircuitBreakerStrategyOptions<HttpResponseMessage>
             {
@@ -68,12 +63,15 @@ public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuild
 
     public static string ConfigName => "AzureOpenAIEndpoint";
 
-    public static IAICentralEndpointDispatcherBuilder BuildFromConfig(ConfigurationTypes.AICentralPipelineEndpointPropertiesConfig parameters)
+    public static IAICentralEndpointDispatcherBuilder BuildFromConfig(IConfigurationSection configurationSection)
     {
+        if (!configurationSection.Exists()) throw new ArgumentException($"Missing configuration section {configurationSection.Path}");
+        var parameters = configurationSection.Get<ConfigurationTypes.AICentralPipelineEndpointPropertiesConfig>();
+        
         return new OpenAIEndpointDispatcherBuilder(
-            parameters.LanguageEndpoint!,
-            parameters.ModelMappings!,
-            parameters.AuthenticationType,
+            Guard.NotNull(parameters.LanguageEndpoint, configurationSection, nameof(parameters.LanguageEndpoint)),
+            Guard.NotNull(parameters.ModelMappings, configurationSection, nameof(parameters.ModelMappings)),
+            Guard.NotNull(parameters.AuthenticationType, configurationSection, nameof(parameters.AuthenticationType)),
             parameters.ApiKey);
     }
 

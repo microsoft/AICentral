@@ -2,6 +2,7 @@
 using AICentral.PipelineComponents.Auth;
 using AICentral.PipelineComponents.Auth.AllowAnonymous;
 using AICentral.PipelineComponents.Endpoints;
+using AICentral.PipelineComponents.Endpoints.OpenAI;
 using AICentral.PipelineComponents.EndpointSelectors;
 using AICentral.PipelineComponents.Routes;
 
@@ -13,13 +14,13 @@ namespace AICentral;
 /// </summary>
 public class AICentralPipelineAssembler
 {
-    private readonly Dictionary<string, Func<Dictionary<string, string>, IAICentralRouter>> _routeBuilders;
+    private readonly Func<string, PathMatchRouter> _routeBuilder;
     private readonly Dictionary<string, IAICentralClientAuthBuilder> _authProviders;
     private readonly Dictionary<string, IAICentralEndpointDispatcherBuilder> _endpoints;
     private readonly Dictionary<string, IAICentralEndpointSelectorBuilder> _endpointSelectors;
     private readonly Dictionary<string, IAICentralPipelineStepBuilder<IAICentralPipelineStep>> _genericSteps;
-    private readonly ConfigurationTypes.AICentralPipelineConfig[] _configPipelines;
-    
+    private readonly ConfigurationTypes.AICentralPipelineConfig[] _pipelines;
+
     private Dictionary<IAICentralClientAuthBuilder, IAICentralClientAuthStep>? _builtAuthProviders;
     private Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher>? _builtEndpoints;
     private Dictionary<IAICentralPipelineStepBuilder<IAICentralPipelineStep>, IAICentralPipelineStep>? _builtSteps;
@@ -28,19 +29,19 @@ public class AICentralPipelineAssembler
     private bool _servicesAdded;
 
     public AICentralPipelineAssembler(
-        Dictionary<string, Func<Dictionary<string, string>, IAICentralRouter>> routeBuilders,
+        Func<string, PathMatchRouter> routeBuilder,
         Dictionary<string, IAICentralClientAuthBuilder> authProviders,
         Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints,
         Dictionary<string, IAICentralEndpointSelectorBuilder> endpointSelectors,
         Dictionary<string, IAICentralPipelineStepBuilder<IAICentralPipelineStep>> genericSteps,
-        ConfigurationTypes.AICentralPipelineConfig[] configPipelines)
+        ConfigurationTypes.AICentralPipelineConfig[] pipelines)
     {
-        _routeBuilders = routeBuilders;
+        _routeBuilder = routeBuilder;
         _authProviders = authProviders;
         _endpoints = endpoints;
         _endpointSelectors = endpointSelectors;
         _genericSteps = genericSteps;
-        _configPipelines = configPipelines;
+        _pipelines = pipelines;
     }
 
     public AICentralPipelines AddServices(IServiceCollection services, ILogger startupLogger)
@@ -99,53 +100,47 @@ public class AICentralPipelineAssembler
         if (!_servicesAdded)
             throw new InvalidOperationException(
                 "You must call AddServices on the Assembler before calling BuildPipelines.");
-        
+
         return new AICentralPipelines(
-            
-            _configPipelines.Select(pipelineConfig =>
-            {
-                startupLogger.LogInformation("Configuring Pipeline {Name} listening on Route {Route}",
-                    pipelineConfig.Name,
-                    pipelineConfig.Path);
+            _pipelines
+                .Select(pipelineConfig =>
+                {
+                    var pipelineName =
+                        Guard.NotNullOrEmptyOrWhitespace(pipelineConfig.Name, nameof(pipelineConfig.Name));
+                    var pipelineSteps = pipelineConfig.Steps ??
+                                        throw new ArgumentException(
+                                            $"No Pipelines steps specified in config for Pipeline {pipelineName}");
 
-                var pipelineName = string.IsNullOrEmpty(pipelineConfig.Name)
-                    ? throw new ArgumentException("Missing Name for pipeline")
-                    : pipelineConfig.Name!;
+                    var routeBuilder =
+                        _routeBuilder(
+                            Guard.NotNullOrEmptyOrWhitespace(pipelineConfig.Path, nameof(pipelineConfig.Path)));
+                    startupLogger.LogInformation("Configuring Pipeline {Name} on Path {Path}", pipelineConfig.Name,
+                        pipelineConfig.Path);
 
-                var pipelineSteps = pipelineConfig.Steps ??
-                                    throw new ArgumentException(
-                                        $"No Pipelines steps specified in config for Pipeline {pipelineName}");
+                    var pipeline = new AICentralPipeline(
+                        pipelineName,
+                        routeBuilder,
+                        GetMiddlewareOrNoOp(
+                            _authProviders,
+                            _builtAuthProviders!,
+                            pipelineConfig.AuthProvider,
+                            new AllowAnonymousClientAuthProvider()),
+                        pipelineSteps.Select(step => GetMiddlewareOrNoOp(
+                            _genericSteps,
+                            _builtSteps!,
+                            step,
+                            default)).ToArray(),
+                        GetEndpointSelector(
+                            _endpointSelectors,
+                            _builtEndpointSelectors!,
+                            pipelineConfig.EndpointSelector,
+                            default));
 
-                var routeBuilder =
-                    _routeBuilders[
-                        (pipelineConfig.Path?.Type ?? throw new ArgumentException("Missing Path for pipeline"))](
-                        pipelineConfig.Path.Properties ?? throw new ArgumentException("Missing properties for path"));
+                    startupLogger.LogInformation("Configured Pipeline {Name} on Path {Path}", pipelineConfig.Name,
+                        pipelineConfig.Path);
 
-                var pipeline = new AICentralPipeline(
-                    pipelineName,
-                    routeBuilder,
-                    GetMiddlewareOrNoOp(
-                        _authProviders,
-                        _builtAuthProviders!,
-                        pipelineConfig.AuthProvider,
-                        new AllowAnonymousClientAuthProvider()),
-                    pipelineSteps.Select(step => GetMiddlewareOrNoOp(
-                        _genericSteps,
-                        _builtSteps!,
-                        step,
-                        default)).ToArray(),
-                    GetEndpointSelector(
-                        _endpointSelectors,
-                        _builtEndpointSelectors!,
-                        pipelineConfig.EndpointSelector,
-                        default));
-
-                startupLogger.LogInformation("Configured Pipeline {Name} listening on Route {Route}",
-                    pipelineConfig.Name,
-                    pipelineConfig.Path);
-
-                return pipeline;
-            }).ToArray());
+                    return pipeline;
+                }).ToArray());
     }
 
     /// <summary>
@@ -156,12 +151,12 @@ public class AICentralPipelineAssembler
     public AICentralPipelineAssembler CombineAssemblers(AICentralPipelineAssembler otherAssembler)
     {
         return new AICentralPipelineAssembler(
-            otherAssembler._routeBuilders.Union(_routeBuilders).ToDictionary(x => x.Key, x => x.Value),
+            _routeBuilder,
             otherAssembler._authProviders.Union(_authProviders).ToDictionary(x => x.Key, x => x.Value),
             otherAssembler._endpoints.Union(_endpoints).ToDictionary(x => x.Key, x => x.Value),
             otherAssembler._endpointSelectors.Union(_endpointSelectors).ToDictionary(x => x.Key, x => x.Value),
             otherAssembler._genericSteps.Union(_genericSteps).ToDictionary(x => x.Key, x => x.Value),
-            otherAssembler._configPipelines.Union(_configPipelines).ToArray()
+            otherAssembler._pipelines.Union(_pipelines).ToArray()
         );
     }
 }

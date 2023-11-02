@@ -1,10 +1,13 @@
-﻿namespace AICentral.PipelineComponents.Routes;
+﻿using AICentral.Configuration.JSON;
+using AICentral.PipelineComponents.Endpoints.OpenAI;
 
-public class SimplePathMatchRouter: IAICentralRouter
+namespace AICentral.PipelineComponents.Routes;
+
+public class PathMatchRouter
 {
     private readonly string _path;
 
-    public SimplePathMatchRouter(string path)
+    public PathMatchRouter(string path)
     {
         _path = path;
     }
@@ -21,8 +24,8 @@ public class SimplePathMatchRouter: IAICentralRouter
 
     public static string ConfigName => "PathMatch";
     
-    public static IAICentralRouter BuildFromConfig(Dictionary<string, string> parameters)
+    public static PathMatchRouter BuildFromConfig(string path)
     {
-        return new SimplePathMatchRouter(parameters["Path"]);
+        return new PathMatchRouter(Guard.NotNullOrEmptyOrWhitespace(path, nameof(path)));
     }
 }

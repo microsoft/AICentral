@@ -1,16 +1,16 @@
 ﻿using AICentral.Configuration.JSON;
-using AICentral.PipelineComponents.Auth.AllowAnonymous;
+using AICentral.PipelineComponents.Endpoints.OpenAI;
 
 namespace AICentral.PipelineComponents.Auth.ApiKey;
 
 public class ApiKeyClientAuthBuilder : IAICentralClientAuthBuilder
 {
     private readonly string _headerName;
-    private readonly ConfigurationTypes.ApiKeyClientAuth[] _clients;
+    private readonly ConfigurationTypes.ApiKeyClientAuthClientConfig[] _clients;
     private readonly string _policyId = Guid.NewGuid().ToString();
 
     public ApiKeyClientAuthBuilder(string headerName,
-        ConfigurationTypes.ApiKeyClientAuth[] clients)
+        ConfigurationTypes.ApiKeyClientAuthClientConfig[] clients)
     {
         _headerName = headerName;
         _clients = clients;
@@ -37,18 +37,15 @@ public class ApiKeyClientAuthBuilder : IAICentralClientAuthBuilder
     }
 
     public static IAICentralClientAuthBuilder BuildFromConfig(
-        IConfigurationSection configurationSection,
-        Dictionary<string, string> parameters)
+        IConfigurationSection configurationSection)
     {
-        var clientKeys = configurationSection
-            .GetRequiredSection("Properties")
-            .GetRequiredSection("Clients")
-            .Get<ConfigurationTypes.ApiKeyClientAuth[]>()!;
+        var properties = configurationSection.Get<ConfigurationTypes.ApiKeyClientAuthConfig>()!;
 
         return new ApiKeyClientAuthBuilder(
-            parameters["HeaderName"],
-            clientKeys
-        );
+            Guard.NotNull(properties.HeaderName, configurationSection, nameof(properties.HeaderName)),
+            properties.Clients!.Length == 0
+                ? throw new ArgumentException($"You must provide Clients in {configurationSection.Path}")
+                : properties.Clients);
     }
 
     public static string ConfigName => "ApiKey";
