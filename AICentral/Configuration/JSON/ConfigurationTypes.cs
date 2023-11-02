@@ -65,4 +65,11 @@ public static class ConfigurationTypes
         public string? Type { get; init; }
         public Dictionary<string, string>? Properties { get; init; }
     }
+
+    public class ApiKeyClientAuth
+    {
+        public string ClientName { get; set; }
+        public string Key1 { get; set; }
+        public string key2 { get; set; }
+    }
 }
