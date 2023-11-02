@@ -28,7 +28,6 @@ public class PriorityEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
         IConfigurationSection section,
         Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
     {
-        if (!section.Exists()) throw new ArgumentException($"Missing configuration section {section.Path}");
         var config = section.Get<ConfigurationTypes.PriorityEndpointConfig>()!;
 
         var prioritisedEndpoints =

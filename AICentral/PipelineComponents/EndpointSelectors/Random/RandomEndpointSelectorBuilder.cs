@@ -29,7 +29,6 @@ public class RandomEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
         IConfigurationSection configSection,
         Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
     {
-        if (!configSection.Exists()) throw new ArgumentException($"Missing configuration section {configSection.Path}");
         var config = configSection.Get<ConfigurationTypes.RandomEndpointConfig>()!;
 
         return new RandomEndpointSelectorBuilder(

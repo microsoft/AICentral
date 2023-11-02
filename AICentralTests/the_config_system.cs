@@ -19,30 +19,6 @@ public class the_config_system
     }
 
     [Fact]
-    public void produces_helpful_errors_with_invalid_endpoints()
-    {
-        Should.Throw<ArgumentException>(() =>
-            OpenAIEndpointDispatcherBuilder.BuildFromConfig(new ConfigurationBuilder().Build()
-                .GetSection("AICentral")));
-    }
-
-    [Fact]
-    public void produces_helpful_errors_with_invalid_random_endpoint_selector()
-    {
-        Should.Throw<ArgumentException>(() =>
-            RandomEndpointSelectorBuilder.BuildFromConfig(new ConfigurationBuilder().Build().GetSection("AICentral"),
-                new Dictionary<string, IAICentralEndpointDispatcherBuilder>()));
-    }
-
-    [Fact]
-    public void produces_helpful_errors_with_invalid_prioritised_endpoint_selector()
-    {
-        Should.Throw<ArgumentException>(() =>
-            PriorityEndpointSelectorBuilder.BuildFromConfig(new ConfigurationBuilder().Build().GetSection("AICentral"),
-                new Dictionary<string, IAICentralEndpointDispatcherBuilder>()));
-    }
-
-    [Fact]
     public void produces_helpful_errors_with_invalid_api_key_auth()
     {
         var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>

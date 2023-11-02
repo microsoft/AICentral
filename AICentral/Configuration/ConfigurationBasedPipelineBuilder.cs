@@ -51,7 +51,7 @@ public class ConfigurationBasedPipelineBuilder
 
         var endpoints =
             configurationSection
-                .GetRequiredSection("Endpoints")
+                .GetSection("Endpoints")
                 .GetChildren()
                 .Select(x => new
                 {
@@ -71,7 +71,7 @@ public class ConfigurationBasedPipelineBuilder
 
         var endpointSelectors =
             configurationSection
-                .GetRequiredSection("EndpointSelectors")
+                .GetSection("EndpointSelectors")
                 .GetChildren()
                 .Select(x => new
                 {
@@ -90,7 +90,7 @@ public class ConfigurationBasedPipelineBuilder
 
         var authProviders =
             configurationSection
-                .GetRequiredSection("AuthProviders")
+                .GetSection("AuthProviders")
                 .GetChildren()
                 .Select(x => new
                 {
@@ -109,7 +109,7 @@ public class ConfigurationBasedPipelineBuilder
 
         var genericSteps =
             configurationSection
-                .GetRequiredSection("GenericSteps")
+                .GetSection("GenericSteps")
                 .GetChildren()
                 .Select(x => new
                 {
@@ -136,7 +136,7 @@ public class ConfigurationBasedPipelineBuilder
             endpoints,
             endpointSelectors,
             genericSteps,
-            typedConfig!.Pipelines
+            typedConfig?.Pipelines ?? Array.Empty<ConfigurationTypes.AICentralPipelineConfig>()
         );
 
         return builder;

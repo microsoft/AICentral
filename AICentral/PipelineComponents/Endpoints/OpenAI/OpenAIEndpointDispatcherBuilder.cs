@@ -65,7 +65,6 @@ public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuild
 
     public static IAICentralEndpointDispatcherBuilder BuildFromConfig(IConfigurationSection configurationSection)
     {
-        if (!configurationSection.Exists()) throw new ArgumentException($"Missing configuration section {configurationSection.Path}");
         var parameters = configurationSection.Get<ConfigurationTypes.AICentralPipelineEndpointPropertiesConfig>();
         
         return new OpenAIEndpointDispatcherBuilder(
