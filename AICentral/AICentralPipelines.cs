@@ -4,6 +4,8 @@ public class AICentralPipelines
 {
     private readonly AICentralPipeline[] _pipelines;
 
+    public AICentralPipeline[] Pipelines => _pipelines;
+
     public AICentralPipelines(AICentralPipeline[] pipelines)
     {
         _pipelines = pipelines;

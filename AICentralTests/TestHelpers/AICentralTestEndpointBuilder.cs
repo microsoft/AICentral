@@ -11,10 +11,17 @@ public class AICentralTestEndpointBuilder
     public static readonly string Endpoint500 = Guid.NewGuid().ToString(); 
     public static readonly string Endpoint404 = Guid.NewGuid().ToString(); 
     public static readonly string Endpoint200 = Guid.NewGuid().ToString(); 
+    public static readonly string Endpoint200Number2 = Guid.NewGuid().ToString(); 
     
     public static OpenAIEndpointDispatcher Success200() =>
         new(
             $"https://{Endpoint200}",
+            new Dictionary<string, string>(),
+            new KeyAuth("test"));
+
+    public static OpenAIEndpointDispatcher Success200Number2() =>
+        new(
+            $"https://{Endpoint200Number2}",
             new Dictionary<string, string>(),
             new KeyAuth("test"));
 

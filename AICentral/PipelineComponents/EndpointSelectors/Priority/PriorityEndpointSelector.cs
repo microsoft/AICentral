@@ -26,17 +26,17 @@ public class PriorityEndpointSelector : EndpointSelectorBase
             logger.LogDebug("Prioritised Endpoint selector handling request");
             return await Handle(context, pipeline, cancellationToken, _prioritisedOpenAiEndpoints, false);
         }
-        catch (Exception)
+        catch (HttpRequestException e)
         {
             try
             {
-                logger.LogWarning("e, Prioritised Endpoint selector failed with primary. Trying fallback servers");
+                logger.LogWarning(e, "Prioritised Endpoint selector failed with primary. Trying fallback servers");
                 return await Handle(context, pipeline, cancellationToken, _fallbackOpenAiEndpoints, true);
             }
-            catch (Exception e)
+            catch (HttpRequestException ex)
             {
-                logger.LogError(e, "Failed to handle request. Exhausted endpoints");
-                throw new InvalidOperationException("No available Open AI hosts", e);
+                logger.LogError(ex, "Failed to handle request. Exhausted endpoints");
+                throw;
             }
         }
     }
@@ -67,12 +67,12 @@ public class PriorityEndpointSelector : EndpointSelectorBase
                     isFallbackCollection && !toTry.Any(),
                     cancellationToken);
             }
-            catch (Exception e)
+            catch (HttpRequestException e)
             {
                 if (!toTry.Any())
                 {
                     logger.LogError(e, "Failed to handle request. Exhausted endpoints");
-                    throw new InvalidOperationException("No available Open AI hosts", e);
+                    throw;
                 }
 
                 logger.LogWarning(e, "Failed to handle request. Trying another endpoint");

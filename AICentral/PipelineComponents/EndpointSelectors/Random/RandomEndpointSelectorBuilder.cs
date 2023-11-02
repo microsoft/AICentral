@@ -6,7 +6,7 @@ public class RandomEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
 {
     private readonly IAICentralEndpointDispatcherBuilder[] _openAiServers;
 
-    public RandomEndpointSelectorBuilder(IList<IAICentralEndpointDispatcherBuilder> openAiServers)
+    public RandomEndpointSelectorBuilder(IAICentralEndpointDispatcherBuilder[] openAiServers)
     {
         _openAiServers = openAiServers.ToArray();
     }

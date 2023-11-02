@@ -18,3 +18,4 @@ public class AllowAnonymousClientAuthBuilder: IAICentralClientAuthBuilder
 
     public static string ConfigName => "AllowAnonymous";
 }
+

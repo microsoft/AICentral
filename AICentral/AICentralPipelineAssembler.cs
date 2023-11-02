@@ -22,9 +22,7 @@ public class AICentralPipelineAssembler
     private Dictionary<IAICentralClientAuthBuilder, IAICentralClientAuthStep> _builtAuthProviders;
     private Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> _builtEndpoints;
 
-    private Dictionary<IAICentralPipelineStepBuilder<IAICentralPipelineStep>, IAICentralPipelineStep>
-        _builtSteps;
-
+    private Dictionary<IAICentralPipelineStepBuilder<IAICentralPipelineStep>, IAICentralPipelineStep> _builtSteps;
     private Dictionary<IAICentralEndpointSelectorBuilder, IEndpointSelector> _builtEndpointSelectors;
     private bool _built;
 
@@ -143,5 +141,22 @@ public class AICentralPipelineAssembler
 
                 return pipeline;
             }).ToArray());
+    }
+
+    /// <summary>
+    /// For tests
+    /// </summary>
+    /// <param name="otherAssembler"></param>
+    /// <returns></returns>
+    public AICentralPipelineAssembler CombineAssemblers(AICentralPipelineAssembler otherAssembler)
+    {
+        return new AICentralPipelineAssembler(
+            otherAssembler._routeBuilders.Union(_routeBuilders).ToDictionary(x => x.Key, x => x.Value),
+            otherAssembler._authProviders.Union(_authProviders).ToDictionary(x => x.Key, x => x.Value),
+            otherAssembler._endpoints.Union(_endpoints).ToDictionary(x => x.Key, x => x.Value),
+            otherAssembler._endpointSelectors.Union(_endpointSelectors).ToDictionary(x => x.Key, x => x.Value),
+            otherAssembler._genericSteps.Union(_genericSteps).ToDictionary(x => x.Key, x => x.Value),
+            otherAssembler._configPipelines.Union(_configPipelines).ToArray()
+        );
     }
 }
