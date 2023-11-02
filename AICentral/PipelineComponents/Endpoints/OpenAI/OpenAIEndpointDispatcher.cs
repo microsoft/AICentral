@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Net;
 using Microsoft.AspNetCore.Http.Extensions;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -42,7 +43,14 @@ public class OpenAIEndpointDispatcher : IAICentralEndpointDispatcher
 
         var mappedModelName = _modelMappings.TryGetValue(callInformation.IncomingModelName, out var mapping)
             ? mapping
-            : callInformation.IncomingModelName;
+            : string.Empty;
+
+        if (mappedModelName == string.Empty)
+        {
+            return (new AICentralRequestInformation(
+                _languageUrl, callInformation.AICallType, callInformation.PromptText, DateTimeOffset.Now, TimeSpan.Zero
+            ), new HttpResponseMessage(HttpStatusCode.NotFound));
+        }
 
         var newUri = $"{_languageUrl}/openai/deployments/{mappedModelName}/{callInformation.RemainingUrl}";
         logger.LogDebug(

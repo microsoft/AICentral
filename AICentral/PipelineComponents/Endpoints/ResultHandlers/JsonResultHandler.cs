@@ -21,11 +21,6 @@ public class JsonResultHandler: IResult, IDisposable
         context.Response.StatusCode = (int)_openAiResponseMessage.StatusCode;
         context.Response.Headers.Add("x-aicentral-duration", _aiCentralUsageInformation.Duration.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
         context.Response.ContentType = "application/json";
-        
-        foreach (var responseHeader in _openAiResponseMessage.Headers)
-        {
-            context.Response.Headers.Add(responseHeader.Key, new StringValues(responseHeader.Value.ToArray()));
-        }
         await context.Response.WriteAsync(await _openAiResponseMessage.Content.ReadAsStringAsync());
     }
 

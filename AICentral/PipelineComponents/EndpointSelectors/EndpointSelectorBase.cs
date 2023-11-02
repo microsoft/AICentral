@@ -178,7 +178,7 @@ public abstract class EndpointSelectorBase : IEndpointSelector
 
         var chatRequestInformation = new AICentralUsageInformation(
             requestInformation.LanguageUrl,
-            "",
+            model,
             context.User.Identity?.Name ?? "unknown",
             requestInformation.CallType,
             requestInformation.Prompt,
