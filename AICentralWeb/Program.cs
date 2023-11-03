@@ -1,10 +1,12 @@
 using AICentral;
 using Serilog;
+using Serilog.Events;
 using Serilog.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 var logger = new LoggerConfiguration()
     .MinimumLevel.Verbose()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
     .WriteTo
     .Console()
     .CreateLogger();

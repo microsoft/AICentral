@@ -22,15 +22,20 @@ public class TestAICentralPipelineBuilder
 
     public TestAICentralPipelineBuilder WithApiKeyAuth(string header, string key1, string key2)
     {
-        _auth = new ApiKeyClientAuthBuilder(header, new[]
-        {
-            new ConfigurationTypes.ApiKeyClientAuthClientConfig()
+        _auth = new ApiKeyClientAuthBuilder(
+            new ConfigurationTypes.ApiKeyClientAuthConfig()
             {
-                ClientName = "test-client",
-                Key1 = key1,
-                Key2 = key2
-            }
-        });
+                HeaderName = header,
+                Clients = new[]
+                {
+                    new ConfigurationTypes.ApiKeyClientAuthClientConfig()
+                    {
+                        ClientName = "test-client",
+                        Key1 = key1,
+                        Key2 = key2
+                    }
+                }
+            });
         return this;
     }
 

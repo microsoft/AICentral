@@ -65,6 +65,7 @@ public class AICentralPipelineAssembler
 
 
     private static TRuntimeType GetMiddlewareOrNoOp<TType, TRuntimeType>(
+        string? pipelineConfigName,
         Dictionary<string, TType> providers,
         Dictionary<TType, TRuntimeType> runtime,
         string? providerName,
@@ -77,10 +78,11 @@ public class AICentralPipelineAssembler
         return providers.TryGetValue(providerName, out var provider)
             ? runtime[provider]
             : throw new ArgumentException(
-                $"Can not satisfy request for middleware {providerName}. Did you forget to configure it?");
+                $"Can not satisfy request for middleware {providerName} in pipeline {pipelineConfigName ?? "<unknown>"}. Did you forget to configure it?");
     }
 
     private static IEndpointSelector GetEndpointSelector(
+        string? pipelineConfigName,
         Dictionary<string, IAICentralEndpointSelectorBuilder> providers,
         Dictionary<IAICentralEndpointSelectorBuilder, IEndpointSelector> runtime,
         string? providerName,
@@ -92,7 +94,7 @@ public class AICentralPipelineAssembler
         return providers.TryGetValue(providerName, out var provider)
             ? runtime[provider]
             : throw new ArgumentException(
-                $"Can not satisfy request for middleware {providerName}. Did you forget to configure it?");
+                $"Can not satisfy request for Endpoint Selector {providerName} in pipeline {pipelineConfigName ?? "<unknown>"}. Did you forget to configure it?");
     }
 
     private AICentralPipelines BuildPipelines(ILogger startupLogger)
@@ -121,16 +123,19 @@ public class AICentralPipelineAssembler
                         pipelineName,
                         routeBuilder,
                         GetMiddlewareOrNoOp(
+                            pipelineConfig.Name,
                             _authProviders,
                             _builtAuthProviders!,
                             pipelineConfig.AuthProvider,
                             new AllowAnonymousClientAuthProvider()),
                         pipelineSteps.Select(step => GetMiddlewareOrNoOp(
+                            pipelineConfig.Name,
                             _genericSteps,
                             _builtSteps!,
                             step,
                             default)).ToArray(),
                         GetEndpointSelector(
+                            pipelineConfig.Name,
                             _endpointSelectors,
                             _builtEndpointSelectors!,
                             pipelineConfig.EndpointSelector,

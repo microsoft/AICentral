@@ -68,6 +68,7 @@ public class RateLimitingProvider : IAICentralGenericStepBuilder<IAICentralPipel
     {
         return new
         {
+            Type = "RateLimiter",
             RequestsPerWindow = _requestsPerWindow,
             WindowTime = _windowTime
         };
