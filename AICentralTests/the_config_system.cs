@@ -1,56 +1,57 @@
-﻿using AICentral.Configuration.JSON;
+﻿using AICentral;
+using AICentral.Configuration;
 using AICentral.PipelineComponents.Auth.ApiKey;
-using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.OpenAI;
-using AICentral.PipelineComponents.EndpointSelectors.Priority;
-using AICentral.PipelineComponents.EndpointSelectors.Random;
-using AICentral.PipelineComponents.Routes;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 
 namespace AICentralTests;
 
 public class the_config_system
 {
-    [Fact]
-    public void produces_helpful_errors_with_invalid_routes()
+    public AICentralPipelineAssembler Build(Dictionary<string, string?> configuration)
     {
-        Should.Throw<ArgumentException>(() => PathMatchRouter.BuildFromConfig(""));
+        return new ConfigurationBasedPipelineBuilder()
+            .BuildPipelinesFromConfig(
+                NullLogger.Instance,
+                new ConfigurationBuilder()
+                    .AddInMemoryCollection(configuration)
+                    .Build()
+                    .GetSection("AICentral")
+            );
     }
 
     [Fact]
-    public void produces_helpful_errors_with_invalid_api_key_auth()
+    public void does_not_break_with_empty_config()
     {
-        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
-        {
-            { "Test:Properties", string.Empty }
-        }!);
-
-        Should.Throw<ArgumentException>(() => ApiKeyClientAuthBuilder.BuildFromConfig(config.Build().GetSection("Test"))
+        Should.NotThrow(() => Build(new Dictionary<string, string?>()
+            {
+                ["AICentral"] = ""
+            })
         );
+    }
+
+    [Fact]
+    public void produces_helpful_errors_with_invalid_api_key_auth_no_clients()
+    {
+        Should.Throw<ArgumentException>(() =>
+            Build(new Dictionary<string, string?>
+            {
+                { "AICentral:AuthProviders:0:Name", "ApiKeyTest" },
+                { "AICentral:AuthProviders:0:Type", "ApiKey" },
+            }));
     }
 
     [Fact]
     public void produces_helpful_errors_with_invalid_api_key_auth_no_header()
     {
-        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
-        {
-            { "Test:Properties:Clients:0:ClientName", string.Empty }
-        }!);
-
-        Should.Throw<ArgumentException>(() => ApiKeyClientAuthBuilder.BuildFromConfig(config.Build().GetSection("Test"))
-        );
+        Should.Throw<ArgumentException>(() =>
+            Build(new Dictionary<string, string?>
+            {
+                { "AICentral:AuthProviders:0:Name", "ApiKeyTest" },
+                { "AICentral:AuthProviders:0:Type", "ApiKey" },
+                { "AICentral:AuthProviders:0:Properties:Clients:0:ClientName", "" },
+            }));
     }
 
-    [Fact]
-    public void produces_helpful_errors_with_invalid_api_key_auth_empty_clients()
-    {
-        var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
-        {
-            { "Test:Properties:Clients:0:ClientName", string.Empty }
-        }!);
-
-        Should.Throw<ArgumentException>(() => ApiKeyClientAuthBuilder.BuildFromConfig(config.Build().GetSection("Test"))
-        );
-    }
 }
