@@ -25,24 +25,25 @@ public class PriorityEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
     public static string ConfigName => "Prioritised";
 
     public static IAICentralEndpointSelectorBuilder BuildFromConfig(
-        IConfigurationSection section,
+        IConfigurationSection configurationSection,
         Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
     {
-        var config = section.Get<ConfigurationTypes.PriorityEndpointConfig>()!;
+        var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.PriorityEndpointConfig>();
+        Guard.NotNull(properties, configurationSection, "Properties");
 
         var prioritisedEndpoints =
             Guard.NotNull(
-                    config.PriorityEndpoints,
-                    section,
-                    nameof(config.PriorityEndpoints))
-                .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, section, "PrioritisedEndpoint"));
+                    properties!.PriorityEndpoints,
+                    configurationSection,
+                    nameof(properties.PriorityEndpoints))
+                .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, configurationSection, "PrioritisedEndpoint"));
 
         var fallbackEndpoints =
             Guard.NotNull(
-                    config.FallbackEndpoints,
-                    section,
-                    nameof(config.FallbackEndpoints))
-                .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, section, ""));
+                    properties.FallbackEndpoints,
+                    configurationSection,
+                    nameof(properties.FallbackEndpoints))
+                .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, configurationSection, ""));
 
         return new PriorityEndpointSelectorBuilder(
             prioritisedEndpoints.ToArray(),

@@ -39,10 +39,11 @@ public class ApiKeyClientAuthBuilder : IAICentralClientAuthBuilder
     public static IAICentralClientAuthBuilder BuildFromConfig(
         IConfigurationSection configurationSection)
     {
-        var properties = configurationSection.Get<ConfigurationTypes.ApiKeyClientAuthConfig>()!;
+        var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.ApiKeyClientAuthConfig>();
+        Guard.NotNull(properties, configurationSection, "Properties");
 
         return new ApiKeyClientAuthBuilder(
-            Guard.NotNull(properties.HeaderName, configurationSection, nameof(properties.HeaderName)),
+            Guard.NotNull(properties!.HeaderName, configurationSection, nameof(properties.HeaderName)),
             properties.Clients!.Length == 0
                 ? throw new ArgumentException($"You must provide Clients in {configurationSection.Path}")
                 : properties.Clients);

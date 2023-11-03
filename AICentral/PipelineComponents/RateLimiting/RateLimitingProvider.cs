@@ -45,10 +45,12 @@ public class RateLimitingProvider : IAICentralGenericStepBuilder<IAICentralPipel
     public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(
         IConfigurationSection configurationSection)
     {
-        var parameters = configurationSection.Get<ConfigurationTypes.WindowRateLimitingConfig>()!;
+        var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.WindowRateLimitingConfig>()!;
+        Guard.NotNull(properties, configurationSection, "Properties");
+
         return new RateLimitingProvider(
-            Guard.NotNull(parameters.WindowTime, configurationSection, nameof(parameters.WindowTime))!.Value,
-            Guard.NotNull(parameters.RequestsPerWindow, configurationSection, nameof(parameters.RequestsPerWindow))!.Value);
+            Guard.NotNull(properties.WindowTime, configurationSection, nameof(properties.WindowTime))!.Value,
+            Guard.NotNull(properties.RequestsPerWindow, configurationSection, nameof(properties.RequestsPerWindow))!.Value);
     }
 
     public IAICentralPipelineStep Build()

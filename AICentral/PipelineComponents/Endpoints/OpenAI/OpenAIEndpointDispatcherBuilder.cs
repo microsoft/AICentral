@@ -65,13 +65,14 @@ public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuild
 
     public static IAICentralEndpointDispatcherBuilder BuildFromConfig(IConfigurationSection configurationSection)
     {
-        var parameters = configurationSection.Get<ConfigurationTypes.AICentralPipelineEndpointPropertiesConfig>();
+        var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.AICentralPipelineEndpointPropertiesConfig>();
+        Guard.NotNull(properties, configurationSection, "Properties");
         
         return new OpenAIEndpointDispatcherBuilder(
-            Guard.NotNull(parameters.LanguageEndpoint, configurationSection, nameof(parameters.LanguageEndpoint)),
-            Guard.NotNull(parameters.ModelMappings, configurationSection, nameof(parameters.ModelMappings)),
-            Guard.NotNull(parameters.AuthenticationType, configurationSection, nameof(parameters.AuthenticationType)),
-            parameters.ApiKey);
+            Guard.NotNull(properties!.LanguageEndpoint, configurationSection, nameof(properties.LanguageEndpoint)),
+            Guard.NotNull(properties.ModelMappings, configurationSection, nameof(properties.ModelMappings)),
+            Guard.NotNull(properties.AuthenticationType, configurationSection, nameof(properties.AuthenticationType)),
+            properties.ApiKey);
     }
 
     public IAICentralEndpointDispatcher Build()

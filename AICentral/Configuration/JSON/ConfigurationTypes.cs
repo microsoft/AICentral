@@ -6,7 +6,7 @@ public static class ConfigurationTypes
 {
     public class AICentralConfig
     {
-        public AICentralPipelineConfig[] Pipelines { get; init; }
+        public AICentralPipelineConfig[]? Pipelines { get; init; }
     }
     
     public class AICentralTypeAndNameConfig

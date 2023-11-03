@@ -108,7 +108,7 @@ public class TestAICentralPipelineBuilder
     {
         var id = Guid.NewGuid().ToString();
         return new AICentralPipelineAssembler(
-            PathMatchRouter.BuildFromConfig,
+            PathMatchRouter.WithPath,
             new Dictionary<string, IAICentralClientAuthBuilder>()
             {
                 [id] = _auth!,
