@@ -1,38 +1,42 @@
 ﻿using System.Net;
 using System.Text;
 using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.OpenAI;
+using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 using Newtonsoft.Json;
 
 namespace AICentralTests.TestHelpers;
 
 public class AICentralTestEndpointBuilder
 {
-    public static readonly string Endpoint500 = Guid.NewGuid().ToString(); 
-    public static readonly string Endpoint404 = Guid.NewGuid().ToString(); 
-    public static readonly string Endpoint200 = Guid.NewGuid().ToString(); 
-    public static readonly string Endpoint200Number2 = Guid.NewGuid().ToString(); 
-    
-    public static OpenAIEndpointDispatcher Success200() =>
+    public static readonly string Endpoint500 = Guid.NewGuid().ToString();
+    public static readonly string Endpoint404 = Guid.NewGuid().ToString();
+    public static readonly string Endpoint200 = Guid.NewGuid().ToString();
+    public static readonly string Endpoint200Number2 = Guid.NewGuid().ToString();
+
+    public static AzureOpenAIEndpointDispatcher Success200() =>
         new(
+            Guid.NewGuid().ToString(),
             $"https://{Endpoint200}",
             new Dictionary<string, string>(),
             new KeyAuth("test"));
 
-    public static OpenAIEndpointDispatcher Success200Number2() =>
+    public static AzureOpenAIEndpointDispatcher Success200Number2() =>
         new(
+            Guid.NewGuid().ToString(),
             $"https://{Endpoint200Number2}",
             new Dictionary<string, string>(),
             new KeyAuth("test"));
 
-    public static OpenAIEndpointDispatcher FailingModelNotFound() =>
+    public static AzureOpenAIEndpointDispatcher FailingModelNotFound() =>
         new(
+            Guid.NewGuid().ToString(),
             $"https://{Endpoint404}",
             new Dictionary<string, string>(),
             new KeyAuth("test"));
 
-    public static OpenAIEndpointDispatcher FailingModelInternalServerError() =>
+    public static AzureOpenAIEndpointDispatcher FailingModelInternalServerError() =>
         new(
+            Guid.NewGuid().ToString(),
             $"https://{Endpoint500}",
             new Dictionary<string, string>(),
             new KeyAuth("test"));
@@ -72,14 +76,14 @@ public class AICentralTestEndpointBuilder
 
         return response;
     }
-    
+
     public static HttpResponseMessage NotFoundResponse()
     {
         var response = new HttpResponseMessage();
         response.StatusCode = HttpStatusCode.NotFound;
         return response;
     }
-    
+
     public static HttpResponseMessage InternalServerErrorResponse()
     {
         var response = new HttpResponseMessage();

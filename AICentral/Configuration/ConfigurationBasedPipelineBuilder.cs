@@ -2,7 +2,7 @@
 using AICentral.Configuration.JSON;
 using AICentral.PipelineComponents.Auth;
 using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.OpenAI;
+using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 using AICentral.PipelineComponents.EndpointSelectors;
 using AICentral.PipelineComponents.Routes;
 

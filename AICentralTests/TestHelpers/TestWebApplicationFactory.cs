@@ -1,5 +1,6 @@
 ﻿using AICentral;
-using AICentral.PipelineComponents.Endpoints.OpenAI;
+using AICentral.PipelineComponents.Endpoints;
+using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 using MartinCostello.Logging.XUnit;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;

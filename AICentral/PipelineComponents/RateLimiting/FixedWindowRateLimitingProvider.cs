@@ -1,5 +1,5 @@
 ﻿using System.Threading.RateLimiting;
-using AICentral.PipelineComponents.Endpoints.OpenAI;
+using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 using Microsoft.AspNetCore.RateLimiting;
 using Newtonsoft.Json;
 

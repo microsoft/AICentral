@@ -1,4 +1,4 @@
-﻿namespace AICentral.PipelineComponents.Endpoints.OpenAI;
+﻿namespace AICentral;
 
 public static class Guard
 {

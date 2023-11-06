@@ -16,6 +16,7 @@ public abstract class EndpointSelectorBase : IEndpointSelector
 
     private static readonly Dictionary<string, ITokenizer> Tokenisers = new()
     {
+        ["gpt-3.5-turbo-0613"] = TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo").Result,
         ["gpt-35-turbo"] = TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo").Result,
         ["gpt-4"] = TokenizerBuilder.CreateByModelNameAsync("gpt-4").Result,
     };
@@ -170,9 +171,9 @@ public abstract class EndpointSelectorBase : IEndpointSelector
         }
 
         //calculate prompt tokens
-        var estimatedPromptTokens =
-            Tokenisers["gpt-35-turbo"].Encode(requestInformation.Prompt, Array.Empty<string>()).Count;
-        var estimatedCompletionTokens = Tokenisers[model].Encode(content.ToString(), Array.Empty<string>()).Count;
+        var tokeniser = Tokenisers.TryGetValue(model, out var val) ? val : Tokenisers["gpt-35-turbo"];
+        var estimatedPromptTokens = tokeniser.Encode(requestInformation.Prompt, Array.Empty<string>()).Count;
+        var estimatedCompletionTokens = tokeniser.Encode(content.ToString(), Array.Empty<string>()).Count;
 
         logger.LogDebug(
             "Streamed response. Estimated prompt tokens {EstimatedPromptTokens}. Estimated Completion Tokens {EstimatedCompletionTokens}",

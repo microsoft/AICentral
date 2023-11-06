@@ -1,5 +1,5 @@
 ﻿using AICentral.Configuration.JSON;
-using AICentral.PipelineComponents.Endpoints.OpenAI;
+using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 
 namespace AICentral.PipelineComponents.Auth.ApiKey;
 
@@ -40,7 +40,7 @@ public class ApiKeyClientAuthBuilder : IAICentralClientAuthBuilder
         Guard.NotNull(properties, configurationSection, "Properties");
 
         return new ApiKeyClientAuthBuilder(
-            properties.Clients!.Length == 0
+            properties!.Clients!.Length == 0
                 ? throw new ArgumentException($"You must provide Clients in {configurationSection.Path}")
                 : properties);
     }

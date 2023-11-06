@@ -1,6 +1,6 @@
 ﻿using AICentral.Configuration.JSON;
 using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.OpenAI;
+using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 
 namespace AICentral.PipelineComponents.EndpointSelectors.Random;
 
