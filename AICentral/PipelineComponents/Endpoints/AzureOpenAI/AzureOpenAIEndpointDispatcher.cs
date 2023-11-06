@@ -30,8 +30,8 @@ public class AzureOpenAIEndpointDispatcher : IAICentralEndpointDispatcher
         AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherBuilder>>();
-        var typedDispatcher = context.RequestServices.GetRequiredService<ITypedHttpClientFactory<HttpAIEndpointDispatcher>>().CreateClient(
-            context.RequestServices.GetRequiredService<IHttpClientFactory>().CreateClient(_id));
+        var typedDispatcher = context.RequestServices.GetRequiredService<ITypedHttpClientFactory<HttpAIEndpointDispatcher>>()
+            .CreateClient(context.RequestServices.GetRequiredService<IHttpClientFactory>().CreateClient(_id));
 
         context.Request.EnableBuffering(); //we may need to re-read the request if it fails.
         context.Request.Body.Position = 0;

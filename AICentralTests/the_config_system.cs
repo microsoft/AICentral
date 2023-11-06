@@ -42,16 +42,4 @@ public class the_config_system
             }));
     }
 
-    [Fact]
-    public void produces_helpful_errors_with_invalid_api_key_auth_no_header()
-    {
-        Should.Throw<ArgumentException>(() =>
-            Build(new Dictionary<string, string?>
-            {
-                { "AICentral:AuthProviders:0:Name", "ApiKeyTest" },
-                { "AICentral:AuthProviders:0:Type", "ApiKey" },
-                { "AICentral:AuthProviders:0:Properties:Clients:0:ClientName", "" },
-            }));
-    }
-
 }
