@@ -6,7 +6,7 @@ public static class ConfigurationTypes
 {
     public class AICentralConfig
     {
-        public AICentralPipelineConfig[] Pipelines { get; init; }
+        public AICentralPipelineConfig[]? Pipelines { get; init; }
     }
     
     public class AICentralTypeAndNameConfig
@@ -15,12 +15,19 @@ public static class ConfigurationTypes
         public string? Name { get; init; }
     }
 
-    public class AICentralPipelineEndpointPropertiesConfig
+    public class AICentralPipelineAzureOpenAIEndpointPropertiesConfig
     {
         public string? LanguageEndpoint { get; init; }
         public Dictionary<string, string>? ModelMappings { get; init; }
         public AuthenticationType AuthenticationType { get; init; }
         public string? ApiKey { get; set; }
+    }
+
+    public class AICentralPipelineOpenAIEndpointPropertiesConfig
+    {
+        public Dictionary<string, string>? ModelMappings { get; init; }
+        public string? ApiKey { get; set; }
+        public string? Organization { get; set; }
     }
 
     public class AICentralPipelineConfig
@@ -34,7 +41,6 @@ public static class ConfigurationTypes
 
     public class ApiKeyClientAuthConfig
     {
-        public string? HeaderName { get; init; }
         public ApiKeyClientAuthClientConfig[]? Clients { get; init; }
     }
 
@@ -61,16 +67,5 @@ public static class ConfigurationTypes
         public string? WorkspaceId { get; init; }
         public string? Key { get; init; }
         public bool? LogPrompt { get; init; }
-    }
-
-    public class WindowRateLimitingConfig
-    {
-        public int? WindowTime { get; init; }
-        public int? RequestsPerWindow { get; init; }
-    }
-
-    public class SimplePathMatchConfig
-    {
-        public string? Path { get; init; }
     }
 }

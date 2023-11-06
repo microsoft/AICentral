@@ -52,11 +52,11 @@ AI Central gives you control over your AI services.
     ],
     "GenericSteps": [
       {
-        "Type": "LocalRateLimiting",
+        "Type": "AspNetCoreFixedWindowRateLimiting",
         "Name": "window-rate-limiter",
         "Properties": {
-          "WindowTime": 20,
-          "RequestsPerWindow": 1
+          "Window": 20,
+          "PermitLimit": 1
         }
       },
       {

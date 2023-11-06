@@ -4,7 +4,7 @@ using AICentral.PipelineComponents.Auth;
 using AICentral.PipelineComponents.Auth.AllowAnonymous;
 using AICentral.PipelineComponents.Auth.ApiKey;
 using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.OpenAI;
+using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 using AICentral.PipelineComponents.EndpointSelectors;
 using AICentral.PipelineComponents.EndpointSelectors.Priority;
 using AICentral.PipelineComponents.EndpointSelectors.Random;
@@ -22,15 +22,19 @@ public class TestAICentralPipelineBuilder
 
     public TestAICentralPipelineBuilder WithApiKeyAuth(string header, string key1, string key2)
     {
-        _auth = new ApiKeyClientAuthBuilder(header, new[]
-        {
-            new ConfigurationTypes.ApiKeyClientAuthClientConfig()
+        _auth = new ApiKeyClientAuthBuilder(
+            new ConfigurationTypes.ApiKeyClientAuthConfig()
             {
-                ClientName = "test-client",
-                Key1 = key1,
-                Key2 = key2
-            }
-        });
+                Clients = new[]
+                {
+                    new ConfigurationTypes.ApiKeyClientAuthClientConfig()
+                    {
+                        ClientName = "test-client",
+                        Key1 = key1,
+                        Key2 = key2
+                    }
+                }
+            });
         return this;
     }
 
@@ -108,7 +112,7 @@ public class TestAICentralPipelineBuilder
     {
         var id = Guid.NewGuid().ToString();
         return new AICentralPipelineAssembler(
-            PathMatchRouter.BuildFromConfig,
+            PathMatchRouter.WithPath,
             new Dictionary<string, IAICentralClientAuthBuilder>()
             {
                 [id] = _auth!,

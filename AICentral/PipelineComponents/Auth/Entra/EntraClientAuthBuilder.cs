@@ -1,4 +1,5 @@
-﻿using Microsoft.Identity.Web;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Identity.Web;
 
 namespace AICentral.PipelineComponents.Auth.Entra;
 

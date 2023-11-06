@@ -1,5 +1,5 @@
 ﻿using AICentral.Configuration.JSON;
-using AICentral.PipelineComponents.Endpoints.OpenAI;
+using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 
 namespace AICentral.PipelineComponents.Routes;
 
@@ -22,9 +22,7 @@ public class PathMatchRouter
         return application.MapPost(_path, handler);
     }
 
-    public static string ConfigName => "PathMatch";
-    
-    public static PathMatchRouter BuildFromConfig(string path)
+    public static PathMatchRouter WithPath(string path)
     {
         return new PathMatchRouter(Guard.NotNullOrEmptyOrWhitespace(path, nameof(path)));
     }

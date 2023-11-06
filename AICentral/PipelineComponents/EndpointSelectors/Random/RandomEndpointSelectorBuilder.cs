@@ -1,6 +1,6 @@
 ﻿using AICentral.Configuration.JSON;
 using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.OpenAI;
+using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 
 namespace AICentral.PipelineComponents.EndpointSelectors.Random;
 
@@ -26,14 +26,15 @@ public class RandomEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
     public static string ConfigName => "RandomCluster";
 
     public static IAICentralEndpointSelectorBuilder BuildFromConfig(
-        IConfigurationSection configSection,
+        IConfigurationSection configurationSection,
         Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
     {
-        var config = configSection.Get<ConfigurationTypes.RandomEndpointConfig>()!;
+        var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.RandomEndpointConfig>();
+        Guard.NotNull(properties, configurationSection, "Properties");
 
         return new RandomEndpointSelectorBuilder(
-            Guard.NotNull(config.Endpoints, configSection, "Endpoints")
-                .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, configSection, "Endpoint"))
+            Guard.NotNull(properties!.Endpoints, configurationSection, "Endpoints")
+                .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, configurationSection, "Endpoint"))
                 .ToArray());
     }
 }

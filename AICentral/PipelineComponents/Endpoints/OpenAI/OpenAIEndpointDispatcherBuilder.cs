@@ -1,5 +1,5 @@
-﻿using System.Net;
-using AICentral.Configuration.JSON;
+﻿using AICentral.Configuration.JSON;
+using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
@@ -8,74 +8,44 @@ namespace AICentral.PipelineComponents.Endpoints.OpenAI;
 
 public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuilder
 {
-    private static readonly HttpStatusCode[] StatusCodesToRetry = { HttpStatusCode.TooManyRequests };
-
-    private readonly IEndpointAuthorisationHandler _authHandler;
-    private readonly string _languageUrl;
     private readonly Dictionary<string, string> _modelMappings;
+    private readonly string _apiKey;
+    private readonly string? _organization;
+    private readonly string _id;
 
     public OpenAIEndpointDispatcherBuilder(
-        string languageUrl,
-        Dictionary<string, string> modelMappings,
-        AuthenticationType authenticationType,
-        string? authenticationKey)
+        Dictionary<string, string> modelMappings, 
+        string apiKey,
+        string? organization)
     {
-        _languageUrl = languageUrl;
+        _id = Guid.NewGuid().ToString();
         _modelMappings = modelMappings;
-
-        _authHandler = authenticationType switch
-        {
-            AuthenticationType.ApiKey => new KeyAuth(authenticationKey ?? throw new ArgumentException("Missing api-key for Authentication Type")),
-            AuthenticationType.Entra => new EntraAuth(),
-            AuthenticationType.EntraPassThrough => new BearerTokenPassThroughAuth(),
-            _ => throw new ArgumentOutOfRangeException(nameof(authenticationType), authenticationType, null)
-        };
+        _apiKey = apiKey;
+        _organization = organization;
     }
 
     public void RegisterServices(IServiceCollection services)
     {
-        var handler = new PredicateBuilder<HttpResponseMessage>()
-            .HandleResult(r => StatusCodesToRetry.Contains(r.StatusCode))
-            .Handle<HttpRequestException>(e =>
-                e.StatusCode.HasValue && StatusCodesToRetry.Contains(e.StatusCode.Value));
-
-        var resiliencyStrategy = new ResiliencePipelineBuilder<HttpResponseMessage>()
-            .AddCircuitBreaker(new CircuitBreakerStrategyOptions<HttpResponseMessage>
-            {
-                FailureRatio = 0.5,
-                SamplingDuration = TimeSpan.FromSeconds(5),
-                BreakDuration = TimeSpan.FromSeconds(30),
-                ShouldHandle = handler
-            })
-            .AddRetry(new RetryStrategyOptions<HttpResponseMessage>
-            {
-                Delay = TimeSpan.FromSeconds(0.2),
-                BackoffType = DelayBackoffType.Exponential,
-                MaxRetryAttempts = 3,
-                ShouldHandle = handler
-            })
-            .AddTimeout(TimeSpan.FromSeconds(30))
-            .Build();
-
-        services.AddHttpClient<HttpAIEndpointDispatcher>()
-            .AddPolicyHandler(resiliencyStrategy.AsAsyncPolicy());
+        services.AddHttpClient<HttpAIEndpointDispatcher>(_id)
+            .AddPolicyHandler(ResiliencyStrategy.Build());
     }
 
-    public static string ConfigName => "AzureOpenAIEndpoint";
+    public static string ConfigName => "OpenAIEndpoint";
 
     public static IAICentralEndpointDispatcherBuilder BuildFromConfig(IConfigurationSection configurationSection)
     {
-        var parameters = configurationSection.Get<ConfigurationTypes.AICentralPipelineEndpointPropertiesConfig>();
+        var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.AICentralPipelineOpenAIEndpointPropertiesConfig>();
+        Guard.NotNull(properties, configurationSection, "Properties");
         
         return new OpenAIEndpointDispatcherBuilder(
-            Guard.NotNull(parameters.LanguageEndpoint, configurationSection, nameof(parameters.LanguageEndpoint)),
-            Guard.NotNull(parameters.ModelMappings, configurationSection, nameof(parameters.ModelMappings)),
-            Guard.NotNull(parameters.AuthenticationType, configurationSection, nameof(parameters.AuthenticationType)),
-            parameters.ApiKey);
+            Guard.NotNull(properties!.ModelMappings, configurationSection, nameof(properties.ModelMappings)),
+            Guard.NotNull(properties.ApiKey, configurationSection, nameof(properties.ApiKey)),
+            properties.Organization
+            );
     }
 
     public IAICentralEndpointDispatcher Build()
     {
-        return new OpenAIEndpointDispatcher(_languageUrl, _modelMappings, _authHandler);
+        return new OpenAIEndpointDispatcher(_id, _modelMappings, _apiKey, _organization);
     }
 }

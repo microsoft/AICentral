@@ -1,5 +1,5 @@
 ﻿using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.OpenAI;
+using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 
 namespace AICentral.PipelineComponents.EndpointSelectors.Single;
 
@@ -25,7 +25,10 @@ public class SingleEndpointSelectorBuilder: IAICentralEndpointSelectorBuilder
 
     public static IAICentralEndpointSelectorBuilder BuildFromConfig(IConfigurationSection configSection, Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
     {
-        var endpoint = configSection.GetValue<string>("Endpoint");
+        var properties = configSection.GetSection("Properties");
+        Guard.NotNull(properties, properties, "Properties");
+
+        var endpoint = properties.GetValue<string>("Endpoint");
         endpoint = Guard.NotNull(endpoint, configSection, "Endpoint");
         return new SingleEndpointSelectorBuilder(endpoints[endpoint]);
     }

@@ -2,7 +2,7 @@
 using AICentral.Configuration.JSON;
 using AICentral.PipelineComponents.Auth;
 using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.OpenAI;
+using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 using AICentral.PipelineComponents.EndpointSelectors;
 using AICentral.PipelineComponents.Routes;
 
@@ -48,7 +48,7 @@ public class ConfigurationBasedPipelineBuilder
         RegisterBuilders<IAICentralGenericStepBuilder<IAICentralPipelineStep>>(additionalAssembliesToScan,
             nameof(RegisterGenericStep));
         RegisterBuilders<IAICentralClientAuthBuilder>(additionalAssembliesToScan, nameof(RegisterAuthProvider));
-
+        
         var endpoints =
             configurationSection
                 .GetSection("Endpoints")
@@ -56,7 +56,7 @@ public class ConfigurationBasedPipelineBuilder
                 .Select(x => new
                 {
                     TypeInfo = x.Get<ConfigurationTypes.AICentralTypeAndNameConfig>(),
-                    Config = x.GetRequiredSection("Properties")
+                    Config = x
                 })
                 .ToDictionary(
                     x => Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name"),
@@ -76,7 +76,7 @@ public class ConfigurationBasedPipelineBuilder
                 .Select(x => new
                 {
                     TypeInfo = x.Get<ConfigurationTypes.AICentralTypeAndNameConfig>(),
-                    Config = x.GetRequiredSection("Properties")
+                    Config = x
                 })
                 .ToDictionary(
                     x => Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name"),
@@ -95,7 +95,7 @@ public class ConfigurationBasedPipelineBuilder
                 .Select(x => new
                 {
                     TypeInfo = x.Get<ConfigurationTypes.AICentralTypeAndNameConfig>(),
-                    Config = x.GetRequiredSection("Properties")
+                    Config = x
                 })
                 .ToDictionary(
                     x => Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name"),
@@ -114,7 +114,7 @@ public class ConfigurationBasedPipelineBuilder
                 .Select(x => new
                 {
                     TypeInfo = x.Get<ConfigurationTypes.AICentralTypeAndNameConfig>(),
-                    Config = x.GetRequiredSection("Properties")
+                    Config = x
                 })
                 .ToDictionary(
                     x => Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name"),
@@ -131,7 +131,7 @@ public class ConfigurationBasedPipelineBuilder
 
         //create an object that can wire all this together
         var builder = new AICentralPipelineAssembler(
-            PathMatchRouter.BuildFromConfig,
+            PathMatchRouter.WithPath,
             authProviders,
             endpoints,
             endpointSelectors,

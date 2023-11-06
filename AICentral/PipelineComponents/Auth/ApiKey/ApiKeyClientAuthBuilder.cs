@@ -1,19 +1,16 @@
 ﻿using AICentral.Configuration.JSON;
-using AICentral.PipelineComponents.Endpoints.OpenAI;
+using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 
 namespace AICentral.PipelineComponents.Auth.ApiKey;
 
 public class ApiKeyClientAuthBuilder : IAICentralClientAuthBuilder
 {
-    private readonly string _headerName;
-    private readonly ConfigurationTypes.ApiKeyClientAuthClientConfig[] _clients;
+    private readonly ConfigurationTypes.ApiKeyClientAuthConfig _config;
     private readonly string _policyId = Guid.NewGuid().ToString();
 
-    public ApiKeyClientAuthBuilder(string headerName,
-        ConfigurationTypes.ApiKeyClientAuthClientConfig[] clients)
+    public ApiKeyClientAuthBuilder(ConfigurationTypes.ApiKeyClientAuthConfig config)
     {
-        _headerName = headerName;
-        _clients = clients;
+        _config = config;
     }
 
     public void RegisterServices(IServiceCollection services)
@@ -21,8 +18,8 @@ public class ApiKeyClientAuthBuilder : IAICentralClientAuthBuilder
         var schemeName = $"AICentralApiKey_{_policyId}";
         services.AddAuthentication().AddScheme<ApiKeyOptions, ApiKeyAuthenticationHandler>(schemeName, options =>
         {
-            options.Clients = _clients;
-            options.HeaderName = _headerName;
+            options.Clients = _config.Clients!;
+            options.HeaderName = "api-key";
         });
 
         services.AddAuthorizationBuilder().AddPolicy(_policyId,
@@ -33,19 +30,19 @@ public class ApiKeyClientAuthBuilder : IAICentralClientAuthBuilder
 
     public IAICentralClientAuthStep Build()
     {
-        return new ApiKeyClientAuthProvider(_policyId);
+        return new ApiKeyClientAuthProvider(_policyId, _config);
     }
 
     public static IAICentralClientAuthBuilder BuildFromConfig(
         IConfigurationSection configurationSection)
     {
-        var properties = configurationSection.Get<ConfigurationTypes.ApiKeyClientAuthConfig>()!;
+        var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.ApiKeyClientAuthConfig>();
+        Guard.NotNull(properties, configurationSection, "Properties");
 
         return new ApiKeyClientAuthBuilder(
-            Guard.NotNull(properties.HeaderName, configurationSection, nameof(properties.HeaderName)),
-            properties.Clients!.Length == 0
+            properties!.Clients!.Length == 0
                 ? throw new ArgumentException($"You must provide Clients in {configurationSection.Path}")
-                : properties.Clients);
+                : properties);
     }
 
     public static string ConfigName => "ApiKey";
