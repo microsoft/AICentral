@@ -23,7 +23,6 @@ public class ApiKeyClientAuthProvider : IAICentralClientAuthStep
         return new
         {
             Type = "Client Api Key",
-            HeaderName = _config.HeaderName,
             Clients = _config.Clients!.Select(x => new
             {
                 ClientName = x.ClientName,

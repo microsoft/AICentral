@@ -25,7 +25,6 @@ public class TestAICentralPipelineBuilder
         _auth = new ApiKeyClientAuthBuilder(
             new ConfigurationTypes.ApiKeyClientAuthConfig()
             {
-                HeaderName = header,
                 Clients = new[]
                 {
                     new ConfigurationTypes.ApiKeyClientAuthClientConfig()

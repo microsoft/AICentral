@@ -34,7 +34,6 @@ public static class ConfigurationTypes
 
     public class ApiKeyClientAuthConfig
     {
-        public string? HeaderName { get; init; }
         public ApiKeyClientAuthClientConfig[]? Clients { get; init; }
     }
 

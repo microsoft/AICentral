@@ -19,7 +19,7 @@ public class ApiKeyClientAuthBuilder : IAICentralClientAuthBuilder
         services.AddAuthentication().AddScheme<ApiKeyOptions, ApiKeyAuthenticationHandler>(schemeName, options =>
         {
             options.Clients = _config.Clients!;
-            options.HeaderName = _config.HeaderName!;
+            options.HeaderName = "api-key";
         });
 
         services.AddAuthorizationBuilder().AddPolicy(_policyId,
@@ -38,7 +38,6 @@ public class ApiKeyClientAuthBuilder : IAICentralClientAuthBuilder
     {
         var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.ApiKeyClientAuthConfig>();
         Guard.NotNull(properties, configurationSection, "Properties");
-        Guard.NotNull(properties!.HeaderName, configurationSection, nameof(properties.HeaderName));
 
         return new ApiKeyClientAuthBuilder(
             properties.Clients!.Length == 0
