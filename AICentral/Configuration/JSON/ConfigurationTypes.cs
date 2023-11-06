@@ -62,15 +62,4 @@ public static class ConfigurationTypes
         public string? Key { get; init; }
         public bool? LogPrompt { get; init; }
     }
-
-    public class WindowRateLimitingConfig
-    {
-        public int? WindowTime { get; init; }
-        public int? RequestsPerWindow { get; init; }
-    }
-
-    public class SimplePathMatchConfig
-    {
-        public string? Path { get; init; }
-    }
 }
