@@ -1,11 +1,9 @@
-﻿using AICentral;
-using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
+﻿using System.Drawing.Printing;
+using AICentral;
 using MartinCostello.Logging.XUnit;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit.Abstractions;
@@ -28,17 +26,19 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
 
             services.Remove(services.Single(x => x.ServiceType == typeof(AICentralPipelines)));
 
-            var simplePathMatch = TestPipelines.ApiKeyAuth();
-            var randomSelector = TestPipelines.RandomEndpointPickerNoAuth();
-            var prioritised = TestPipelines.PriorityEndpointPickerNoAuth();
+            var pipelines = new[]
+            {
+                TestPipelines.ApiKeyAuth(),
+                TestPipelines.RandomEndpointPickerNoAuth(),
+                TestPipelines.PriorityEndpointPickerNoAuth(),
+                TestPipelines.OpenAIService(),
+                TestPipelines.WithOpenAIEndpoint()
+            };
 
-            var assembler = simplePathMatch
-                .CombineAssemblers(randomSelector)
-                .CombineAssemblers(prioritised);
-            
+            var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));
             assembler.AddServices(services, NullLogger.Instance);
 
-            var fakeClient = new HttpClient(new FakeHttpMessageHandler(AICentralTestEndpointBuilder.FakeResponse()));
+            var fakeClient = new HttpClient(new FakeHttpMessageHandler(AICentralFakeResponses.FakeResponse()));
             services.AddSingleton<IHttpClientFactory>(new FakeHttpClientFactory(fakeClient));
         });
         return base.CreateHost(builder);

@@ -13,9 +13,10 @@ public class the_client_api_key : IClassFixture<TestWebApplicationFactory<Progra
     private readonly TestWebApplicationFactory<Program> _factory;
     private readonly HttpClient _httpClient;
 
-    public the_client_api_key(TestWebApplicationFactory<Program> factory)
+    public the_client_api_key(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
     {
         _factory = factory;
+        factory.OutputHelper = testOutputHelper;
         _httpClient = factory.CreateClient();
     }
 

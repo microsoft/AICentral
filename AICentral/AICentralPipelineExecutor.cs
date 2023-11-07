@@ -1,4 +1,5 @@
-﻿using AICentral.PipelineComponents.EndpointSelectors;
+﻿using AICentral.Steps;
+using AICentral.Steps.EndpointSelectors;
 
 namespace AICentral;
 
@@ -15,15 +16,15 @@ public class AICentralPipelineExecutor : IDisposable
         _pipelineEnumerator = steps.GetEnumerator();
     }
 
-    public async Task<AICentralResponse> Next(HttpContext context, CancellationToken cancellationToken)
+    public async Task<AICentralResponse> Next(HttpContext context, AICallInformation requestDetails, CancellationToken cancellationToken)
     {
         if (_pipelineEnumerator.MoveNext())
         {
-            var response = await _pipelineEnumerator.Current.Handle(context, this, cancellationToken);
+            var response = await _pipelineEnumerator.Current.Handle(context, requestDetails, this, cancellationToken);
             return response;
         }
 
-        return await _endpointSelector.Handle(context, this, cancellationToken);
+        return await _endpointSelector.Handle(context, requestDetails, this, cancellationToken);
     }
 
     public void Dispose()

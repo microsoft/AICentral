@@ -1,6 +1,5 @@
 ﻿using AICentral;
 using AICentral.Configuration;
-using AICentral.PipelineComponents.Auth.ApiKey;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;

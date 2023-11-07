@@ -1,15 +1,17 @@
 ﻿using AICentral;
 using AICentral.Configuration.JSON;
-using AICentral.PipelineComponents.Auth;
-using AICentral.PipelineComponents.Auth.AllowAnonymous;
-using AICentral.PipelineComponents.Auth.ApiKey;
-using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
-using AICentral.PipelineComponents.EndpointSelectors;
-using AICentral.PipelineComponents.EndpointSelectors.Priority;
-using AICentral.PipelineComponents.EndpointSelectors.Random;
-using AICentral.PipelineComponents.EndpointSelectors.Single;
-using AICentral.PipelineComponents.Routes;
+using AICentral.Steps;
+using AICentral.Steps.Auth;
+using AICentral.Steps.Auth.AllowAnonymous;
+using AICentral.Steps.Auth.ApiKey;
+using AICentral.Steps.Endpoints;
+using AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
+using AICentral.Steps.Endpoints.OpenAILike.OpenAI;
+using AICentral.Steps.EndpointSelectors;
+using AICentral.Steps.EndpointSelectors.Priority;
+using AICentral.Steps.EndpointSelectors.Random;
+using AICentral.Steps.EndpointSelectors.Single;
+using AICentral.Steps.Routes;
 using Microsoft.Extensions.Configuration;
 
 namespace AICentralTests.TestHelpers;
@@ -19,8 +21,9 @@ public class TestAICentralPipelineBuilder
     private IAICentralClientAuthBuilder? _auth;
     private IAICentralEndpointSelectorBuilder? _endpointBuilder;
     private IAICentralEndpointDispatcherBuilder[]? _openAiEndpointDispatcherBuilders;
+    private EndpointType? _endpointType;
 
-    public TestAICentralPipelineBuilder WithApiKeyAuth(string header, string key1, string key2)
+    public TestAICentralPipelineBuilder WithApiKeyAuth(string key1, string key2)
     {
         _auth = new ApiKeyClientAuthBuilder(
             new ConfigurationTypes.ApiKeyClientAuthConfig()
@@ -44,9 +47,15 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
+    public TestAICentralPipelineBuilder WithEndpointType(EndpointType endpointType)
+    {
+        _endpointType = endpointType;
+        return this;
+    }
+
     public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel)
     {
-        var openAiEndpointDispatcherBuilder = new OpenAIEndpointDispatcherBuilder($"https://{hostname}",
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherBuilder($"https://{hostname}",
             new Dictionary<string, string>()
             {
                 [model] = mappedModel
@@ -59,15 +68,31 @@ public class TestAICentralPipelineBuilder
 
         return this;
     }
+    
+    
+    public TestAICentralPipelineBuilder WithSingleOpenAIEndpoint(string model, string mappedModel)
+    {
+        var openAiEndpointDispatcherBuilder = new OpenAIEndpointDispatcherBuilder(
+            new Dictionary<string, string>()
+            {
+                [model] = mappedModel
+            },
+            Guid.NewGuid().ToString(),
+            Guid.NewGuid().ToString());
 
+        _endpointBuilder = new SingleEndpointSelectorBuilder(openAiEndpointDispatcherBuilder);
+        _openAiEndpointDispatcherBuilders = new[] { openAiEndpointDispatcherBuilder };
 
+        return this;
+    }
+    
     public TestAICentralPipelineBuilder WithPriorityEndpoints(
         (string hostname, string model, string mappedModel)[] priorityEndpoints,
         (string hostname, string model, string mappedModel)[] fallbackEndpoints
     )
     {
         IAICentralEndpointDispatcherBuilder[] priorityOpenAiEndpointDispatcherBuilder = priorityEndpoints.Select(x =>
-            new OpenAIEndpointDispatcherBuilder($"https://{x.hostname}", new Dictionary<string, string>()
+            new AzureOpenAIEndpointDispatcherBuilder($"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
@@ -75,7 +100,7 @@ public class TestAICentralPipelineBuilder
                 Guid.NewGuid().ToString())).ToArray();
 
         IAICentralEndpointDispatcherBuilder[] fallbackOpenAiEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
-            new OpenAIEndpointDispatcherBuilder($"https://{x.hostname}", new Dictionary<string, string>()
+            new AzureOpenAIEndpointDispatcherBuilder($"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
@@ -96,7 +121,7 @@ public class TestAICentralPipelineBuilder
         (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new OpenAIEndpointDispatcherBuilder($"https://{x.hostname}", new Dictionary<string, string>()
+            new AzureOpenAIEndpointDispatcherBuilder($"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
@@ -115,7 +140,7 @@ public class TestAICentralPipelineBuilder
             PathMatchRouter.WithPath,
             new Dictionary<string, IAICentralClientAuthBuilder>()
             {
-                [id] = _auth!,
+                [id] = _auth ?? new AllowAnonymousClientAuthBuilder(),
             },
             _openAiEndpointDispatcherBuilders!.ToDictionary(x => Guid.NewGuid().ToString(), x => x),
             new Dictionary<string, IAICentralEndpointSelectorBuilder>()
@@ -128,6 +153,7 @@ public class TestAICentralPipelineBuilder
                 new ConfigurationTypes.AICentralPipelineConfig()
                 {
                     Name = Guid.NewGuid().ToString(),
+                    EndpointType = _endpointType ?? EndpointType.AzureOpenAI,
                     Path = path,
                     AuthProvider = id,
                     Steps = Array.Empty<string>(),

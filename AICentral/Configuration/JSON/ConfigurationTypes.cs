@@ -1,4 +1,4 @@
-﻿using AICentral.PipelineComponents.Endpoints;
+﻿using AICentral.Steps.Endpoints;
 
 namespace AICentral.Configuration.JSON;
 
@@ -33,6 +33,7 @@ public static class ConfigurationTypes
     public class AICentralPipelineConfig
     {
         public string? Name { get; init; }
+        public EndpointType? EndpointType { get; init; }
         public string? Path { get; init; }
         public string? EndpointSelector { get; init; }
         public string? AuthProvider { get; init; }
@@ -67,5 +68,12 @@ public static class ConfigurationTypes
         public string? WorkspaceId { get; init; }
         public string? Key { get; init; }
         public bool? LogPrompt { get; init; }
+        public bool? LogResponse { get; init; }
     }
+}
+
+public enum EndpointType
+{
+    AzureOpenAI,
+    OpenAI
 }

@@ -1,13 +1,25 @@
 ﻿using AICentral;
+using AICentral.Configuration.JSON;
 
 namespace AICentralTests.TestHelpers;
 
 public static class TestPipelines
 {
+    public static AICentralPipelineAssembler OpenAIService() =>
+        new TestAICentralPipelineBuilder()
+            .WithEndpointType(EndpointType.OpenAI)
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "openai", "Model1")
+            .Assemble("/v1/{*prefix}");
+
+    public static AICentralPipelineAssembler WithOpenAIEndpoint() =>
+        new TestAICentralPipelineBuilder()
+            .WithSingleOpenAIEndpoint("openaiendpoint", "gpt-3.5-turbo")
+            .Assemble("/openai/deployments/openaiendpoint/{*prefix}");
+
     public static AICentralPipelineAssembler ApiKeyAuth() =>
         new TestAICentralPipelineBuilder()
-            .WithApiKeyAuth("api-key", "123", "456")
-            .WithSingleEndpoint(AICentralTestEndpointBuilder.Endpoint200, "api-key-auth", "Model1")
+            .WithApiKeyAuth("123", "456")
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "api-key-auth", "Model1")
             .Assemble("/openai/deployments/api-key-auth/{*prefix}");
 
     public static AICentralPipelineAssembler RandomEndpointPickerNoAuth() =>
@@ -15,8 +27,8 @@ public static class TestPipelines
             .WithNoAuth()
             .WithRandomEndpoints(new[]
             {
-                (AICentralTestEndpointBuilder.Endpoint200, "random", "Model1"),
-                (AICentralTestEndpointBuilder.Endpoint200Number2, "random", "Model1"),
+                (AICentralFakeResponses.Endpoint200, "random", "Model1"),
+                (AICentralFakeResponses.Endpoint200Number2, "random", "Model1"),
             })
             .Assemble("/openai/deployments/random/{*prefix}");
 
@@ -25,12 +37,12 @@ public static class TestPipelines
             .WithNoAuth()
             .WithPriorityEndpoints(new[]
                 {
-                    (AICentralTestEndpointBuilder.Endpoint500, "priority", "Model1"),
-                    (AICentralTestEndpointBuilder.Endpoint404, "priority", "Model1"),
+                    (AICentralFakeResponses.Endpoint500, "priority", "Model1"),
+                    (AICentralFakeResponses.Endpoint404, "priority", "Model1"),
                 },
                 new[]
                 {
-                    (AICentralTestEndpointBuilder.Endpoint200, "priority", "Model1"),
+                    (AICentralFakeResponses.Endpoint200, "priority", "Model1"),
                 }
             )
             .Assemble("/openai/deployments/priority/{*prefix}");
