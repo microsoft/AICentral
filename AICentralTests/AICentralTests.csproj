@@ -33,9 +33,6 @@
 
     <ItemGroup>
       <None Remove="xunit.runner.json" />
-      <Content Include="xunit.runner.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
     </ItemGroup>
 
 </Project>
