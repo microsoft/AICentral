@@ -13,9 +13,10 @@ public class the_random_endpoint_picker : IClassFixture<TestWebApplicationFactor
     private readonly TestWebApplicationFactory<Program> _factory;
     private readonly HttpClient _httpClient;
 
-    public the_random_endpoint_picker(TestWebApplicationFactory<Program> factory)
+    public the_random_endpoint_picker(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
     {
         _factory = factory;
+        factory.OutputHelper = testOutputHelper;
         _httpClient = factory.CreateClient();
     }
 

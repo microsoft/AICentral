@@ -3,6 +3,7 @@ using AICentral.Configuration.JSON;
 using AICentral.PipelineComponents.Auth;
 using AICentral.PipelineComponents.EndpointSelectors;
 using AICentral.PipelineComponents.Routes;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AICentral;
 
@@ -45,7 +46,30 @@ public class AICentralPipeline
         });
 
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
+
         var requestDetails = await _incomingCallExtractor.Extract(context.Request, cancellationToken);
+
+        if (requestDetails.IncomingModelName == null)
+        {
+            return
+                new AICentralResponse(new AICentralUsageInformation(
+                        string.Empty,
+                        string.Empty,
+                        string.Empty,
+                        requestDetails.AICallType,
+                        requestDetails.PromptText,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        string.Empty,
+                        DateTimeOffset.Now,
+                        TimeSpan.Zero
+                    ),
+                    Results.Problem("No model detected", statusCode: 400));
+        }
+
         var executor = new AICentralPipelineExecutor(_pipelineSteps, _endpointSelector);
         var result = await executor.Next(context, requestDetails, cancellationToken);
         logger.LogInformation("Executed Pipeline {PipelineName}", _name);

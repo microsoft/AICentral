@@ -1,9 +1,8 @@
-﻿namespace AICentral.PipelineComponents.Endpoints;
+﻿namespace AICentral;
 
 public enum AICallType
 {
     Chat,
     Completions,
     Embeddings,
-    Images
 }

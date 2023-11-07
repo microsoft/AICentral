@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
-using AICentral.PipelineComponents.Endpoints;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -9,7 +9,7 @@ namespace AICentral;
 public class AzureOpenAiCallInformationExtractor : IIncomingCallExtractor
 {
     private static readonly Regex
-        OpenAiUrlRegex = new("^/openai/deployments/(.*?)/(embeddings|chat|completions|images)(.*?)$");
+        OpenAiUrlRegex = new("^/openai/deployments/(.*?)/(embeddings|chat|completions)/(.*)$");
 
     public async Task<AICallInformation> Extract(HttpRequest request, CancellationToken cancellationToken)
     {
@@ -19,7 +19,7 @@ public class AzureOpenAiCallInformationExtractor : IIncomingCallExtractor
         var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
         var deserializedRequestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
 
-        var openAiUriParts = OpenAiUrlRegex.Match(request.GetEncodedPathAndQuery());
+        var openAiUriParts = OpenAiUrlRegex.Match(request.Path.ToString());
         var requestTypeRaw = openAiUriParts.Groups[2].Captures[0].Value;
 
         var requestType = requestTypeRaw switch
@@ -27,7 +27,6 @@ public class AzureOpenAiCallInformationExtractor : IIncomingCallExtractor
             "chat" => AICallType.Chat,
             "embeddings" => AICallType.Embeddings,
             "completions" => AICallType.Completions,
-            "images" => AICallType.Images,
             _ => throw new InvalidOperationException($"AICentral does not currently support {requestTypeRaw}")
         };
 
@@ -40,8 +39,6 @@ public class AzureOpenAiCallInformationExtractor : IIncomingCallExtractor
             AICallType.Embeddings => deserializedRequestContent.Value<string>("input") ?? string.Empty,
             AICallType.Completions => string.Join(Environment.NewLine,
                 deserializedRequestContent["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
-            AICallType.Images => string.Join(Environment.NewLine,
-                deserializedRequestContent["prompt"]?.Value<string>() ?? string.Empty),
             _ => throw new InvalidOperationException($"Unknown AICallType")
         };
 
@@ -51,6 +48,8 @@ public class AzureOpenAiCallInformationExtractor : IIncomingCallExtractor
             incomingModelName,
             deserializedRequestContent,
             promptText,
-            $"{openAiUriParts.Groups[2].Captures[0]}{openAiUriParts.Groups[3].Captures[0].Value}");
+            $"{openAiUriParts.Groups[2].Captures[0].Value}/{openAiUriParts.Groups[3].Captures[0].Value}",
+            QueryHelpers.ParseQuery(request.QueryString.Value ?? string.Empty)
+        );
     }
 }

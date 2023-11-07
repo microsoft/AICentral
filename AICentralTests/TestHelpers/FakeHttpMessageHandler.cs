@@ -12,20 +12,35 @@ public class FakeHttpMessageHandler : HttpMessageHandler
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        if (request.RequestUri.Host.Equals(AICentralFakeResponses.Endpoint200Image))
+        if (request.RequestUri!.AbsoluteUri.Equals($"https://api.openai.com/v1/chat/completions"))
         {
-            return Task.FromResult(AICentralFakeResponses.FakeImageResponse());
+            return Task.FromResult(_fakeResponse);
         }
-        
-        if (request.RequestUri!.Host.Equals(AICentralFakeResponses.Endpoint404))
+
+        if (request.RequestUri!.AbsoluteUri.Equals(
+                $"https://{AICentralFakeResponses.Endpoint404}/openai/deployments/Model1/chat/completions?api-version=2023-05-15"))
         {
             return Task.FromResult(AICentralFakeResponses.NotFoundResponse());
         }
 
-        if (request.RequestUri!.Host.Equals(AICentralFakeResponses.Endpoint500))
+        if (request.RequestUri!.AbsoluteUri.Equals(
+                $"https://{AICentralFakeResponses.Endpoint500}/openai/deployments/Model1/chat/completions?api-version=2023-05-15"))
         {
             return Task.FromResult(AICentralFakeResponses.InternalServerErrorResponse());
         }
-        return Task.FromResult(_fakeResponse);
+
+        if (request.RequestUri!.AbsoluteUri.Equals(
+                $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/Model1/chat/completions?api-version=2023-05-15"))
+        {
+            return Task.FromResult(_fakeResponse);
+        }
+
+        if (request.RequestUri!.AbsoluteUri.Equals(
+                $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/deployments/Model1/chat/completions?api-version=2023-05-15"))
+        {
+            return Task.FromResult(_fakeResponse);
+        }
+
+        throw new NotSupportedException($"No fake response registered for {request.RequestUri.AbsoluteUri}");
     }
 }

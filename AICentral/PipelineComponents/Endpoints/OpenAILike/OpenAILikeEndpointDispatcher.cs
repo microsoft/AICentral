@@ -3,8 +3,6 @@ using System.Net;
 using AICentral.PipelineComponents.Endpoints.OpenAILike.OpenAI;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace AICentral.PipelineComponents.Endpoints.OpenAILike;
 
@@ -29,7 +27,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherBuilder>>();
 
-        var mappedModelName = _modelMappings.TryGetValue(callInformation.IncomingModelName, out var mapping)
+        var mappedModelName = _modelMappings.TryGetValue(callInformation.IncomingModelName ?? string.Empty, out var mapping)
             ? mapping
             : string.Empty;
 

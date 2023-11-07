@@ -32,8 +32,8 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.ApiKeyAuth(),
                 TestPipelines.RandomEndpointPickerNoAuth(),
                 TestPipelines.PriorityEndpointPickerNoAuth(),
-                TestPipelines.FakeImage(),
-                TestPipelines.OpenAI()
+                TestPipelines.OpenAIService(),
+                TestPipelines.WithOpenAIEndpoint()
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));

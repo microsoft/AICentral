@@ -1,6 +1,6 @@
 ﻿using System.Text;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace AICentral.PipelineComponents.Endpoints.OpenAILike.AzureOpenAI;
 
@@ -13,24 +13,30 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         string id,
         string languageUrl,
         Dictionary<string, string> modelMappings,
-        IEndpointAuthorisationHandler authHandler): base(id, modelMappings)
+        IEndpointAuthorisationHandler authHandler) : base(id, modelMappings)
     {
         _languageUrl = languageUrl;
         _authHandler = authHandler;
     }
-    
+
     protected override HttpRequestMessage BuildRequest(
-        HttpContext context, 
+        HttpContext context,
         AICallInformation aiCallInformation,
         string mappedModelName)
     {
-        
+        aiCallInformation.QueryString.TryAdd("api-version", "2023-05-15");
+        var requestUri =
+            QueryHelpers.AddQueryString(
+                $"{_languageUrl}/openai/deployments/{mappedModelName}/{aiCallInformation.RemainingUrl}",
+                aiCallInformation.QueryString);
+
         var newRequest = new HttpRequestMessage(
             HttpMethod.Post,
-            $"{_languageUrl}/openai/deployments/{mappedModelName}/{aiCallInformation.RemainingUrl}"
+            requestUri
         )
         {
-            Content = new StringContent(aiCallInformation.RequestContent.ToString(Formatting.None), Encoding.UTF8, "application/json")
+            Content = new StringContent(aiCallInformation.RequestContent.ToString(Formatting.None), Encoding.UTF8,
+                "application/json")
         };
         _authHandler.ApplyAuthorisationToRequest(context.Request, newRequest);
         return newRequest;

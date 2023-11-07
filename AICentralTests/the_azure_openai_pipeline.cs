@@ -22,10 +22,23 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     }
 
     [Fact]
-    public async Task handles_images()
+    public async Task handles_chats()
     {
         var result = await _httpClient.PostAsync(
-            "/openai/deployments/api-key-auth-fake-image/images/generations?api-version=2023-05-15",
+            "/openai/deployments/random/chat/completions?api-version=2023-05-15",
+            new StringContent(JsonConvert.SerializeObject(new
+            {
+            }), Encoding.UTF8, "application/json"));
+
+        result.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var content = await result.Content.ReadAsStringAsync();
+        Approvals.VerifyJson(content);
+    }
+    [Fact]
+    public async Task can_dispatch_to_an_openai_pipeline()
+    {
+        var result = await _httpClient.PostAsync(
+            "/openai/deployments/openaiendpoint/chat/completions?api-version=2023-05-15",
             new StringContent(JsonConvert.SerializeObject(new
             {
             }), Encoding.UTF8, "application/json"));

@@ -1,7 +1,5 @@
 ﻿using System.Net;
 using System.Text;
-using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.OpenAILike.AzureOpenAI;
 using Newtonsoft.Json;
 
 namespace AICentralTests.TestHelpers;
@@ -12,27 +10,7 @@ public class AICentralFakeResponses
     public static readonly string Endpoint404 = Guid.NewGuid().ToString();
     public static readonly string Endpoint200 = Guid.NewGuid().ToString();
     public static readonly string Endpoint200Number2 = Guid.NewGuid().ToString();
-    public static readonly string Endpoint200Image = Guid.NewGuid().ToString();
-
-    public static HttpResponseMessage FakeImageResponse()
-    {
-        return new HttpResponseMessage()
-        {
-            Content = new StringContent(
-                JsonConvert.SerializeObject(new
-                {
-                    Created = new DateTimeOffset(2023, 11, 7, 11, 10, 0, TimeSpan.FromHours(8)).ToUnixTimeSeconds(),
-                    Data = new []
-                    {
-                        new
-                        {
-                            url = "https://fakeimage.localtest.me/some-image"
-                        }
-                    }
-                }))
-        };
-    }
-
+    
     public static HttpResponseMessage FakeResponse()
     {
         var response = new HttpResponseMessage();

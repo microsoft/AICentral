@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace AICentral.PipelineComponents.Endpoints;
+﻿namespace AICentral.PipelineComponents.Endpoints;
 
 /// <summary>
 /// Registered as a Typed Http Client to leverage HttpClientFactory. Created with an IAIEndpointDispatcher to allow a fake for testing purposes
