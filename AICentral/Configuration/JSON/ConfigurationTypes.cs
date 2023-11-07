@@ -71,9 +71,3 @@ public static class ConfigurationTypes
         public bool? LogResponse { get; init; }
     }
 }
-
-public enum EndpointType
-{
-    AzureOpenAI,
-    OpenAI
-}
