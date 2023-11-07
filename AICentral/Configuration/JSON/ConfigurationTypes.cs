@@ -33,6 +33,7 @@ public static class ConfigurationTypes
     public class AICentralPipelineConfig
     {
         public string? Name { get; init; }
+        public bool? IsPassThrough { get; init; }
         public EndpointType? EndpointType { get; init; }
         public string? Path { get; init; }
         public string? EndpointSelector { get; init; }

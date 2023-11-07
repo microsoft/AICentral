@@ -8,7 +8,7 @@ namespace AICentral;
 public class AzureOpenAiCallInformationExtractor : IIncomingCallExtractor
 {
     private static readonly Regex
-        OpenAiUrlRegex = new("^/openai/deployments/(.*?)/(embeddings|chat|completions)/(.*)$");
+        OpenAiUrlRegex = new("^/openai/deployments/(.*?)/(.*?)/(.*)$");
 
     public async Task<AICallInformation> Extract(HttpRequest request, CancellationToken cancellationToken)
     {
@@ -26,7 +26,7 @@ public class AzureOpenAiCallInformationExtractor : IIncomingCallExtractor
             "chat" => AICallType.Chat,
             "embeddings" => AICallType.Embeddings,
             "completions" => AICallType.Completions,
-            _ => throw new InvalidOperationException($"AICentral does not currently support {requestTypeRaw}")
+            _ => AICallType.Other // throw new InvalidOperationException($"AICentral does not currently support {requestTypeRaw}")
         };
 
         var promptText = requestType switch

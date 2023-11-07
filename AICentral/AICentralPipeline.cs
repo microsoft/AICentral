@@ -9,6 +9,7 @@ namespace AICentral;
 
 public class AICentralPipeline
 {
+    private readonly bool _isPassThrough;
     private readonly string _name;
     private readonly PathMatchRouter _router;
     private readonly IAICentralClientAuthStep _clientAuthStep;
@@ -18,12 +19,14 @@ public class AICentralPipeline
 
     public AICentralPipeline(
         EndpointType endpointType,
+        bool isPassThrough,
         string name,
         PathMatchRouter router,
         IAICentralClientAuthStep clientAuthStep,
         IList<IAICentralPipelineStep> pipelineSteps,
         IEndpointSelector endpointSelector)
     {
+        _isPassThrough = isPassThrough;
         _name = name;
         _incomingCallExtractor = endpointType switch
         {
