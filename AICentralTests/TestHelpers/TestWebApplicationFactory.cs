@@ -38,7 +38,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));
             assembler.AddServices(services, NullLogger.Instance);
 
-            var fakeClient = new HttpClient(new FakeHttpMessageHandler(AICentralFakeResponses.FakeResponse()));
+            var fakeClient = new HttpClient(new FakeHttpMessageHandler());
             services.AddSingleton<IHttpClientFactory>(new FakeHttpClientFactory(fakeClient));
         });
         return base.CreateHost(builder);

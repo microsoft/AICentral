@@ -2,19 +2,12 @@
 
 public class FakeHttpMessageHandler : HttpMessageHandler
 {
-    private readonly HttpResponseMessage _fakeResponse;
-
-    public FakeHttpMessageHandler(HttpResponseMessage fakeResponse)
-    {
-        _fakeResponse = fakeResponse;
-    }
-
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        if (request.RequestUri!.AbsoluteUri.Equals($"https://api.openai.com/v1/chat/completions"))
+        if (request.RequestUri!.AbsoluteUri.Equals("https://api.openai.com/v1/chat/completions"))
         {
-            return Task.FromResult(_fakeResponse);
+            return Task.FromResult(AICentralFakeResponses.FakeResponse());
         }
 
         if (request.RequestUri!.AbsoluteUri.Equals(
@@ -32,13 +25,13 @@ public class FakeHttpMessageHandler : HttpMessageHandler
         if (request.RequestUri!.AbsoluteUri.Equals(
                 $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/Model1/chat/completions?api-version=2023-05-15"))
         {
-            return Task.FromResult(_fakeResponse);
+            return Task.FromResult(AICentralFakeResponses.FakeResponse());
         }
 
         if (request.RequestUri!.AbsoluteUri.Equals(
                 $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/deployments/Model1/chat/completions?api-version=2023-05-15"))
         {
-            return Task.FromResult(_fakeResponse);
+            return Task.FromResult(AICentralFakeResponses.FakeResponse());
         }
 
         throw new NotSupportedException($"No fake response registered for {request.RequestUri.AbsoluteUri}");
