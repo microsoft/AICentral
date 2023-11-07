@@ -1,5 +1,4 @@
 ﻿using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 
 namespace AICentral.PipelineComponents.EndpointSelectors.Single;
 

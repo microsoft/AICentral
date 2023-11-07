@@ -1,5 +1,4 @@
 ﻿using AICentral.Configuration.JSON;
-using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
 using Serilog;
 
 namespace AICentral.PipelineComponents.Logging;

@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Text;
 using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
+using AICentral.PipelineComponents.Endpoints.OpenAILike.AzureOpenAI;
 using Newtonsoft.Json;
 
 namespace AICentralTests.TestHelpers;

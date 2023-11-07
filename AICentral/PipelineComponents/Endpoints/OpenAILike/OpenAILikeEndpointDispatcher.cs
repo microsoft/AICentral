@@ -1,37 +1,30 @@
 ﻿using System.Diagnostics;
 using System.Net;
+using AICentral.PipelineComponents.Endpoints.OpenAILike.OpenAI;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace AICentral.PipelineComponents.Endpoints.AzureOpenAI;
+namespace AICentral.PipelineComponents.Endpoints.OpenAILike;
 
-public class AzureOpenAIEndpointDispatcher : IAICentralEndpointDispatcher
+public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatcher
 {
-    private readonly string _id;
-    private readonly string _languageUrl;
     private readonly Dictionary<string, string> _modelMappings;
-    private readonly IEndpointAuthorisationHandler _authHandler;
+    private readonly string _id;
 
-    public AzureOpenAIEndpointDispatcher(
+    public OpenAILikeEndpointDispatcher(
         string id,
-        string languageUrl,
-        Dictionary<string, string> modelMappings,
-        IEndpointAuthorisationHandler authHandler)
+        Dictionary<string, string> modelMappings)
     {
         _id = id;
-        _languageUrl = languageUrl;
         _modelMappings = modelMappings;
-        _authHandler = authHandler;
     }
 
     public async Task<(AICentralRequestInformation, HttpResponseMessage)> Handle(HttpContext context,
         AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherBuilder>>();
-        var typedDispatcher = context.RequestServices.GetRequiredService<ITypedHttpClientFactory<HttpAIEndpointDispatcher>>()
-            .CreateClient(context.RequestServices.GetRequiredService<IHttpClientFactory>().CreateClient(_id));
 
         context.Request.EnableBuffering(); //we may need to re-read the request if it fails.
         context.Request.Body.Position = 0;
@@ -40,11 +33,11 @@ public class AzureOpenAIEndpointDispatcher : IAICentralEndpointDispatcher
             requestReader =
                 new StreamReader(context.Request.Body,
                     leaveOpen: true); //leave open in-case we need to re-read it. TODO, optimise this and read it once.
+
         var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
         var deserializedRequestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
 
-        var extractor = new AzureOpenAiCallInformationExtractor();
-        var callInformation = extractor.Extract(context.Request, deserializedRequestContent);
+        var callInformation = ExtractAICallInformation(context, deserializedRequestContent);
 
         var mappedModelName = _modelMappings.TryGetValue(callInformation.IncomingModelName, out var mapping)
             ? mapping
@@ -52,25 +45,37 @@ public class AzureOpenAIEndpointDispatcher : IAICentralEndpointDispatcher
 
         if (mappedModelName == string.Empty)
         {
-            return (new AICentralRequestInformation(
-                _languageUrl, callInformation.AICallType, callInformation.PromptText, DateTimeOffset.Now, TimeSpan.Zero
-            ), new HttpResponseMessage(HttpStatusCode.NotFound));
+            return (
+                new AICentralRequestInformation(
+                    HostUriBase,
+                    callInformation.AICallType,
+                    callInformation.PromptText,
+                    DateTimeOffset.Now,
+                    TimeSpan.Zero
+                ), new HttpResponseMessage(HttpStatusCode.NotFound));
         }
 
-        var newUri = $"{_languageUrl}/openai/deployments/{mappedModelName}/{callInformation.RemainingUrl}";
+        var newRequest = BuildRequest(context, callInformation, mappedModelName, deserializedRequestContent);
+
         logger.LogDebug(
             "Rewritten URL from {OriginalUrl} to {NewUrl}. Incoming Model: {IncomingModelName}. Mapped Model: {MappedModelName}",
             context.Request.GetEncodedUrl(),
-            newUri,
+            newRequest!.RequestUri!.AbsoluteUri,
             callInformation.IncomingModelName,
             mappedModelName);
 
         var now = DateTimeOffset.Now;
         var sw = new Stopwatch();
 
+        var typedDispatcher = context.RequestServices
+            .GetRequiredService<ITypedHttpClientFactory<HttpAIEndpointDispatcher>>()
+            .CreateClient(
+                context.RequestServices.GetRequiredService<IHttpClientFactory>()
+                    .CreateClient(_id)
+            );
+
         sw.Start();
-        var openAiResponse =
-            await typedDispatcher.Dispatch(context, newUri, requestRawContent, _authHandler, cancellationToken);
+        var openAiResponse = await typedDispatcher.Dispatch(newRequest, cancellationToken);
 
         //this will retry the operation for retryable status codes. When we reach here we might not want
         //to stream the response if it wasn't a 200.
@@ -80,21 +85,32 @@ public class AzureOpenAIEndpointDispatcher : IAICentralEndpointDispatcher
         logger.LogDebug("Received Azure Open AI Response. Status Code: {StatusCode}", openAiResponse.StatusCode);
 
         var requestInformation =
-            new AICentralRequestInformation(_languageUrl, callInformation.AICallType, callInformation.PromptText, now,
+            new AICentralRequestInformation(
+                HostUriBase,
+                callInformation.AICallType,
+                callInformation.PromptText,
+                now,
                 sw.Elapsed);
 
         return (requestInformation, openAiResponse);
     }
 
-    public object WriteDebug()
+    public virtual object WriteDebug()
     {
         return new
         {
-            Type = "AzureOpenAI",
-            Url = _languageUrl,
             ModelMappings = _modelMappings,
-            Auth = _authHandler.WriteDebug()
         };
     }
+    
+    protected abstract string HostUriBase { get; }
 
+    protected abstract HttpRequestMessage BuildRequest(
+        HttpContext context,
+        AICallInformation aiCallInformation,
+        string mappedModelName,
+        JObject deserializedRequestContent);
+
+    protected abstract AICallInformation ExtractAICallInformation(HttpContext context,
+        JObject deserializedRequestContent);
 }

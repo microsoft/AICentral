@@ -1,10 +1,6 @@
 ﻿using AICentral.Configuration.JSON;
-using AICentral.PipelineComponents.Endpoints.AzureOpenAI;
-using Polly;
-using Polly.CircuitBreaker;
-using Polly.Retry;
 
-namespace AICentral.PipelineComponents.Endpoints.OpenAI;
+namespace AICentral.PipelineComponents.Endpoints.OpenAILike.OpenAI;
 
 public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuilder
 {

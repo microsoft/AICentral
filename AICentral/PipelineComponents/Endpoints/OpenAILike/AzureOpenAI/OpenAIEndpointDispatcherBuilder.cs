@@ -1,6 +1,6 @@
 ﻿using AICentral.Configuration.JSON;
 
-namespace AICentral.PipelineComponents.Endpoints.AzureOpenAI;
+namespace AICentral.PipelineComponents.Endpoints.OpenAILike.AzureOpenAI;
 
 public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuilder
 {
