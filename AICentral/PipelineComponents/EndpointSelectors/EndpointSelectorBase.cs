@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Text;
-using AICentral.PipelineComponents.Endpoints;
 using AICentral.PipelineComponents.Endpoints.ResultHandlers;
 using Microsoft.DeepDev;
 using Microsoft.Extensions.Primitives;
@@ -94,6 +93,7 @@ public abstract class EndpointSelectorBase : IEndpointSelector
             var promptTokens = usage?.Value<int>("prompt_tokens") ?? 0;
             var totalTokens = usage?.Value<int>("total_tokens") ?? 0;
             var completionTokens = usage?.Value<int>("completion_tokens") ?? 0;
+            var responseContent = response?["choices"]?.FirstOrDefault()?["message"]?.Value<string>("content") ?? string.Empty;
 
             var chatRequestInformation = new AICentralUsageInformation(
                 requestInformation.LanguageUrl,
@@ -101,6 +101,7 @@ public abstract class EndpointSelectorBase : IEndpointSelector
                 context.User.Identity?.Name ?? "unknown",
                 requestInformation.CallType,
                 requestInformation.Prompt,
+                responseContent,
                 0,
                 0,
                 promptTokens,
@@ -122,6 +123,7 @@ public abstract class EndpointSelectorBase : IEndpointSelector
                 context.User.Identity?.Name ?? "unknown",
                 requestInformation.CallType,
                 requestInformation.Prompt,
+                string.Empty,
                 0,
                 0,
                 0,
@@ -171,8 +173,8 @@ public abstract class EndpointSelectorBase : IEndpointSelector
                 {
                     var lineObject = (JObject)JsonConvert.DeserializeObject(line.Substring(StreamingLinePrefixLength))!;
                     model = lineObject.Value<string>("model")!;
-                    var completions = lineObject["choices"]?[0]?["delta"]?.Value<string>("content") ?? "";
-                    content.AppendLine(completions);
+                    var completions = lineObject["choices"]?.FirstOrDefault()?["delta"]?.Value<string>("content") ?? "";
+                    content.Append(completions);
                 }
             }
         }
@@ -180,7 +182,8 @@ public abstract class EndpointSelectorBase : IEndpointSelector
         //calculate prompt tokens
         var tokeniser = Tokenisers.TryGetValue(model, out var val) ? val : Tokenisers["gpt-35-turbo"];
         var estimatedPromptTokens = tokeniser.Encode(requestInformation.Prompt, Array.Empty<string>()).Count;
-        var estimatedCompletionTokens = tokeniser.Encode(content.ToString(), Array.Empty<string>()).Count;
+        var responseText = content.ToString();
+        var estimatedCompletionTokens = tokeniser.Encode(responseText, Array.Empty<string>()).Count;
 
         logger.LogDebug(
             "Streamed response. Estimated prompt tokens {EstimatedPromptTokens}. Estimated Completion Tokens {EstimatedCompletionTokens}",
@@ -193,6 +196,7 @@ public abstract class EndpointSelectorBase : IEndpointSelector
             context.User.Identity?.Name ?? "unknown",
             requestInformation.CallType,
             requestInformation.Prompt,
+            responseText,
             estimatedPromptTokens,
             estimatedCompletionTokens,
             0,

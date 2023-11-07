@@ -58,6 +58,7 @@ public class AICentralPipeline
                         string.Empty,
                         requestDetails.AICallType,
                         requestDetails.PromptText,
+                        string.Empty,
                         0,
                         0,
                         0,
