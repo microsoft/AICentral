@@ -26,10 +26,24 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
     {
         var newRequest = aiCallInformation.RequestContent.DeepClone();
         newRequest["model"] = mappedModelName;
-        
+
+        var pathPiece = aiCallInformation.AICallType switch
+        {
+            AICallType.Chat => "chat/completions",
+            AICallType.Completions => "completions",
+            AICallType.Embeddings => "embeddings",
+            _ => string.Empty
+        };
+
+        var requestUri = aiCallInformation.AICallType == AICallType.Other
+            ? aiCallInformation.AIServiceType == AIServiceType.OpenAI
+                ? $"{OpenAIV1}{context.Request.Path}"
+                : throw new InvalidOperationException("Unable to dispatch 'other' Azure Open AI request to Open AI")
+            : $"{OpenAIV1}/{pathPiece}";
+
         var request = new HttpRequestMessage(
             HttpMethod.Post,
-            $"{OpenAIV1}/{aiCallInformation.RemainingUrl}"
+            requestUri
         )
         {
             Content = new StringContent(newRequest.ToString(Formatting.None), Encoding.UTF8, "application/json"),

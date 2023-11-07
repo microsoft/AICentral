@@ -37,6 +37,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         var content = await result.Content.ReadAsStringAsync();
         Approvals.VerifyJson(content);
     }
+    
     [Fact]
     public async Task can_dispatch_to_an_openai_pipeline()
     {
@@ -54,8 +55,10 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     [Fact]
     public async Task works_with_the_azure_sdk_chat_completions()
     {
-        var client = new OpenAIClient(_httpClient.BaseAddress, new AzureKeyCredential("ignore"),
-            new OpenAIClientOptions()
+        var client = new OpenAIClient(
+            _httpClient.BaseAddress, 
+            new AzureKeyCredential("ignore"),
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
             {
                 Transport = new HttpClientTransport(_httpClient)
             });
@@ -64,9 +67,51 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             new ChatCompletionsOptions()
             {
                 Messages = { new ChatMessage(ChatRole.System, "Hello world!") },
-                DeploymentName = "openaiendpoint"
+                DeploymentName = "random"
             });
         
         completions.Value.Id.ShouldBe(AICentralFakeResponses.FakeResponseId);
     }
+
+    [Fact]
+    public async Task works_with_the_azure_sdk_completions()
+    {
+        var client = new OpenAIClient(
+            _httpClient.BaseAddress, 
+            new AzureKeyCredential("ignore"),
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
+            {
+                Transport = new HttpClientTransport(_httpClient)
+            });
+
+        var completions = await client.GetCompletionsAsync(
+            new CompletionsOptions()
+            {
+                Prompts = { "Hello world!" },
+                DeploymentName = "random"
+            });
+        
+        completions.Value.Id.ShouldBe(AICentralFakeResponses.FakeResponseId);
+    }
+    
+    
+    [Fact]
+    public async Task cannot_proxy_an_image_request_from_azure_openai_endpoint_to_openai_downstream()
+    {
+        var client = new OpenAIClient(
+            _httpClient.BaseAddress, 
+            new AzureKeyCredential("ignore"),
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
+            {
+                Transport = new HttpClientTransport(_httpClient)
+            });
+
+        Should.Throw<RequestFailedException>(async () =>
+            await client.GetImageGenerationsAsync(
+                new ImageGenerationOptions()
+                {
+                    Prompt = "Me building an Open AI Reverse Proxy"
+                }));
+    }
+
 }

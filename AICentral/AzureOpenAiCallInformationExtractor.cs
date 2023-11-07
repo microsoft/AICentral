@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -7,9 +8,6 @@ namespace AICentral;
 
 public class AzureOpenAiCallInformationExtractor : IIncomingCallExtractor
 {
-    private static readonly Regex
-        OpenAiUrlRegex = new("^/openai/deployments/(.*?)/(.*?)/(.*)$");
-
     public async Task<AICallInformation> Extract(HttpRequest request, CancellationToken cancellationToken)
     {
         using var
@@ -18,16 +16,20 @@ public class AzureOpenAiCallInformationExtractor : IIncomingCallExtractor
         var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
         var deserializedRequestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
 
-        var openAiUriParts = OpenAiUrlRegex.Match(request.Path.ToString());
-        var requestTypeRaw = openAiUriParts.Groups[2].Captures[0].Value;
-
-        var requestType = requestTypeRaw switch
+        var requestType = AICallType.Other;
+        var modelName = string.Empty;
+        if (request.Path.StartsWithSegments("/openai/deployments", out var deploymentPath))
         {
-            "chat" => AICallType.Chat,
-            "embeddings" => AICallType.Embeddings,
-            "completions" => AICallType.Completions,
-            _ => AICallType.Other // throw new InvalidOperationException($"AICentral does not currently support {requestTypeRaw}")
-        };
+            var remaining = deploymentPath.ToString().Split('/');
+            modelName = remaining[1];
+            requestType = remaining[2] switch
+            {
+                "chat" => AICallType.Chat,
+                "completions" => AICallType.Completions,
+                "embeddings" => AICallType.Embeddings,
+                _ => AICallType.Other
+            };
+        }
 
         var promptText = requestType switch
         {
@@ -41,13 +43,12 @@ public class AzureOpenAiCallInformationExtractor : IIncomingCallExtractor
             _ => throw new InvalidOperationException($"Unknown AICallType")
         };
 
-        var incomingModelName = openAiUriParts.Groups[1].Captures[0].Value;
         return new AICallInformation(
+            AIServiceType.AzureOpenAI,
             requestType,
-            incomingModelName,
+            modelName,
             deserializedRequestContent,
             promptText,
-            $"{openAiUriParts.Groups[2].Captures[0].Value}/{openAiUriParts.Groups[3].Captures[0].Value}",
             QueryHelpers.ParseQuery(request.QueryString.Value ?? string.Empty)
         );
     }

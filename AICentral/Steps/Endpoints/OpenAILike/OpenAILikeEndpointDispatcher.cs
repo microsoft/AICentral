@@ -31,7 +31,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
             ? mapping
             : string.Empty;
 
-        if (mappedModelName == string.Empty)
+        if (callInformation.AICallType != AICallType.Other && mappedModelName == string.Empty)
         {
             return (
                 new AICentralRequestInformation(
@@ -43,44 +43,58 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
                 ), new HttpResponseMessage(HttpStatusCode.NotFound));
         }
 
-        var newRequest = BuildRequest(context, callInformation, mappedModelName);
+        try
+        {
+            var newRequest = BuildRequest(context, callInformation, mappedModelName);
 
-        logger.LogDebug(
-            "Rewritten URL from {OriginalUrl} to {NewUrl}. Incoming Model: {IncomingModelName}. Mapped Model: {MappedModelName}",
-            context.Request.GetEncodedUrl(),
-            newRequest!.RequestUri!.AbsoluteUri,
-            callInformation.IncomingModelName,
-            mappedModelName);
+            logger.LogDebug(
+                "Rewritten URL from {OriginalUrl} to {NewUrl}. Incoming Model: {IncomingModelName}. Mapped Model: {MappedModelName}",
+                context.Request.GetEncodedUrl(),
+                newRequest.RequestUri!.AbsoluteUri,
+                callInformation.IncomingModelName,
+                mappedModelName);
 
-        var now = DateTimeOffset.Now;
-        var sw = new Stopwatch();
+            var now = DateTimeOffset.Now;
+            var sw = new Stopwatch();
 
-        var typedDispatcher = context.RequestServices
-            .GetRequiredService<ITypedHttpClientFactory<HttpAIEndpointDispatcher>>()
-            .CreateClient(
-                context.RequestServices.GetRequiredService<IHttpClientFactory>()
-                    .CreateClient(_id)
-            );
+            var typedDispatcher = context.RequestServices
+                .GetRequiredService<ITypedHttpClientFactory<HttpAIEndpointDispatcher>>()
+                .CreateClient(
+                    context.RequestServices.GetRequiredService<IHttpClientFactory>()
+                        .CreateClient(_id)
+                );
 
-        sw.Start();
-        var openAiResponse = await typedDispatcher.Dispatch(newRequest, cancellationToken);
+            sw.Start();
+            var openAiResponse = await typedDispatcher.Dispatch(newRequest, cancellationToken);
 
-        //this will retry the operation for retryable status codes. When we reach here we might not want
-        //to stream the response if it wasn't a 200.
-        sw.Stop();
+            //this will retry the operation for retryable status codes. When we reach here we might not want
+            //to stream the response if it wasn't a 200.
+            sw.Stop();
 
-        //decision point... If this is a streaming request, then we should start streaming the result now.
-        logger.LogDebug("Received Azure Open AI Response. Status Code: {StatusCode}", openAiResponse.StatusCode);
+            //decision point... If this is a streaming request, then we should start streaming the result now.
+            logger.LogDebug("Received Azure Open AI Response. Status Code: {StatusCode}", openAiResponse.StatusCode);
 
-        var requestInformation =
-            new AICentralRequestInformation(
-                HostUriBase,
-                callInformation.AICallType,
-                callInformation.PromptText,
-                now,
-                sw.Elapsed);
+            var requestInformation =
+                new AICentralRequestInformation(
+                    HostUriBase,
+                    callInformation.AICallType,
+                    callInformation.PromptText,
+                    now,
+                    sw.Elapsed);
 
-        return (requestInformation, openAiResponse);
+            return (requestInformation, openAiResponse);
+        }
+        catch (NotSupportedException ne)
+        {
+            logger.LogWarning(ne, "Invalid usage detected");
+            return (new AICentralRequestInformation(
+                    HostUriBase,
+                    AICallType.Other,
+                    callInformation.PromptText,
+                    DateTimeOffset.Now,
+                    TimeSpan.Zero),
+                new HttpResponseMessage(HttpStatusCode.BadRequest));
+        }
     }
 
     public virtual object WriteDebug()

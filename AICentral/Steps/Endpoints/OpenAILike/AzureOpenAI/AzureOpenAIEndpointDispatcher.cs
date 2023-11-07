@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 
@@ -15,7 +16,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         Dictionary<string, string> modelMappings,
         IEndpointAuthorisationHandler authHandler) : base(id, modelMappings)
     {
-        _languageUrl = languageUrl;
+        _languageUrl = languageUrl.EndsWith('/') ? languageUrl[..^1] : languageUrl;
         _authHandler = authHandler;
     }
 
@@ -25,14 +26,24 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         string mappedModelName)
     {
         aiCallInformation.QueryString.TryAdd("api-version", "2023-05-15");
-        var requestUri =
-            QueryHelpers.AddQueryString(
-                $"{_languageUrl}/openai/deployments/{mappedModelName}/{aiCallInformation.RemainingUrl}",
-                aiCallInformation.QueryString);
 
+        var pathPiece = aiCallInformation.AICallType switch
+        {
+            AICallType.Chat => "chat/completions",
+            AICallType.Completions => "completions",
+            AICallType.Embeddings => "embeddings",
+            _ => string.Empty
+        };
+
+        var requestUri = aiCallInformation.AICallType == AICallType.Other
+            ? aiCallInformation.AIServiceType == AIServiceType.AzureOpenAI
+                ? $"{_languageUrl}{context.Request.Path}"
+                : throw new NotSupportedException("Unable to dispatch 'other' Open AI request to Azure Open AI")
+            : $"{_languageUrl}/openai/deployments/{mappedModelName}/{pathPiece}";
+            
         var newRequest = new HttpRequestMessage(
             HttpMethod.Post,
-            requestUri
+            QueryHelpers.AddQueryString(requestUri, aiCallInformation.QueryString)
         )
         {
             Content = new StringContent(aiCallInformation.RequestContent.ToString(Formatting.None), Encoding.UTF8,

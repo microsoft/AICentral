@@ -31,7 +31,7 @@ public class AICentralPipeline
         _incomingCallExtractor = endpointType switch
         {
             EndpointType.AzureOpenAI => new AzureOpenAiCallInformationExtractor(),
-            EndpointType.OpenAI => new OpenAiCallInformationExtractor(),
+            EndpointType.OpenAI => new OpenAICallInformationExtractor(),
             _ => throw new InvalidOperationException("Unsupported Pipeline type")
         };
         _router = router;
@@ -51,29 +51,7 @@ public class AICentralPipeline
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
 
         var requestDetails = await _incomingCallExtractor.Extract(context.Request, cancellationToken);
-
-        if (requestDetails.IncomingModelName == null)
-        {
-            return
-                new AICentralResponse(new AICentralUsageInformation(
-                        string.Empty,
-                        string.Empty,
-                        string.Empty,
-                        requestDetails.AICallType,
-                        requestDetails.PromptText,
-                        string.Empty,
-                        0,
-                        0,
-                        0,
-                        0,
-                        0,
-                        string.Empty,
-                        DateTimeOffset.Now,
-                        TimeSpan.Zero
-                    ),
-                    Results.Problem("No model detected", statusCode: 400));
-        }
-
+        
         var executor = new AICentralPipelineExecutor(_pipelineSteps, _endpointSelector);
         var result = await executor.Next(context, requestDetails, cancellationToken);
         logger.LogInformation("Executed Pipeline {PipelineName}", _name);

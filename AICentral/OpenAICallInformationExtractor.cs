@@ -5,11 +5,8 @@ using Newtonsoft.Json.Linq;
 
 namespace AICentral;
 
-public class OpenAiCallInformationExtractor : IIncomingCallExtractor
+public class OpenAICallInformationExtractor : IIncomingCallExtractor
 {
-    private static readonly Regex
-        OpenAiUrlRegex = new("^/v1/(.*?)/(.*)$");
-
     public async Task<AICallInformation> Extract(HttpRequest request, CancellationToken cancellationToken)
     {
         using var
@@ -18,8 +15,8 @@ public class OpenAiCallInformationExtractor : IIncomingCallExtractor
         var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
         var deserializedRequestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
 
-        var openAiUriParts = OpenAiUrlRegex.Match(request.Path.ToString());
-        var requestTypeRaw = openAiUriParts.Groups[1].Captures[0].Value;
+        request.Path.StartsWithSegments("/v1", out var deploymentPath);
+        var requestTypeRaw = deploymentPath.ToString().Split('/')[1];
 
         var requestType = requestTypeRaw switch
         {
@@ -38,17 +35,17 @@ public class OpenAiCallInformationExtractor : IIncomingCallExtractor
             AICallType.Embeddings => deserializedRequestContent.Value<string>("input") ?? string.Empty,
             AICallType.Completions => string.Join(Environment.NewLine,
                 deserializedRequestContent["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
-            _ => throw new InvalidOperationException($"Unknown AICallType")
+            _ => deserializedRequestContent.Value<string>("prompt") ?? string.Empty
         };
 
         var incomingModelName = deserializedRequestContent.Value<string>("model");
 
         return new AICallInformation(
+            AIServiceType.OpenAI,
             requestType,
             incomingModelName,
             deserializedRequestContent,
             promptText,
-            $"{openAiUriParts.Groups[1].Captures[0].Value}/{openAiUriParts.Groups[2].Captures[0].Value}",
             QueryHelpers.ParseQuery(request.QueryString.Value ?? string.Empty));
     }
 }

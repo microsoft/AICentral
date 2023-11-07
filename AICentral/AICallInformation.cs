@@ -4,9 +4,9 @@ using Newtonsoft.Json.Linq;
 namespace AICentral;
 
 public record AICallInformation(
+    AIServiceType AIServiceType,
     AICallType AICallType, 
     string? IncomingModelName, 
     JObject RequestContent,
     string PromptText, 
-    string RemainingUrl,
     Dictionary<string, StringValues> QueryString);
