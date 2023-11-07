@@ -1,4 +1,6 @@
-﻿namespace AICentral.PipelineComponents.RateLimiting;
+﻿using AICentral.PipelineComponents.Endpoints;
+
+namespace AICentral.PipelineComponents.RateLimiting;
 
 public class NoRateLimitingProvider : IAICentralGenericStepBuilder<IAICentralPipelineStep>, IAICentralPipelineStep
 {
@@ -21,9 +23,10 @@ public class NoRateLimitingProvider : IAICentralGenericStepBuilder<IAICentralPip
         return this;
     }
 
-    public Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
+    public Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
+        AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
     {
-        return pipeline.Next(context, cancellationToken);
+        return pipeline.Next(context, aiCallInformation, cancellationToken);
     }
 
     public object WriteDebug()

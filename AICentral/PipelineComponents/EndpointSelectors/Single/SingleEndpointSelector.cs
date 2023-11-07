@@ -11,10 +11,11 @@ public class SingleEndpointSelector : EndpointSelectorBase
         _endpoint = endpoint;
     }
 
-    public override async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
+    public override async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
+        AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
-        var responseMessage = await _endpoint.Handle(context, pipeline, cancellationToken);
+        var responseMessage = await _endpoint.Handle(context, aiCallInformation, pipeline, cancellationToken);
         return await HandleResponse(
             context.RequestServices.GetRequiredService<ILogger<SingleEndpointSelector>>(),
             context,

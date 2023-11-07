@@ -22,8 +22,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
     protected override HttpRequestMessage BuildRequest(
         HttpContext context, 
         AICallInformation aiCallInformation,
-        string mappedModelName,
-        JObject deserializedRequestContent)
+        string mappedModelName)
     {
         
         var newRequest = new HttpRequestMessage(
@@ -31,15 +30,10 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
             $"{_languageUrl}/openai/deployments/{mappedModelName}/{aiCallInformation.RemainingUrl}"
         )
         {
-            Content = new StringContent(deserializedRequestContent.ToString(Formatting.None), Encoding.UTF8, "application/json")
+            Content = new StringContent(aiCallInformation.RequestContent.ToString(Formatting.None), Encoding.UTF8, "application/json")
         };
         _authHandler.ApplyAuthorisationToRequest(context.Request, newRequest);
         return newRequest;
-    }
-
-    protected override AICallInformation ExtractAICallInformation(HttpContext context, JObject deserializedRequestContent)
-    {
-        return new AzureOpenAiCallInformationExtractor().Extract(context.Request, deserializedRequestContent);
     }
 
     public override object WriteDebug()

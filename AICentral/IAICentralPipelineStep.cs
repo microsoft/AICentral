@@ -1,9 +1,11 @@
-﻿namespace AICentral;
+﻿using AICentral.PipelineComponents.Endpoints;
+
+namespace AICentral;
 
 public interface IAICentralPipelineStep
 {
-    Task<AICentralResponse> Handle(
-        HttpContext context, AICentralPipelineExecutor pipeline,
+    Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
+        AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken);
 
     object WriteDebug();

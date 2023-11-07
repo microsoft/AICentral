@@ -13,6 +13,7 @@ public class AICentralPipeline
     private readonly IAICentralClientAuthStep _clientAuthStep;
     private readonly IList<IAICentralPipelineStep> _pipelineSteps;
     private readonly IEndpointSelector _endpointSelector;
+    private readonly IIncomingCallExtractor _incomingCallExtractor = new AzureOpenAiCallInformationExtractor();
 
     public AICentralPipeline(
         string name,
@@ -37,8 +38,9 @@ public class AICentralPipeline
         });
 
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
+        var requestDetails = await _incomingCallExtractor.Extract(context.Request, cancellationToken);
         var executor = new AICentralPipelineExecutor(_pipelineSteps, _endpointSelector);
-        var result = await executor.Next(context, cancellationToken);
+        var result = await executor.Next(context, requestDetails, cancellationToken);
         logger.LogInformation("Executed Pipeline {PipelineName}", _name);
         return result;
     }

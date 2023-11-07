@@ -1,4 +1,6 @@
-﻿namespace AICentral.PipelineComponents.Auth.Entra;
+﻿using AICentral.PipelineComponents.Endpoints;
+
+namespace AICentral.PipelineComponents.Auth.Entra;
 
 public class EntraClientAuthProvider : IAICentralClientAuthStep
 {
@@ -9,10 +11,11 @@ public class EntraClientAuthProvider : IAICentralClientAuthStep
         _entraAuthPolicyId = entraAuthPolicyId;
     }
     
-    public Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
+    public Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
+        AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
-        return pipeline.Next(context, cancellationToken);
+        return pipeline.Next(context, aiCallInformation, cancellationToken);
     }
     
     

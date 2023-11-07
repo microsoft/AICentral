@@ -1,4 +1,5 @@
-﻿using ILogger = Serilog.ILogger;
+﻿using AICentral.PipelineComponents.Endpoints;
+using ILogger = Serilog.ILogger;
 
 namespace AICentral.PipelineComponents.Logging;
 
@@ -15,10 +16,11 @@ public class AzureMonitorLogger : IAICentralPipelineStep
         this._logPrompt = logPrompt;
     }
     
-    public async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
+    public async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
+        AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
-        var result = await pipeline.Next(context, cancellationToken);
+        var result = await pipeline.Next(context, aiCallInformation, cancellationToken);
 
         _serilogAzureLogAnalyticsLogger.Information(
             "AzureOpenAI call. ClientIP:{ClientIP} Host:{OpenAiHost}. Prompt:{Prompt}. Estimated Prompt Tokens:{EstimatedPromptTokens}. Estimated Completion Tokens:{EstimatedCompletionTokens}. Prompt Tokens:{PromptTokens}. Completion Tokens:{CompletionTokens}. Total Tokens:{TotalTokens}. Duration:{Duration}",

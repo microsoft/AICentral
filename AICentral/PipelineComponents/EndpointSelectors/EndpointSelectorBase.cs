@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text;
+using AICentral.PipelineComponents.Endpoints;
 using AICentral.PipelineComponents.Endpoints.ResultHandlers;
 using Microsoft.DeepDev;
 using Microsoft.Extensions.Primitives;
@@ -216,6 +217,9 @@ public abstract class EndpointSelectorBase : IEndpointSelector
 
     public abstract object WriteDebug();
 
-    public abstract Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
+    public abstract Task<AICentralResponse> Handle(
+        HttpContext context, 
+        AICallInformation aiCallInformation,
+        AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken);
 }

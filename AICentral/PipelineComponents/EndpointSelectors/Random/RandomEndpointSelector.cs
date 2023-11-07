@@ -12,8 +12,8 @@ public class RandomEndpointSelector : EndpointSelectorBase
         _openAiServers = openAiServers;
     }
 
-    public override async Task<AICentralResponse> Handle(
-        HttpContext context,
+    public override async Task<AICentralResponse> Handle(HttpContext context,
+        AICallInformation aiCallInformation,
         AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
@@ -27,8 +27,7 @@ public class RandomEndpointSelector : EndpointSelectorBase
             try
             {
                 var responseMessage =
-                    await chosen.Handle(context, pipeline,
-                        cancellationToken); //awaiting to unwrap any Aggregate Exceptions
+                    await chosen.Handle(context, aiCallInformation, pipeline, cancellationToken); //awaiting to unwrap any Aggregate Exceptions
                 return await HandleResponse(
                     logger,
                     context,

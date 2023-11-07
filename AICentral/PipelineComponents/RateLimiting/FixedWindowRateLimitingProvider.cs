@@ -1,4 +1,5 @@
 ﻿using System.Threading.RateLimiting;
+using AICentral.PipelineComponents.Endpoints;
 using Microsoft.AspNetCore.RateLimiting;
 using Newtonsoft.Json;
 
@@ -53,10 +54,11 @@ public class FixedWindowRateLimitingProvider : IAICentralGenericStepBuilder<IAIC
         return this;
     }
 
-    public Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
+    public Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
+        AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
-        return pipeline.Next(context, cancellationToken);
+        return pipeline.Next(context, aiCallInformation, cancellationToken);
     }
 
     public object WriteDebug()

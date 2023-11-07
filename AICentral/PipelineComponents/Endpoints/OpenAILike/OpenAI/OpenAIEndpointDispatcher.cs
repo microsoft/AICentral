@@ -1,8 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
-using AICentral.PipelineComponents.Endpoints.OpenAILike.AzureOpenAI;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace AICentral.PipelineComponents.Endpoints.OpenAILike.OpenAI;
 
@@ -24,18 +22,17 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
     protected override HttpRequestMessage BuildRequest(
         HttpContext context, 
         AICallInformation aiCallInformation,
-        string mappedModelName,
-        JObject deserializedRequestContent)
+        string mappedModelName)
     {
-        
-        deserializedRequestContent["model"] = mappedModelName;
+        var newRequest = aiCallInformation.RequestContent.DeepClone();
+        newRequest["model"] = mappedModelName;
         
         var request = new HttpRequestMessage(
             HttpMethod.Post,
             $"{OpenAIV1}/{aiCallInformation.RemainingUrl}"
         )
         {
-            Content = new StringContent(deserializedRequestContent.ToString(Formatting.None), Encoding.UTF8, "application/json"),
+            Content = new StringContent(newRequest.ToString(Formatting.None), Encoding.UTF8, "application/json"),
             Headers =
             {
                 Authorization = new AuthenticationHeaderValue("Bearer", _apiKey)
@@ -47,11 +44,6 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         }
         
         return request;
-    }
-
-    protected override AICallInformation ExtractAICallInformation(HttpContext context, JObject deserializedRequestContent)
-    {
-        return new AzureOpenAiCallInformationExtractor().Extract(context.Request, deserializedRequestContent);
     }
 
     public override object WriteDebug()

@@ -17,21 +17,22 @@ public class PriorityEndpointSelector : EndpointSelectorBase
         _fallbackOpenAiEndpoints = fallbackOpenAiEndpoints;
     }
 
-    public override async Task<AICentralResponse> Handle(HttpContext context, AICentralPipelineExecutor pipeline,
+    public override async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
+        AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelectorBuilder>>();
         try
         {
             logger.LogDebug("Prioritised Endpoint selector handling request");
-            return await Handle(context, pipeline, cancellationToken, _prioritisedOpenAiEndpoints, false);
+            return await Handle(context, aiCallInformation, pipeline, cancellationToken, _prioritisedOpenAiEndpoints, false);
         }
         catch (HttpRequestException e)
         {
             try
             {
                 logger.LogWarning(e, "Prioritised Endpoint selector failed with primary. Trying fallback servers");
-                return await Handle(context, pipeline, cancellationToken, _fallbackOpenAiEndpoints, true);
+                return await Handle(context, aiCallInformation, pipeline, cancellationToken, _fallbackOpenAiEndpoints, true);
             }
             catch (HttpRequestException ex)
             {
@@ -43,6 +44,7 @@ public class PriorityEndpointSelector : EndpointSelectorBase
 
     private async Task<AICentralResponse> Handle(
         HttpContext context,
+        AICallInformation aiCallInformation,
         AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken,
         IAICentralEndpointDispatcher[] endpoints,
@@ -56,9 +58,7 @@ public class PriorityEndpointSelector : EndpointSelectorBase
             toTry.Remove(chosen);
             try
             {
-                var responseMessage =
-                    await chosen.Handle(context, pipeline,
-                        cancellationToken); //awaiting to unwrap any Aggregate Exceptions
+                var responseMessage = await chosen.Handle(context, aiCallInformation, pipeline, cancellationToken); //awaiting to unwrap any Aggregate Exceptions
                 return await HandleResponse(
                     logger,
                     context,

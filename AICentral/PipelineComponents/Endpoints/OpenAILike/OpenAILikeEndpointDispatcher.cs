@@ -21,23 +21,13 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         _modelMappings = modelMappings;
     }
 
-    public async Task<(AICentralRequestInformation, HttpResponseMessage)> Handle(HttpContext context,
-        AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
+    public async Task<(AICentralRequestInformation, HttpResponseMessage)> Handle(
+        HttpContext context,
+        AICallInformation callInformation,
+        AICentralPipelineExecutor pipeline, 
+        CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherBuilder>>();
-
-        context.Request.EnableBuffering(); //we may need to re-read the request if it fails.
-        context.Request.Body.Position = 0;
-
-        using var
-            requestReader =
-                new StreamReader(context.Request.Body,
-                    leaveOpen: true); //leave open in-case we need to re-read it. TODO, optimise this and read it once.
-
-        var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
-        var deserializedRequestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
-
-        var callInformation = ExtractAICallInformation(context, deserializedRequestContent);
 
         var mappedModelName = _modelMappings.TryGetValue(callInformation.IncomingModelName, out var mapping)
             ? mapping
@@ -55,7 +45,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
                 ), new HttpResponseMessage(HttpStatusCode.NotFound));
         }
 
-        var newRequest = BuildRequest(context, callInformation, mappedModelName, deserializedRequestContent);
+        var newRequest = BuildRequest(context, callInformation, mappedModelName);
 
         logger.LogDebug(
             "Rewritten URL from {OriginalUrl} to {NewUrl}. Incoming Model: {IncomingModelName}. Mapped Model: {MappedModelName}",
@@ -108,9 +98,5 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
     protected abstract HttpRequestMessage BuildRequest(
         HttpContext context,
         AICallInformation aiCallInformation,
-        string mappedModelName,
-        JObject deserializedRequestContent);
-
-    protected abstract AICallInformation ExtractAICallInformation(HttpContext context,
-        JObject deserializedRequestContent);
+        string mappedModelName);
 }
