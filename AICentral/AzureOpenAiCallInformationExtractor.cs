@@ -40,7 +40,7 @@ public class AzureOpenAiCallInformationExtractor : IIncomingCallExtractor
             AICallType.Embeddings => deserializedRequestContent.Value<string>("input") ?? string.Empty,
             AICallType.Completions => string.Join(Environment.NewLine,
                 deserializedRequestContent["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
-            _ => throw new InvalidOperationException($"Unknown AICallType")
+            _ => deserializedRequestContent.Value<string>("prompt")?? String.Empty
         };
 
         return new AICallInformation(

@@ -79,6 +79,21 @@ public class AICentralFakeResponses
         return response;
     }
 
+    public static HttpResponseMessage FakeAzureOpenAIImageResponse()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.Accepted);
+        response.Headers.Add("Operation-Location", "http://localhost/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview");
+        response.Content = new StringContent(
+            JsonConvert.SerializeObject(new
+            {
+                id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
+                status = "notRunning",
+            })
+            , Encoding.UTF8, "application/json");
+
+        return response;
+    }
+
     public static HttpResponseMessage NotFoundResponse()
     {
         var response = new HttpResponseMessage();

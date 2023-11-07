@@ -94,7 +94,6 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         completions.Value.Id.ShouldBe(AICentralFakeResponses.FakeResponseId);
     }
     
-    
     [Fact]
     public async Task cannot_proxy_an_image_request_from_azure_openai_endpoint_to_openai_downstream()
     {
@@ -112,6 +111,25 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
                 {
                     Prompt = "Me building an Open AI Reverse Proxy"
                 }));
+    }
+
+    [Fact]
+    public async Task will_proxy_requests_to_a_single_endpoint()
+    {
+        var client = new OpenAIClient(
+            _httpClient.BaseAddress, 
+            new AzureKeyCredential("ignore"),
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_09_01_Preview)
+            {
+                Transport = new HttpClientTransport(_httpClient),
+            });
+
+        var result = await client.GetImageGenerationsAsync(
+            new ImageGenerationOptions()
+            {
+                Prompt = "Me building an Open AI Reverse Proxy",
+            });
+        
     }
 
 }

@@ -11,6 +11,11 @@ public static class TestPipelines
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "openai", "Model1")
             .Assemble("/v1/{*prefix}");
 
+    public static AICentralPipelineAssembler OpenAICatchAllEndpoint() =>
+        new TestAICentralPipelineBuilder()
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "openai", "Model1")
+            .Assemble("/openai/{*rest}");
+
     public static AICentralPipelineAssembler WithOpenAIEndpoint() =>
         new TestAICentralPipelineBuilder()
             .WithSingleOpenAIEndpoint("openaiendpoint", "gpt-3.5-turbo")

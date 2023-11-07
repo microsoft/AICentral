@@ -41,6 +41,12 @@ public class FakeHttpMessageHandler : HttpMessageHandler
             return Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse());
         }
 
+        if (request.RequestUri!.AbsoluteUri.Equals(
+                $"https://{AICentralFakeResponses.Endpoint200}/openai/images/generations:submit?api-version=2023-09-01-preview"))
+        {
+            return Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIImageResponse());
+        }
+
         throw new NotSupportedException($"No fake response registered for {request.RequestUri.AbsoluteUri}");
     }
 }
