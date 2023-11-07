@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Security.Claims;
 using System.Text;
 using AICentral.PipelineComponents.Endpoints.ResultHandlers;
 using Microsoft.DeepDev;
@@ -21,7 +20,13 @@ public abstract class EndpointSelectorBase : IEndpointSelector
         ["gpt-4"] = TokenizerBuilder.CreateByModelNameAsync("gpt-4").Result,
     };
 
+    /// <param name="logger"></param>
+    /// <param name="context"></param>
+    /// <param name="requestInformation"></param>
+    /// <param name="openAiResponse"></param>
     /// <param name="lastChanceMustHandle">Used if you have no more servers to try. When this happens we will proxy back whatever response we can.</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     protected async Task<AICentralResponse> HandleResponse(
         ILogger logger,
         HttpContext context,
@@ -37,9 +42,10 @@ public abstract class EndpointSelectorBase : IEndpointSelector
         else
         {
             if (context.Response.Headers.TryGetValue("x-aicentral-failed-servers", out var header))
+            {
                 context.Response.Headers.Remove("x-aicentral-failed-servers");
-            var added = context.Response.Headers.TryAdd("x-aicentral-failed-servers",
-                StringValues.Concat(header, requestInformation.LanguageUrl));
+            }
+            context.Response.Headers.TryAdd("x-aicentral-failed-servers", StringValues.Concat(header, requestInformation.LanguageUrl));
         }
 
         //Now blow up if we didn't succeed
@@ -82,11 +88,11 @@ public abstract class EndpointSelectorBase : IEndpointSelector
 
         if (openAiResponse.StatusCode == HttpStatusCode.OK)
         {
-            var model = response.Value<string>("model")!;
-            var usage = response["usage"]!;
-            var promptTokens = usage.Value<int>("prompt_tokens");
-            var totalTokens = usage.Value<int>("total_tokens");
-            var completionTokens = usage.Value<int>("completion_tokens");
+            var model = response.Value<string>("model") ?? string.Empty;
+            var usage = response["usage"];
+            var promptTokens = usage?.Value<int>("prompt_tokens") ?? 0;
+            var totalTokens = usage?.Value<int>("total_tokens") ?? 0;
+            var completionTokens = usage?.Value<int>("completion_tokens") ?? 0;
 
             var chatRequestInformation = new AICentralUsageInformation(
                 requestInformation.LanguageUrl,

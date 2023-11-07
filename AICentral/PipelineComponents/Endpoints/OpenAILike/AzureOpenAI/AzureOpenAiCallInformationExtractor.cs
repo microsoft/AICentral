@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Http.Extensions;
 using Newtonsoft.Json.Linq;
 
-namespace AICentral.PipelineComponents.Endpoints;
+namespace AICentral.PipelineComponents.Endpoints.OpenAILike.AzureOpenAI;
 
 public class AzureOpenAiCallInformationExtractor
 {
     private static readonly Regex
-        OpenAiUrlRegex = new("^/openai/deployments/(.*?)/(embeddings|chat|completions)(.*?)$");
+        OpenAiUrlRegex = new("^/openai/deployments/(.*?)/(embeddings|chat|completions|images)(.*?)$");
 
     public AICallInformation Extract(HttpRequest request, JObject content)
     {
@@ -19,6 +19,7 @@ public class AzureOpenAiCallInformationExtractor
             "chat" => AICallType.Chat,
             "embeddings" => AICallType.Embeddings,
             "completions" => AICallType.Completions,
+            "images" => AICallType.Images,
             _ => throw new InvalidOperationException($"AICentral does not currently support {requestTypeRaw}")
         };
 
@@ -30,6 +31,8 @@ public class AzureOpenAiCallInformationExtractor
             AICallType.Embeddings => content.Value<string>("input") ?? string.Empty,
             AICallType.Completions => string.Join(Environment.NewLine,
                 content["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
+            AICallType.Images => string.Join(Environment.NewLine,
+                content["prompt"]?.Value<string>() ?? string.Empty),
             _ => throw new InvalidOperationException($"Unknown AICallType")
         };
 

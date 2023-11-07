@@ -10,6 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="ApprovalTests" Version="5.9.0" />
         <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.3.0" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.13" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1"/>

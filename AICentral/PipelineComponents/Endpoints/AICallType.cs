@@ -4,5 +4,6 @@ public enum AICallType
 {
     Chat,
     Completions,
-    Embeddings
+    Embeddings,
+    Images
 }

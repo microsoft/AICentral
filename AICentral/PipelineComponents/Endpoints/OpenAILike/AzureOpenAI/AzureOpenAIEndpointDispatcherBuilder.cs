@@ -2,14 +2,14 @@
 
 namespace AICentral.PipelineComponents.Endpoints.OpenAILike.AzureOpenAI;
 
-public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuilder
+public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuilder
 {
     private readonly IEndpointAuthorisationHandler _authHandler;
     private readonly string _languageUrl;
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string _id;
 
-    public OpenAIEndpointDispatcherBuilder(
+    public AzureOpenAIEndpointDispatcherBuilder(
         string languageUrl,
         Dictionary<string, string> modelMappings,
         AuthenticationType authenticationType,
@@ -42,7 +42,7 @@ public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuild
         var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.AICentralPipelineAzureOpenAIEndpointPropertiesConfig>();
         Guard.NotNull(properties, configurationSection, "Properties");
         
-        return new OpenAIEndpointDispatcherBuilder(
+        return new AzureOpenAIEndpointDispatcherBuilder(
             Guard.NotNull(properties!.LanguageEndpoint, configurationSection, nameof(properties.LanguageEndpoint)),
             Guard.NotNull(properties.ModelMappings, configurationSection, nameof(properties.ModelMappings)),
             Guard.NotNull(properties.AuthenticationType, configurationSection, nameof(properties.AuthenticationType)),

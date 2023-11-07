@@ -1,4 +1,5 @@
-﻿using AICentral;
+﻿using System.Drawing.Printing;
+using AICentral;
 using AICentral.PipelineComponents.Endpoints;
 using MartinCostello.Logging.XUnit;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -27,17 +28,19 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
 
             services.Remove(services.Single(x => x.ServiceType == typeof(AICentralPipelines)));
 
-            var simplePathMatch = TestPipelines.ApiKeyAuth();
-            var randomSelector = TestPipelines.RandomEndpointPickerNoAuth();
-            var prioritised = TestPipelines.PriorityEndpointPickerNoAuth();
+            var pipelines = new[]
+            {
+                TestPipelines.ApiKeyAuth(),
+                TestPipelines.RandomEndpointPickerNoAuth(),
+                TestPipelines.PriorityEndpointPickerNoAuth(),
+                TestPipelines.FakeImage(),
+                TestPipelines.OpenAI()
+            };
 
-            var assembler = simplePathMatch
-                .CombineAssemblers(randomSelector)
-                .CombineAssemblers(prioritised);
-            
+            var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));
             assembler.AddServices(services, NullLogger.Instance);
 
-            var fakeClient = new HttpClient(new FakeHttpMessageHandler(AICentralTestEndpointBuilder.FakeResponse()));
+            var fakeClient = new HttpClient(new FakeHttpMessageHandler(AICentralFakeResponses.FakeResponse()));
             services.AddSingleton<IHttpClientFactory>(new FakeHttpClientFactory(fakeClient));
         });
         return base.CreateHost(builder);

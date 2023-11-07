@@ -48,7 +48,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         {
             Type = "AzureOpenAI",
             Url = _languageUrl,
-            ModelMappings = _authHandler.WriteDebug(),
+            Common = base.WriteDebug(),
             Auth = _authHandler.WriteDebug()
         };
     }

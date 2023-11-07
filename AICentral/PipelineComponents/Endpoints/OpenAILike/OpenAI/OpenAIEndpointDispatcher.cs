@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
+using AICentral.PipelineComponents.Endpoints.OpenAILike.AzureOpenAI;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -59,7 +60,7 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         {
             Type = "OpenAI",
             Url = OpenAIV1,
-            ModelMappings = base.WriteDebug()
+            Common = base.WriteDebug()
         };
     }
 

@@ -6,40 +6,32 @@ using Newtonsoft.Json;
 
 namespace AICentralTests.TestHelpers;
 
-public class AICentralTestEndpointBuilder
+public class AICentralFakeResponses
 {
     public static readonly string Endpoint500 = Guid.NewGuid().ToString();
     public static readonly string Endpoint404 = Guid.NewGuid().ToString();
     public static readonly string Endpoint200 = Guid.NewGuid().ToString();
     public static readonly string Endpoint200Number2 = Guid.NewGuid().ToString();
+    public static readonly string Endpoint200Image = Guid.NewGuid().ToString();
 
-    public static AzureOpenAIEndpointDispatcher Success200() =>
-        new(
-            Guid.NewGuid().ToString(),
-            $"https://{Endpoint200}",
-            new Dictionary<string, string>(),
-            new KeyAuth("test"));
-
-    public static AzureOpenAIEndpointDispatcher Success200Number2() =>
-        new(
-            Guid.NewGuid().ToString(),
-            $"https://{Endpoint200Number2}",
-            new Dictionary<string, string>(),
-            new KeyAuth("test"));
-
-    public static AzureOpenAIEndpointDispatcher FailingModelNotFound() =>
-        new(
-            Guid.NewGuid().ToString(),
-            $"https://{Endpoint404}",
-            new Dictionary<string, string>(),
-            new KeyAuth("test"));
-
-    public static AzureOpenAIEndpointDispatcher FailingModelInternalServerError() =>
-        new(
-            Guid.NewGuid().ToString(),
-            $"https://{Endpoint500}",
-            new Dictionary<string, string>(),
-            new KeyAuth("test"));
+    public static HttpResponseMessage FakeImageResponse()
+    {
+        return new HttpResponseMessage()
+        {
+            Content = new StringContent(
+                JsonConvert.SerializeObject(new
+                {
+                    Created = new DateTimeOffset(2023, 11, 7, 11, 10, 0, TimeSpan.FromHours(8)).ToUnixTimeSeconds(),
+                    Data = new []
+                    {
+                        new
+                        {
+                            url = "https://fakeimage.localtest.me/some-image"
+                        }
+                    }
+                }))
+        };
+    }
 
     public static HttpResponseMessage FakeResponse()
     {
