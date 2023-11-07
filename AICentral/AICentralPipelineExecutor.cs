@@ -1,5 +1,5 @@
-﻿using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.EndpointSelectors;
+﻿using AICentral.Steps;
+using AICentral.Steps.EndpointSelectors;
 
 namespace AICentral;
 

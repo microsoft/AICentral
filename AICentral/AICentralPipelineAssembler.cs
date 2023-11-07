@@ -1,9 +1,10 @@
 ﻿using AICentral.Configuration.JSON;
-using AICentral.PipelineComponents.Auth;
-using AICentral.PipelineComponents.Auth.AllowAnonymous;
-using AICentral.PipelineComponents.Endpoints;
-using AICentral.PipelineComponents.EndpointSelectors;
-using AICentral.PipelineComponents.Routes;
+using AICentral.Steps;
+using AICentral.Steps.Auth;
+using AICentral.Steps.Auth.AllowAnonymous;
+using AICentral.Steps.Endpoints;
+using AICentral.Steps.EndpointSelectors;
+using AICentral.Steps.Routes;
 
 namespace AICentral;
 

@@ -1,4 +1,4 @@
-﻿using AICentral.PipelineComponents.Endpoints;
+﻿using AICentral.Steps.Endpoints;
 
 namespace AICentral.Configuration.JSON;
 

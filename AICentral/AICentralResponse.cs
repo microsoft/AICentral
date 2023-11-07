@@ -1,5 +1,3 @@
-﻿using AICentral.PipelineComponents.Endpoints;
-
-namespace AICentral;
+﻿namespace AICentral;
 
 public record AICentralResponse(AICentralUsageInformation AiCentralUsageInformation, IResult ResultHandler);

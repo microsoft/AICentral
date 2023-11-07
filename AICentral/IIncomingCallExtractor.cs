@@ -1,6 +1,4 @@
-﻿using AICentral.PipelineComponents.Endpoints;
-
-namespace AICentral;
+﻿namespace AICentral;
 
 /// <summary>
 /// Extracts important information from the incoming call so we can translate between various provides such
