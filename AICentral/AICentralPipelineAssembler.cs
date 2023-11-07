@@ -119,6 +119,7 @@ public class AICentralPipelineAssembler
                         pipelineConfig.Path);
 
                     var pipeline = new AICentralPipeline(
+                        Guard.NotNull(pipelineConfig.EndpointType, nameof(pipelineConfig.EndpointType))!.Value,
                         pipelineName,
                         routeBuilder,
                         GetMiddlewareOrNoOp(

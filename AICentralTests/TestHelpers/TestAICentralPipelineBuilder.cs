@@ -20,6 +20,7 @@ public class TestAICentralPipelineBuilder
     private IAICentralClientAuthBuilder? _auth;
     private IAICentralEndpointSelectorBuilder? _endpointBuilder;
     private IAICentralEndpointDispatcherBuilder[]? _openAiEndpointDispatcherBuilders;
+    private EndpointType? _endpointType;
 
     public TestAICentralPipelineBuilder WithApiKeyAuth(string key1, string key2)
     {
@@ -42,6 +43,12 @@ public class TestAICentralPipelineBuilder
     public TestAICentralPipelineBuilder WithNoAuth()
     {
         _auth = new AllowAnonymousClientAuthBuilder();
+        return this;
+    }
+
+    public TestAICentralPipelineBuilder WithEndpointType(EndpointType endpointType)
+    {
+        _endpointType = endpointType;
         return this;
     }
 
@@ -145,6 +152,7 @@ public class TestAICentralPipelineBuilder
                 new ConfigurationTypes.AICentralPipelineConfig()
                 {
                     Name = Guid.NewGuid().ToString(),
+                    EndpointType = _endpointType ?? EndpointType.AzureOpenAI,
                     Path = path,
                     AuthProvider = id,
                     Steps = Array.Empty<string>(),

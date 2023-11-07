@@ -33,6 +33,7 @@ public static class ConfigurationTypes
     public class AICentralPipelineConfig
     {
         public string? Name { get; init; }
+        public EndpointType? EndpointType { get; init; }
         public string? Path { get; init; }
         public string? EndpointSelector { get; init; }
         public string? AuthProvider { get; init; }
@@ -68,4 +69,10 @@ public static class ConfigurationTypes
         public string? Key { get; init; }
         public bool? LogPrompt { get; init; }
     }
+}
+
+public enum EndpointType
+{
+    AzureOpenAI,
+    OpenAI
 }

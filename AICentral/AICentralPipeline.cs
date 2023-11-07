@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using System.Runtime.InteropServices.ComTypes;
+using AICentral.Configuration.JSON;
 using AICentral.PipelineComponents.Auth;
 using AICentral.PipelineComponents.EndpointSelectors;
 using AICentral.PipelineComponents.Routes;
@@ -13,9 +13,10 @@ public class AICentralPipeline
     private readonly IAICentralClientAuthStep _clientAuthStep;
     private readonly IList<IAICentralPipelineStep> _pipelineSteps;
     private readonly IEndpointSelector _endpointSelector;
-    private readonly IIncomingCallExtractor _incomingCallExtractor = new AzureOpenAiCallInformationExtractor();
+    private readonly IIncomingCallExtractor _incomingCallExtractor;
 
     public AICentralPipeline(
+        EndpointType endpointType,
         string name,
         PathMatchRouter router,
         IAICentralClientAuthStep clientAuthStep,
@@ -23,6 +24,12 @@ public class AICentralPipeline
         IEndpointSelector endpointSelector)
     {
         _name = name;
+        _incomingCallExtractor = endpointType switch
+        {
+            EndpointType.AzureOpenAI => new AzureOpenAiCallInformationExtractor(),
+            EndpointType.OpenAI => new OpenAiCallInformationExtractor(),
+            _ => throw new InvalidOperationException("Unsupported Pipeline type")
+        };
         _router = router;
         _clientAuthStep = clientAuthStep;
         _pipelineSteps = pipelineSteps.Select(x => x).ToArray();
@@ -59,7 +66,8 @@ public class AICentralPipeline
 
     public void BuildRoute(WebApplication webApplication)
     {
-        var route = _router.BuildRoute(webApplication, async (HttpContext ctx, CancellationToken token) => (await Execute(ctx, token)).ResultHandler);
+        var route = _router.BuildRoute(webApplication,
+            async (HttpContext ctx, CancellationToken token) => (await Execute(ctx, token)).ResultHandler);
         _clientAuthStep.ConfigureRoute(webApplication, route);
         foreach (var step in _pipelineSteps) step.ConfigureRoute(webApplication, route);
     }
