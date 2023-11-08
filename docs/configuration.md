@@ -102,30 +102,30 @@ We ship 3 Endpoint Selectors:
     "Properties": {
         "PriorityEndpoints": [
             "endpoint-name-from-earlier",
-            "another-endpoint-name-from-earlier",
+            "another-endpoint-name-from-earlier"
           ],
         "FallbackEndpoints": [
             "yet-another-endpoint-name-from-earlier",
-            "and-yet-another-endpoint-name-from-earlier",
-          ],
+            "and-yet-another-endpoint-name-from-earlier"
+          ]
     }
 }
 ```
 
-# Minimal Pipeline configuration
+## Minimal Pipeline configuration
 
 Using Endpoints and Endpoint Selectors we can create a pipeline like this:
 
 ```json
 {
     "AICentral": {
-        "Endpoints": [ ... as above ],
-        "EndpointSelectors": [ ... as above ],
+        "Endpoints": [ "... as above" ],
+        "EndpointSelectors": [ "... as above" ],
         "Pipelines": [
             {
                 "Name": "MyPipeline",
                 "Host": "<host-name-we-listen-for-requests-on>",
-                "EndpointSelector": "name-from-above",
+                "EndpointSelector": "name-from-above"
             }
         ]
     }
@@ -152,3 +152,164 @@ This changes the way we interpret the different incoming URLs, and where we look
     }
 }
 ```
+
+## Incoming Client Auth
+
+We support adding authentication to incoming clients in 3 ways.
+
+### Anonymous
+
+No auth is applied to incoming requests. This is useful if we use EntraPassThrough for our backend endpoints. The user will present a token issued for an Azure Open AI service, which will be accepted or rejected by the backend service.
+
+```json
+{
+  "AICentral": {
+    "AuthProviders": [
+      {
+        "Type": "AllowAnonymous",
+        "Name": "no-auth"
+      }
+    ],
+    "Endpoints": [
+      {
+        "Name": "MyPipeline",
+        "Host": "<host-name-we-listen-for-requests-on>",
+        "EndpointSelector": "name-from-above",
+        "AuthProvider": "no-auth"
+      }
+    ]
+  }
+}
+```
+
+### Entra
+
+Uses standard Azure Active Directory Authentication to assert a valid JWT.
+> We don't perform any role checks, so make sure you only allow issuance of tokens to clients you want.
+
+```json
+{
+  "AICentral": {
+    "AuthProviders": [
+      {
+        "Type": "Entra",
+        "Name": "simple-aad",
+        "Properties": {
+          "ClientId": "<my-client-id>",
+          "TenantId": "<my-tenant-id>",
+          "Instance": "https://login.microsoftonline.com/",
+          "Audience": "<custom-audience>"
+        }
+      }
+    ],
+    "Endpoints": [
+      {
+        "Name": "MyPipeline",
+        "Host": "<host-name-we-listen-for-requests-on>",
+        "EndpointSelector": "name-from-above",
+        "AuthProvider": "simple-aad"
+      }
+    ]
+  }
+}
+```
+
+### Client-Keys
+
+You can specify clients, along with a pair of keys, and authenticate your pipelines using them.
+
+```json
+{
+  "AICentral": {
+    "AuthProviders": [
+      {
+        "Type": "ApiKey",
+        "Name": "apikey",
+        "Properties": {
+          "Clients" : [
+            {
+              "ClientName" : "Consumer-1",
+              "Key1": "dfhaskjhdfjkasdhfkjsdf",
+              "Key2": "23sfdkjhcijshjkfhsdkjfsd"
+            },
+            {
+              "ClientName" : "Consumer-2",
+              "Key1": "szcvjhkhkjhjkfsdf",
+              "Key2": "vkjhsdfjkhkjnkjhjksdf"
+            }
+          ]
+        }
+      }
+    ],
+    "Endpoints": [
+      {
+        "Name": "MyPipeline",
+        "Host": "<host-name-we-listen-for-requests-on>",
+        "EndpointSelector": "name-from-above",
+        "AuthProvider": "apikey"
+      }
+    ]
+  }
+}
+```
+
+## "Steps"
+
+A pipeline can run multiple steps. We currently provide steps for:
+
+- Azure Monitor Logging
+- Asp.Net Core Windowed Rate Limiting
+
+### Azure Monitor Logger
+
+```json
+{
+  "AICentral": {
+    "GenericSteps": [
+      {
+        "Type": "AspNetCoreFixedWindowRateLimiting",
+        "Name": "window-rate-limiter",
+        "Properties": {
+          "Window": 10,
+          "PermitLimit": 100
+        }
+      },
+      {
+        "Type": "AzureMonitorLogger",
+        "Name": "azure-monitor-logger",
+        "Properties": {
+          "WorkspaceId": "<workspace-id>",
+          "Key": "<key>>",
+          "LogPrompt": true,
+          "LogResponse": true
+        }
+      }
+    ],
+    "Endpoints": [
+      {
+        "Name": "MyPipeline",
+        "Host": "<host-name-we-listen-for-requests-on>",
+        "Steps": [
+          "window-rate-limiter",
+          "azure-monitor-logger"
+        ]
+      }
+    ]
+  }
+}
+```
+
+# Customisation
+
+AI Central is extensible. You can bring your own implementations of Steps, Endpoints, Endpoint Selectors, Auth Providers. The only thing we specify is a pipeline must:
+
+- Trigger based on an incoming Host Header
+- Choose an Endpoint Selector
+
+We default certain properties if you don't provide them.
+
+- We default to expecting Azure Open AI type requests
+- We default to Entra Pass Through auth for Azure Open AI backends
+- We default to Anonymous Auth (we don't validate tokens for Azure Open AI)
+
+TODO; We are working on adding an extensibility sample.
