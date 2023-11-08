@@ -55,7 +55,7 @@ public class AICentralPipeline
             return UnableToProxyUnknownCallTypesToMultiNodeClusters(context, requestDetails);
         }
 
-        var executor = new AICentralPipelineExecutor(_pipelineSteps, _endpointSelector);
+        using var executor = new AICentralPipelineExecutor(_pipelineSteps, _endpointSelector);
         var result = await executor.Next(context, requestDetails, cancellationToken);
         logger.LogInformation("Executed Pipeline {PipelineName}", _name);
         return result;
