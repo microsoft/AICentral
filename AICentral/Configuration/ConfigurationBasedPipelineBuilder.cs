@@ -131,7 +131,7 @@ public class ConfigurationBasedPipelineBuilder
 
         //create an object that can wire all this together
         var builder = new AICentralPipelineAssembler(
-            PathMatchRouter.WithPath,
+            HeaderMatchRouter.WithHostHeader,
             authProviders,
             endpoints,
             endpointSelectors,

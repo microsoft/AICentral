@@ -28,10 +28,10 @@ public class the_openai_pipeline : IClassFixture<TestWebApplicationFactory<Progr
     public async Task can_dispatch_to_an_azure_openai_endpoint()
     {
         var result = await _httpClient.PostAsync(
-            "/v1/chat/completions",
+            "http://openai-to-openai.localtest.me/v1/chat/completions",
             new StringContent(JsonConvert.SerializeObject(new
             {
-                model = "openai",
+                model = "openaiendpoint",
                 messages = new[]
                 {
                     new { role = "system", content = "You are a helpful assistant." },
@@ -50,7 +50,7 @@ public class the_openai_pipeline : IClassFixture<TestWebApplicationFactory<Progr
     public async Task returns_404_with_no_model()
     {
         var result = await _httpClient.PostAsync(
-            "/v1/chat/completions",
+            "http://openai-to-openai.localtest.me/v1/chat/completions",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]

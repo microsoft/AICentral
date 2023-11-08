@@ -34,7 +34,7 @@ public static class ConfigurationTypes
     {
         public string? Name { get; init; }
         public EndpointType? EndpointType { get; init; }
-        public string? Path { get; init; }
+        public string? Host { get; init; }
         public string? EndpointSelector { get; init; }
         public string? AuthProvider { get; init; }
         public string[]? Steps { get; init; }

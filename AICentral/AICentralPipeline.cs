@@ -2,18 +2,16 @@
 using AICentral.Configuration.JSON;
 using AICentral.Steps;
 using AICentral.Steps.Auth;
-using AICentral.Steps.Endpoints.ResultHandlers;
 using AICentral.Steps.EndpointSelectors;
 using AICentral.Steps.EndpointSelectors.Single;
 using AICentral.Steps.Routes;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AICentral;
 
 public class AICentralPipeline
 {
     private readonly string _name;
-    private readonly PathMatchRouter _router;
+    private readonly HeaderMatchRouter _router;
     private readonly IAICentralClientAuthStep _clientAuthStep;
     private readonly IList<IAICentralPipelineStep> _pipelineSteps;
     private readonly IEndpointSelector _endpointSelector;
@@ -22,7 +20,7 @@ public class AICentralPipeline
     public AICentralPipeline(
         EndpointType endpointType,
         string name,
-        PathMatchRouter router,
+        HeaderMatchRouter router,
         IAICentralClientAuthStep clientAuthStep,
         IList<IAICentralPipelineStep> pipelineSteps,
         IEndpointSelector endpointSelector)
@@ -108,6 +106,7 @@ public class AICentralPipeline
     {
         var route = _router.BuildRoute(webApplication,
             async (HttpContext ctx, CancellationToken token) => (await Execute(ctx, token)).ResultHandler);
+        
         _clientAuthStep.ConfigureRoute(webApplication, route);
         foreach (var step in _pipelineSteps) step.ConfigureRoute(webApplication, route);
     }

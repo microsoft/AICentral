@@ -28,12 +28,12 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
 
             var pipelines = new[]
             {
-                TestPipelines.ApiKeyAuth(),
-                TestPipelines.RandomEndpointPickerNoAuth(),
-                TestPipelines.PriorityEndpointPickerNoAuth(),
-                TestPipelines.OpenAIService(),
-                TestPipelines.WithOpenAIEndpoint(),
-                TestPipelines.AzureOpenAICatchAllEndpoint()
+                TestPipelines.AzureOpenAIServiceWithAuth(),
+                TestPipelines.AzureOpenAIServiceWithPriorityEndpointPickerNoAuth(),
+                TestPipelines.AzureOpenAIServiceWithSingleOpenAIEndpoint(),
+                TestPipelines.AzureOpenAIServiceWithRandomAzureOpenAIEndpoints(),
+                TestPipelines.OpenAIServiceWithSingleAzureOpenAIEndpoint(),
+                TestPipelines.OpenAIServiceWithSingleOpenAIEndpoint(),
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));

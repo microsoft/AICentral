@@ -28,7 +28,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public async Task handles_chats()
     {
         var result = await _httpClient.PostAsync(
-            "/openai/deployments/random/chat/completions?api-version=2023-05-15",
+            "http://azure-to-azure-openai.localtest.me/openai/deployments/random/chat/completions?api-version=2023-05-15",
             new StringContent(JsonConvert.SerializeObject(new
             {
             }), Encoding.UTF8, "application/json"));
@@ -42,7 +42,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public async Task can_dispatch_to_an_openai_pipeline()
     {
         var result = await _httpClient.PostAsync(
-            "/openai/deployments/openaiendpoint/chat/completions?api-version=2023-05-15",
+            "http://azure-openai-to-openai.localtest.me/openai/deployments/openaiendpoint/chat/completions?api-version=2023-05-15",
             new StringContent(JsonConvert.SerializeObject(new
             {
             }), Encoding.UTF8, "application/json"));
