@@ -33,7 +33,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.PriorityEndpointPickerNoAuth(),
                 TestPipelines.OpenAIService(),
                 TestPipelines.WithOpenAIEndpoint(),
-                TestPipelines.OpenAICatchAllEndpoint()
+                TestPipelines.AzureOpenAICatchAllEndpoint()
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));

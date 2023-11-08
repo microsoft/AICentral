@@ -132,4 +132,23 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         
     }
 
+    [Fact]
+    public async Task will_not_proxy_unknown_requests_to_a_multi_endpoint()
+    {
+        var client = new OpenAIClient(
+            _httpClient.BaseAddress, 
+            new AzureKeyCredential("ignore"),
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_09_01_Preview)
+            {
+                Transport = new HttpClientTransport(_httpClient),
+            });
+
+        var result = await client.GetImageGenerationsAsync(
+            new ImageGenerationOptions()
+            {
+                Prompt = "Me building an Open AI Reverse Proxy",
+            });
+        
+    }
+
 }

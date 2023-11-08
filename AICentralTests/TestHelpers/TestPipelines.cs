@@ -11,9 +11,14 @@ public static class TestPipelines
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "openai", "Model1")
             .Assemble("/v1/{*prefix}");
 
-    public static AICentralPipelineAssembler OpenAICatchAllEndpoint() =>
+    public static AICentralPipelineAssembler AzureOpenAICatchAllEndpoint() =>
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "openai", "Model1")
+            // .WithRandomEndpoints(new[]
+            // {
+            //     (AICentralFakeResponses.Endpoint200, "random", "Model1"),
+            //     (AICentralFakeResponses.Endpoint200Number2, "random", "Model1"),
+            // })
             .Assemble("/openai/{*rest}");
 
     public static AICentralPipelineAssembler WithOpenAIEndpoint() =>

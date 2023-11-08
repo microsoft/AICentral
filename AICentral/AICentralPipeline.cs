@@ -2,8 +2,11 @@
 using AICentral.Configuration.JSON;
 using AICentral.Steps;
 using AICentral.Steps.Auth;
+using AICentral.Steps.Endpoints.ResultHandlers;
 using AICentral.Steps.EndpointSelectors;
+using AICentral.Steps.EndpointSelectors.Single;
 using AICentral.Steps.Routes;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AICentral;
 
@@ -48,11 +51,45 @@ public class AICentralPipeline
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
 
         var requestDetails = await _incomingCallExtractor.Extract(context.Request, cancellationToken);
-        
+
+        if (requestDetails.AICallType == AICallType.Other && !(_endpointSelector is SingleEndpointSelector))
+        {
+            return UnableToProxyUnknownCallTypesToMultiNodeClusters(context, requestDetails);
+        }
+
         var executor = new AICentralPipelineExecutor(_pipelineSteps, _endpointSelector);
         var result = await executor.Next(context, requestDetails, cancellationToken);
         logger.LogInformation("Executed Pipeline {PipelineName}", _name);
         return result;
+    }
+
+    /// <summary>
+    /// safety first - Azure Open AI uses a async model for images which would need affinity. We could build this 
+    /// in, but for now, let's return a bad-request
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="requestDetails"></param>
+    /// <returns></returns>
+    private static AICentralResponse UnableToProxyUnknownCallTypesToMultiNodeClusters(HttpContext context,
+        AICallInformation requestDetails)
+    {
+        return new AICentralResponse(
+            new AICentralUsageInformation(
+                string.Empty,
+                string.Empty,
+                context.User.Identity?.Name ?? "unknown",
+                requestDetails.AICallType,
+                requestDetails.PromptText,
+                string.Empty,
+                0,
+                0,
+                0,
+                0,
+                0,
+                context.Connection.RemoteIpAddress?.ToString() ?? "",
+                DateTimeOffset.Now,
+                TimeSpan.Zero),
+            Results.BadRequest(new { reason = "Unable to proxy 'other' calls to an endpoint cluster." }));
     }
 
     public object WriteDebug()
