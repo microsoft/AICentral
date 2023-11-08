@@ -5,6 +5,12 @@ namespace AICentralTests.TestHelpers;
 
 public static class TestPipelines
 {
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithRateLimitingAndSingleEndpoint() =>
+        new TestAICentralPipelineBuilder()
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "random", "Model1")
+            .WithRateLimiting(60, 1)
+            .Assemble("azure-with-rate-limiter.localtest.me");
+
     public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleAzureOpenAIEndpoint() =>
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "openai", "Model1")
