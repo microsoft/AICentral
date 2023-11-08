@@ -109,9 +109,8 @@ public class AICentralPipelineAssembler
                 {
                     var pipelineName =
                         Guard.NotNullOrEmptyOrWhitespace(pipelineConfig.Name, nameof(pipelineConfig.Name));
-                    var pipelineSteps = pipelineConfig.Steps ??
-                                        throw new ArgumentException(
-                                            $"No Pipelines steps specified in config for Pipeline {pipelineName}");
+
+                    var pipelineSteps = pipelineConfig.Steps ?? Array.Empty<string>();
 
                     var routeBuilder =
                         _routeBuilder(

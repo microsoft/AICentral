@@ -33,6 +33,7 @@ public class ApiKeyClientAuthBuilder : IAICentralClientAuthBuilder
     }
 
     public static IAICentralClientAuthBuilder BuildFromConfig(
+        ILogger logger, 
         IConfigurationSection configurationSection)
     {
         var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.ApiKeyClientAuthConfig>();

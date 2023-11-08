@@ -25,6 +25,7 @@ public class RandomEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
     public static string ConfigName => "RandomCluster";
 
     public static IAICentralEndpointSelectorBuilder BuildFromConfig(
+        ILogger logger, 
         IConfigurationSection configurationSection,
         Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
     {

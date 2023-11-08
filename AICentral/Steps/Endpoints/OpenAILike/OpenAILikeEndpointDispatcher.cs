@@ -27,9 +27,10 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherBuilder>>();
 
-        var mappedModelName = _modelMappings.TryGetValue(callInformation.IncomingModelName ?? string.Empty, out var mapping)
+        var incomingModelName = callInformation.IncomingModelName ?? string.Empty;
+        var mappedModelName = _modelMappings.TryGetValue(incomingModelName, out var mapping)
             ? mapping
-            : string.Empty;
+            : incomingModelName;
 
         if (callInformation.AICallType != AICallType.Other && mappedModelName == string.Empty)
         {
@@ -43,6 +44,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
                 ), new HttpResponseMessage(HttpStatusCode.NotFound));
         }
 
+
         try
         {
             var newRequest = BuildRequest(context, callInformation, mappedModelName);
@@ -51,7 +53,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
                 "Rewritten URL from {OriginalUrl} to {NewUrl}. Incoming Model: {IncomingModelName}. Mapped Model: {MappedModelName}",
                 context.Request.GetEncodedUrl(),
                 newRequest.RequestUri!.AbsoluteUri,
-                callInformation.IncomingModelName,
+                incomingModelName,
                 mappedModelName);
 
             var now = DateTimeOffset.Now;

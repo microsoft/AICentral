@@ -95,7 +95,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     }
     
     [Fact]
-    public async Task cannot_proxy_an_image_request_from_azure_openai_endpoint_to_openai_downstream()
+    public void cannot_proxy_an_image_request_from_azure_openai_endpoint_to_openai_downstream()
     {
         var client = new OpenAIClient(
             new Uri("http://openai-to-azure.localtest.me"), 
@@ -133,7 +133,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     }
 
     [Fact]
-    public async Task will_not_proxy_unknown_requests_to_a_multi_endpoint()
+    public void will_not_proxy_unknown_requests_to_a_multi_endpoint()
     {
         var client = new OpenAIClient(
             new Uri("http://azure-to-azure-openai.localtest.me"), 

@@ -7,6 +7,7 @@ public interface IAICentralEndpointSelectorBuilder
     static virtual string ConfigName  => throw new NotImplementedException();
 
     static virtual IAICentralEndpointSelectorBuilder BuildFromConfig(
+        ILogger logger, 
         IConfigurationSection section,
         Dictionary<string, IAICentralEndpointDispatcherBuilder> aiCentralEndpoints) => throw new NotImplementedException();
 

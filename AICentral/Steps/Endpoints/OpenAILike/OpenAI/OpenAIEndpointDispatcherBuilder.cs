@@ -28,7 +28,7 @@ public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuild
 
     public static string ConfigName => "OpenAIEndpoint";
 
-    public static IAICentralEndpointDispatcherBuilder BuildFromConfig(IConfigurationSection configurationSection)
+    public static IAICentralEndpointDispatcherBuilder BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
     {
         var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.AICentralPipelineOpenAIEndpointPropertiesConfig>();
         Guard.NotNull(properties, configurationSection, "Properties");

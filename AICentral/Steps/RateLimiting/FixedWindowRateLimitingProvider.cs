@@ -39,6 +39,7 @@ public class FixedWindowRateLimitingProvider : IAICentralGenericStepBuilder<IAIC
     public static string ConfigName => "AspNetCoreFixedWindowRateLimiting";
 
     public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(
+        ILogger logger, 
         IConfigurationSection configurationSection)
     {
         var properties = configurationSection.GetSection("Properties").Get<FixedWindowRateLimiterOptions>()!;

@@ -8,7 +8,7 @@ public interface IAICentralEndpointDispatcherBuilder
 
     IAICentralEndpointDispatcher Build();
 
-    static virtual IAICentralEndpointDispatcherBuilder BuildFromConfig(IConfigurationSection configurationSection)
+    static virtual IAICentralEndpointDispatcherBuilder BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
     {
         throw new NotImplementedException();
     }

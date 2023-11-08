@@ -1,5 +1,6 @@
 ﻿using AICentral.Configuration.JSON;
 using Serilog;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace AICentral.Steps.Logging;
 
@@ -28,6 +29,7 @@ public class AzureMonitorLoggerBuilder : IAICentralGenericStepBuilder<IAICentral
     public static string ConfigName => "AzureMonitorLogger";
 
     public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(
+        ILogger logger, 
         IConfigurationSection configurationSection)
     {
         var properties = configurationSection.GetSection("Properties")

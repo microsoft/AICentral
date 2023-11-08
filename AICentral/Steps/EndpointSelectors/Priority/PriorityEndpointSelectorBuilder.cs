@@ -23,6 +23,7 @@ public class PriorityEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
     public static string ConfigName => "Prioritised";
 
     public static IAICentralEndpointSelectorBuilder BuildFromConfig(
+        ILogger logger, 
         IConfigurationSection configurationSection,
         Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
     {

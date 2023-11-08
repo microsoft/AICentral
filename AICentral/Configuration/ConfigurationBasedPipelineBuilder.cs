@@ -10,19 +10,19 @@ namespace AICentral.Configuration;
 
 public class ConfigurationBasedPipelineBuilder
 {
-    private readonly Dictionary<string, Func<IConfigurationSection, IAICentralEndpointDispatcherBuilder>>
+    private readonly Dictionary<string, Func<ILogger, IConfigurationSection, IAICentralEndpointDispatcherBuilder>>
         _endpointConfigurationBuilders = new();
 
     private readonly
-        Dictionary<string, Func<IConfigurationSection, Dictionary<string, IAICentralEndpointDispatcherBuilder>,
+        Dictionary<string, Func<ILogger, IConfigurationSection, Dictionary<string, IAICentralEndpointDispatcherBuilder>,
             IAICentralEndpointSelectorBuilder>> _endpointSelectorConfigurations = new();
 
     private readonly Dictionary<string,
-            Func<IConfigurationSection, IAICentralPipelineStepBuilder<IAICentralPipelineStep>>>
+            Func<ILogger, IConfigurationSection, IAICentralPipelineStepBuilder<IAICentralPipelineStep>>>
         _genericStepBuilders = new();
 
     private readonly
-        Dictionary<string, Func<IConfigurationSection, IAICentralClientAuthBuilder>>
+        Dictionary<string, Func<ILogger, IConfigurationSection, IAICentralClientAuthBuilder>>
         _authProviderBuilders = new();
 
     private void RegisterAuthProvider<T>() where T : IAICentralClientAuthBuilder =>
@@ -48,7 +48,7 @@ public class ConfigurationBasedPipelineBuilder
         RegisterBuilders<IAICentralGenericStepBuilder<IAICentralPipelineStep>>(additionalAssembliesToScan,
             nameof(RegisterGenericStep));
         RegisterBuilders<IAICentralClientAuthBuilder>(additionalAssembliesToScan, nameof(RegisterAuthProvider));
-        
+
         var endpoints =
             configurationSection
                 .GetSection("Endpoints")
@@ -66,6 +66,7 @@ public class ConfigurationBasedPipelineBuilder
                         return _endpointConfigurationBuilders[
                             Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
                             throw new ArgumentException("No Type specified for Endpoint")](
+                            startupLogger,
                             x.Config);
                     });
 
@@ -85,7 +86,10 @@ public class ConfigurationBasedPipelineBuilder
                         startupLogger.LogInformation("Configuring Endpoint Selector {Name}", x.TypeInfo!.Name);
                         return _endpointSelectorConfigurations[
                             Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
-                            throw new ArgumentException("No Type specified for Endpoint")](x.Config, endpoints);
+                            throw new ArgumentException("No Type specified for Endpoint")](
+                            startupLogger,
+                            x.Config,
+                            endpoints);
                     });
 
         var authProviders =
@@ -104,7 +108,10 @@ public class ConfigurationBasedPipelineBuilder
                         startupLogger.LogInformation("Configuring AuthProviders {Name}", x.TypeInfo!.Name);
                         return _authProviderBuilders[
                             Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
-                            throw new ArgumentException("No Type specified for Endpoint")](x.Config);
+                            throw new ArgumentException("No Type specified for Endpoint")](
+                            startupLogger,
+                            x.Config
+                        );
                     });
 
         var genericSteps =
@@ -123,7 +130,10 @@ public class ConfigurationBasedPipelineBuilder
                         startupLogger.LogInformation("Configuring AuthProviders {Name}", x.TypeInfo!.Name);
                         return _genericStepBuilders[
                             Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
-                            throw new ArgumentException("No Type specified for Endpoint")](x.Config);
+                            throw new ArgumentException("No Type specified for Endpoint")](
+                            startupLogger,
+                            x.Config
+                        );
                     });
 
         var typedConfig = configurationSection

@@ -19,7 +19,7 @@ public static class ConfigurationTypes
     {
         public string? LanguageEndpoint { get; init; }
         public Dictionary<string, string>? ModelMappings { get; init; }
-        public AuthenticationType AuthenticationType { get; init; }
+        public AuthenticationType? AuthenticationType { get; init; }
         public string? ApiKey { get; set; }
     }
 
