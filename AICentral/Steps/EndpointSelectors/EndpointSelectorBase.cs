@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using AICentral.Steps.Endpoints;
 using Microsoft.DeepDev;
 using Microsoft.Extensions.Primitives;
 
@@ -6,8 +7,6 @@ namespace AICentral.Steps.EndpointSelectors;
 
 public abstract class EndpointSelectorBase : IEndpointSelector
 {
-    private static readonly string[] HeaderPrefixesToCopy = { "x-", "apim" };
-
     private static readonly Dictionary<string, ITokenizer> Tokenisers = new()
     {
         ["gpt-3.5-turbo-0613"] = TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo").Result,
@@ -17,14 +16,15 @@ public abstract class EndpointSelectorBase : IEndpointSelector
 
     /// <param name="logger"></param>
     /// <param name="context"></param>
+    /// <param name="aiCentralEndpointDispatcher"></param>
     /// <param name="requestInformation"></param>
     /// <param name="openAiResponse"></param>
     /// <param name="lastChanceMustHandle">Used if you have no more servers to try. When this happens we will proxy back whatever response we can.</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected async Task<AICentralResponse> HandleResponse(
-        ILogger logger,
+    protected async Task<AICentralResponse> HandleResponse(ILogger logger,
         HttpContext context,
+        IAICentralEndpointDispatcher aiCentralEndpointDispatcher,
         AICentralRequestInformation requestInformation,
         HttpResponseMessage openAiResponse,
         bool lastChanceMustHandle,
@@ -40,7 +40,9 @@ public abstract class EndpointSelectorBase : IEndpointSelector
             {
                 context.Response.Headers.Remove("x-aicentral-failed-servers");
             }
-            context.Response.Headers.TryAdd("x-aicentral-failed-servers", StringValues.Concat(header, requestInformation.LanguageUrl));
+
+            context.Response.Headers.TryAdd("x-aicentral-failed-servers",
+                StringValues.Concat(header, requestInformation.LanguageUrl));
         }
 
         //Now blow up if we didn't succeed
@@ -49,12 +51,14 @@ public abstract class EndpointSelectorBase : IEndpointSelector
             openAiResponse.EnsureSuccessStatusCode();
         }
 
-        CopyHeadersToResponse(context, openAiResponse);
+        var adjustedHeaders = aiCentralEndpointDispatcher.SanitiseHeaders(openAiResponse);
+        CopyHeadersToResponse(context.Response, adjustedHeaders);
 
         if (openAiResponse.Headers.TransferEncodingChunked == true)
         {
             logger.LogDebug("Detected chunked encoding response. Streaming response back to consumer");
-            return await ServerSideEventResponseHandler.Handle(Tokenisers, context, cancellationToken, openAiResponse, requestInformation);
+            return await ServerSideEventResponseHandler.Handle(Tokenisers, context, cancellationToken, openAiResponse,
+                requestInformation);
         }
 
         logger.LogDebug("Detected non-chunked encoding response. Sending response back to consumer");
@@ -65,20 +69,18 @@ public abstract class EndpointSelectorBase : IEndpointSelector
             requestInformation);
     }
 
-    private static void CopyHeadersToResponse(HttpContext context, HttpResponseMessage openAiResponse)
+    private static void CopyHeadersToResponse(HttpResponse response, Dictionary<string, StringValues> headersToProxy)
     {
-        foreach (var header in
-                 openAiResponse.Headers.Where(x =>
-                     HeaderPrefixesToCopy.Any(p => x.Key.StartsWith(p, StringComparison.InvariantCultureIgnoreCase))))
+        foreach (var header in headersToProxy)
         {
-            context.Response.Headers.TryAdd(header.Key, header.Value.ToArray());
+            response.Headers.TryAdd(header.Key, header.Value);
         }
     }
 
     public abstract object WriteDebug();
 
     public abstract Task<AICentralResponse> Handle(
-        HttpContext context, 
+        HttpContext context,
         AICallInformation aiCallInformation,
         AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken);

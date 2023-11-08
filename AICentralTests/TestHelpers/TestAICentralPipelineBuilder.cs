@@ -154,7 +154,6 @@ public class TestAICentralPipelineBuilder
                 {
                     Name = Guid.NewGuid().ToString(),
                     EndpointType = _endpointType ?? EndpointType.AzureOpenAI,
-                    IsPassThrough = false,
                     Path = path,
                     AuthProvider = id,
                     Steps = Array.Empty<string>(),

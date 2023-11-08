@@ -1,12 +1,14 @@
-﻿using System.Net;
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 
 namespace AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
 
 public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
 {
+    private static readonly string[] HeaderPrefixesToCopy = { "x-", "apim", "operation-location" };
+
     private readonly string _languageUrl;
     private readonly IEndpointAuthorisationHandler _authHandler;
 
@@ -40,15 +42,20 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
                 ? $"{_languageUrl}{context.Request.Path}"
                 : throw new NotSupportedException("Unable to dispatch 'other' Open AI request to Azure Open AI")
             : $"{_languageUrl}/openai/deployments/{mappedModelName}/{pathPiece}";
-            
-        var newRequest = new HttpRequestMessage(
-            HttpMethod.Post,
-            QueryHelpers.AddQueryString(requestUri, aiCallInformation.QueryString)
-        )
-        {
-            Content = new StringContent(aiCallInformation.RequestContent.ToString(Formatting.None), Encoding.UTF8,
-                "application/json")
-        };
+
+        var newRequest = context.Request.Method.Equals("post", StringComparison.InvariantCultureIgnoreCase)
+            ? new HttpRequestMessage(
+                HttpMethod.Post,
+                QueryHelpers.AddQueryString(requestUri, aiCallInformation.QueryString)
+            )
+            {
+                Content = new StringContent(aiCallInformation.RequestContent!.ToString(Formatting.None), Encoding.UTF8,
+                    "application/json")
+            }
+            : new HttpRequestMessage(
+                HttpMethod.Get,
+                QueryHelpers.AddQueryString(requestUri, aiCallInformation.QueryString));
+
         _authHandler.ApplyAuthorisationToRequest(context.Request, newRequest);
         return newRequest;
     }
@@ -62,6 +69,34 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
             Common = base.WriteDebug(),
             Auth = _authHandler.WriteDebug()
         };
+    }
+
+    public override Dictionary<string, StringValues> SanitiseHeaders(HttpResponseMessage openAiResponse)
+    {
+        var proxiedHeaders = new Dictionary<string, StringValues>();
+        foreach (var header in openAiResponse.Headers)
+        {
+            if (HeaderPrefixesToCopy.Any(x => header.Key.StartsWith(x, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                if (header.Key.Equals("operation-location", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    proxiedHeaders.Add(header.Key, AdjustAzureOpenAILocationToAICentralHost(header));
+                }
+                else
+                {
+                    proxiedHeaders.Add(header.Key, new StringValues(header.Value.ToArray()));
+                }
+            }
+        }
+
+        return proxiedHeaders;
+    }
+
+    private string AdjustAzureOpenAILocationToAICentralHost(KeyValuePair<string, IEnumerable<string>> header)
+    {
+        var locationRaw = header.Value.Single();
+        var location = new Uri(locationRaw);
+        return new Uri(new Uri(_languageUrl), location.PathAndQuery).AbsoluteUri;
     }
 
     protected override string HostUriBase => _languageUrl;

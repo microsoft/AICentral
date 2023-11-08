@@ -7,6 +7,6 @@ public record AICallInformation(
     AIServiceType AIServiceType,
     AICallType AICallType, 
     string? IncomingModelName, 
-    JObject RequestContent,
+    JObject? RequestContent,
     string PromptText, 
     Dictionary<string, StringValues> QueryString);

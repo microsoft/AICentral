@@ -16,7 +16,7 @@ public class PathMatchRouter
 
     public RouteHandlerBuilder BuildRoute(WebApplication application, Delegate handler)
     {
-        return application.MapPost(_path, handler);
+        return application.MapMethods(_path, new[] { "Get", "Post" }, handler);
     }
 
     public static PathMatchRouter WithPath(string path)

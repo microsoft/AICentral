@@ -3,6 +3,7 @@ using System.Net;
 using AICentral.Steps.Endpoints.OpenAILike.OpenAI;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Steps.Endpoints.OpenAILike;
 
@@ -21,8 +22,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
 
     public async Task<(AICentralRequestInformation, HttpResponseMessage)> Handle(
         HttpContext context,
-        AICallInformation callInformation,
-        AICentralPipelineExecutor pipeline, 
+        AICallInformation callInformation, 
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherBuilder>>();
@@ -104,7 +104,9 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
             ModelMappings = _modelMappings,
         };
     }
-    
+
+    public abstract Dictionary<string, StringValues> SanitiseHeaders(HttpResponseMessage openAiResponse);
+
     protected abstract string HostUriBase { get; }
 
     protected abstract HttpRequestMessage BuildRequest(

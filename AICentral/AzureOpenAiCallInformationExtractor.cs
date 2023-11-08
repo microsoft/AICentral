@@ -14,7 +14,7 @@ public class AzureOpenAiCallInformationExtractor : IIncomingCallExtractor
             requestReader = new StreamReader(request.Body);
 
         var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
-        var deserializedRequestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
+        var deserializedRequestContent = JsonConvert.DeserializeObject(requestRawContent) as JObject;
 
         var requestType = AICallType.Other;
         var modelName = string.Empty;
@@ -35,12 +35,12 @@ public class AzureOpenAiCallInformationExtractor : IIncomingCallExtractor
         {
             AICallType.Chat => string.Join(
                 Environment.NewLine,
-                deserializedRequestContent["messages"]?.Select(x => x.Value<string>("content")) ??
+                deserializedRequestContent?["messages"]?.Select(x => x.Value<string>("content")) ??
                 Array.Empty<string>()),
-            AICallType.Embeddings => deserializedRequestContent.Value<string>("input") ?? string.Empty,
+            AICallType.Embeddings => deserializedRequestContent?.Value<string>("input") ?? string.Empty,
             AICallType.Completions => string.Join(Environment.NewLine,
-                deserializedRequestContent["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
-            _ => deserializedRequestContent.Value<string>("prompt")?? String.Empty
+                deserializedRequestContent?["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
+            _ => deserializedRequestContent?.Value<string>("prompt") ?? String.Empty
         };
 
         return new AICallInformation(

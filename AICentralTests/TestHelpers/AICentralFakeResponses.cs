@@ -68,7 +68,8 @@ public class AICentralFakeResponses
                 {
                     new
                     {
-                        text = "Yes, other Azure AI services also support customer managed keys. Azure AI services offer multiple options for customers to manage keys, such as using Azure Key Vault, customer-managed keys in Azure Key Vault or customer-managed keys through Azure Storage service. This helps customers ensure that their data is secure and access to their services is controlled.",
+                        text =
+                            "Yes, other Azure AI services also support customer managed keys. Azure AI services offer multiple options for customers to manage keys, such as using Azure Key Vault, customer-managed keys in Azure Key Vault or customer-managed keys through Azure Storage service. This helps customers ensure that their data is secure and access to their services is controlled.",
                         finish_reason = "stop",
                         index = 0
                     }
@@ -82,13 +83,12 @@ public class AICentralFakeResponses
     public static HttpResponseMessage FakeAzureOpenAIImageResponse()
     {
         var response = new HttpResponseMessage(HttpStatusCode.Accepted);
-        response.Headers.Add("Operation-Location", "http://localhost/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview");
-        response.Headers.Add("x-ms-long-running-operation", "true");
+        response.Headers.Add("operation-location",
+            $"https://{Endpoint200}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview");
         response.Content = new StringContent(
             JsonConvert.SerializeObject(new
             {
                 id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
-                created = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 status = "notRunning",
             })
             , Encoding.UTF8, "application/json");
@@ -99,12 +99,24 @@ public class AICentralFakeResponses
     public static HttpResponseMessage FakeAzureOpenAIImageStatusResponse()
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK);
+        var created = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         response.Content = new StringContent(
             JsonConvert.SerializeObject(new
             {
                 id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
-                created = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                created = created,
                 status = "succeeded",
+                result = new
+                {
+                    created = created,
+                    data = new[]
+                    {
+                        new
+                        {
+                            url = "https://images.localtest.me/some-image-somehere"
+                        }
+                    }
+                }
             })
             , Encoding.UTF8, "application/json");
 

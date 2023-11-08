@@ -121,7 +121,6 @@ public class AICentralPipelineAssembler
 
                     var pipeline = new AICentralPipeline(
                         Guard.NotNull(pipelineConfig.EndpointType, nameof(pipelineConfig.EndpointType))!.Value,
-                        Guard.NotNull(pipelineConfig.IsPassThrough, nameof(pipelineConfig.IsPassThrough))!.Value,
                         pipelineName,
                         routeBuilder,
                         GetMiddlewareOrNoOp(
