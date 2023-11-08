@@ -50,12 +50,12 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
         var authenticationType = properties.AuthenticationType;
         if (modelMappings == null)
         {
-            logger.LogWarning("Pipeline {ConfigurationSectionPath has no model mappings configured. All requests will use default behaviour of passing model name straight through}", configurationSection.Path);
+            logger.LogWarning("Pipeline {ConfigurationSectionPath} has no model mappings configured. All requests will use default behaviour of passing model name straight through", configurationSection.Path);
             modelMappings = new Dictionary<string, string>();
         }
         if (authenticationType == null)
         {
-            logger.LogWarning("Pipeline {ConfigurationSectionPath has no AuthType configured. Defaulting to AAD pass-through}", configurationSection.Path);
+            logger.LogWarning("Pipeline {ConfigurationSectionPath} has no AuthType configured. Defaulting to AAD pass-through", configurationSection.Path);
             authenticationType = AuthenticationType.EntraPassThrough;
         }
 

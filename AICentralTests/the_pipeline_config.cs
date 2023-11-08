@@ -52,7 +52,6 @@ public class the_pipeline_config
                         new ConfigurationTypes.AICentralPipelineConfig()
                         {
                             Name = "test-pipeline",
-                            EndpointType = EndpointType.AzureOpenAI,
                             Host = "my-test-host.localtest.me",
                             EndpointSelector = "default-endpoint-selector",
                         }

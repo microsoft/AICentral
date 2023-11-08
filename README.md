@@ -25,6 +25,28 @@ This sample produces a AI-Central proxy that
  - Proxies directly through to a back-end Open AI server
  - Can be accessed using standard SDKs
 
+### Installation
+```bash
+dotnet new web -o MyAICentral
+cd MyAICentral
+dotnet add package AiCentral
+```
+### Program.cs
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAICentral(builder.Configuration);
+
+var app = builder.Build();
+
+app.UseAICentral();
+
+app.Run();
+
+
+```
+
+### appsettings.json
 ```json
 {
   "AICentral": {
@@ -33,7 +55,7 @@ This sample produces a AI-Central proxy that
         "Type": "AzureOpenAIEndpoint",
         "Name": "openai-1",
         "Properties": {
-          "LanguageEndpoint": "https://<my-ai>.openai.azure.com",
+          "LanguageEndpoint": "https://<my-ai>.openai.azure.com"
         }
       }
     ],
@@ -48,9 +70,9 @@ This sample produces a AI-Central proxy that
     ],
     "Pipelines": [
       {
-        "Name": "OpenAIPipeline",
+        "Name": "AzureOpenAIPipeline",
         "Host": "mypipeline.mydomain.com",
-        "EndpointSelector": "default",
+        "EndpointSelector": "default"
       }
     ]
   }
