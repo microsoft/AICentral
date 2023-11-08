@@ -71,7 +71,8 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         };
     }
 
-    public override Dictionary<string, StringValues> SanitiseHeaders(HttpResponseMessage openAiResponse)
+    public override Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,
+        HttpResponseMessage openAiResponse)
     {
         var proxiedHeaders = new Dictionary<string, StringValues>();
         foreach (var header in openAiResponse.Headers)
@@ -80,7 +81,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
             {
                 if (header.Key.Equals("operation-location", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    proxiedHeaders.Add(header.Key, AdjustAzureOpenAILocationToAICentralHost(header));
+                    proxiedHeaders.Add(header.Key, AdjustAzureOpenAILocationToAICentralHost(context, header));
                 }
                 else
                 {
@@ -92,11 +93,20 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         return proxiedHeaders;
     }
 
-    private string AdjustAzureOpenAILocationToAICentralHost(KeyValuePair<string, IEnumerable<string>> header)
+    private string AdjustAzureOpenAILocationToAICentralHost(HttpContext context,
+        KeyValuePair<string, IEnumerable<string>> header)
     {
         var locationRaw = header.Value.Single();
         var location = new Uri(locationRaw);
-        return new Uri(new Uri(_languageUrl), location.PathAndQuery).AbsoluteUri;
+        var builder = new UriBuilder(
+            context.Request.Scheme,
+            context.Request.Host.Host,
+            context.Request.Host.Port ?? 443,
+            location.AbsolutePath,
+            location.Query
+        );
+
+        return builder.Uri.AbsoluteUri;
     }
 
     protected override string HostUriBase => _languageUrl;

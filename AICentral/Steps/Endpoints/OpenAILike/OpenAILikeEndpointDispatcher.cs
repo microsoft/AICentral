@@ -1,8 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net;
-using AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
 using AICentral.Steps.Endpoints.OpenAILike.OpenAI;
-using AICentral.Steps.EndpointSelectors.Single;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Primitives;
@@ -107,7 +105,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         };
     }
 
-    public abstract Dictionary<string, StringValues> SanitiseHeaders(HttpResponseMessage openAiResponse);
+    public abstract Dictionary<string, StringValues> SanitiseHeaders(HttpContext context, HttpResponseMessage openAiResponse);
 
     protected abstract string HostUriBase { get; }
 

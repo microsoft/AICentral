@@ -5,6 +5,11 @@ namespace AICentralTests.TestHelpers;
 
 public static class TestPipelines
 {
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleAzureOpenAIEndpoint() =>
+        new TestAICentralPipelineBuilder()
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "openai", "Model1")
+            .Assemble("azure-openai-to-azure.localtest.me");
+
     public static AICentralPipelineAssembler OpenAIServiceWithSingleAzureOpenAIEndpoint() =>
         new TestAICentralPipelineBuilder()
             .WithEndpointType(EndpointType.OpenAI)

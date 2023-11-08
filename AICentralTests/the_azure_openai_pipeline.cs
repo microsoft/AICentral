@@ -42,7 +42,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public async Task can_dispatch_to_an_openai_pipeline()
     {
         var result = await _httpClient.PostAsync(
-            "http://azure-openai-to-openai.localtest.me/openai/deployments/openaiendpoint/chat/completions?api-version=2023-05-15",
+            new Uri("http://azure-openai-to-openai.localtest.me/openai/deployments/openaiendpoint/chat/completions?api-version=2023-05-15"), 
             new StringContent(JsonConvert.SerializeObject(new
             {
             }), Encoding.UTF8, "application/json"));
@@ -56,7 +56,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public async Task works_with_the_azure_sdk_chat_completions()
     {
         var client = new OpenAIClient(
-            _httpClient.BaseAddress, 
+            new Uri("http://azure-to-azure-openai.localtest.me"), 
             new AzureKeyCredential("ignore"),
             new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
             {
@@ -77,7 +77,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public async Task works_with_the_azure_sdk_completions()
     {
         var client = new OpenAIClient(
-            _httpClient.BaseAddress, 
+            new Uri("http://azure-to-azure-openai.localtest.me"), 
             new AzureKeyCredential("ignore"),
             new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
             {
@@ -98,7 +98,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public async Task cannot_proxy_an_image_request_from_azure_openai_endpoint_to_openai_downstream()
     {
         var client = new OpenAIClient(
-            _httpClient.BaseAddress, 
+            new Uri("http://openai-to-azure.localtest.me"), 
             new AzureKeyCredential("ignore"),
             new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
             {
@@ -114,10 +114,10 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     }
 
     [Fact]
-    public async Task will_proxy_requests_to_a_single_endpoint()
+    public async Task will_proxy_other_requests_to_a_single_endpoint()
     {
         var client = new OpenAIClient(
-            _httpClient.BaseAddress, 
+            new Uri("http://azure-openai-to-azure.localtest.me"), 
             new AzureKeyCredential("ignore"),
             new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_09_01_Preview)
             {
@@ -136,19 +136,20 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public async Task will_not_proxy_unknown_requests_to_a_multi_endpoint()
     {
         var client = new OpenAIClient(
-            _httpClient.BaseAddress, 
+            new Uri("http://azure-to-azure-openai.localtest.me"), 
             new AzureKeyCredential("ignore"),
             new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_09_01_Preview)
             {
                 Transport = new HttpClientTransport(_httpClient),
             });
 
-        var result = await client.GetImageGenerationsAsync(
-            new ImageGenerationOptions()
-            {
-                Prompt = "Me building an Open AI Reverse Proxy",
-            });
-        
+        Should.Throw<RequestFailedException>(async () =>
+            await client.GetImageGenerationsAsync(
+                new ImageGenerationOptions()
+                {
+                    Prompt = "Me building an Open AI Reverse Proxy",
+                }));
+
     }
 
 }

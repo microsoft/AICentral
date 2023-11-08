@@ -51,7 +51,7 @@ public abstract class EndpointSelectorBase : IEndpointSelector
             openAiResponse.EnsureSuccessStatusCode();
         }
 
-        var adjustedHeaders = aiCentralEndpointDispatcher.SanitiseHeaders(openAiResponse);
+        var adjustedHeaders = aiCentralEndpointDispatcher.SanitiseHeaders(context, openAiResponse);
         CopyHeadersToResponse(context.Response, adjustedHeaders);
 
         if (openAiResponse.Headers.TransferEncodingChunked == true)

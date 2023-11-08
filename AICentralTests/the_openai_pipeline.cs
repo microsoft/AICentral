@@ -67,6 +67,7 @@ public class the_openai_pipeline : IClassFixture<TestWebApplicationFactory<Progr
     [Fact]
     public async Task works_with_the_azure_sdk_chat_completions()
     {
+        _httpClient.DefaultRequestHeaders.Host = "openai-to-azure.localtest.me";
         var client = new OpenAIClient(
             "ignore",
             new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
@@ -87,6 +88,7 @@ public class the_openai_pipeline : IClassFixture<TestWebApplicationFactory<Progr
     [Fact]
     public async Task works_with_the_azure_sdk_completions()
     {
+        _httpClient.DefaultRequestHeaders.Host = "openai-to-azure.localtest.me";
         var client = new OpenAIClient(
             "ignore",
             new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
@@ -104,22 +106,24 @@ public class the_openai_pipeline : IClassFixture<TestWebApplicationFactory<Progr
         completions.Value.Id.ShouldBe(AICentralFakeResponses.FakeResponseId);
     }
 
-    // [Fact]
-    // public async Task cannot_proxy_an_image_request_from_openai_endpoint_to_azure_openai_downstream()
-    // {
-    //     var client = new OpenAIClient(
-    //         "ignore",
-    //         new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
-    //         {
-    //             Transport = new HttpClientTransport(_httpClient)
-    //         });
-    //
-    //     Should.Throw<RequestFailedException>(async () =>
-    //         await client.GetImageGenerationsAsync(
-    //             new ImageGenerationOptions()
-    //             {
-    //                 Prompt = "Me building an Open AI Reverse Proxy"
-    //             }));
-    // }
+    [Fact]
+    public async Task cannot_proxy_an_image_request_from_openai_endpoint_to_azure_openai_downstream()
+    {
+        _httpClient.DefaultRequestHeaders.Host = "openai-to-azure.localtest.me";
+
+        var client = new OpenAIClient(
+            "ignore",
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
+            {
+                Transport = new HttpClientTransport(_httpClient)
+            });
+    
+        Should.Throw<RequestFailedException>(async () =>
+            await client.GetImageGenerationsAsync(
+                new ImageGenerationOptions()
+                {
+                    Prompt = "Me building an Open AI Reverse Proxy"
+                }));
+    }
     
 }

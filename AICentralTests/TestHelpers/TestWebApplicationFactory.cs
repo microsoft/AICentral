@@ -32,6 +32,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.AzureOpenAIServiceWithPriorityEndpointPickerNoAuth(),
                 TestPipelines.AzureOpenAIServiceWithSingleOpenAIEndpoint(),
                 TestPipelines.AzureOpenAIServiceWithRandomAzureOpenAIEndpoints(),
+                TestPipelines.AzureOpenAIServiceWithSingleAzureOpenAIEndpoint(),
                 TestPipelines.OpenAIServiceWithSingleAzureOpenAIEndpoint(),
                 TestPipelines.OpenAIServiceWithSingleOpenAIEndpoint(),
             };
