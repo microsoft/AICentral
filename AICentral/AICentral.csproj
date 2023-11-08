@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <OutputType>Library</OutputType>
         <IsPackable>true</IsPackable>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,6 +24,10 @@
 
     <ItemGroup>
       <None Remove="Properties\launchSettings.json" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <None Include="readme.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 </Project>
