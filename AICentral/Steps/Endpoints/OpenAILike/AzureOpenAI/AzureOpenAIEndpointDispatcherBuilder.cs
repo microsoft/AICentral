@@ -22,7 +22,9 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
 
         _authHandler = authenticationType switch
         {
-            AuthenticationType.ApiKey => new KeyAuth(authenticationKey ?? throw new ArgumentException("Missing api-key for Authentication Type")),
+            AuthenticationType.ApiKey => new KeyAuth(authenticationKey ??
+                                                     throw new ArgumentException(
+                                                         "Missing api-key for Authentication Type")),
             AuthenticationType.Entra => new EntraAuth(),
             AuthenticationType.EntraPassThrough => new BearerTokenPassThroughAuth(),
             _ => throw new ArgumentOutOfRangeException(nameof(authenticationType), authenticationType, null)
@@ -37,15 +39,30 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
 
     public static string ConfigName => "AzureOpenAIEndpoint";
 
-    public static IAICentralEndpointDispatcherBuilder BuildFromConfig(IConfigurationSection configurationSection)
+    public static IAICentralEndpointDispatcherBuilder BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
     {
-        var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.AICentralPipelineAzureOpenAIEndpointPropertiesConfig>();
-        Guard.NotNull(properties, configurationSection, "Properties");
+        var properties = configurationSection.GetSection("Properties")
+            .Get<ConfigurationTypes.AICentralPipelineAzureOpenAIEndpointPropertiesConfig>();
         
+        Guard.NotNull(properties, configurationSection, "Properties");
+
+        var modelMappings = properties!.ModelMappings;
+        var authenticationType = properties.AuthenticationType;
+        if (modelMappings == null)
+        {
+            logger.LogWarning("Pipeline {ConfigurationSectionPath has no model mappings configured. All requests will use default behaviour of passing model name straight through}", configurationSection.Path);
+            modelMappings = new Dictionary<string, string>();
+        }
+        if (authenticationType == null)
+        {
+            logger.LogWarning("Pipeline {ConfigurationSectionPath has no AuthType configured. Defaulting to AAD pass-through}", configurationSection.Path);
+            authenticationType = AuthenticationType.EntraPassThrough;
+        }
+
         return new AzureOpenAIEndpointDispatcherBuilder(
             Guard.NotNull(properties!.LanguageEndpoint, configurationSection, nameof(properties.LanguageEndpoint)),
-            Guard.NotNull(properties.ModelMappings, configurationSection, nameof(properties.ModelMappings)),
-            Guard.NotNull(properties.AuthenticationType, configurationSection, nameof(properties.AuthenticationType)),
+            modelMappings,
+            authenticationType.Value,
             properties.ApiKey);
     }
 

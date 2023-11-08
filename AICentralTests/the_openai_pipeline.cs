@@ -107,7 +107,7 @@ public class the_openai_pipeline : IClassFixture<TestWebApplicationFactory<Progr
     }
 
     [Fact]
-    public async Task cannot_proxy_an_image_request_from_openai_endpoint_to_azure_openai_downstream()
+    public void cannot_proxy_an_image_request_from_openai_endpoint_to_azure_openai_downstream()
     {
         _httpClient.DefaultRequestHeaders.Host = "openai-to-azure.localtest.me";
 

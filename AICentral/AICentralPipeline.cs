@@ -95,7 +95,7 @@ public class AICentralPipeline
         return new
         {
             Name = _name,
-            PathMatch = _router.WriteDebug(),
+            RouteMatch = _router.WriteDebug(),
             ClientAuth = _clientAuthStep.WriteDebug(),
             Steps = _pipelineSteps.Select(x => x.WriteDebug()),
             EndpointSelector = _endpointSelector.WriteDebug()

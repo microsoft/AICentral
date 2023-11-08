@@ -30,6 +30,7 @@ public class EntraClientAuthBuilder : IAICentralClientAuthBuilder
     }
 
     public static IAICentralClientAuthBuilder BuildFromConfig(
+        ILogger logger, 
         IConfigurationSection configurationSection)
     {
         return new EntraClientAuthBuilder(configurationSection);

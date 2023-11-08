@@ -11,7 +11,7 @@ public class AllowAnonymousClientAuthBuilder: IAICentralClientAuthBuilder
         return new AllowAnonymousClientAuthProvider();
     }
 
-    public static IAICentralClientAuthBuilder BuildFromConfig(IConfigurationSection configurationSection)
+    public static IAICentralClientAuthBuilder BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
     {
         return new AllowAnonymousClientAuthBuilder();
     }

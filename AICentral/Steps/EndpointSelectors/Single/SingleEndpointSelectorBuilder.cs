@@ -22,7 +22,7 @@ public class SingleEndpointSelectorBuilder: IAICentralEndpointSelectorBuilder
 
     public static string ConfigName => "SingleEndpoint";
 
-    public static IAICentralEndpointSelectorBuilder BuildFromConfig(IConfigurationSection configSection, Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
+    public static IAICentralEndpointSelectorBuilder BuildFromConfig(ILogger logger, IConfigurationSection configSection, Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
     {
         var properties = configSection.GetSection("Properties");
         Guard.NotNull(properties, properties, "Properties");

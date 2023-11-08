@@ -1,5 +1,9 @@
 # AI Central
 
+![main](https://github.com/graemefoster/aicentral/actions/workflows/build.yaml/badge.svg)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/mit)
+[![NuGet Status](http://img.shields.io/nuget/v/aicentral.svg?style=flat)](https://www.nuget.org/packages/aicentral/)
+
 AI Central gives you control over your AI services.
 
 - Intelligent Routing
@@ -7,12 +11,22 @@ AI Central gives you control over your AI services.
 - Fallback AI service
 - Round Robin AI services
 - Circuit breakers, and backoff-retry over downstream AI services
+- Prompt and usage logging
+  - **Works for streaming endpoints as-well as non streaming**
 
-## ```appsettings.json``` Configuration
+## Configuration
+
+See [Configuration](./docs/configuration.md) for more details.
+
+## Minimal
+
+This sample produces a AI-Central proxy that
+ - Listens on a hostname of your choosing
+ - Proxies directly through to a back-end Open AI server
+ - Can be accessed using standard SDKs
 
 ```json
 {
-  "ExposeTestPage": true,
   "AICentral": {
     "Endpoints": [
       {
@@ -20,12 +34,64 @@ AI Central gives you control over your AI services.
         "Name": "openai-1",
         "Properties": {
           "LanguageEndpoint": "https://<my-ai>.openai.azure.com",
-          "ModelMappings": {
-            "e1-Gpt35Turbo0613": "Gpt35Turbo0613",
-            "e1-Gpt35Turbo0613_noauth": "Gpt35Turbo0613",
-            "e1-Ada002Embedding": "Ada002Embedding"
-          },
+        }
+      }
+    ],
+    "EndpointSelectors": [
+      {
+        "Type": "SingleEndpoint",
+        "Name": "default",
+        "Properties": {
+          "Endpoint": "openai-1"
+        }
+      }
+    ],
+    "Pipelines": [
+      {
+        "Name": "OpenAIPipeline",
+        "Host": "mypipeline.mydomain.com",
+        "EndpointSelector": "default",
+      }
+    ]
+  }
+}
+```
+
+## Full example
+
+This pipeline will:
+
+- Present an Azure Open AI, and an Open AI downstream as a single upstream endpoint
+  - maps incoming Azure Open AI deployments to Open AI models
+- Present it as an Azure Open AI style endpoint
+- Protect the front-end by requiring an AAD token issued for your own AAD application
+- Put a local Asp.Net core rate-limiting policy over the endpoint
+- Add logging to Azure monitor 
+  - Logs quota, client caller information, and in this case the Prompt but not the response. 
+
+```json
+{
+  "AICentral": {
+    "Endpoints": [
+      {
+        "Type": "AzureOpenAIEndpoint",
+        "Name": "openai-priority",
+        "Properties": {
+          "LanguageEndpoint": "https://<my-ai>.openai.azure.com",
           "AuthenticationType": "Entra|EntraPassThrough|ApiKey"
+        }
+      },
+      {
+        "Type": "OpenAIEndpoint",
+        "Name": "openai-fallback",
+        "Properties": {
+          "LanguageEndpoint": "https://api.openai.com",
+          "ModelMappings": {
+            "Gpt35Turbo0613": "gpt-3.5-turbo",
+            "Ada002Embedding": "text-embedding-ada-002"
+          },
+          "ApiKey": "<my-api-key>",
+          "Organization": "<optional-organisation>"
         }
       }
     ],
@@ -43,10 +109,11 @@ AI Central gives you control over your AI services.
     ],
     "EndpointSelectors": [
       {
-        "Type": "SingleEndpoint",
-        "Name": "default",
+        "Type": "Prioritised",
+        "Name": "my-endpoint-selector",
         "Properties": {
-          "Endpoint": "openai-1"
+          "PriorityEndpoints": ["openai-1"],
+          "FallbackEndpoints": ["openai-fallback"]
         }
       }
     ],
@@ -55,8 +122,8 @@ AI Central gives you control over your AI services.
         "Type": "AspNetCoreFixedWindowRateLimiting",
         "Name": "window-rate-limiter",
         "Properties": {
-          "Window": 20,
-          "PermitLimit": 1
+          "Window": 10,
+          "PermitLimit": 100
         }
       },
       {
@@ -65,15 +132,16 @@ AI Central gives you control over your AI services.
         "Properties": {
           "WorkspaceId": "<workspace-id>",
           "Key": "<key>",
-          "LogPrompt": false
+          "LogPrompt": true,
+          "LogResponse": false
         }
       }
     ],
     "Pipelines": [
       {
-        "Name": "LoggedOpenAiPipeline",
-        "Path": "/openai/deployments/Gpt35Turbo0613/chat/completions",
-        "EndpointSelector": "default",
+        "Name": "MyPipeline",
+        "Host": "prioritypipeline.mydomain.com",
+        "EndpointSelector": "my-endpoint-selector",
         "AuthProvider": "simple-aad",
         "Steps": [
           "window-rate-limiter",
@@ -86,102 +154,3 @@ AI Central gives you control over your AI services.
 
 ```
 
-## Bicep App Service configuration
-```bicep
-resource app 'Microsoft.Web/sites@2022-09-01' = {
-  name: sampleAppName
-  location: location
-  identity: {
-    type: 'SystemAssigned'
-  }
-  properties: {
-    httpsOnly: true
-    serverFarmId: aspId
-    vnetRouteAllEnabled: true
-    virtualNetworkSubnetId: vnetIntegrationSubnetId
-    clientAffinityEnabled: false
-    siteConfig: {
-      minTlsVersion: '1.2'
-      alwaysOn: true
-      vnetRouteAllEnabled: true
-      ipSecurityRestrictions: []
-      scmIpSecurityRestrictions: []
-      linuxFxVersion: 'DOCKER|graemefoster/aicentral:0.5'
-      appSettings: [
-        {
-          name: 'AICentral__Endpoints__0__Type'
-          value: 'AzureOpenAIEndpoint'
-        }
-        {
-          name: 'AICentral__Endpoints__0__Name'
-          value: 'openai-1'
-        }
-        {
-          name: 'AICentral__Endpoints__0__Properties__LanguageEndpoint'
-          value: openAiUrl
-        }
-        {
-          name: 'AICentral__Endpoints__0__Properties__ModelMappings__e1-Gpt35Turbo0613'
-          value: openAiModelName
-        }
-        {
-          name: 'AICentral__Endpoints__0__Properties__AuthenticationType'
-          value: 'EntraPassThrough'
-        }
-        {
-          name: 'AICentral__EndpointSelectors__0__Type'
-          value: 'SingleEndpoint'
-        }
-        {
-          name: 'AICentral__EndpointSelectors__0__Name'
-          value: 'default'
-        }
-        {
-          name: 'AICentral__EndpointSelectors__0__Properties__Endpoint'
-          value: 'openai-1'
-        }
-        {
-          name: 'AICentral__GenericSteps__0__Type'
-          value: 'AzureMonitorLogger'
-        }
-        {
-          name: 'AICentral__GenericSteps__0__Name'
-          value: 'azure-monitor-logger'
-        }
-        {
-          name: 'AICentral__GenericSteps__0__Properties__WorkspaceId'
-          value: azureMonitorWorkspaceId
-        }
-        {
-          name: 'AICentral__GenericSteps__0__Properties__Key'
-          value: listKeys(lanalytics.id, '2020-08-01').primarySharedKey
-        }
-        {
-          name: 'AICentral__GenericSteps__0__Properties__LogPrompt'
-          value: 'true'
-        }
-        {
-          name: 'AICentral__Pipelines__0__Name'
-          value: 'SynchronousPipeline'
-        }
-        {
-          name: 'AICentral__Pipelines__0__Path'
-          value: '/openai/deployments/Gpt35Turbo0613/chat/completions'
-        }
-        {
-          name: 'AICentral__Pipelines__0__EndpointSelector'
-          value: 'default'
-        }
-        {
-          name: 'AICentral__Pipelines__0__Steps__0'
-          value: 'azure-monitor-logger'
-        }
-        {
-          name: 'DOCKER_REGISTRY_SERVER_URL'
-          value: 'https://index.docker.io/v1'
-        }
-      ]
-    }
-  }
-}
-```
