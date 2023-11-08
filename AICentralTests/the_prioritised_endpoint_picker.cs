@@ -22,7 +22,8 @@ public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationF
     [Fact]
     public async Task fails_over_to_a_successful_endpoint()
     {
-        var result = await _httpClient.PostAsync("/openai/deployments/priority/chat/completions?api-version=2023-05-15",
+        var result = await _httpClient
+            .PostAsync("http://azure-noauth-priority.localtest.me/openai/deployments/priority/chat/completions?api-version=2023-05-15",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]

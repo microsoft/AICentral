@@ -58,10 +58,12 @@ public class PriorityEndpointSelector : EndpointSelectorBase
             toTry.Remove(chosen);
             try
             {
-                var responseMessage = await chosen.Handle(context, aiCallInformation, pipeline, cancellationToken); //awaiting to unwrap any Aggregate Exceptions
+                var responseMessage = await chosen.Handle(context, aiCallInformation, cancellationToken); //awaiting to unwrap any Aggregate Exceptions
+                
                 return await HandleResponse(
                     logger,
                     context,
+                    chosen,
                     responseMessage.Item1,
                     responseMessage.Item2,
                     isFallbackCollection && !toTry.Any(),

@@ -28,17 +28,19 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
 
             var pipelines = new[]
             {
-                TestPipelines.ApiKeyAuth(),
-                TestPipelines.RandomEndpointPickerNoAuth(),
-                TestPipelines.PriorityEndpointPickerNoAuth(),
-                TestPipelines.OpenAIService(),
-                TestPipelines.WithOpenAIEndpoint()
+                TestPipelines.AzureOpenAIServiceWithAuth(),
+                TestPipelines.AzureOpenAIServiceWithPriorityEndpointPickerNoAuth(),
+                TestPipelines.AzureOpenAIServiceWithSingleOpenAIEndpoint(),
+                TestPipelines.AzureOpenAIServiceWithRandomAzureOpenAIEndpoints(),
+                TestPipelines.AzureOpenAIServiceWithSingleAzureOpenAIEndpoint(),
+                TestPipelines.OpenAIServiceWithSingleAzureOpenAIEndpoint(),
+                TestPipelines.OpenAIServiceWithSingleOpenAIEndpoint(),
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));
             assembler.AddServices(services, NullLogger.Instance);
 
-            var fakeClient = new HttpClient(new FakeHttpMessageHandler(AICentralFakeResponses.FakeResponse()));
+            var fakeClient = new HttpClient(new FakeHttpMessageHandler());
             services.AddSingleton<IHttpClientFactory>(new FakeHttpClientFactory(fakeClient));
         });
         return base.CreateHost(builder);

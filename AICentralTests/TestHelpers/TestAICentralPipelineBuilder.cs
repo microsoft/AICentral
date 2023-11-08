@@ -133,11 +133,11 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
-    public AICentralPipelineAssembler Assemble(string path)
+    public AICentralPipelineAssembler Assemble(string host)
     {
         var id = Guid.NewGuid().ToString();
         return new AICentralPipelineAssembler(
-            PathMatchRouter.WithPath,
+            HeaderMatchRouter.WithHostHeader,
             new Dictionary<string, IAICentralClientAuthBuilder>()
             {
                 [id] = _auth ?? new AllowAnonymousClientAuthBuilder(),
@@ -154,7 +154,7 @@ public class TestAICentralPipelineBuilder
                 {
                     Name = Guid.NewGuid().ToString(),
                     EndpointType = _endpointType ?? EndpointType.AzureOpenAI,
-                    Path = path,
+                    Host = host,
                     AuthProvider = id,
                     Steps = Array.Empty<string>(),
                     EndpointSelector = id

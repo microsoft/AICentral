@@ -27,10 +27,11 @@ public class RandomEndpointSelector : EndpointSelectorBase
             try
             {
                 var responseMessage =
-                    await chosen.Handle(context, aiCallInformation, pipeline, cancellationToken); //awaiting to unwrap any Aggregate Exceptions
+                    await chosen.Handle(context, aiCallInformation, cancellationToken); //awaiting to unwrap any Aggregate Exceptions
                 return await HandleResponse(
                     logger,
                     context,
+                    chosen,
                     responseMessage.Item1,
                     responseMessage.Item2,
                     !toTry.Any(),

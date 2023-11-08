@@ -5,34 +5,44 @@ namespace AICentralTests.TestHelpers;
 
 public static class TestPipelines
 {
-    public static AICentralPipelineAssembler OpenAIService() =>
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleAzureOpenAIEndpoint() =>
+        new TestAICentralPipelineBuilder()
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "openai", "Model1")
+            .Assemble("azure-openai-to-azure.localtest.me");
+
+    public static AICentralPipelineAssembler OpenAIServiceWithSingleAzureOpenAIEndpoint() =>
         new TestAICentralPipelineBuilder()
             .WithEndpointType(EndpointType.OpenAI)
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "openai", "Model1")
-            .Assemble("/v1/{*prefix}");
+            .Assemble("openai-to-azure.localtest.me");
 
-    public static AICentralPipelineAssembler WithOpenAIEndpoint() =>
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithRandomAzureOpenAIEndpoints() =>
         new TestAICentralPipelineBuilder()
-            .WithSingleOpenAIEndpoint("openaiendpoint", "gpt-3.5-turbo")
-            .Assemble("/openai/deployments/openaiendpoint/{*prefix}");
-
-    public static AICentralPipelineAssembler ApiKeyAuth() =>
-        new TestAICentralPipelineBuilder()
-            .WithApiKeyAuth("123", "456")
-            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "api-key-auth", "Model1")
-            .Assemble("/openai/deployments/api-key-auth/{*prefix}");
-
-    public static AICentralPipelineAssembler RandomEndpointPickerNoAuth() =>
-        new TestAICentralPipelineBuilder()
-            .WithNoAuth()
             .WithRandomEndpoints(new[]
             {
                 (AICentralFakeResponses.Endpoint200, "random", "Model1"),
                 (AICentralFakeResponses.Endpoint200Number2, "random", "Model1"),
             })
-            .Assemble("/openai/deployments/random/{*prefix}");
+            .Assemble("azure-to-azure-openai.localtest.me");
 
-    public static AICentralPipelineAssembler PriorityEndpointPickerNoAuth() =>
+    public static AICentralPipelineAssembler OpenAIServiceWithSingleOpenAIEndpoint() =>
+        new TestAICentralPipelineBuilder()
+            .WithEndpointType(EndpointType.OpenAI)
+            .WithSingleOpenAIEndpoint("openaiendpoint", "gpt-3.5-turbo")
+            .Assemble("openai-to-openai.localtest.me");
+
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleOpenAIEndpoint() =>
+        new TestAICentralPipelineBuilder()
+            .WithSingleOpenAIEndpoint("openaiendpoint", "gpt-3.5-turbo")
+            .Assemble("azure-openai-to-openai.localtest.me");
+
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithAuth() =>
+        new TestAICentralPipelineBuilder()
+            .WithApiKeyAuth("123", "456")
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "api-key-auth", "Model1")
+            .Assemble("azure-with-auth.localtest.me");
+
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithPriorityEndpointPickerNoAuth() =>
         new TestAICentralPipelineBuilder()
             .WithNoAuth()
             .WithPriorityEndpoints(new[]
@@ -45,5 +55,5 @@ public static class TestPipelines
                     (AICentralFakeResponses.Endpoint200, "priority", "Model1"),
                 }
             )
-            .Assemble("/openai/deployments/priority/{*prefix}");
+            .Assemble("azure-noauth-priority.localtest.me");
 }

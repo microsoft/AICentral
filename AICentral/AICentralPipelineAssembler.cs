@@ -14,7 +14,7 @@ namespace AICentral;
 /// </summary>
 public class AICentralPipelineAssembler
 {
-    private readonly Func<string, PathMatchRouter> _routeBuilder;
+    private readonly Func<string, HeaderMatchRouter> _routeBuilder;
     private readonly Dictionary<string, IAICentralClientAuthBuilder> _authProviders;
     private readonly Dictionary<string, IAICentralEndpointDispatcherBuilder> _endpoints;
     private readonly Dictionary<string, IAICentralEndpointSelectorBuilder> _endpointSelectors;
@@ -29,7 +29,7 @@ public class AICentralPipelineAssembler
     private bool _servicesAdded;
 
     public AICentralPipelineAssembler(
-        Func<string, PathMatchRouter> routeBuilder,
+        Func<string, HeaderMatchRouter> routeBuilder,
         Dictionary<string, IAICentralClientAuthBuilder> authProviders,
         Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints,
         Dictionary<string, IAICentralEndpointSelectorBuilder> endpointSelectors,
@@ -115,9 +115,10 @@ public class AICentralPipelineAssembler
 
                     var routeBuilder =
                         _routeBuilder(
-                            Guard.NotNullOrEmptyOrWhitespace(pipelineConfig.Path, nameof(pipelineConfig.Path)));
-                    startupLogger.LogInformation("Configuring Pipeline {Name} on Path {Path}", pipelineConfig.Name,
-                        pipelineConfig.Path);
+                            Guard.NotNullOrEmptyOrWhitespace(pipelineConfig.Host, nameof(pipelineConfig.Host)));
+                    
+                    startupLogger.LogInformation("Configuring Pipeline {Name} on Host {Host}", pipelineConfig.Name,
+                        pipelineConfig.Host);
 
                     var pipeline = new AICentralPipeline(
                         Guard.NotNull(pipelineConfig.EndpointType, nameof(pipelineConfig.EndpointType))!.Value,
@@ -142,8 +143,8 @@ public class AICentralPipelineAssembler
                             pipelineConfig.EndpointSelector,
                             default));
 
-                    startupLogger.LogInformation("Configured Pipeline {Name} on Path {Path}", pipelineConfig.Name,
-                        pipelineConfig.Path);
+                    startupLogger.LogInformation("Configured Pipeline {Name} on Host {Host}", pipelineConfig.Name,
+                        pipelineConfig.Host);
 
                     return pipeline;
                 }).ToArray());

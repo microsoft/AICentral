@@ -15,10 +15,11 @@ public class SingleEndpointSelector : EndpointSelectorBase
         AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
-        var responseMessage = await _endpoint.Handle(context, aiCallInformation, pipeline, cancellationToken);
+        var responseMessage = await _endpoint.Handle(context, aiCallInformation, cancellationToken);
         return await HandleResponse(
             context.RequestServices.GetRequiredService<ILogger<SingleEndpointSelector>>(),
             context,
+            _endpoint,
             responseMessage.Item1,
             responseMessage.Item2,
             true,
