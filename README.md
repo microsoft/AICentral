@@ -55,7 +55,7 @@ app.Run();
         "Type": "AzureOpenAIEndpoint",
         "Name": "openai-1",
         "Properties": {
-          "LanguageEndpoint": "https://<my-ai>.openai.azure.com",
+          "LanguageEndpoint": "https://<my-ai>.openai.azure.com"
         }
       }
     ],
@@ -70,9 +70,9 @@ app.Run();
     ],
     "Pipelines": [
       {
-        "Name": "OpenAIPipeline",
+        "Name": "AzureOpenAIPipeline",
         "Host": "mypipeline.mydomain.com",
-        "EndpointSelector": "default",
+        "EndpointSelector": "default"
       }
     ]
   }
