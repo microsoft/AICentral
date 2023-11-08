@@ -1,4 +1,5 @@
-﻿using AICentral;
+﻿using System.Threading.RateLimiting;
+using AICentral;
 using AICentral.Configuration.JSON;
 using AICentral.Steps;
 using AICentral.Steps.Auth;
@@ -11,6 +12,7 @@ using AICentral.Steps.EndpointSelectors;
 using AICentral.Steps.EndpointSelectors.Priority;
 using AICentral.Steps.EndpointSelectors.Random;
 using AICentral.Steps.EndpointSelectors.Single;
+using AICentral.Steps.RateLimiting;
 using AICentral.Steps.Routes;
 using Microsoft.Extensions.Configuration;
 
@@ -22,6 +24,8 @@ public class TestAICentralPipelineBuilder
     private IAICentralEndpointSelectorBuilder? _endpointBuilder;
     private IAICentralEndpointDispatcherBuilder[]? _openAiEndpointDispatcherBuilders;
     private EndpointType? _endpointType;
+    private int? _windowInSeconds;
+    private int? _requestsPerWindow;
 
     public TestAICentralPipelineBuilder WithApiKeyAuth(string key1, string key2)
     {
@@ -68,8 +72,8 @@ public class TestAICentralPipelineBuilder
 
         return this;
     }
-    
-    
+
+
     public TestAICentralPipelineBuilder WithSingleOpenAIEndpoint(string model, string mappedModel)
     {
         var openAiEndpointDispatcherBuilder = new OpenAIEndpointDispatcherBuilder(
@@ -85,7 +89,7 @@ public class TestAICentralPipelineBuilder
 
         return this;
     }
-    
+
     public TestAICentralPipelineBuilder WithPriorityEndpoints(
         (string hostname, string model, string mappedModel)[] priorityEndpoints,
         (string hostname, string model, string mappedModel)[] fallbackEndpoints
@@ -136,6 +140,18 @@ public class TestAICentralPipelineBuilder
     public AICentralPipelineAssembler Assemble(string host)
     {
         var id = Guid.NewGuid().ToString();
+        var genericSteps = new Dictionary<string, IAICentralPipelineStepBuilder<IAICentralPipelineStep>>();
+        var steps = new List<string>();
+        if (_windowInSeconds != null)
+        {
+            genericSteps[id] = new FixedWindowRateLimitingProvider(new FixedWindowRateLimiterOptions()
+            {
+                Window = TimeSpan.FromSeconds(_windowInSeconds.Value),
+                PermitLimit = _requestsPerWindow!.Value
+            });
+            steps.Add(id);
+        }
+
         return new AICentralPipelineAssembler(
             HeaderMatchRouter.WithHostHeader,
             new Dictionary<string, IAICentralClientAuthBuilder>()
@@ -147,7 +163,7 @@ public class TestAICentralPipelineBuilder
             {
                 [id] = _endpointBuilder!
             },
-            new Dictionary<string, IAICentralPipelineStepBuilder<IAICentralPipelineStep>>(),
+            genericSteps,
             new[]
             {
                 new ConfigurationTypes.AICentralPipelineConfig()
@@ -156,10 +172,17 @@ public class TestAICentralPipelineBuilder
                     EndpointType = _endpointType ?? EndpointType.AzureOpenAI,
                     Host = host,
                     AuthProvider = id,
-                    Steps = Array.Empty<string>(),
+                    Steps = steps.ToArray(),
                     EndpointSelector = id
                 }
             }
         );
+    }
+
+    public TestAICentralPipelineBuilder WithRateLimiting(int windowInSeconds, int requestsPerWindow)
+    {
+        _requestsPerWindow = requestsPerWindow;
+        _windowInSeconds = windowInSeconds;
+        return this;
     }
 }

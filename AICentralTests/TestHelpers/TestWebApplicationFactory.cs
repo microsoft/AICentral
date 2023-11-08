@@ -35,6 +35,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.AzureOpenAIServiceWithSingleAzureOpenAIEndpoint(),
                 TestPipelines.OpenAIServiceWithSingleAzureOpenAIEndpoint(),
                 TestPipelines.OpenAIServiceWithSingleOpenAIEndpoint(),
+                TestPipelines.AzureOpenAIServiceWithRateLimitingAndSingleEndpoint(),
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));

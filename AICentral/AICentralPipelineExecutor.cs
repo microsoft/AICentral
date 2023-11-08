@@ -20,8 +20,7 @@ public class AICentralPipelineExecutor : IDisposable
     {
         if (_pipelineEnumerator.MoveNext())
         {
-            var response = await _pipelineEnumerator.Current.Handle(context, requestDetails, this, cancellationToken);
-            return response;
+            return await _pipelineEnumerator.Current.Handle(context, requestDetails, this, cancellationToken);
         }
 
         return await _endpointSelector.Handle(context, requestDetails, this, cancellationToken);
