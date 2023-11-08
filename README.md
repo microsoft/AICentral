@@ -25,6 +25,28 @@ This sample produces a AI-Central proxy that
  - Proxies directly through to a back-end Open AI server
  - Can be accessed using standard SDKs
 
+### Installation
+```bash
+dotnet new web -o MyAICentral
+cd MyAICentral
+dotnet add package AiCentral
+```
+### Program.cs
+```csharp
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddAICentral(builder.Configuration);
+
+var app = builder.Build();
+
+app.UseAICentral();
+
+app.Run();
+
+
+```
+
+### appsettings.json
 ```json
 {
   "AICentral": {
