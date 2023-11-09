@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace AICentral.IncomingServiceDetector;
 
@@ -9,7 +10,7 @@ public class AzureOpenAIDetector : IAIServiceDetector
         return request.Path.StartsWithSegments("/openai");
     }
 
-    public IncomingCallDetails Detect(HttpRequest request, JObject? requestContent)
+    public async Task<IncomingCallDetails> Detect(HttpRequest request, CancellationToken cancellationToken)
     {
         request.Path.StartsWithSegments("/openai", out var remainingUrlSegments);
 
@@ -31,20 +32,33 @@ public class AzureOpenAIDetector : IAIServiceDetector
             _ => AICallType.Other
         };
 
-        var promptText = requestContent == null
-            ? null
-            : aICallType switch
-            {
-                AICallType.Chat => string.Join(
-                    Environment.NewLine,
-                    requestContent?["messages"]?.Select(x => x.Value<string>("content")) ??
-                    Array.Empty<string>()),
-                AICallType.Embeddings => requestContent?.Value<string>("input") ?? string.Empty,
-                AICallType.Completions => string.Join(Environment.NewLine,
-                    requestContent?["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
-                _ => requestContent?.Value<string>("prompt") ?? String.Empty
-            };
+        if (aICallType == AICallType.Other)
+        {
+            return new IncomingCallDetails(AIServiceType.AzureOpenAI, aICallType, null, null, null);
+        }
 
-        return new IncomingCallDetails(AIServiceType.AzureOpenAI, aICallType, promptText, incomingModelName);
+        //Pull out the text
+        using var requestReader = new StreamReader(request.Body);
+        var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
+        var requestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
+
+        var promptText = aICallType switch
+        {
+            AICallType.Chat => string.Join(
+                Environment.NewLine,
+                requestContent["messages"]?.Select(x => x.Value<string>("content")) ??
+                Array.Empty<string>()),
+            AICallType.Embeddings => requestContent.Value<string>("input") ?? string.Empty,
+            AICallType.Completions => string.Join(Environment.NewLine,
+                requestContent["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        return new IncomingCallDetails(
+            AIServiceType.AzureOpenAI,
+            aICallType,
+            promptText,
+            incomingModelName,
+            requestContent);
     }
 }

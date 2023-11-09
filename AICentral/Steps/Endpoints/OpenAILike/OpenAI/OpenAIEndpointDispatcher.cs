@@ -49,10 +49,10 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
     private static StringContent IncomingContentWithInjectedModelName(AICallInformation aiCallInformation, string? mappedModelName)
     {
         return aiCallInformation.IncomingCallDetails.IncomingModelName == mappedModelName
-            ? new StringContent(aiCallInformation.RequestContent!.ToString(), Encoding.UTF8,
+            ? new StringContent(aiCallInformation.IncomingCallDetails.RequestContent!.ToString(), Encoding.UTF8,
                 "application/json")
             : new StringContent(
-                AddModelName(aiCallInformation.RequestContent!.DeepClone(), mappedModelName!).ToString(),
+                AddModelName(aiCallInformation.IncomingCallDetails.RequestContent!.DeepClone(), mappedModelName!).ToString(),
                 Encoding.UTF8, "application/json");
     }
 
@@ -69,7 +69,7 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         var requestUri = aiCallInformation.IncomingCallDetails.AICallType == AICallType.Other
             ? aiCallInformation.IncomingCallDetails.ServiceType == AIServiceType.OpenAI
                 ? $"{OpenAIV1}{context.Request.Path}"
-                : throw new InvalidOperationException("Unable to dispatch 'other' Azure Open AI request to Open AI")
+                : throw new InvalidOperationException("Unable to forward this request from an Azure Open AI request to Open AI")
             : $"{OpenAIV1}/v1/{pathPiece}";
         
         return requestUri;
