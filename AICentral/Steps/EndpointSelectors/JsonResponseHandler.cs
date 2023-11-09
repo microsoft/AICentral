@@ -15,7 +15,6 @@ public static class JsonResponseHandler
         var rawResponse = await openAiResponse.Content.ReadAsStringAsync(cancellationToken);
         var response = (JObject)JsonConvert.DeserializeObject(rawResponse)!;
 
-
         if (openAiResponse.StatusCode == HttpStatusCode.OK)
         {
             var model = response.Value<string>("model") ?? string.Empty;
@@ -32,8 +31,8 @@ public static class JsonResponseHandler
                 requestInformation.CallType,
                 requestInformation.Prompt,
                 responseContent,
-                0,
-                0,
+                null,
+                null,
                 promptTokens,
                 completionTokens,
                 totalTokens,
@@ -49,16 +48,16 @@ public static class JsonResponseHandler
         {
             var chatRequestInformation = new AICentralUsageInformation(
                 requestInformation.LanguageUrl,
-                string.Empty,
+                null,
                 context.User.Identity?.Name ?? "unknown",
                 requestInformation.CallType,
                 requestInformation.Prompt,
-                string.Empty,
-                0,
-                0,
-                0,
-                0,
-                0,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
                 context.Connection.RemoteIpAddress?.ToString() ?? "",
                 requestInformation.StartDate,
                 requestInformation.Duration);

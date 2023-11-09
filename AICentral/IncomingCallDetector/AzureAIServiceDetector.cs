@@ -2,7 +2,7 @@
 
 namespace AICentral.IncomingServiceDetector;
 
-public class AzureOpenAIServiceDetector : IAIServiceDetector
+public class AzureOpenAIDetector : IAIServiceDetector
 {
     public bool CanDetect(HttpRequest request)
     {

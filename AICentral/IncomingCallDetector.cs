@@ -12,16 +12,21 @@ public class IncomingCallDetector
     {
         _detectors = detectors;
     }
-    
+
     public async Task<AICallInformation> Detect(HttpRequest request, CancellationToken cancellationToken)
     {
         using var
             requestReader = new StreamReader(request.Body);
 
         var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
-        var deserializedRequestContent = JsonConvert.DeserializeObject(requestRawContent) as JObject;
 
-        var aiService = _detectors.FirstOrDefault(x => x.CanDetect(request))?.Detect(request, deserializedRequestContent);
+        var deserializedRequestContent =
+            request.ContentType?.Contains("application/json", StringComparison.InvariantCultureIgnoreCase) ?? false
+                ? JsonConvert.DeserializeObject(requestRawContent) as JObject
+                : null;
+
+        var aiService = _detectors.FirstOrDefault(x => x.CanDetect(request))
+            ?.Detect(request, deserializedRequestContent);
         if (aiService == null)
         {
             throw new NotSupportedException("Cannot detect incoming request");

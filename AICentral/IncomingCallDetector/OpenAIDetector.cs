@@ -2,7 +2,7 @@
 
 namespace AICentral.IncomingServiceDetector;
 
-public class OpenAIServiceDetector : IAIServiceDetector
+public class OpenAIDetector : IAIServiceDetector
 {
     public bool CanDetect(HttpRequest request)
     {
@@ -37,7 +37,7 @@ public class OpenAIServiceDetector : IAIServiceDetector
             };
 
         var incomingModelName = requestContent?.Value<string>("model");
-        return new IncomingCallDetails(AIServiceType.AzureOpenAI, aICallType, promptText, incomingModelName);
+        return new IncomingCallDetails(AIServiceType.OpenAI, aICallType, promptText, incomingModelName);
         
     }
 }

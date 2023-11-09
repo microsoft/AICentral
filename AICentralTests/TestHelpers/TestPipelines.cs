@@ -17,7 +17,7 @@ public static class TestPipelines
 
     public static AICentralPipelineAssembler OpenAIServiceWithSingleAzureOpenAIEndpoint() =>
         new TestAICentralPipelineBuilder()
-            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "openai", "Model1")
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "gpt-3.5-turbo", "Model1")
             .Assemble("openai-to-azure.localtest.me");
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithRandomAzureOpenAIEndpoints() =>

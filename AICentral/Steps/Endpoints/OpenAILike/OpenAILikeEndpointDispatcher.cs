@@ -28,11 +28,12 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherBuilder>>();
 
         var incomingModelName = callInformation.IncomingCallDetails.IncomingModelName ?? string.Empty;
+        
         var mappedModelName = _modelMappings.TryGetValue(incomingModelName, out var mapping)
             ? mapping
             : incomingModelName;
 
-        if (callInformation.IncomingCallDetails.AICallType != AICallType.Other && mappedModelName == string.Empty)
+        if (MappedModelFoundAsEmptyString(callInformation, mappedModelName))
         {
             return (
                 new AICentralRequestInformation(
@@ -47,7 +48,8 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
 
         try
         {
-            var newRequest = BuildRequest(context, callInformation, mappedModelName);
+            var newRequest = await BuildNewRequest(context, callInformation, mappedModelName);
+            await CustomiseRequest(context, callInformation, newRequest, mappedModelName);
 
             logger.LogDebug(
                 "Rewritten URL from {OriginalUrl} to {NewUrl}. Incoming Model: {IncomingModelName}. Mapped Model: {MappedModelName}",
@@ -99,6 +101,27 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         }
     }
 
+    private static bool MappedModelFoundAsEmptyString(AICallInformation callInformation, string mappedModelName)
+    {
+        return callInformation.IncomingCallDetails.AICallType != AICallType.Other && mappedModelName == string.Empty;
+    }
+
+    private Task<HttpRequestMessage> BuildNewRequest(HttpContext context, AICallInformation callInformation, string? mappedModelName)
+    {
+        var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method), BuildUri(context, callInformation, mappedModelName));
+        foreach (var header in context.Request.Headers)
+        {
+            if (!newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()) &&
+                newRequest.Content != null)
+            {
+                newRequest.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
+            }
+        }
+        return Task.FromResult(newRequest);
+    }
+
+    protected abstract Task CustomiseRequest(HttpContext context, AICallInformation callInformation, HttpRequestMessage newRequest, string? newModelName);
+
     public virtual object WriteDebug()
     {
         return new
@@ -111,8 +134,5 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
 
     protected abstract string HostUriBase { get; }
 
-    protected abstract HttpRequestMessage BuildRequest(
-        HttpContext context,
-        AICallInformation aiCallInformation,
-        string mappedModelName);
+    protected abstract string BuildUri(HttpContext context, AICallInformation aiCallInformation, string? mappedModelName);
 }

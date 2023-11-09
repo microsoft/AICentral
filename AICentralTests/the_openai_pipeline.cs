@@ -1,4 +1,5 @@
 using System.Net;
+using System.Reflection;
 using System.Text;
 using AICentralTests.TestHelpers;
 using ApprovalTests;
@@ -28,10 +29,10 @@ public class the_openai_pipeline : IClassFixture<TestWebApplicationFactory<Progr
     public async Task can_dispatch_to_an_azure_openai_endpoint()
     {
         var result = await _httpClient.PostAsync(
-            "http://openai-to-openai.localtest.me/v1/chat/completions",
+            "http://openai-to-azure.localtest.me/v1/chat/completions",
             new StringContent(JsonConvert.SerializeObject(new
             {
-                model = "openaiendpoint",
+                model = "gpt-3.5-turbo",
                 messages = new[]
                 {
                     new { role = "system", content = "You are a helpful assistant." },
@@ -79,7 +80,7 @@ public class the_openai_pipeline : IClassFixture<TestWebApplicationFactory<Progr
             new ChatCompletionsOptions()
             {
                 Messages = { new ChatMessage(ChatRole.System, "Hello world!") },
-                DeploymentName = "openai"
+                DeploymentName = "gpt-3.5-turbo"
             });
         
         completions.Value.Id.ShouldBe(AICentralFakeResponses.FakeResponseId);
@@ -100,7 +101,7 @@ public class the_openai_pipeline : IClassFixture<TestWebApplicationFactory<Progr
             new CompletionsOptions()
             {
                 Prompts = { "Hello world!" },
-                DeploymentName = "openai"
+                DeploymentName = "gpt-3.5-turbo"
             });
         
         completions.Value.Id.ShouldBe(AICentralFakeResponses.FakeResponseId);
@@ -124,6 +125,31 @@ public class the_openai_pipeline : IClassFixture<TestWebApplicationFactory<Progr
                 {
                     Prompt = "Me building an Open AI Reverse Proxy"
                 }));
+    }
+
+    [Fact]
+    public async Task can_proxy_a_whisper_audio_request()
+    {
+        _httpClient.DefaultRequestHeaders.Host = "openai-to-openai.localtest.me";
+        var client = new OpenAIClient(
+            "ignore",
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
+            {
+                Transport = new HttpClientTransport(_httpClient)
+            });
+
+        using var ms = new MemoryStream();
+        await using var stream = typeof(the_openai_pipeline).Assembly.GetManifestResourceStream("AICentralTests.Assets.Recording.m4a")!;
+        await stream.CopyToAsync(ms);
+
+        await client.GetAudioTranscriptionAsync(new AudioTranscriptionOptions()
+        {
+            Prompt = "I think it's something to do with programming",
+            DeploymentName = "whisper-1",
+            Temperature = 0.7f,
+            ResponseFormat = AudioTranscriptionFormat.Vtt,
+            AudioData = new BinaryData(ms.ToArray())
+        });
     }
     
 }

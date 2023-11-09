@@ -64,8 +64,8 @@ public class AICentralPipelineAssembler
         services.AddSingleton(pipelines);
 
         services.AddSingleton<IncomingCallDetector>();
-        services.AddSingleton<IAIServiceDetector, AzureOpenAIServiceDetector>();
-        services.AddSingleton<IAIServiceDetector, OpenAIServiceDetector>();
+        services.AddSingleton<IAIServiceDetector, AzureOpenAIDetector>();
+        services.AddSingleton<IAIServiceDetector, OpenAIDetector>();
 
         return pipelines;
     }

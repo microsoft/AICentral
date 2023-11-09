@@ -53,6 +53,12 @@ public class FakeHttpMessageHandler : HttpMessageHandler
             return Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIImageStatusResponse());
         }
 
+        if (request.RequestUri.AbsoluteUri.Equals(
+                $"https://api.openai.com/v1/audio/transcriptions"))
+        {
+            return Task.FromResult(AICentralFakeResponses.FakeOpenAIAudioTranscriptionResponse());
+        }
+
         throw new NotSupportedException($"No fake response registered for {request.RequestUri.AbsoluteUri}");
     }
 }

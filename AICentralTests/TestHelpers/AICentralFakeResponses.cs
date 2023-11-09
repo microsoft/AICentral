@@ -123,6 +123,23 @@ public class AICentralFakeResponses
         return response;
     }
 
+    public static HttpResponseMessage FakeOpenAIAudioTranscriptionResponse()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK);
+        response.Content = new StringContent("""
+                                             1
+                                             00:00:00,000 --> 00:00:07,000
+                                             I wonder what the translation will be for this
+                                             """, Encoding.UTF8, "text/plain");
+
+        response.Headers.Add("openai-processing-ms", "744");
+        response.Headers.Add("openai-version", "2020-10-01");
+        response.Headers.Add("x-ratelimit-limit-requests", "50");
+        response.Headers.Add("x-ratelimit-remaining-requests", "49");
+        response.Headers.Add("x-ratelimit-reset-requests", "1.2s");
+        return response;
+    }
+
     public static HttpResponseMessage NotFoundResponse()
     {
         var response = new HttpResponseMessage();
