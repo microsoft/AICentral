@@ -59,6 +59,12 @@ public class FakeHttpMessageHandler : HttpMessageHandler
             return Task.FromResult(AICentralFakeResponses.FakeOpenAIAudioTranscriptionResponse());
         }
 
+        if (request.RequestUri.AbsoluteUri.Equals(
+                $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/whisper-1/audio/transcriptions?api-version=2023-05-15"))
+        {
+            return Task.FromResult(AICentralFakeResponses.FakeOpenAIAudioTranscriptionResponse());
+        }
+
         throw new NotSupportedException($"No fake response registered for {request.RequestUri.AbsoluteUri}");
     }
 }
