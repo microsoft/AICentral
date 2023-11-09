@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using AICentral.Configuration.JSON;
 using AICentral.Steps;
 using AICentral.Steps.Auth;
 using AICentral.Steps.EndpointSelectors;
@@ -15,7 +14,6 @@ public class AICentralPipeline
     private readonly IAICentralClientAuthStep _clientAuthStep;
     private readonly IList<IAICentralPipelineStep> _pipelineSteps;
     private readonly IEndpointSelector _endpointSelector;
-    private readonly IncomingCallDetector _detector;
 
     public AICentralPipeline(
         string name,
@@ -25,7 +23,6 @@ public class AICentralPipeline
         IEndpointSelector endpointSelector)
     {
         _name = name;
-        _detector = new IncomingCallDetector(); 
         _router = router;
         _clientAuthStep = clientAuthStep;
         _pipelineSteps = pipelineSteps.Select(x => x).ToArray();
@@ -42,7 +39,8 @@ public class AICentralPipeline
 
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
 
-        var requestDetails = await _detector.Detect(context.Request, cancellationToken);
+        var detector = context.RequestServices.GetRequiredService<IncomingCallDetector>();
+        var requestDetails = await detector.Detect(context.Request, cancellationToken);
         
         logger.LogDebug("Detected {RequestType} / {CallType} from incoming request", requestDetails.IncomingCallDetails.ServiceType, requestDetails.IncomingCallDetails.AICallType);
 

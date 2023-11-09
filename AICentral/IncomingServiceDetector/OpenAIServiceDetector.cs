@@ -1,14 +1,20 @@
 ﻿using Newtonsoft.Json.Linq;
 
-namespace AICentral;
+namespace AICentral.IncomingServiceDetector;
 
 public class OpenAIServiceDetector : IAIServiceDetector
 {
-    public OpenAIServiceDetector(JObject? requestContent, PathString remainingUrlSegments)
+    public bool CanDetect(HttpRequest request)
     {
+        return request.Path.StartsWithSegments("/v1", out var remainingPath);
+    }
+
+    public IncomingCallDetails Detect(HttpRequest request, JObject? requestContent)
+    {
+        request.Path.StartsWithSegments("/v1", out var remainingUrlSegments);
         var requestTypeRaw = remainingUrlSegments.ToString().Split('/')[1];
 
-        AICallType = requestTypeRaw switch
+        var aICallType = requestTypeRaw switch
         {
             "chat" => AICallType.Chat,
             "embeddings" => AICallType.Embeddings,
@@ -16,9 +22,9 @@ public class OpenAIServiceDetector : IAIServiceDetector
             _ => AICallType.Other
         };
 
-        PromptText = requestContent == null
+        var promptText = requestContent == null
             ? null
-            : AICallType switch
+            : aICallType switch
             {
                 AICallType.Chat => string.Join(
                     Environment.NewLine,
@@ -30,11 +36,8 @@ public class OpenAIServiceDetector : IAIServiceDetector
                 _ => requestContent.Value<string>("prompt") ?? string.Empty
             };
 
-        IncomingModelName = requestContent?.Value<string>("model");
+        var incomingModelName = requestContent?.Value<string>("model");
+        return new IncomingCallDetails(AIServiceType.AzureOpenAI, aICallType, promptText, incomingModelName);
+        
     }
-
-    public AIServiceType ServiceType => AIServiceType.AzureOpenAI;
-    public AICallType AICallType { get; }
-    public string? PromptText { get; }
-    public string? IncomingModelName { get; }
 }

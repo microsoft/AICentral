@@ -154,23 +154,12 @@ public class ConfigurationBasedPipelineBuilder
 
     private void RegisterBuilders<T>(Assembly[] additionalAssembliesToScan, string registerMethodName)
     {
-        var testEndpointSelectors = GetTypesOfType<T>(additionalAssembliesToScan);
+        var testEndpointSelectors = AssemblyEx.GetTypesOfType<T>(additionalAssembliesToScan);
         foreach (var selector in testEndpointSelectors)
         {
             typeof(ConfigurationBasedPipelineBuilder)
                 .GetMethod(registerMethodName, BindingFlags.Instance | BindingFlags.NonPublic)!
                 .MakeGenericMethod(selector).Invoke(this, Array.Empty<object>());
         }
-    }
-
-    private static Type[] GetTypesOfType<T>(Assembly[] additionalAssembliesToScan)
-    {
-        var testEndpointSelectors = additionalAssembliesToScan
-            .Union(new[] { typeof(ConfigurationBasedPipelineBuilder).Assembly }).SelectMany(
-                x => x.ExportedTypes
-                    .Where(x1 => x1 is { IsInterface: false, IsAbstract: false })
-                    .Where(x1 => x1.IsAssignableTo(typeof(T))))
-            .ToArray();
-        return testEndpointSelectors;
     }
 }

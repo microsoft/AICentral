@@ -1,20 +1,29 @@
 ﻿using Newtonsoft.Json.Linq;
 
-namespace AICentral;
+namespace AICentral.IncomingServiceDetector;
 
 public class AzureOpenAIServiceDetector : IAIServiceDetector
 {
-    public AzureOpenAIServiceDetector(HttpRequest request, JObject? requestContent, PathString remainingUrlSegments)
+    public bool CanDetect(HttpRequest request)
     {
+        return request.Path.StartsWithSegments("/openai");
+    }
+
+    public IncomingCallDetails Detect(HttpRequest request, JObject? requestContent)
+    {
+        request.Path.StartsWithSegments("/openai", out var remainingUrlSegments);
+
         var remaining = remainingUrlSegments.ToString().Split('/');
         var callType = remaining[1];
+        string? incomingModelName = default;
+
         if (remaining[1] == "deployments")
         {
-            IncomingModelName = remaining[2];
+            incomingModelName = remaining[2];
             callType = remaining[3];
         }
 
-        AICallType = callType switch
+        var aICallType = callType switch
         {
             "chat" => AICallType.Chat,
             "completions" => AICallType.Completions,
@@ -22,9 +31,9 @@ public class AzureOpenAIServiceDetector : IAIServiceDetector
             _ => AICallType.Other
         };
 
-        PromptText = requestContent == null
+        var promptText = requestContent == null
             ? null
-            : AICallType switch
+            : aICallType switch
             {
                 AICallType.Chat => string.Join(
                     Environment.NewLine,
@@ -35,10 +44,7 @@ public class AzureOpenAIServiceDetector : IAIServiceDetector
                     requestContent?["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
                 _ => requestContent?.Value<string>("prompt") ?? String.Empty
             };
-    }
 
-    public AIServiceType ServiceType => AIServiceType.AzureOpenAI;
-    public AICallType AICallType { get; }
-    public string? PromptText { get; }
-    public string? IncomingModelName { get; }
+        return new IncomingCallDetails(AIServiceType.AzureOpenAI, aICallType, promptText, incomingModelName);
+    }
 }

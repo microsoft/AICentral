@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+﻿using System.Reflection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AICentral.Configuration;
 
@@ -6,27 +7,21 @@ public static class ConfigurationEx
 {
     public static IServiceCollection AddAICentral(
         this IServiceCollection services,
-        AICentralPipelineAssembler providedOptions,
-        ILogger? startupLogger = null)
-    {
-        var logger = startupLogger ?? NullLogger.Instance;
-        providedOptions.AddServices(services, logger);
-        return services;
-    }
-
-    public static IServiceCollection AddAICentral(
-        this IServiceCollection services,
         IConfiguration configuration,
         string configSectionName = "AICentral",
-        ILogger? startupLogger = null)
+        ILogger? startupLogger = null,
+        params Assembly[] additionalComponentAssemblies)
     {
         var logger = startupLogger ?? NullLogger.Instance;
         logger.LogInformation("AICentral - Initialising pipelines");
 
-        var optionsFromConfig = new ConfigurationBasedPipelineBuilder().BuildPipelinesFromConfig(logger,
-            configuration.GetSection(configSectionName));
-        
-        services.AddAICentral(optionsFromConfig, logger);
+        var configurationPipelineBuilder = new ConfigurationBasedPipelineBuilder()
+            .BuildPipelinesFromConfig(
+                logger,
+                configuration.GetSection(configSectionName),
+                additionalComponentAssemblies);
+
+        configurationPipelineBuilder.AddServices(services, logger);
 
         return services;
     }

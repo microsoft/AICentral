@@ -1,4 +1,6 @@
-﻿using AICentral.Configuration.JSON;
+﻿using AICentral.Configuration;
+using AICentral.Configuration.JSON;
+using AICentral.IncomingServiceDetector;
 using AICentral.Steps;
 using AICentral.Steps.Auth;
 using AICentral.Steps.Auth.AllowAnonymous;
@@ -60,6 +62,11 @@ public class AICentralPipelineAssembler
 
         var pipelines = BuildPipelines(startupLogger);
         services.AddSingleton(pipelines);
+
+        services.AddSingleton<IncomingCallDetector>();
+        services.AddSingleton<IAIServiceDetector, AzureOpenAIServiceDetector>();
+        services.AddSingleton<IAIServiceDetector, OpenAIServiceDetector>();
+
         return pipelines;
     }
 
