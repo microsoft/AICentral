@@ -61,8 +61,18 @@ public abstract class EndpointSelectorBase : IEndpointSelector
                 requestInformation);
         }
 
-        logger.LogDebug("Detected non-chunked encoding response. Sending response back to consumer");
-        return await JsonResponseHandler.Handle(
+        if ((openAiResponse.Content.Headers.ContentType?.MediaType ?? string.Empty).Contains("json",
+                StringComparison.InvariantCultureIgnoreCase))
+        {
+            logger.LogDebug("Detected non-chunked encoding response. Sending response back to consumer");
+            return await JsonResponseHandler.Handle(
+                context,
+                cancellationToken,
+                openAiResponse,
+                requestInformation);
+        }
+
+        return await StreamResponseHandler.Handle(
             context,
             cancellationToken,
             openAiResponse,

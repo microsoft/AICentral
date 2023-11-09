@@ -1,14 +1,13 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace AICentral.Steps.Endpoints.OpenAILike.OpenAI;
 
 public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
 {
-    const string OpenAIV1 = "https://api.openai.com/v1";
+    const string OpenAIV1 = "https://api.openai.com";
     private readonly string? _organization;
     private readonly string _apiKey;
 
@@ -21,10 +20,45 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         _apiKey = apiKey;
     }
 
-    protected override HttpRequestMessage BuildRequest(
+    protected override Task CustomiseRequest(
         HttpContext context,
         AICallInformation aiCallInformation,
-        string mappedModelName)
+        HttpRequestMessage newRequest,
+        string? mappedModelName)
+    {
+        //if there is a model change then set the model on a new outbound JSON request. Else copy the content with no changes
+        if (aiCallInformation.IncomingCallDetails.AICallType != AICallType.Other)
+        {
+            newRequest.Content = IncomingContentWithInjectedModelName(aiCallInformation, mappedModelName);
+        }
+        else
+        {
+            newRequest.Content = new StreamContent(context.Request.Body);
+            newRequest.Content.Headers.Add("Content-Type", context.Request.Headers.ContentType.ToString());
+        }
+
+        newRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+        if (!string.IsNullOrWhiteSpace(_organization))
+        {
+            newRequest.Headers.Add("OpenAI-Organization", _organization);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private static StringContent IncomingContentWithInjectedModelName(AICallInformation aiCallInformation,
+        string? mappedModelName)
+    {
+        return aiCallInformation.IncomingCallDetails.IncomingModelName == mappedModelName
+            ? new StringContent(aiCallInformation.IncomingCallDetails.RequestContent!.ToString(), Encoding.UTF8,
+                "application/json")
+            : new StringContent(
+                AddModelName(aiCallInformation.IncomingCallDetails.RequestContent!.DeepClone(), mappedModelName!)
+                    .ToString(),
+                Encoding.UTF8, "application/json");
+    }
+
+    protected override string BuildUri(HttpContext context, AICallInformation aiCallInformation, string? _)
     {
         var pathPiece = aiCallInformation.IncomingCallDetails.AICallType switch
         {
@@ -37,40 +71,11 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         var requestUri = aiCallInformation.IncomingCallDetails.AICallType == AICallType.Other
             ? aiCallInformation.IncomingCallDetails.ServiceType == AIServiceType.OpenAI
                 ? $"{OpenAIV1}{context.Request.Path}"
-                : throw new InvalidOperationException("Unable to dispatch 'other' Azure Open AI request to Open AI")
-            : $"{OpenAIV1}/{pathPiece}";
+                : throw new InvalidOperationException(
+                    "Unable to forward this request from an Azure Open AI request to Open AI")
+            : $"{OpenAIV1}/v1/{pathPiece}";
 
-        var request = context.Request.Method.Equals("post", StringComparison.InvariantCultureIgnoreCase)
-            ? new HttpRequestMessage(
-                HttpMethod.Post,
-                requestUri
-            )
-            {
-                Content = GetContentWithModelNameIfApplicable(aiCallInformation, mappedModelName)
-            }
-            : new HttpRequestMessage(
-                HttpMethod.Get,
-                requestUri);
-
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
-        if (!string.IsNullOrWhiteSpace(_organization))
-        {
-            request.Headers.Add("OpenAI-Organization", _organization);
-        }
-
-        return request;
-    }
-
-    private static StringContent GetContentWithModelNameIfApplicable(AICallInformation aiCallInformation,
-        string? mappedModelName)
-    {
-        var content =
-            aiCallInformation.IncomingCallDetails.ServiceType == AIServiceType.AzureOpenAI &&
-            aiCallInformation.IncomingCallDetails.AICallType != AICallType.Other
-                ? AddModelName(aiCallInformation.RequestContent!.DeepClone(), mappedModelName!)
-                : aiCallInformation.RequestContent!.DeepClone();
-        return new StringContent(aiCallInformation.RequestContent!.ToString(Formatting.None), Encoding.UTF8,
-            "application/json");
+        return requestUri;
     }
 
     private static JToken AddModelName(JToken deepClone, string mappedModelName)
@@ -89,7 +94,8 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         };
     }
 
-    public override Dictionary<string, StringValues> SanitiseHeaders(HttpContext context, HttpResponseMessage openAiResponse)
+    public override Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,
+        HttpResponseMessage openAiResponse)
     {
         return openAiResponse.Headers.ToDictionary(x => x.Key, x => new StringValues(x.Value.ToArray()));
     }

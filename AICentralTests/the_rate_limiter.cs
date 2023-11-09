@@ -27,6 +27,14 @@ public class the_rate_limiter : IClassFixture<TestWebApplicationFactory<Program>
             "http://azure-with-rate-limiter.localtest.me/openai/deployments/random/chat/completions?api-version=2023-05-15",
             new StringContent(JsonConvert.SerializeObject(new
             {
+                messages = new[]
+                {
+                    new { role = "system", content = "You are a helpful assistant." },
+                    new { role = "user", content = "Does Azure OpenAI support customer managed keys?" },
+                    new { role = "assistant", content = "Yes, customer managed keys are supported by Azure OpenAI." },
+                    new { role = "user", content = "Do other Azure AI services support this too?" }
+                },
+                max_tokens = 5
             }), Encoding.UTF8, "application/json"));
 
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -35,6 +43,14 @@ public class the_rate_limiter : IClassFixture<TestWebApplicationFactory<Program>
             "http://azure-with-rate-limiter.localtest.me/openai/deployments/random/chat/completions?api-version=2023-05-15",
             new StringContent(JsonConvert.SerializeObject(new
             {
+                messages = new[]
+                {
+                    new { role = "system", content = "You are a helpful assistant." },
+                    new { role = "user", content = "Does Azure OpenAI support customer managed keys?" },
+                    new { role = "assistant", content = "Yes, customer managed keys are supported by Azure OpenAI." },
+                    new { role = "user", content = "Do other Azure AI services support this too?" }
+                },
+                max_tokens = 5
             }), Encoding.UTF8, "application/json"));
 
         result.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);

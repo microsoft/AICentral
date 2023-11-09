@@ -3,17 +3,16 @@ using Newtonsoft.Json.Linq;
 
 namespace AICentral;
 
-public record IncomingCallDetails(AIServiceType ServiceType, AICallType AICallType, string? PromptText, string? IncomingModelName);
+public record IncomingCallDetails(AIServiceType ServiceType, AICallType AICallType, string? PromptText, string? IncomingModelName, JObject? RequestContent);
 
 public record AICallInformation(
     IncomingCallDetails IncomingCallDetails,
-    JObject? RequestContent,
     Dictionary<string, StringValues> QueryString);
 
 public interface IAIServiceDetector
 {
     bool CanDetect(HttpRequest request);
-    IncomingCallDetails Detect(HttpRequest request, JObject? requestContent);
+    Task<IncomingCallDetails> Detect(HttpRequest request, CancellationToken cancellationToken);
 }
 
 

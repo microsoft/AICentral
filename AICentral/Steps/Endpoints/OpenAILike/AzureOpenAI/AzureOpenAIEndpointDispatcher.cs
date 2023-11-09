@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
 
@@ -21,43 +22,36 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         _languageUrl = languageUrl.EndsWith('/') ? languageUrl[..^1] : languageUrl;
         _authHandler = authHandler;
     }
-
-    protected override HttpRequestMessage BuildRequest(
-        HttpContext context,
-        AICallInformation aiCallInformation,
-        string mappedModelName)
+    
+    protected override Task CustomiseRequest(HttpContext context, AICallInformation aiCallInformation,
+        HttpRequestMessage newRequest,
+        string? newModelName)
     {
-        aiCallInformation.QueryString.TryAdd("api-version", "2023-05-15");
 
-        var pathPiece = aiCallInformation.IncomingCallDetails.AICallType switch
+        if (aiCallInformation.IncomingCallDetails.RequestContent != null)
         {
-            AICallType.Chat => "chat/completions",
-            AICallType.Completions => "completions",
-            AICallType.Embeddings => "embeddings",
-            _ => string.Empty
-        };
-
-        var requestUri = aiCallInformation.IncomingCallDetails.AICallType == AICallType.Other
-            ? aiCallInformation.IncomingCallDetails.ServiceType == AIServiceType.AzureOpenAI
-                ? $"{_languageUrl}{context.Request.Path}"
-                : throw new NotSupportedException("Unable to dispatch 'other' Open AI request to Azure Open AI")
-            : $"{_languageUrl}/openai/deployments/{mappedModelName}/{pathPiece}";
-
-        var newRequest = context.Request.Method.Equals("post", StringComparison.InvariantCultureIgnoreCase)
-            ? new HttpRequestMessage(
-                HttpMethod.Post,
-                QueryHelpers.AddQueryString(requestUri, aiCallInformation.QueryString)
-            )
-            {
-                Content = new StringContent(aiCallInformation.RequestContent!.ToString(Formatting.None), Encoding.UTF8,
-                    "application/json")
-            }
-            : new HttpRequestMessage(
-                HttpMethod.Get,
-                QueryHelpers.AddQueryString(requestUri, aiCallInformation.QueryString));
+            newRequest.Content =
+                new StringContent(RemoveModelParameterFromRequest(aiCallInformation.IncomingCallDetails.RequestContent).ToString(Formatting.None),
+                    Encoding.UTF8, "application/json");
+        }
+        else
+        {
+            newRequest.Content = new StreamContent(context.Request.Body);
+        }
 
         _authHandler.ApplyAuthorisationToRequest(context.Request, newRequest);
-        return newRequest;
+        return Task.CompletedTask;
+    }
+
+    private static JObject RemoveModelParameterFromRequest(JObject incomingContent)
+    {
+        if (incomingContent["model"] != null)
+        {
+            var clone = (JObject)incomingContent.DeepClone();
+            clone["model"]!.Parent!.Remove();;
+            return clone;
+        }
+        return incomingContent;
     }
 
     public override object WriteDebug()
@@ -110,4 +104,25 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
     }
 
     protected override string HostUriBase => _languageUrl;
+
+    protected override string BuildUri(HttpContext context, AICallInformation aiCallInformation,
+        string? mappedModelName)
+    {
+        aiCallInformation.QueryString.TryAdd("api-version", "2023-05-15");
+
+        var pathPiece = aiCallInformation.IncomingCallDetails.AICallType switch
+        {
+            AICallType.Chat => "chat/completions",
+            AICallType.Completions => "completions",
+            AICallType.Embeddings => "embeddings",
+            _ => string.Empty
+        };
+
+        return aiCallInformation.IncomingCallDetails.AICallType == AICallType.Other
+            ? aiCallInformation.IncomingCallDetails.ServiceType == AIServiceType.AzureOpenAI
+                ? QueryHelpers.AddQueryString($"{_languageUrl}{context.Request.Path}", aiCallInformation.QueryString)
+                : throw new InvalidOperationException("Unable to forward this request from an Open AI request to Azure Open AI")
+            : QueryHelpers.AddQueryString($"{_languageUrl}/openai/deployments/{mappedModelName}/{pathPiece}",
+                aiCallInformation.QueryString);
+    }
 }

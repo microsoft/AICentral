@@ -36,4 +36,9 @@
       <None Remove="xunit.runner.json" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="Assets\Recording.m4a" />
+      <EmbeddedResource Include="Assets\Recording.m4a" />
+    </ItemGroup>
+
 </Project>

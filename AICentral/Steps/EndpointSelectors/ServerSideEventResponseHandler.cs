@@ -51,7 +51,7 @@ public class ServerSideEventResponseHandler
 
         //calculate prompt tokens
         var tokeniser = tokenisers.TryGetValue(model, out var val) ? val : tokenisers["gpt-35-turbo"];
-        var estimatedPromptTokens = tokeniser.Encode(requestInformation.Prompt, Array.Empty<string>()).Count;
+        var estimatedPromptTokens = requestInformation.Prompt == null ? 0 : tokeniser.Encode(requestInformation.Prompt, Array.Empty<string>()).Count;
         var responseText = content.ToString();
         var estimatedCompletionTokens = tokeniser.Encode(responseText, Array.Empty<string>()).Count;
 
@@ -71,7 +71,7 @@ public class ServerSideEventResponseHandler
             requestInformation.StartDate,
             requestInformation.Duration);
 
-        return new AICentralResponse(chatRequestInformation, new StreamingResultHandler());
+        return new AICentralResponse(chatRequestInformation, new StreamAlreadySentResultHandler());
         
     }
 }
