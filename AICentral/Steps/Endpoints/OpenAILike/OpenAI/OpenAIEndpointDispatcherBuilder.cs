@@ -23,6 +23,10 @@ public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuild
     public void RegisterServices(IServiceCollection services)
     {
         services.AddHttpClient<HttpAIEndpointDispatcher>(_id)
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler()
+            {
+                ServerCertificateCustomValidationCallback = (a,b,c,d) => true
+            })
             .AddPolicyHandler(ResiliencyStrategy.Build());
     }
 

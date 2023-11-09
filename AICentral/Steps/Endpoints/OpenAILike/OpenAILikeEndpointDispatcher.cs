@@ -11,6 +11,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
 {
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string _id;
+    private static readonly string[] HeadersToIgnore = new[] { "Host" }; 
 
     public OpenAILikeEndpointDispatcher(
         string id,
@@ -111,6 +112,8 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method), BuildUri(context, callInformation, mappedModelName));
         foreach (var header in context.Request.Headers)
         {
+            if (HeadersToIgnore.Contains(header.Key)) continue;
+            
             if (!newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()) &&
                 newRequest.Content != null)
             {
