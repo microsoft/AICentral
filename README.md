@@ -26,13 +26,25 @@ This sample produces a AI-Central proxy that
  - Can be accessed using standard SDKs
 
 ### Installation
+
+#### Docker
+
 ```bash
+# Run container in Docker referencing a local configuration file
+docker run -p 8080:80 -v .\appsettings.Development.json:/app/appsettings.Development.json -e ASPNETCORE_ENVIRONMENT=Development ghcr.io/graemefoster/aicentral:latest
+```
+
+#### Asp.Net CORE 
+
+```bash
+#Create new project and bootstrap the AICentral nuget package
 dotnet new web -o MyAICentral
 cd MyAICentral
 dotnet add package AiCentral
 ```
-### Program.cs
+#### Program.cs
 ```csharp
+//Minimal API to configure AI Central
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAICentral(builder.Configuration);
@@ -46,7 +58,7 @@ app.Run();
 
 ```
 
-### appsettings.json
+### appsettings.&lt;environment&gt;.json
 ```json
 {
   "AICentral": {

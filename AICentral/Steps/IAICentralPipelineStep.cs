@@ -9,5 +9,7 @@ public interface IAICentralPipelineStep
     object WriteDebug();
 
     void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route);
-    
+
+    static virtual string ConfigName  => throw new NotImplementedException();
+
 }

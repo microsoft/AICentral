@@ -54,4 +54,6 @@ public class AzureMonitorLogger : IAICentralPipelineStep
     public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
     {
     }
+
+    public static string ConfigName => "AzureMonitorLogger";
 }
