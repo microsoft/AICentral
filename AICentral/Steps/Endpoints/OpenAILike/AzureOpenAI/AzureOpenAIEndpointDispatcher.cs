@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
+﻿using System.Text;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 
 namespace AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
 
@@ -24,9 +26,18 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         HttpRequestMessage newRequest,
         string? newModelName)
     {
-        
-        //if there is a model change then set the model on a new outbound JSON request. Else copy the content with no changes
-        newRequest.Content =  new StreamContent(context.Request.Body);
+
+        if (aiCallInformation.IncomingCallDetails.RequestContent != null)
+        {
+            newRequest.Content =
+                new StringContent(aiCallInformation.IncomingCallDetails.RequestContent!.ToString(Formatting.None),
+                    Encoding.UTF8, "application/json");
+        }
+        else
+        {
+            newRequest.Content = new StreamContent(context.Request.Body);
+        }
+
         _authHandler.ApplyAuthorisationToRequest(context.Request, newRequest);
         return Task.CompletedTask;
     }
