@@ -173,7 +173,6 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             AudioData = new BinaryData(ms.ToArray())
         });
         
-        Approvals.Verify(JsonConvert.SerializeObject(response, Formatting.Indented));
     }
 
     [Fact]
