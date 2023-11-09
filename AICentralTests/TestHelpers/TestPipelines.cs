@@ -1,5 +1,4 @@
 ﻿using AICentral;
-using AICentral.Configuration.JSON;
 
 namespace AICentralTests.TestHelpers;
 
@@ -18,7 +17,6 @@ public static class TestPipelines
 
     public static AICentralPipelineAssembler OpenAIServiceWithSingleAzureOpenAIEndpoint() =>
         new TestAICentralPipelineBuilder()
-            .WithEndpointType(EndpointType.OpenAI)
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "openai", "Model1")
             .Assemble("openai-to-azure.localtest.me");
 
@@ -33,7 +31,6 @@ public static class TestPipelines
 
     public static AICentralPipelineAssembler OpenAIServiceWithSingleOpenAIEndpoint() =>
         new TestAICentralPipelineBuilder()
-            .WithEndpointType(EndpointType.OpenAI)
             .WithSingleOpenAIEndpoint("openaiendpoint", "gpt-3.5-turbo")
             .Assemble("openai-to-openai.localtest.me");
 

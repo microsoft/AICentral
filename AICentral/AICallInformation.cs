@@ -4,9 +4,20 @@ using Newtonsoft.Json.Linq;
 namespace AICentral;
 
 public record AICallInformation(
-    AIServiceType AIServiceType,
-    AICallType AICallType, 
-    string? IncomingModelName, 
+    IAIServiceDetector IncomingCallDetails,
     JObject? RequestContent,
-    string PromptText, 
     Dictionary<string, StringValues> QueryString);
+
+public interface IAIServiceDetector
+{
+    AIServiceType ServiceType { get; }
+    AICallType AICallType { get; }
+    string? PromptText { get; }
+    string? IncomingModelName { get; }
+}
+
+public enum AIServiceType
+{
+    OpenAI,
+    AzureOpenAI
+}

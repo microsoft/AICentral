@@ -29,7 +29,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
     {
         aiCallInformation.QueryString.TryAdd("api-version", "2023-05-15");
 
-        var pathPiece = aiCallInformation.AICallType switch
+        var pathPiece = aiCallInformation.IncomingCallDetails.AICallType switch
         {
             AICallType.Chat => "chat/completions",
             AICallType.Completions => "completions",
@@ -37,8 +37,8 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
             _ => string.Empty
         };
 
-        var requestUri = aiCallInformation.AICallType == AICallType.Other
-            ? aiCallInformation.AIServiceType == AIServiceType.AzureOpenAI
+        var requestUri = aiCallInformation.IncomingCallDetails.AICallType == AICallType.Other
+            ? aiCallInformation.IncomingCallDetails.ServiceType == AIServiceType.AzureOpenAI
                 ? $"{_languageUrl}{context.Request.Path}"
                 : throw new NotSupportedException("Unable to dispatch 'other' Open AI request to Azure Open AI")
             : $"{_languageUrl}/openai/deployments/{mappedModelName}/{pathPiece}";

@@ -1,6 +1,5 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -27,7 +26,7 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         AICallInformation aiCallInformation,
         string mappedModelName)
     {
-        var pathPiece = aiCallInformation.AICallType switch
+        var pathPiece = aiCallInformation.IncomingCallDetails.AICallType switch
         {
             AICallType.Chat => "chat/completions",
             AICallType.Completions => "completions",
@@ -35,8 +34,8 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
             _ => string.Empty
         };
 
-        var requestUri = aiCallInformation.AICallType == AICallType.Other
-            ? aiCallInformation.AIServiceType == AIServiceType.OpenAI
+        var requestUri = aiCallInformation.IncomingCallDetails.AICallType == AICallType.Other
+            ? aiCallInformation.IncomingCallDetails.ServiceType == AIServiceType.OpenAI
                 ? $"{OpenAIV1}{context.Request.Path}"
                 : throw new InvalidOperationException("Unable to dispatch 'other' Azure Open AI request to Open AI")
             : $"{OpenAIV1}/{pathPiece}";
@@ -66,8 +65,8 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         string? mappedModelName)
     {
         var content =
-            aiCallInformation.AIServiceType == AIServiceType.AzureOpenAI &&
-            aiCallInformation.AICallType != AICallType.Other
+            aiCallInformation.IncomingCallDetails.ServiceType == AIServiceType.AzureOpenAI &&
+            aiCallInformation.IncomingCallDetails.AICallType != AICallType.Other
                 ? AddModelName(aiCallInformation.RequestContent!.DeepClone(), mappedModelName!)
                 : aiCallInformation.RequestContent!.DeepClone();
         return new StringContent(aiCallInformation.RequestContent!.ToString(Formatting.None), Encoding.UTF8,

@@ -12,9 +12,3 @@ public enum AICallType
     //which works in a asynchronous 'poll for completion' style.
     Other
 }
-
-public enum AIServiceType
-{
-    AzureOpenAI,
-    OpenAI
-}

@@ -120,7 +120,6 @@ public class AICentralPipelineAssembler
                         pipelineConfig.Host);
 
                     var pipeline = new AICentralPipeline(
-                        pipelineConfig.EndpointType ?? EndpointType.AzureOpenAI,
                         pipelineName,
                         routeBuilder,
                         GetMiddlewareOrNoOp(

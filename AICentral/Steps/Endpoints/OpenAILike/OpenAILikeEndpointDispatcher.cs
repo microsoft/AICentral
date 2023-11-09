@@ -27,18 +27,18 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherBuilder>>();
 
-        var incomingModelName = callInformation.IncomingModelName ?? string.Empty;
+        var incomingModelName = callInformation.IncomingCallDetails.IncomingModelName ?? string.Empty;
         var mappedModelName = _modelMappings.TryGetValue(incomingModelName, out var mapping)
             ? mapping
             : incomingModelName;
 
-        if (callInformation.AICallType != AICallType.Other && mappedModelName == string.Empty)
+        if (callInformation.IncomingCallDetails.AICallType != AICallType.Other && mappedModelName == string.Empty)
         {
             return (
                 new AICentralRequestInformation(
                     HostUriBase,
-                    callInformation.AICallType,
-                    callInformation.PromptText,
+                    callInformation.IncomingCallDetails.AICallType,
+                    callInformation.IncomingCallDetails.PromptText,
                     DateTimeOffset.Now,
                     TimeSpan.Zero
                 ), new HttpResponseMessage(HttpStatusCode.NotFound));
@@ -79,8 +79,8 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
             var requestInformation =
                 new AICentralRequestInformation(
                     HostUriBase,
-                    callInformation.AICallType,
-                    callInformation.PromptText,
+                    callInformation.IncomingCallDetails.AICallType,
+                    callInformation.IncomingCallDetails.PromptText,
                     now,
                     sw.Elapsed);
 
@@ -92,7 +92,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
             return (new AICentralRequestInformation(
                     HostUriBase,
                     AICallType.Other,
-                    callInformation.PromptText,
+                    callInformation.IncomingCallDetails.PromptText,
                     DateTimeOffset.Now,
                     TimeSpan.Zero),
                 new HttpResponseMessage(HttpStatusCode.BadRequest));

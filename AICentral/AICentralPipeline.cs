@@ -15,10 +15,9 @@ public class AICentralPipeline
     private readonly IAICentralClientAuthStep _clientAuthStep;
     private readonly IList<IAICentralPipelineStep> _pipelineSteps;
     private readonly IEndpointSelector _endpointSelector;
-    private readonly IIncomingCallExtractor _incomingCallExtractor;
+    private readonly IncomingCallDetector _detector;
 
     public AICentralPipeline(
-        EndpointType endpointType,
         string name,
         HeaderMatchRouter router,
         IAICentralClientAuthStep clientAuthStep,
@@ -26,12 +25,7 @@ public class AICentralPipeline
         IEndpointSelector endpointSelector)
     {
         _name = name;
-        _incomingCallExtractor = endpointType switch
-        {
-            EndpointType.AzureOpenAI => new AzureOpenAiCallInformationExtractor(),
-            EndpointType.OpenAI => new OpenAICallInformationExtractor(),
-            _ => throw new InvalidOperationException("Unsupported Pipeline type")
-        };
+        _detector = new IncomingCallDetector(); 
         _router = router;
         _clientAuthStep = clientAuthStep;
         _pipelineSteps = pipelineSteps.Select(x => x).ToArray();
@@ -48,9 +42,11 @@ public class AICentralPipeline
 
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
 
-        var requestDetails = await _incomingCallExtractor.Extract(context.Request, cancellationToken);
+        var requestDetails = await _detector.Detect(context.Request, cancellationToken);
+        
+        logger.LogDebug("Detected {RequestType} / {CallType} from incoming request", requestDetails.IncomingCallDetails.ServiceType, requestDetails.IncomingCallDetails.AICallType);
 
-        if (requestDetails.AICallType == AICallType.Other && !(_endpointSelector is SingleEndpointSelector))
+        if (requestDetails.IncomingCallDetails.AICallType == AICallType.Other && !(_endpointSelector is SingleEndpointSelector))
         {
             return UnableToProxyUnknownCallTypesToMultiNodeClusters(context, requestDetails);
         }
@@ -76,8 +72,8 @@ public class AICentralPipeline
                 string.Empty,
                 string.Empty,
                 context.User.Identity?.Name ?? "unknown",
-                requestDetails.AICallType,
-                requestDetails.PromptText,
+                requestDetails.IncomingCallDetails.AICallType,
+                requestDetails.IncomingCallDetails.PromptText,
                 string.Empty,
                 0,
                 0,

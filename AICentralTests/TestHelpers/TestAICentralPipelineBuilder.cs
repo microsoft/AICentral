@@ -14,7 +14,6 @@ using AICentral.Steps.EndpointSelectors.Random;
 using AICentral.Steps.EndpointSelectors.Single;
 using AICentral.Steps.RateLimiting;
 using AICentral.Steps.Routes;
-using Microsoft.Extensions.Configuration;
 
 namespace AICentralTests.TestHelpers;
 
@@ -23,7 +22,6 @@ public class TestAICentralPipelineBuilder
     private IAICentralClientAuthBuilder? _auth;
     private IAICentralEndpointSelectorBuilder? _endpointBuilder;
     private IAICentralEndpointDispatcherBuilder[]? _openAiEndpointDispatcherBuilders;
-    private EndpointType? _endpointType;
     private int? _windowInSeconds;
     private int? _requestsPerWindow;
 
@@ -48,12 +46,6 @@ public class TestAICentralPipelineBuilder
     public TestAICentralPipelineBuilder WithNoAuth()
     {
         _auth = new AllowAnonymousClientAuthBuilder();
-        return this;
-    }
-
-    public TestAICentralPipelineBuilder WithEndpointType(EndpointType endpointType)
-    {
-        _endpointType = endpointType;
         return this;
     }
 
@@ -169,7 +161,6 @@ public class TestAICentralPipelineBuilder
                 new ConfigurationTypes.AICentralPipelineConfig()
                 {
                     Name = Guid.NewGuid().ToString(),
-                    EndpointType = _endpointType ?? EndpointType.AzureOpenAI,
                     Host = host,
                     AuthProvider = id,
                     Steps = steps.ToArray(),
