@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
 
@@ -30,7 +31,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         if (aiCallInformation.IncomingCallDetails.RequestContent != null)
         {
             newRequest.Content =
-                new StringContent(aiCallInformation.IncomingCallDetails.RequestContent!.ToString(Formatting.None),
+                new StringContent(RemoveModelParameterFromRequest(aiCallInformation.IncomingCallDetails.RequestContent).ToString(Formatting.None),
                     Encoding.UTF8, "application/json");
         }
         else
@@ -40,6 +41,17 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
 
         _authHandler.ApplyAuthorisationToRequest(context.Request, newRequest);
         return Task.CompletedTask;
+    }
+
+    private static JObject RemoveModelParameterFromRequest(JObject incomingContent)
+    {
+        if (incomingContent["model"] != null)
+        {
+            var clone = (JObject)incomingContent.DeepClone();
+            clone["model"]!.Parent!.Remove();;
+            return clone;
+        }
+        return incomingContent;
     }
 
     public override object WriteDebug()
