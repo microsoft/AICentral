@@ -14,13 +14,13 @@ All endpoints are wrapped with a Polly Policy. We
 
 ### Azure Open AI Endpoint
 
-```
+```json
 {
     "Type": "AzureOpenAIEndpoint",
     "Name": "name-to-refer-to-later",
-    "Properties" {
+    "Properties": {
         "LanguageEndpoint": "required-full-uri-to-azure-open-ai-service",
-        "ModelMappings" {
+        "ModelMappings": {
             "incoming-model-name": "backend-model-name",
             "not-required": "default-to-pass-model-name-through"
         },
@@ -32,12 +32,12 @@ All endpoints are wrapped with a Polly Policy. We
 
 ### Open AI Endpoint
 
-```
+```json
 {
     "Type": "OpenAIEndpoint",
     "Name": "name-to-refer-to-later",
-    "Properties" {
-        "ModelMappings" {
+    "Properties": {
+        "ModelMappings": {
             "incoming-model-name": "backend-model-name",
             "not-required": "default-to-pass-model-name-through"
         },
@@ -60,7 +60,7 @@ We ship 3 Endpoint Selectors:
 > This is the only endpoint selector for Azure Open AI that supports image generation. Azure Open AI uses an
 > asynchronous poll to wait for image generation so we must guarantee affinity to an Azure Open AI service. 
 
-```
+```json
 {
     "Type": "SingleEndpoint",
     "Properties": {
@@ -116,25 +116,7 @@ We ship 3 Endpoint Selectors:
 
 Using Endpoints and Endpoint Selectors we can create a pipeline like this:
 
-```json
-{
-    "AICentral": {
-        "Endpoints": [ "... as above" ],
-        "EndpointSelectors": [ "... as above" ],
-        "Pipelines": [
-            {
-                "Name": "MyPipeline",
-                "Host": "<host-name-we-listen-for-requests-on>",
-                "EndpointSelector": "name-from-above"
-            }
-        ]
-    }
-}
-```
-
-If we want the pipeline to be exposed as an Open AI Pipeline, not an Azure Open AI Pipeline we can set the EndpointType flag.
-
-This changes the way we interpret the different incoming URLs, and where we look for the model name.
+> Pipelines can detect the incoming service type using classes that implement ```IAIServiceDetector```. We support Azure Open AI, and Open AI endpoints. You can register your own implementation to support other AI services.
 
 ```json
 {
@@ -145,7 +127,6 @@ This changes the way we interpret the different incoming URLs, and where we look
             {
                 "Name": "MyPipeline",
                 "Host": "<host-name-we-listen-for-requests-on>",
-                "EndpointType": "OpenAI",
                 "EndpointSelector": "name-from-above"
             }
         ]
