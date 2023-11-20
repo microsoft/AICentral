@@ -19,9 +19,6 @@
       <PackageReference Include="Microsoft.Identity.Web" Version="2.15.2" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
       <PackageReference Include="Polly" Version="8.0.0" />
-      <PackageReference Include="Serilog" Version="3.1.0-dev-02078" />
-      <PackageReference Include="Serilog.AspNetCore" Version="7.0.1-dev-00320" />
-      <PackageReference Include="Serilog.Sinks.AzureAnalytics" Version="5.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -30,6 +27,14 @@
     
     <ItemGroup>
         <None Include="readme.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\AICentral.Core\AICentral.Core.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Folder Include="Steps\Logging\" />
     </ItemGroup>
 
 </Project>

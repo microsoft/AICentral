@@ -1,4 +1,6 @@
 ﻿using System.Threading.RateLimiting;
+using AICentral.Core;
+using AICentral.Steps.EndpointSelectors;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace AICentral.Steps.RateLimiting;
@@ -54,7 +56,7 @@ public class FixedWindowRateLimitingProvider : IAICentralGenericStepBuilder<IAIC
     }
 
     public Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
-        AICentralPipelineExecutor pipeline,
+        IAICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
         return pipeline.Next(context, aiCallInformation, cancellationToken);

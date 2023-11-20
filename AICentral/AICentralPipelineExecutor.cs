@@ -1,9 +1,10 @@
-﻿using AICentral.Steps;
+﻿using AICentral.Core;
+using AICentral.Steps;
 using AICentral.Steps.EndpointSelectors;
 
 namespace AICentral;
 
-public class AICentralPipelineExecutor : IDisposable
+public class AICentralPipelineExecutor : IAICentralPipelineExecutor, IDisposable
 {
     private readonly IEndpointSelector _endpointSelector;
     private readonly IEnumerator<IAICentralPipelineStep> _pipelineEnumerator;
@@ -23,7 +24,7 @@ public class AICentralPipelineExecutor : IDisposable
             return await _pipelineEnumerator.Current.Handle(context, requestDetails, this, cancellationToken);
         }
 
-        return await _endpointSelector.Handle(context, requestDetails, this, cancellationToken);
+        return await _endpointSelector.Handle(context, requestDetails, cancellationToken);
     }
 
     public void Dispose()
@@ -31,3 +32,4 @@ public class AICentralPipelineExecutor : IDisposable
         _pipelineEnumerator.Dispose();
     }
 }
+

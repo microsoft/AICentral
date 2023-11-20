@@ -1,6 +1,7 @@
-﻿using ILogger = Serilog.ILogger;
+﻿using AICentral.Core;
+using ILogger = Serilog.ILogger;
 
-namespace AICentral.Steps.Logging;
+namespace AICentral.Logging.AzureMonitor;
 
 public class AzureMonitorLogger : IAICentralPipelineStep
 {
@@ -18,7 +19,7 @@ public class AzureMonitorLogger : IAICentralPipelineStep
     }
     
     public async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
-        AICentralPipelineExecutor pipeline,
+        IAICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
         var result = await pipeline.Next(context, aiCallInformation, cancellationToken);

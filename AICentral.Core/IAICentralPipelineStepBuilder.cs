@@ -1,4 +1,4 @@
-﻿namespace AICentral.Steps;
+﻿namespace AICentral.Core;
 
 /// <summary>
 /// Used to build pipeline steps that form the basis of AI Central's Pipelines.

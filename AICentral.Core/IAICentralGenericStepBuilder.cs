@@ -1,4 +1,4 @@
-﻿namespace AICentral.Steps;
+﻿namespace AICentral.Core;
 
 public interface IAICentralGenericStepBuilder<out T>: IAICentralPipelineStepBuilder<T> where T : IAICentralPipelineStep
 {

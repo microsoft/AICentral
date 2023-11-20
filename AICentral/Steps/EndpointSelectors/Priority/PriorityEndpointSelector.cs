@@ -1,4 +1,5 @@
-﻿using AICentral.Steps.Endpoints;
+﻿using AICentral.Core;
+using AICentral.Steps.Endpoints;
 using AICentral.Steps.EndpointSelectors.Random;
 
 namespace AICentral.Steps.EndpointSelectors.Priority;
@@ -18,21 +19,20 @@ public class PriorityEndpointSelector : EndpointSelectorBase
     }
 
     public override async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
-        AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelectorBuilder>>();
         try
         {
             logger.LogDebug("Prioritised Endpoint selector handling request");
-            return await Handle(context, aiCallInformation, pipeline, cancellationToken, _prioritisedOpenAiEndpoints, false);
+            return await Handle(context, aiCallInformation, cancellationToken, _prioritisedOpenAiEndpoints, false);
         }
         catch (HttpRequestException e)
         {
             try
             {
                 logger.LogWarning(e, "Prioritised Endpoint selector failed with primary. Trying fallback servers");
-                return await Handle(context, aiCallInformation, pipeline, cancellationToken, _fallbackOpenAiEndpoints, true);
+                return await Handle(context, aiCallInformation, cancellationToken, _fallbackOpenAiEndpoints, true);
             }
             catch (HttpRequestException ex)
             {
@@ -45,7 +45,6 @@ public class PriorityEndpointSelector : EndpointSelectorBase
     private async Task<AICentralResponse> Handle(
         HttpContext context,
         AICallInformation aiCallInformation,
-        AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken,
         IAICentralEndpointDispatcher[] endpoints,
         bool isFallbackCollection)

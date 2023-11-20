@@ -1,4 +1,5 @@
-﻿using AICentral.Steps.Endpoints;
+﻿using AICentral.Core;
+using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors.Single;
 
@@ -12,7 +13,6 @@ public class SingleEndpointSelector : EndpointSelectorBase
     }
 
     public override async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
-        AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
         var responseMessage = await _endpoint.Handle(context, aiCallInformation, cancellationToken);

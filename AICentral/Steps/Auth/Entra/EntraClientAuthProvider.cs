@@ -1,4 +1,7 @@
-﻿namespace AICentral.Steps.Auth.Entra;
+﻿using AICentral.Core;
+using AICentral.Steps.EndpointSelectors;
+
+namespace AICentral.Steps.Auth.Entra;
 
 public class EntraClientAuthProvider : IAICentralClientAuthStep
 {
@@ -10,7 +13,7 @@ public class EntraClientAuthProvider : IAICentralClientAuthStep
     }
     
     public Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
-        AICentralPipelineExecutor pipeline,
+        IAICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
         return pipeline.Next(context, aiCallInformation, cancellationToken);

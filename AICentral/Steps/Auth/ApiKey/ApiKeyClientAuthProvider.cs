@@ -1,4 +1,6 @@
 ﻿using AICentral.Configuration.JSON;
+using AICentral.Core;
+using AICentral.Steps.EndpointSelectors;
 
 namespace AICentral.Steps.Auth.ApiKey;
 
@@ -14,7 +16,7 @@ public class ApiKeyClientAuthProvider : IAICentralClientAuthStep
     }
 
     public Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
-        AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
+        IAICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
     {
         return pipeline.Next(context, aiCallInformation, cancellationToken);
     }

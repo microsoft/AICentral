@@ -1,4 +1,6 @@
-﻿namespace AICentral;
+﻿using AICentral.Core;
+
+namespace AICentral;
 
 /// <summary>
 /// Extracts important information from the incoming call so we can translate between various provides such

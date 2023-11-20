@@ -1,4 +1,5 @@
-﻿using AICentral.Steps.Endpoints;
+﻿using AICentral.Core;
+using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors.Random;
 
@@ -14,7 +15,6 @@ public class RandomEndpointSelector : EndpointSelectorBase
 
     public override async Task<AICentralResponse> Handle(HttpContext context,
         AICallInformation aiCallInformation,
-        AICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelectorBuilder>>();

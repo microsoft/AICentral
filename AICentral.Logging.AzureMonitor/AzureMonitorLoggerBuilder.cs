@@ -1,8 +1,8 @@
-﻿using AICentral.Configuration.JSON;
+﻿using AICentral.Core;
 using Serilog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
-namespace AICentral.Steps.Logging;
+namespace AICentral.Logging.AzureMonitor;
 
 /// <summary>
 /// Logs out usage information to Azure Monitor
@@ -33,7 +33,8 @@ public class AzureMonitorLoggerBuilder : IAICentralGenericStepBuilder<IAICentral
         IConfigurationSection configurationSection)
     {
         var properties = configurationSection.GetSection("Properties")
-            .Get<ConfigurationTypes.AzureMonitorLoggingConfig>()!;
+            .Get<AzureMonitorLoggingConfig>()!;
+        
         Guard.NotNull(properties, configurationSection, "Properties");
 
         return new AzureMonitorLoggerBuilder(

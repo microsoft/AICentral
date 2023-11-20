@@ -1,9 +1,12 @@
-﻿namespace AICentral.Steps.Auth.AllowAnonymous;
+﻿using AICentral.Core;
+using AICentral.Steps.EndpointSelectors;
+
+namespace AICentral.Steps.Auth.AllowAnonymous;
 
 public class AllowAnonymousClientAuthProvider : IAICentralClientAuthStep
 {
     public Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
-        AICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
+        IAICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
     {
         return pipeline.Next(context, aiCallInformation, cancellationToken);
     }
