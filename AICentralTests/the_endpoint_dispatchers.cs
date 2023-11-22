@@ -1,0 +1,40 @@
+using System.Net;
+using System.Text;
+using AICentralTests.TestHelpers;
+using Newtonsoft.Json;
+using Shouldly;
+using Xunit.Abstractions;
+
+namespace AICentralTests;
+
+public class the_endpoint_dispatchers : IClassFixture<TestWebApplicationFactory<Program>>
+
+{
+    private readonly TestWebApplicationFactory<Program> _factory;
+    private readonly HttpClient _httpClient;
+
+    public the_endpoint_dispatchers(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
+    {
+        _factory = factory;
+        factory.OutputHelper = testOutputHelper;
+        _httpClient = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task can_buffer_requests_to_reduce_endpoint_pressure()
+    {
+        var allResponses = await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => _httpClient.PostAsync(
+            "https://azure-with-bulkhead.localtest.me/openai/deployments/Model1/chat/completions?api-version=2023-05-15",
+            new StringContent(JsonConvert.SerializeObject(new
+            {
+                messages = new[]
+                {
+                    new { role = "system", content = "You are a helpful assistant." },
+                    new { role = "user", content = "Does Azure OpenAI support customer managed keys?" },
+                },
+                max_tokens = 5
+            }), Encoding.UTF8, "application/json"))));
+
+        allResponses.ShouldAllBe(x => x.StatusCode == HttpStatusCode.OK);
+    }
+}

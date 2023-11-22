@@ -6,6 +6,7 @@ namespace AICentralTests.TestHelpers;
 
 public class AICentralFakeResponses
 {
+    public static readonly string EndpointBulkHead = Guid.NewGuid().ToString();
     public static readonly string Endpoint500 = Guid.NewGuid().ToString();
     public static readonly string Endpoint404 = Guid.NewGuid().ToString();
     public static readonly string Endpoint200 = Guid.NewGuid().ToString();

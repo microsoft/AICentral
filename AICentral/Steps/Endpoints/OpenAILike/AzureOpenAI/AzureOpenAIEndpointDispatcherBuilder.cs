@@ -35,6 +35,10 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
     public void RegisterServices(IServiceCollection services)
     {
         services.AddHttpClient<HttpAIEndpointDispatcher>(_id)
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler()
+            {
+                MaxConnectionsPerServer = 5
+            })
             .AddPolicyHandler(ResiliencyStrategy.Build());
     }
 

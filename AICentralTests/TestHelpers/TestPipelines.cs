@@ -59,4 +59,13 @@ public static class TestPipelines
                 }
             )
             .Assemble("azure-noauth-priority.localtest.me");
+
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithBulkHeadAndSingleEndpoint() =>
+        new TestAICentralPipelineBuilder()
+            .WithSingleEndpoint(AICentralFakeResponses.EndpointBulkHead, "Model1", "Model1")
+            .WithBulkHead(5)
+            .Assemble("azure-with-bulkhead.localtest.me");
+
+
+    
 }

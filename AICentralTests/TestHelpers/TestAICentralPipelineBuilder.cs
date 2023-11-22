@@ -6,6 +6,7 @@ using AICentral.Steps;
 using AICentral.Steps.Auth;
 using AICentral.Steps.Auth.AllowAnonymous;
 using AICentral.Steps.Auth.ApiKey;
+using AICentral.Steps.BulkHead;
 using AICentral.Steps.Endpoints;
 using AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
 using AICentral.Steps.Endpoints.OpenAILike.OpenAI;
@@ -25,6 +26,7 @@ public class TestAICentralPipelineBuilder
     private IAICentralEndpointDispatcherBuilder[]? _openAiEndpointDispatcherBuilders;
     private int? _windowInSeconds;
     private int? _requestsPerWindow;
+    private int? _allowedConcurrency;
 
     public TestAICentralPipelineBuilder WithApiKeyAuth(string key1, string key2)
     {
@@ -130,19 +132,35 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
+    
+    public TestAICentralPipelineBuilder WithBulkHead(int maxConcurrency)
+    {
+        _allowedConcurrency = maxConcurrency;
+        return this;
+    }
+
     public AICentralPipelineAssembler Assemble(string host)
     {
         var id = Guid.NewGuid().ToString();
         var genericSteps = new Dictionary<string, IAICentralPipelineStepBuilder<IAICentralPipelineStep>>();
         var steps = new List<string>();
+
         if (_windowInSeconds != null)
         {
-            genericSteps[id] = new FixedWindowRateLimitingProvider(new FixedWindowRateLimiterOptions()
+            var stepId = Guid.NewGuid().ToString();
+            genericSteps[stepId] = new FixedWindowRateLimitingProvider(new FixedWindowRateLimiterOptions()
             {
                 Window = TimeSpan.FromSeconds(_windowInSeconds.Value),
                 PermitLimit = _requestsPerWindow!.Value
             });
-            steps.Add(id);
+            steps.Add(stepId);
+        }
+
+        if (_allowedConcurrency != null)
+        {
+            var stepId = Guid.NewGuid().ToString();
+            genericSteps[stepId] = new BulkHeadProviderBuilder(new BulkHeadConfiguration() { MaxConcurrency = _allowedConcurrency});
+            steps.Add(stepId);
         }
 
         return new AICentralPipelineAssembler(

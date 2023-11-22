@@ -1,4 +1,5 @@
-﻿using ApprovalTests;
+﻿using System.Net;
+using ApprovalTests;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -6,6 +7,8 @@ namespace AICentralTests.TestHelpers;
 
 public class FakeHttpMessageHandler : HttpMessageHandler
 {
+    private long _bulkHeadCount;
+    
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
@@ -13,6 +16,20 @@ public class FakeHttpMessageHandler : HttpMessageHandler
         if (request.RequestUri!.AbsoluteUri.Equals("https://api.openai.com/v1/chat/completions"))
         {
             return AICentralFakeResponses.FakeChatCompletionsResponse();
+        }
+
+        if (request.RequestUri!.AbsoluteUri.Equals(
+                $"https://{AICentralFakeResponses.EndpointBulkHead}/openai/deployments/Model1/chat/completions?api-version=2023-05-15"))
+        {
+            if (Interlocked.Read(ref _bulkHeadCount) == 5)
+            {
+                return new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+            }
+
+            Interlocked.Increment(ref _bulkHeadCount);
+            await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+            Interlocked.Decrement(ref _bulkHeadCount);
+            return AICentralFakeResponses.FakeCompletionsResponse();
         }
 
         if (request.RequestUri!.AbsoluteUri.Equals(
