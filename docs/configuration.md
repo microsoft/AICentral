@@ -11,6 +11,7 @@ Defines the backend target server. Current supported endpoints are Azure Open AI
 All endpoints are wrapped with a Polly Policy. We
  - Retry on 429 errors
  - Circuit break if an endpoint consistently fails
+ - Will setup a BulkHead to limit concurrency to the endpoint (leave off the MaxConcurrency if you don't want this)
 
 ### Azure Open AI Endpoint
 
@@ -25,7 +26,8 @@ All endpoints are wrapped with a Polly Policy. We
             "not-required": "default-to-pass-model-name-through"
         },
         "AuthenticationType": "ApiKey|Entra|EntraPassThrough",
-        "AuthenticationKey": "required-when-using-ApiKey"
+        "AuthenticationKey": "required-when-using-ApiKey",
+        "MaxConcurrency": 5
     }
 }
 ```
@@ -43,6 +45,7 @@ All endpoints are wrapped with a Polly Policy. We
         },
         "ApiKey": "required",
         "Organization": "optional",
+        "MaxConcurrency": 5
     }
 }
 ```
@@ -278,6 +281,8 @@ A pipeline can run multiple steps. We currently provide steps for:
     ]
   }
 }
+
+
 ```
 
 # Customisation
