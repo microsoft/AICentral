@@ -1,4 +1,4 @@
-﻿using ApprovalTests;
+﻿using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -6,6 +6,8 @@ namespace AICentralTests.TestHelpers;
 
 public class FakeHttpMessageHandler : HttpMessageHandler
 {
+    private long _bulkHeadCount;
+
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
@@ -13,6 +15,22 @@ public class FakeHttpMessageHandler : HttpMessageHandler
         if (request.RequestUri!.AbsoluteUri.Equals("https://api.openai.com/v1/chat/completions"))
         {
             return AICentralFakeResponses.FakeChatCompletionsResponse();
+        }
+
+        if (request.RequestUri!.AbsoluteUri.Equals(
+                $"https://{AICentralFakeResponses.EndpointBulkHeadOnPipeline}/openai/deployments/Model1/chat/completions?api-version=2023-05-15") ||
+            request.RequestUri!.AbsoluteUri.Equals(
+                $"https://{AICentralFakeResponses.EndpointBulkHeadOnEndpoint}/openai/deployments/Model1/chat/completions?api-version=2023-05-15"))
+        {
+            if (Interlocked.Read(ref _bulkHeadCount) == 5)
+            {
+                return new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+            }
+
+            Interlocked.Increment(ref _bulkHeadCount);
+            await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+            Interlocked.Decrement(ref _bulkHeadCount);
+            return AICentralFakeResponses.FakeCompletionsResponse();
         }
 
         if (request.RequestUri!.AbsoluteUri.Equals(
@@ -30,9 +48,13 @@ public class FakeHttpMessageHandler : HttpMessageHandler
         if (request.RequestUri!.AbsoluteUri.Equals(
                 $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/Model1/chat/completions?api-version=2023-05-15"))
         {
-            var requestContent = (JObject)JsonConvert.DeserializeObject(await request.Content!.ReadAsStringAsync(cancellationToken))!;
-            if (requestContent["model"] != null) throw new InvalidOperationException("OpenAI parameter passed to Azure endpoint");
-            if (requestContent["messages"] == null) throw new InvalidOperationException("Request with no messages came through to chat completions endpoint");
+            var requestContent =
+                (JObject)JsonConvert.DeserializeObject(await request.Content!.ReadAsStringAsync(cancellationToken))!;
+            if (requestContent["model"] != null)
+                throw new InvalidOperationException("OpenAI parameter passed to Azure endpoint");
+            if (requestContent["messages"] == null)
+                throw new InvalidOperationException(
+                    "Request with no messages came through to chat completions endpoint");
             return AICentralFakeResponses.FakeChatCompletionsResponse();
         }
 

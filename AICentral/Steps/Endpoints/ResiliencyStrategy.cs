@@ -9,14 +9,14 @@ public static class ResiliencyStrategy
 {
     private static readonly HttpStatusCode[] StatusCodesToRetry = { HttpStatusCode.TooManyRequests };
 
-    public static IAsyncPolicy<HttpResponseMessage> Build()
+    public static IAsyncPolicy<HttpResponseMessage> Build(int? maxConcurrency)
     {
         var handler = new PredicateBuilder<HttpResponseMessage>()
             .HandleResult(r => StatusCodesToRetry.Contains(r.StatusCode))
             .Handle<HttpRequestException>(e =>
                 e.StatusCode.HasValue && StatusCodesToRetry.Contains(e.StatusCode.Value));
 
-        return new ResiliencePipelineBuilder<HttpResponseMessage>()
+        var policy = new ResiliencePipelineBuilder<HttpResponseMessage>()
             .AddCircuitBreaker(new CircuitBreakerStrategyOptions<HttpResponseMessage>
             {
                 FailureRatio = 0.5,
@@ -34,5 +34,13 @@ public static class ResiliencyStrategy
             .AddTimeout(TimeSpan.FromSeconds(30))
             .Build()
             .AsAsyncPolicy();
+
+        if (maxConcurrency.HasValue)
+        {
+            return Policy.BulkheadAsync<HttpResponseMessage>(maxConcurrency.Value, 1000)
+                .WrapAsync(policy);
+        }
+
+        return policy;
     }
 }
