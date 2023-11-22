@@ -74,7 +74,8 @@ This pipeline will:
         "Name": "openai-priority",
         "Properties": {
           "LanguageEndpoint": "https://<my-ai>.openai.azure.com",
-          "AuthenticationType": "Entra|EntraPassThrough|ApiKey"
+          "AuthenticationType": "Entra|EntraPassThrough|ApiKey",
+          "MaxConcurrency": 10
         }
       },
       {
@@ -131,6 +132,13 @@ This pipeline will:
           "LogPrompt": true,
           "LogResponse": false
         }
+      },
+      {
+        "Type": "BulkHead",
+        "Name": "bulk-head",
+        "Properties": {
+          "MaxConcurrency": 20
+        }
       }
     ],
     "Pipelines": [
@@ -141,6 +149,7 @@ This pipeline will:
         "AuthProvider": "simple-aad",
         "Steps": [
           "window-rate-limiter",
+          "bulk-head",
           "azure-monitor-logger"
         ]
       }

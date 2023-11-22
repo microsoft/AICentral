@@ -32,7 +32,7 @@ public class BulkHeadProvider : IAICentralPipelineStep
     {
         return new
         {
-            Type = "FixedWindowRateLimiter",
+            Type = "BulkHead",
             Properties = _properties
         };
     }
