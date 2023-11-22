@@ -52,7 +52,7 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
-    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel)
+    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel, int? maxConcurrency = null)
     {
         var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherBuilder($"https://{hostname}",
             new Dictionary<string, string>()
@@ -60,7 +60,8 @@ public class TestAICentralPipelineBuilder
                 [model] = mappedModel
             },
             AuthenticationType.ApiKey,
-            Guid.NewGuid().ToString());
+            Guid.NewGuid().ToString(),
+            maxConcurrency);
 
         _endpointBuilder = new SingleEndpointSelectorBuilder(openAiEndpointDispatcherBuilder);
         _openAiEndpointDispatcherBuilders = new[] { openAiEndpointDispatcherBuilder };
@@ -77,7 +78,8 @@ public class TestAICentralPipelineBuilder
                 [model] = mappedModel
             },
             Guid.NewGuid().ToString(),
-            Guid.NewGuid().ToString());
+            Guid.NewGuid().ToString(),
+            null);
 
         _endpointBuilder = new SingleEndpointSelectorBuilder(openAiEndpointDispatcherBuilder);
         _openAiEndpointDispatcherBuilders = new[] { openAiEndpointDispatcherBuilder };
@@ -132,7 +134,7 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
-    
+
     public TestAICentralPipelineBuilder WithBulkHead(int maxConcurrency)
     {
         _allowedConcurrency = maxConcurrency;
@@ -159,7 +161,8 @@ public class TestAICentralPipelineBuilder
         if (_allowedConcurrency != null)
         {
             var stepId = Guid.NewGuid().ToString();
-            genericSteps[stepId] = new BulkHeadProviderBuilder(new BulkHeadConfiguration() { MaxConcurrency = _allowedConcurrency});
+            genericSteps[stepId] = new BulkHeadProviderBuilder(new BulkHeadConfiguration()
+                { MaxConcurrency = _allowedConcurrency });
             steps.Add(stepId);
         }
 

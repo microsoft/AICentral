@@ -9,17 +9,20 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
     private readonly string _languageUrl;
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string _id;
+    private readonly int? _maxConcurrency;
 
     public AzureOpenAIEndpointDispatcherBuilder(
         string languageUrl,
         Dictionary<string, string> modelMappings,
         AuthenticationType authenticationType,
-        string? authenticationKey)
+        string? authenticationKey,
+        int? maxConcurrency = null)
     {
         _id = Guid.NewGuid().ToString();
 
         _languageUrl = languageUrl;
         _modelMappings = modelMappings;
+        _maxConcurrency = maxConcurrency;
 
         _authHandler = authenticationType switch
         {
@@ -35,11 +38,7 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
     public void RegisterServices(IServiceCollection services)
     {
         services.AddHttpClient<HttpAIEndpointDispatcher>(_id)
-            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler()
-            {
-                MaxConnectionsPerServer = 5
-            })
-            .AddPolicyHandler(ResiliencyStrategy.Build());
+            .AddPolicyHandler(ResiliencyStrategy.Build(_maxConcurrency));
     }
 
     public static string ConfigName => "AzureOpenAIEndpoint";
@@ -68,7 +67,8 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
             Guard.NotNull(properties!.LanguageEndpoint, configurationSection, nameof(properties.LanguageEndpoint)),
             modelMappings,
             authenticationType.Value,
-            properties.ApiKey);
+            properties.ApiKey,
+            properties.MaxConcurrency);
     }
 
     public IAICentralEndpointDispatcher Build()

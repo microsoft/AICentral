@@ -21,6 +21,7 @@ public static class ConfigurationTypes
         public Dictionary<string, string>? ModelMappings { get; init; }
         public AuthenticationType? AuthenticationType { get; init; }
         public string? ApiKey { get; set; }
+        public int? MaxConcurrency { get; set; }
     }
 
     public class AICentralPipelineOpenAIEndpointPropertiesConfig
@@ -28,6 +29,7 @@ public static class ConfigurationTypes
         public Dictionary<string, string>? ModelMappings { get; init; }
         public string? ApiKey { get; set; }
         public string? Organization { get; set; }
+        public int? MaxConcurrency { get; set; }
     }
 
     public class AICentralPipelineConfig
