@@ -8,7 +8,7 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IAICentralEndpointDispatcher[] _openAiServers;
-    private ConcurrentDictionary<IAICentralEndpointDispatcher, ConcurrentQueue<double>> _recentLatencies = new();
+    private readonly ConcurrentDictionary<IAICentralEndpointDispatcher, ConcurrentQueue<double>> _recentLatencies = new();
     private const int RequiredCount = 150;
 
     public LowestLatencyEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
@@ -21,7 +21,7 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<LowestLatencyEndpointSelector>>();
-        var toTry = _openAiServers.OrderBy(GetRecentAverageLatencyFor);
+        var toTry = _openAiServers.OrderBy(GetRecentAverageLatencyFor).ToArray();
         logger.LogDebug("Random Endpoint selector is handling request");
         foreach (var chosen in toTry)
         {
@@ -88,7 +88,7 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
             return _rnd.Next(0, 5);
         }
 
-        if (queue.Count < RequiredCount)
+        if (queue!.Count < RequiredCount)
         {
             //not enough data so keep it pretty high so we can fill in some numbers.
             return _rnd.Next(0, 5);
@@ -101,7 +101,7 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
     {
         return new
         {
-            Type = "Random Router",
+            Type = "Lowest Latency Router",
             Endpoints = _openAiServers.Select(x => WriteDebug())
         };
     }
