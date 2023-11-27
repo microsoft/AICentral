@@ -43,6 +43,9 @@ public class the_client_api_key : IClassFixture<TestWebApplicationFactory<Progra
     [InlineData("789", false)]
     public async Task succeeds_with_correct_api_key(string apiKey, bool isValidKey)
     {
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+
         var request = new HttpRequestMessage(
             HttpMethod.Post,
             "https://azure-with-auth.localtest.me/openai/deployments/api-key-auth/chat/completions?api-version=2023-05-15");

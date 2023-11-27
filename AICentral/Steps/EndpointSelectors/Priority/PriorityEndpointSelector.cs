@@ -21,7 +21,7 @@ public class PriorityEndpointSelector : EndpointSelectorBase
     public override async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelectorBuilder>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelector>>();
         try
         {
             logger.LogDebug("Prioritised Endpoint selector handling request");

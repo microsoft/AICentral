@@ -37,13 +37,16 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.OpenAIServiceWithSingleOpenAIEndpoint(),
                 TestPipelines.AzureOpenAIServiceWithRateLimitingAndSingleEndpoint(),
                 TestPipelines.AzureOpenAIServiceWithBulkHeadOnPipelineAndSingleEndpoint(),
-                TestPipelines.AzureOpenAIServiceWithBulkHeadOnSingleEndpoint()
+                TestPipelines.AzureOpenAIServiceWithBulkHeadOnSingleEndpoint(),
+                TestPipelines.AzureOpenAILowestLatencyEndpoint(),
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));
             assembler.AddServices(services, NullLogger.Instance);
 
-            var fakeClient = new HttpClient(new FakeHttpMessageHandler());
+            var seeder = new FakeHttpMessageHandlerSeeder();
+            var fakeClient = new HttpClient(new FakeHttpMessageHandler(seeder));
+            services.AddSingleton(seeder);
             services.AddSingleton<IHttpClientFactory>(new FakeHttpClientFactory(fakeClient));
         });
         return base.CreateHost(builder);

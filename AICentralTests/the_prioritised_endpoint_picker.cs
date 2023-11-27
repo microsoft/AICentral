@@ -13,15 +13,23 @@ public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationF
     private readonly TestWebApplicationFactory<Program> _factory;
     private readonly HttpClient _httpClient;
 
-    public the_prioritised_endpoint_picker(TestWebApplicationFactory<Program> factory)
+    public the_prioritised_endpoint_picker(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
     {
         _factory = factory;
+        _factory.OutputHelper = testOutputHelper;
         _httpClient = factory.CreateClient();
     }
 
     [Fact]
     public async Task fails_over_to_a_successful_endpoint()
     {
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint500, "Model1",
+            () => Task.FromResult(AICentralFakeResponses.InternalServerErrorResponse()));
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint404, "Model1",
+            () => Task.FromResult(AICentralFakeResponses.NotFoundResponse()));
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+
         var result = await _httpClient
             .PostAsync("http://azure-noauth-priority.localtest.me/openai/deployments/priority/chat/completions?api-version=2023-05-15",
             new StringContent(JsonConvert.SerializeObject(new

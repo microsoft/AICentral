@@ -4,6 +4,14 @@ namespace AICentralTests.TestHelpers;
 
 public static class TestPipelines
 {
+    public static AICentralPipelineAssembler AzureOpenAILowestLatencyEndpoint() =>
+        new TestAICentralPipelineBuilder()
+            .WithLowestLatencyEndpoints(
+                (AICentralFakeResponses.FastEndpoint, "random", "Model1"),
+                (AICentralFakeResponses.SlowEndpoint, "random", "Model1")
+            )
+            .Assemble("lowest-latency-tester.localtest.me");
+
     public static AICentralPipelineAssembler AzureOpenAIServiceWithRateLimitingAndSingleEndpoint() =>
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "random", "Model1")
@@ -22,11 +30,9 @@ public static class TestPipelines
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithRandomAzureOpenAIEndpoints() =>
         new TestAICentralPipelineBuilder()
-            .WithRandomEndpoints(new[]
-            {
-                (AICentralFakeResponses.Endpoint200, "random", "Model1"),
-                (AICentralFakeResponses.Endpoint200Number2, "random", "Model1"),
-            })
+            .WithRandomEndpoints(
+                (AICentralFakeResponses.Endpoint200, "random", "Model1"), 
+                (AICentralFakeResponses.Endpoint200Number2, "random", "Model1"))
             .Assemble("azure-to-azure-openai.localtest.me");
 
     public static AICentralPipelineAssembler OpenAIServiceWithSingleOpenAIEndpoint() =>
@@ -62,16 +68,13 @@ public static class TestPipelines
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithBulkHeadOnPipelineAndSingleEndpoint() =>
         new TestAICentralPipelineBuilder()
-            .WithSingleEndpoint(AICentralFakeResponses.EndpointBulkHeadOnPipeline, "Model1", "Model1", null)
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "Model1", "Model1", null)
             .WithBulkHead(5)
             .Assemble("azure-with-bulkhead.localtest.me");
 
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithBulkHeadOnSingleEndpoint() =>
         new TestAICentralPipelineBuilder()
-            .WithSingleEndpoint(AICentralFakeResponses.EndpointBulkHeadOnEndpoint, "Model1", "Model1", 5)
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "Model1", "Model1", 5)
             .Assemble("azure-with-bulkhead-on-endpoint.localtest.me");
-
-
-    
 }

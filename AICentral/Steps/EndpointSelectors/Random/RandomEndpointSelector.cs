@@ -17,7 +17,7 @@ public class RandomEndpointSelector : EndpointSelectorBase
         AICallInformation aiCallInformation,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelectorBuilder>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelector>>();
         var toTry = _openAiServers.ToList();
         logger.LogDebug("Random Endpoint selector is handling request");
         do

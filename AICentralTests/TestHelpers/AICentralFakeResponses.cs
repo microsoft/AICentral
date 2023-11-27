@@ -6,12 +6,12 @@ namespace AICentralTests.TestHelpers;
 
 public class AICentralFakeResponses
 {
-    public static readonly string EndpointBulkHeadOnEndpoint = Guid.NewGuid().ToString();
-    public static readonly string EndpointBulkHeadOnPipeline = Guid.NewGuid().ToString();
     public static readonly string Endpoint500 = Guid.NewGuid().ToString();
     public static readonly string Endpoint404 = Guid.NewGuid().ToString();
     public static readonly string Endpoint200 = Guid.NewGuid().ToString();
     public static readonly string Endpoint200Number2 = Guid.NewGuid().ToString();
+    public static readonly string FastEndpoint = Guid.NewGuid().ToString();
+    public static readonly string SlowEndpoint = Guid.NewGuid().ToString();
     public static readonly string FakeResponseId = "chatcmpl-6v7mkQj980V1yBec6ETrKPRqFjNw9";
 
     public static HttpResponseMessage FakeChatCompletionsResponse()
