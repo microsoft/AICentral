@@ -1,4 +1,4 @@
-﻿name: BuildAndPackage
+﻿name: BuildAndPackageCore
 
 on:
   push:
