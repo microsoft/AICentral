@@ -34,7 +34,7 @@ jobs:
         run: dotnet test AICentralTests/AICentralTests.csproj
 
       - name: Pack Nuget
-        run: dotnet pack AICentral/AICentral.Core.csproj -p:Version=${{ steps.gitversion.outputs.NuGetVersionV2 }} --output ./publish/
+        run: dotnet pack AICentral.Core/AICentral.Core.csproj -p:Version=${{ steps.gitversion.outputs.NuGetVersionV2 }} --output ./publish/
       
       - name: Publish to Nuget ${{ steps.gitversion.outputs.NuGetVersionV2 }}
         run: dotnet nuget push ./publish/AICentral.Core.${{ steps.gitversion.outputs.NuGetVersionV2 }}.nupkg  --api-key ${{ secrets.NUGET_PUBLISH_KEY }} --source https://api.nuget.org/v3/index.json
