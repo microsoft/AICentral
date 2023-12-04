@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace AICentral.Steps.RateLimiting;
 
-public class FixedWindowRateLimitingProvider : IAICentralGenericStepFactory<IAICentralPipelineStep>, IAICentralPipelineStep
+public class FixedWindowRateLimitingProvider : IAICentralGenericStepFactory, IAICentralPipelineStep
 {
     private readonly FixedWindowRateLimiterOptions _fixedWindowRateLimiterOptions;
     private readonly string _id;
@@ -40,7 +40,7 @@ public class FixedWindowRateLimitingProvider : IAICentralGenericStepFactory<IAIC
 
     public static string ConfigName => "AspNetCoreFixedWindowRateLimiting";
 
-    public static IAICentralGenericStepFactory<IAICentralPipelineStep> BuildFromConfig(
+    public static IAICentralGenericStepFactory BuildFromConfig(
         ILogger logger, 
         IConfigurationSection configurationSection)
     {

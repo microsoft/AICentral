@@ -7,10 +7,12 @@ public class ApiKeyClientAuthFactory : IAICentralClientAuthFactory
 {
     private readonly ConfigurationTypes.ApiKeyClientAuthConfig _config;
     private readonly string _policyId = Guid.NewGuid().ToString();
+    private readonly Lazy<ApiKeyClientAuthProvider> _singleton;
 
     public ApiKeyClientAuthFactory(ConfigurationTypes.ApiKeyClientAuthConfig config)
     {
         _config = config;
+        _singleton = new Lazy<ApiKeyClientAuthProvider>(() => new ApiKeyClientAuthProvider());
     }
 
     public void RegisterServices(IServiceCollection services)
@@ -30,7 +32,7 @@ public class ApiKeyClientAuthFactory : IAICentralClientAuthFactory
 
     public IAICentralClientAuthStep Build()
     {
-        return new ApiKeyClientAuthProvider(_policyId, _config);
+        return _singleton.Value;
     }
 
     public static IAICentralClientAuthFactory BuildFromConfig(
@@ -47,4 +49,23 @@ public class ApiKeyClientAuthFactory : IAICentralClientAuthFactory
     }
 
     public static string ConfigName => "ApiKey";
+
+    public object WriteDebug()
+    {
+        return new
+        {
+            Type = "Client Api Key",
+            Clients = _config.Clients!.Select(x => new
+            {
+                ClientName = x.ClientName,
+                Key1 = x.Key1!.Substring(0,1) + "****" + x.Key1[^1],
+                Key2 = x.Key2!.Substring(0,1) + "****" + x.Key1[^1],
+            })
+        };
+    }
+        
+    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
+    {
+        route.RequireAuthorization(_policyId);
+    }
 }

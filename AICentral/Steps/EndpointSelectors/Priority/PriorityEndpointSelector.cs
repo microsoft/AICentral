@@ -83,13 +83,4 @@ public class PriorityEndpointSelector : EndpointSelectorBase
         throw new InvalidOperationException("Failed to satisfy request");
     }
 
-    public override object WriteDebug()
-    {
-        return new
-        {
-            Type = "Priority Router",
-            PrioritisedEndpoints = _prioritisedOpenAIEndpoints.Select(x => x.WriteDebug()),
-            FallbackEndpoints = _fallbackOpenAIEndpoints.Select(x => x.WriteDebug()),
-        };
-    }
 }

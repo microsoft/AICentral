@@ -6,10 +6,10 @@ namespace AICentral.Steps.Endpoints.OpenAILike.OpenAI;
 public class OpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFactory
 {
     private readonly Dictionary<string, string> _modelMappings;
-    private readonly string _apiKey;
     private readonly string? _organization;
     private readonly int? _maxConcurrency;
     private readonly string _id;
+    private readonly Lazy<IAICentralEndpointDispatcher> _endpointDispatcher;
 
     public OpenAIEndpointDispatcherFactory(Dictionary<string, string> modelMappings,
         string apiKey,
@@ -18,9 +18,11 @@ public class OpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFacto
     {
         _id = Guid.NewGuid().ToString();
         _modelMappings = modelMappings;
-        _apiKey = apiKey;
         _organization = organization;
         _maxConcurrency = maxConcurrency;
+
+        _endpointDispatcher = new Lazy<IAICentralEndpointDispatcher>(() =>
+            new OpenAIEndpointDispatcher(_id, _modelMappings, apiKey, _organization));
     }
 
     public void RegisterServices(IServiceCollection services)
@@ -46,6 +48,19 @@ public class OpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFacto
 
     public IAICentralEndpointDispatcher Build()
     {
-        return new OpenAIEndpointDispatcher(_id, _modelMappings, _apiKey, _organization);
+        return _endpointDispatcher.Value;
     }
+    
+    
+    public object WriteDebug()
+    {
+        return new
+        {
+            Type = "OpenAI",
+            Url = OpenAIEndpointDispatcher.OpenAIV1,
+            Mappings = _modelMappings,
+            Organization = _organization
+        };
+    }
+
 }

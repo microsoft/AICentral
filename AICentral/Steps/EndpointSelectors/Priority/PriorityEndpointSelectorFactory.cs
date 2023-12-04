@@ -8,6 +8,7 @@ public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
     private readonly IAICentralEndpointDispatcherFactory[] _prioritisedOpenAIEndpoints;
     private readonly IAICentralEndpointDispatcherFactory[] _fallbackOpenAIEndpoints;
+    private Lazy<PriorityEndpointSelector> _endpointSelector;
 
     public PriorityEndpointSelectorFactory(
         IAICentralEndpointDispatcherFactory[] prioritisedOpenAIEndpoints,
@@ -15,6 +16,9 @@ public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
     {
         _prioritisedOpenAIEndpoints = prioritisedOpenAIEndpoints;
         _fallbackOpenAIEndpoints = fallbackOpenAIEndpoints;
+        _endpointSelector = new Lazy<PriorityEndpointSelector>(() => new PriorityEndpointSelector(
+            _prioritisedOpenAIEndpoints.Select(x => x.Build()).ToArray(),
+            _fallbackOpenAIEndpoints.Select(x => x.Build()).ToArray()));
     }
 
     public void RegisterServices(IServiceCollection services)
@@ -24,7 +28,7 @@ public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
     public static string ConfigName => "Prioritised";
 
     public static IAICentralEndpointSelectorFactory BuildFromConfig(
-        ILogger logger, 
+        ILogger logger,
         IConfigurationSection configurationSection,
         Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints)
     {
@@ -36,7 +40,10 @@ public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
                     properties!.PriorityEndpoints,
                     configurationSection,
                     nameof(properties.PriorityEndpoints))
-                .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, configurationSection, "PrioritisedEndpoint"));
+                .Select(x =>
+                    endpoints.TryGetValue(x, out var ep)
+                        ? ep
+                        : Guard.NotNull(ep, configurationSection, "PrioritisedEndpoint"));
 
         var fallbackEndpoints =
             Guard.NotNull(
@@ -51,11 +58,18 @@ public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
         );
     }
 
-    public IEndpointSelector Build(
-        Dictionary<IAICentralEndpointDispatcherFactory, IAICentralEndpointDispatcher> builtEndpointDictionary)
+    public IEndpointSelector Build()
     {
-        return new PriorityEndpointSelector(
-            _prioritisedOpenAIEndpoints.Select(x => builtEndpointDictionary[x]).ToArray(),
-            _fallbackOpenAIEndpoints.Select(x => builtEndpointDictionary[x]).ToArray());
+        return _endpointSelector.Value;
+    }
+
+    public object WriteDebug()
+    {
+        return new
+        {
+            Type = "Priority Router",
+            PrioritisedEndpoints = _prioritisedOpenAIEndpoints.Select(x => x.WriteDebug()),
+            FallbackEndpoints = _fallbackOpenAIEndpoints.Select(x => x.WriteDebug()),
+        };
     }
 }

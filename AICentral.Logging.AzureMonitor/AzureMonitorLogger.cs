@@ -41,20 +41,4 @@ public class AzureMonitorLogger : IAICentralPipelineStep
 
         return result;
     }
-
-    public object WriteDebug()
-    {
-        return new
-        {
-            Type = "AzureMonitorLogging",
-            LogPrompt = _logPrompt,
-            WorkspaceId = _workspaceId
-        };
-    }
-
-    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
-    {
-    }
-
-    public static string ConfigName => "AzureMonitorLogger";
 }

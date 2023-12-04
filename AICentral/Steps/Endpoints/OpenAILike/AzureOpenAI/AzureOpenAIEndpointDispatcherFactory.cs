@@ -10,6 +10,7 @@ public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcher
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string _id;
     private readonly int? _maxConcurrency;
+    private readonly Lazy<IAICentralEndpointDispatcher> _endpointDispatcher;
 
     public AzureOpenAIEndpointDispatcherFactory(
         string languageUrl,
@@ -33,6 +34,9 @@ public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcher
             AuthenticationType.EntraPassThrough => new BearerTokenPassThroughAuth(),
             _ => throw new ArgumentOutOfRangeException(nameof(authenticationType), authenticationType, null)
         };
+
+        _endpointDispatcher = new Lazy<IAICentralEndpointDispatcher>(() =>
+            new AzureOpenAIEndpointDispatcher(_id, _languageUrl, _modelMappings, _authHandler));
     }
 
     public void RegisterServices(IServiceCollection services)
@@ -73,6 +77,18 @@ public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcher
 
     public IAICentralEndpointDispatcher Build()
     {
-        return new AzureOpenAIEndpointDispatcher(_id, _languageUrl, _modelMappings, _authHandler);
+        return _endpointDispatcher.Value;
     }
+    
+    public object WriteDebug()
+    {
+        return new
+        {
+            Type = "AzureOpenAI",
+            Url = _languageUrl,
+            Mappings = _modelMappings,
+            Auth = _authHandler.WriteDebug()
+        };
+    }
+
 }

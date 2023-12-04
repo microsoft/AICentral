@@ -10,6 +10,5 @@ public interface IAICentralEndpointDispatcher
         AICallInformation callInformation,
         CancellationToken cancellationToken);
 
-    object WriteDebug();
     Dictionary<string, StringValues> SanitiseHeaders(HttpContext context, HttpResponseMessage openAiResponse);
 }

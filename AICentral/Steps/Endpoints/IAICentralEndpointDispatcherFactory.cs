@@ -12,4 +12,6 @@ public interface IAICentralEndpointDispatcherFactory
     {
         throw new NotImplementedException();
     }
+
+    object WriteDebug();
 }

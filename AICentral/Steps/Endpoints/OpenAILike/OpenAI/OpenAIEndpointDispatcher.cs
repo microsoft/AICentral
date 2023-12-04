@@ -8,7 +8,7 @@ namespace AICentral.Steps.Endpoints.OpenAILike.OpenAI;
 
 public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
 {
-    const string OpenAIV1 = "https://api.openai.com";
+    internal const string OpenAIV1 = "https://api.openai.com";
     private readonly string? _organization;
     private readonly string _apiKey;
 
@@ -83,16 +83,6 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
     {
         deepClone["model"] = mappedModelName;
         return deepClone;
-    }
-
-    public override object WriteDebug()
-    {
-        return new
-        {
-            Type = "OpenAI",
-            Url = OpenAIV1,
-            Common = base.WriteDebug()
-        };
     }
 
     public override Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,

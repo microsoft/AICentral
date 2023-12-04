@@ -4,13 +4,11 @@ namespace AICentral.Steps.BulkHead;
 
 public class BulkHeadProvider : IAICentralPipelineStep
 {
-    private readonly BulkHeadConfiguration _properties;
     private readonly SemaphoreSlim _semaphore;
 
     public BulkHeadProvider(BulkHeadConfiguration properties)
     {
-        _properties = properties;
-        _semaphore = new SemaphoreSlim(_properties.MaxConcurrency!.Value);
+        _semaphore = new SemaphoreSlim(properties.MaxConcurrency!.Value);
     }
 
     public async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
@@ -26,49 +24,5 @@ public class BulkHeadProvider : IAICentralPipelineStep
         {
             _semaphore.Release();
         }
-    }
-
-    public object WriteDebug()
-    {
-        return new
-        {
-            Type = "BulkHead",
-            Properties = _properties
-        };
-    }
-
-    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
-    {
-    }
-}
-
-public class BulkHeadProviderFactory : IAICentralGenericStepFactory<IAICentralPipelineStep>
-{
-    private readonly BulkHeadConfiguration _properties;
-
-    public BulkHeadProviderFactory(BulkHeadConfiguration properties)
-    {
-        _properties = properties;
-    }
-
-    public void RegisterServices(IServiceCollection services)
-    {
-    }
-
-    public IAICentralPipelineStep Build()
-    {
-        return new BulkHeadProvider(_properties);
-    }
-
-    public static string ConfigName => "BulkHead";
-
-    public static IAICentralGenericStepFactory<IAICentralPipelineStep> BuildFromConfig(ILogger logger,
-        IConfigurationSection section)
-    {
-        var properties = section.GetSection("Properties").Get<BulkHeadConfiguration>()!;
-        Guard.NotNull(properties, section, "Properties");
-        Guard.NotNull(properties.MaxConcurrency, section, nameof(properties.MaxConcurrency));
-
-        return new BulkHeadProviderFactory(properties);
     }
 }

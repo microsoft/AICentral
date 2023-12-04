@@ -2,7 +2,6 @@
 using AICentral;
 using AICentral.Configuration.JSON;
 using AICentral.Core;
-using AICentral.Steps;
 using AICentral.Steps.Auth;
 using AICentral.Steps.Auth.AllowAnonymous;
 using AICentral.Steps.Auth.ApiKey;
@@ -144,7 +143,7 @@ public class TestAICentralPipelineBuilder
     public AICentralPipelineAssembler Assemble(string host)
     {
         var id = Guid.NewGuid().ToString();
-        var genericSteps = new Dictionary<string, IAICentralPipelineStepFactory<IAICentralPipelineStep>>();
+        var genericSteps = new Dictionary<string, IAICentralGenericStepFactory>();
         var steps = new List<string>();
 
         if (_windowInSeconds != null)

@@ -7,16 +7,17 @@ namespace AICentral.Steps.EndpointSelectors.Random;
 public class RandomEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
     private readonly IAICentralEndpointDispatcherFactory[] _openAiServers;
+    private Lazy<RandomEndpointSelector> _endpointSelector;
 
     public RandomEndpointSelectorFactory(IAICentralEndpointDispatcherFactory[] openAiServers)
     {
         _openAiServers = openAiServers.ToArray();
+        _endpointSelector = new Lazy<RandomEndpointSelector>(() => new RandomEndpointSelector(_openAiServers.Select(x => x.Build()).ToArray()));
     }
 
-    public IEndpointSelector Build(
-        Dictionary<IAICentralEndpointDispatcherFactory, IAICentralEndpointDispatcher> builtEndpointDictionary)
+    public IEndpointSelector Build()
     {
-        return new RandomEndpointSelector(_openAiServers.Select(x => builtEndpointDictionary[x]).ToArray());
+        return _endpointSelector.Value;
     }
 
     public void RegisterServices(IServiceCollection services)
@@ -37,5 +38,14 @@ public class RandomEndpointSelectorFactory : IAICentralEndpointSelectorFactory
             Guard.NotNull(properties!.Endpoints, configurationSection, "Endpoints")
                 .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, configurationSection, "Endpoint"))
                 .ToArray());
+    }
+    
+    public object WriteDebug()
+    {
+        return new
+        {
+            Type = "Random Router",
+            Endpoints = _openAiServers.Select(x => WriteDebug())
+        };
     }
 }

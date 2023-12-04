@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using AICentral.Configuration.JSON;
 using AICentral.Core;
-using AICentral.Steps;
 using AICentral.Steps.Auth;
 using AICentral.Steps.Endpoints;
 using AICentral.Steps.EndpointSelectors;
@@ -19,7 +18,7 @@ public class ConfigurationBasedPipelineBuilder
             IAICentralEndpointSelectorFactory>> _endpointSelectorConfigurations = new();
 
     private readonly Dictionary<string,
-            Func<ILogger, IConfigurationSection, IAICentralPipelineStepFactory<IAICentralPipelineStep>>>
+            Func<ILogger, IConfigurationSection, IAICentralGenericStepFactory>>
         _genericStepBuilders = new();
 
     private readonly
@@ -36,7 +35,7 @@ public class ConfigurationBasedPipelineBuilder
     private void RegisterEndpointSelector<T>() where T : IAICentralEndpointSelectorFactory =>
         _endpointSelectorConfigurations.Add(T.ConfigName, T.BuildFromConfig);
 
-    private void RegisterGenericStep<T>() where T : IAICentralGenericStepFactory<IAICentralPipelineStep> =>
+    private void RegisterGenericStep<T>() where T : IAICentralGenericStepFactory =>
         _genericStepBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
     public AICentralPipelineAssembler BuildPipelinesFromConfig(ILogger startupLogger,
@@ -46,7 +45,7 @@ public class ConfigurationBasedPipelineBuilder
         RegisterBuilders<IAICentralEndpointSelectorFactory>(additionalAssembliesToScan,
             nameof(RegisterEndpointSelector));
         RegisterBuilders<IAICentralEndpointDispatcherFactory>(additionalAssembliesToScan, nameof(RegisterEndpoint));
-        RegisterBuilders<IAICentralGenericStepFactory<IAICentralPipelineStep>>(additionalAssembliesToScan,
+        RegisterBuilders<IAICentralGenericStepFactory>(additionalAssembliesToScan,
             nameof(RegisterGenericStep));
         RegisterBuilders<IAICentralClientAuthFactory>(additionalAssembliesToScan, nameof(RegisterAuthProvider));
 

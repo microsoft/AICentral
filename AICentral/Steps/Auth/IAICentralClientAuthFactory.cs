@@ -8,4 +8,8 @@ public interface IAICentralClientAuthFactory : IAICentralPipelineStepFactory<IAI
     {
         throw new NotImplementedException();
     }
+
+    object WriteDebug();
+
+    void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route);
 }

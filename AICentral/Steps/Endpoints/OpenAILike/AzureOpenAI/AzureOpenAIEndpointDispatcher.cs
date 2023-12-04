@@ -55,17 +55,6 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         return incomingContent;
     }
 
-    public override object WriteDebug()
-    {
-        return new
-        {
-            Type = "AzureOpenAI",
-            Url = _languageUrl,
-            Common = base.WriteDebug(),
-            Auth = _authHandler.WriteDebug()
-        };
-    }
-
     public override Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,
         HttpResponseMessage openAiResponse)
     {

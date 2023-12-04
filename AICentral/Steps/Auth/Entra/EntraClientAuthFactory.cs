@@ -6,11 +6,13 @@ public class EntraClientAuthFactory : IAICentralClientAuthFactory
 {
     private readonly IConfigurationSection _configSection;
     private readonly string _id;
+    private readonly Lazy<EntraClientAuthProvider> _provider;
 
     public EntraClientAuthFactory(IConfigurationSection configSection)
     {
         _configSection = configSection;
         _id = Guid.NewGuid().ToString();
+        _provider = new Lazy<EntraClientAuthProvider>(() => new EntraClientAuthProvider());
     }
 
     /// <summary>
@@ -26,7 +28,7 @@ public class EntraClientAuthFactory : IAICentralClientAuthFactory
 
     public IAICentralClientAuthStep Build()
     {
-        return new EntraClientAuthProvider(_id);
+        return _provider.Value;
     }
 
     public static IAICentralClientAuthFactory BuildFromConfig(
@@ -34,5 +36,23 @@ public class EntraClientAuthFactory : IAICentralClientAuthFactory
         IConfigurationSection configurationSection)
     {
         return new EntraClientAuthFactory(configurationSection);
+    }
+    
+    /// <summary>
+    /// Entra Auth is provided at the route scope. The runtime step is a no-op.
+    /// </summary>
+    /// <param name="app"></param>
+    /// <param name="route"></param>
+    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
+    {
+        route.RequireAuthorization(_id);
+    }
+
+    public object WriteDebug()
+    {
+        return new
+        {
+            Type = "Entra"
+        };
     }
 }

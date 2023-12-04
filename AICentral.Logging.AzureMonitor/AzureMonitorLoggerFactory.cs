@@ -7,12 +7,13 @@ namespace AICentral.Logging.AzureMonitor;
 /// <summary>
 /// Logs out usage information to Azure Monitor
 /// </summary>
-public class AzureMonitorLoggerFactory : IAICentralGenericStepFactory<IAICentralPipelineStep>
+public class AzureMonitorLoggerFactory : IAICentralGenericStepFactory
 {
     private readonly string _workspaceId;
     private readonly string _key;
     private readonly bool _logPrompt;
     private readonly bool _logResponse;
+    private readonly Lazy<IAICentralPipelineStep> _logger;
 
     public AzureMonitorLoggerFactory(
         string workspaceId,
@@ -24,11 +25,17 @@ public class AzureMonitorLoggerFactory : IAICentralGenericStepFactory<IAICentral
         _key = key;
         _logPrompt = logPrompt;
         _logResponse = logResponse;
+        _logger = new Lazy<IAICentralPipelineStep>(() => new AzureMonitorLogger(new LoggerConfiguration().WriteTo
+                .AzureAnalytics(
+                    _workspaceId,
+                    _key
+                ).CreateLogger(), _workspaceId, _logPrompt, _logResponse
+        ));
     }
 
     public static string ConfigName => "AzureMonitorLogger";
 
-    public static IAICentralGenericStepFactory<IAICentralPipelineStep> BuildFromConfig(
+    public static IAICentralGenericStepFactory BuildFromConfig(
         ILogger logger, 
         IConfigurationSection configurationSection)
     {
@@ -47,14 +54,24 @@ public class AzureMonitorLoggerFactory : IAICentralGenericStepFactory<IAICentral
 
     public IAICentralPipelineStep Build()
     {
-        return new AzureMonitorLogger(new LoggerConfiguration().WriteTo.AzureAnalytics(
-                _workspaceId,
-                _key
-            ).CreateLogger(), _workspaceId, _logPrompt, _logResponse
-        );
+        return _logger.Value;
     }
 
     public void RegisterServices(IServiceCollection services)
+    {
+    }
+    
+    public object WriteDebug()
+    {
+        return new
+        {
+            Type = "AzureMonitorLogging",
+            LogPrompt = _logPrompt,
+            WorkspaceId = _workspaceId
+        };
+    }
+
+    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
     {
     }
 }

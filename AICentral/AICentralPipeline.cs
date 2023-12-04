@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using AICentral.Core;
-using AICentral.Steps;
 using AICentral.Steps.Auth;
 using AICentral.Steps.EndpointSelectors;
 using AICentral.Steps.EndpointSelectors.Single;
@@ -12,16 +11,16 @@ public class AICentralPipeline
 {
     private readonly string _name;
     private readonly HeaderMatchRouter _router;
-    private readonly IAICentralClientAuthStep _clientAuthStep;
-    private readonly IList<IAICentralPipelineStep> _pipelineSteps;
-    private readonly IEndpointSelector _endpointSelector;
+    private readonly IAICentralClientAuthFactory _clientAuthStep;
+    private readonly IList<IAICentralGenericStepFactory> _pipelineSteps;
+    private readonly IAICentralEndpointSelectorFactory _endpointSelector;
 
     public AICentralPipeline(
         string name,
         HeaderMatchRouter router,
-        IAICentralClientAuthStep clientAuthStep,
-        IList<IAICentralPipelineStep> pipelineSteps,
-        IEndpointSelector endpointSelector)
+        IAICentralClientAuthFactory clientAuthStep,
+        IAICentralGenericStepFactory[] pipelineSteps,
+        IAICentralEndpointSelectorFactory endpointSelector)
     {
         _name = name;
         _router = router;
@@ -45,12 +44,13 @@ public class AICentralPipeline
         
         logger.LogDebug("Detected {RequestType} / {CallType} from incoming request", requestDetails.IncomingCallDetails.ServiceType, requestDetails.IncomingCallDetails.AICallType);
 
-        if (requestDetails.IncomingCallDetails.AICallType == AICallType.Other && !(_endpointSelector is SingleEndpointSelector))
+        var endpointSelector = _endpointSelector.Build();
+        if (requestDetails.IncomingCallDetails.AICallType == AICallType.Other && !(endpointSelector is SingleEndpointSelector))
         {
             return UnableToProxyUnknownCallTypesToMultiNodeClusters(context, requestDetails);
         }
 
-        using var executor = new AICentralPipelineExecutor(_pipelineSteps, _endpointSelector);
+        using var executor = new AICentralPipelineExecutor(_pipelineSteps.Select(x => x.Build()), endpointSelector);
         var result = await executor.Next(context, requestDetails, cancellationToken);
         logger.LogInformation("Executed Pipeline {PipelineName}", _name);
         return result;

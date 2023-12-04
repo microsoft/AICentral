@@ -1,6 +1,4 @@
 ﻿using AICentral.Core;
-using AICentral.Steps;
-using AICentral.Steps.EndpointSelectors;
 
 namespace AICentral;
 
@@ -10,7 +8,7 @@ public class AICentralPipelineExecutor : IAICentralPipelineExecutor, IDisposable
     private readonly IEnumerator<IAICentralPipelineStep> _pipelineEnumerator;
 
     public AICentralPipelineExecutor(
-        IList<IAICentralPipelineStep> steps,
+        IEnumerable<IAICentralPipelineStep> steps,
         IEndpointSelector endpointSelector)
     {
         _endpointSelector = endpointSelector;

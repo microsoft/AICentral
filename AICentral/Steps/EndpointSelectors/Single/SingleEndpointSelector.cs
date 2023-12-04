@@ -27,12 +27,4 @@ public class SingleEndpointSelector : EndpointSelectorBase
         );
     }
 
-    public override object WriteDebug()
-    {
-        return new
-        {
-            Type = "SingleEndpoint",
-            Endpoints = new[] { _endpoint.WriteDebug() }
-        };
-    }
 }

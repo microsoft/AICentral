@@ -12,7 +12,9 @@ public interface IAICentralEndpointSelectorFactory
         IConfigurationSection section,
         Dictionary<string, IAICentralEndpointDispatcherFactory> aiCentralEndpoints) => throw new NotImplementedException();
 
-    IEndpointSelector Build(Dictionary<IAICentralEndpointDispatcherFactory, IAICentralEndpointDispatcher> builtEndpointDictionary);
+    IEndpointSelector Build();
 
     void RegisterServices(IServiceCollection services);
+
+    object WriteDebug();
 }

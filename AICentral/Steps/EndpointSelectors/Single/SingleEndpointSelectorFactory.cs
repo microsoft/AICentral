@@ -6,15 +6,17 @@ namespace AICentral.Steps.EndpointSelectors.Single;
 public class SingleEndpointSelectorFactory: IAICentralEndpointSelectorFactory
 {
     private readonly IAICentralEndpointDispatcherFactory _endpointDispatcherFactory;
+    private Lazy<SingleEndpointSelector> _endpointSelector;
 
     public SingleEndpointSelectorFactory(IAICentralEndpointDispatcherFactory endpointDispatcherFactory)
     {
         _endpointDispatcherFactory = endpointDispatcherFactory;
+        _endpointSelector = new Lazy<SingleEndpointSelector>(() => new SingleEndpointSelector(endpointDispatcherFactory.Build()));
     }
 
-    public IEndpointSelector Build(Dictionary<IAICentralEndpointDispatcherFactory, IAICentralEndpointDispatcher> buildEndpoints)
+    public IEndpointSelector Build()
     {
-        return new SingleEndpointSelector(buildEndpoints[_endpointDispatcherFactory]);
+        return _endpointSelector.Value;
     }
 
     public void RegisterServices(IServiceCollection services)
@@ -31,5 +33,14 @@ public class SingleEndpointSelectorFactory: IAICentralEndpointSelectorFactory
         var endpoint = properties.GetValue<string>("Endpoint");
         endpoint = Guard.NotNull(endpoint, configSection, "Endpoint");
         return new SingleEndpointSelectorFactory(endpoints[endpoint]);
+    }
+    
+    public object WriteDebug()
+    {
+        return new
+        {
+            Type = "SingleEndpoint",
+            Endpoints = new[] { _endpointDispatcherFactory.WriteDebug() }
+        };
     }
 }

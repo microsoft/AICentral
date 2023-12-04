@@ -1,7 +1,8 @@
 ﻿namespace AICentral.Core;
 
-public interface IAICentralGenericStepFactory<out T>: IAICentralPipelineStepFactory<T> where T : IAICentralPipelineStep
+public interface IAICentralGenericStepFactory: IAICentralPipelineStepFactory<IAICentralPipelineStep>
 {
-    static virtual IAICentralGenericStepFactory<T> BuildFromConfig(ILogger logger, IConfigurationSection section) => throw new NotImplementedException();
-
+    static virtual IAICentralGenericStepFactory BuildFromConfig(ILogger logger, IConfigurationSection section) => throw new NotImplementedException();
+    object WriteDebug();
+    void ConfigureRoute(WebApplication webApplication, IEndpointConventionBuilder route);
 }

@@ -12,9 +12,9 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
 {
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string _id;
-    private static readonly string[] HeadersToIgnore = { "Host", "Authorization", "api-key" }; 
+    private static readonly string[] HeadersToIgnore = { "Host", "Authorization", "api-key" };
 
-    public OpenAILikeEndpointDispatcher(
+    protected OpenAILikeEndpointDispatcher(
         string id,
         Dictionary<string, string> modelMappings)
     {
@@ -125,14 +125,6 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
     }
 
     protected abstract Task CustomiseRequest(HttpContext context, AICallInformation callInformation, HttpRequestMessage newRequest, string? newModelName);
-
-    public virtual object WriteDebug()
-    {
-        return new
-        {
-            ModelMappings = _modelMappings,
-        };
-    }
 
     public abstract Dictionary<string, StringValues> SanitiseHeaders(HttpContext context, HttpResponseMessage openAiResponse);
 
