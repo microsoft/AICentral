@@ -7,7 +7,7 @@ on:
     branches:
       - main
     paths:
-      - '/AICentral/**/*'
+      - '/AICentral.Logging.AzureMonitor/**/*'
   workflow_dispatch:
 
 jobs:
