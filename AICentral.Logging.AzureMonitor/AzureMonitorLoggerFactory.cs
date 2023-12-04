@@ -28,7 +28,8 @@ public class AzureMonitorLoggerFactory : IAICentralGenericStepFactory
         _logger = new Lazy<IAICentralPipelineStep>(() => new AzureMonitorLogger(new LoggerConfiguration().WriteTo
                 .AzureAnalytics(
                     _workspaceId,
-                    _key
+                    _key,
+                    logName: "AILogs"
                 ).CreateLogger(), _workspaceId, _logPrompt, _logResponse
         ));
     }
