@@ -2,12 +2,12 @@
 
 namespace AICentral.Steps.Auth.Entra;
 
-public class EntraClientAuthBuilder : IAICentralClientAuthBuilder
+public class EntraClientAuthFactory : IAICentralClientAuthFactory
 {
     private readonly IConfigurationSection _configSection;
     private readonly string _id;
 
-    public EntraClientAuthBuilder(IConfigurationSection configSection)
+    public EntraClientAuthFactory(IConfigurationSection configSection)
     {
         _configSection = configSection;
         _id = Guid.NewGuid().ToString();
@@ -29,10 +29,10 @@ public class EntraClientAuthBuilder : IAICentralClientAuthBuilder
         return new EntraClientAuthProvider(_id);
     }
 
-    public static IAICentralClientAuthBuilder BuildFromConfig(
+    public static IAICentralClientAuthFactory BuildFromConfig(
         ILogger logger, 
         IConfigurationSection configurationSection)
     {
-        return new EntraClientAuthBuilder(configurationSection);
+        return new EntraClientAuthFactory(configurationSection);
     }
 }

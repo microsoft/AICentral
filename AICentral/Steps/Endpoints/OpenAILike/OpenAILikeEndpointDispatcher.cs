@@ -27,7 +27,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         AICallInformation callInformation, 
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherBuilder>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherFactory>>();
 
         var incomingModelName = callInformation.IncomingCallDetails.IncomingModelName ?? string.Empty;
         

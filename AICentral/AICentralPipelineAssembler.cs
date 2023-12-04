@@ -12,31 +12,31 @@ using AICentral.Steps.Routes;
 namespace AICentral;
 
 /// <summary>
-/// Responsible for assembling the pipelines from all the builder representations.
+/// Responsible for assembling the pipelines from all the factories.
 /// This class will also Add all the required services needed for the pipelines.
 /// </summary>
 public class AICentralPipelineAssembler
 {
     private readonly Func<string, HeaderMatchRouter> _routeBuilder;
-    private readonly Dictionary<string, IAICentralClientAuthBuilder> _authProviders;
-    private readonly Dictionary<string, IAICentralEndpointDispatcherBuilder> _endpoints;
-    private readonly Dictionary<string, IAICentralEndpointSelectorBuilder> _endpointSelectors;
-    private readonly Dictionary<string, IAICentralPipelineStepBuilder<IAICentralPipelineStep>> _genericSteps;
+    private readonly Dictionary<string, IAICentralClientAuthFactory> _authProviders;
+    private readonly Dictionary<string, IAICentralEndpointDispatcherFactory> _endpoints;
+    private readonly Dictionary<string, IAICentralEndpointSelectorFactory> _endpointSelectors;
+    private readonly Dictionary<string, IAICentralPipelineStepFactory<IAICentralPipelineStep>> _genericSteps;
     private readonly ConfigurationTypes.AICentralPipelineConfig[] _pipelines;
 
-    private Dictionary<IAICentralClientAuthBuilder, IAICentralClientAuthStep>? _builtAuthProviders;
-    private Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher>? _builtEndpoints;
-    private Dictionary<IAICentralPipelineStepBuilder<IAICentralPipelineStep>, IAICentralPipelineStep>? _builtSteps;
-    private Dictionary<IAICentralEndpointSelectorBuilder, IEndpointSelector>? _builtEndpointSelectors;
+    private Dictionary<IAICentralClientAuthFactory, IAICentralClientAuthStep>? _builtAuthProviders;
+    private Dictionary<IAICentralEndpointDispatcherFactory, IAICentralEndpointDispatcher>? _builtEndpoints;
+    private Dictionary<IAICentralPipelineStepFactory<IAICentralPipelineStep>, IAICentralPipelineStep>? _builtSteps;
+    private Dictionary<IAICentralEndpointSelectorFactory, IEndpointSelector>? _builtEndpointSelectors;
 
     private bool _servicesAdded;
 
     public AICentralPipelineAssembler(
         Func<string, HeaderMatchRouter> routeBuilder,
-        Dictionary<string, IAICentralClientAuthBuilder> authProviders,
-        Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints,
-        Dictionary<string, IAICentralEndpointSelectorBuilder> endpointSelectors,
-        Dictionary<string, IAICentralPipelineStepBuilder<IAICentralPipelineStep>> genericSteps,
+        Dictionary<string, IAICentralClientAuthFactory> authProviders,
+        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints,
+        Dictionary<string, IAICentralEndpointSelectorFactory> endpointSelectors,
+        Dictionary<string, IAICentralPipelineStepFactory<IAICentralPipelineStep>> genericSteps,
         ConfigurationTypes.AICentralPipelineConfig[] pipelines)
     {
         _routeBuilder = routeBuilder;
@@ -78,7 +78,7 @@ public class AICentralPipelineAssembler
         Dictionary<TType, TRuntimeType> runtime,
         string? providerName,
         TRuntimeType? fallback)
-        where TType : IAICentralPipelineStepBuilder<TRuntimeType> where TRuntimeType : IAICentralPipelineStep
+        where TType : IAICentralPipelineStepFactory<TRuntimeType> where TRuntimeType : IAICentralPipelineStep
     {
         if (string.IsNullOrEmpty(providerName))
             return fallback ?? throw new ArgumentException($"Can not find pipeline step {providerName}");
@@ -91,8 +91,8 @@ public class AICentralPipelineAssembler
 
     private static IEndpointSelector GetEndpointSelector(
         string? pipelineConfigName,
-        Dictionary<string, IAICentralEndpointSelectorBuilder> providers,
-        Dictionary<IAICentralEndpointSelectorBuilder, IEndpointSelector> runtime,
+        Dictionary<string, IAICentralEndpointSelectorFactory> providers,
+        Dictionary<IAICentralEndpointSelectorFactory, IEndpointSelector> runtime,
         string? providerName,
         IEndpointSelector? fallback)
     {

@@ -42,11 +42,11 @@ public class BulkHeadProvider : IAICentralPipelineStep
     }
 }
 
-public class BulkHeadProviderBuilder : IAICentralGenericStepBuilder<IAICentralPipelineStep>
+public class BulkHeadProviderFactory : IAICentralGenericStepFactory<IAICentralPipelineStep>
 {
     private readonly BulkHeadConfiguration _properties;
 
-    public BulkHeadProviderBuilder(BulkHeadConfiguration properties)
+    public BulkHeadProviderFactory(BulkHeadConfiguration properties)
     {
         _properties = properties;
     }
@@ -62,13 +62,13 @@ public class BulkHeadProviderBuilder : IAICentralGenericStepBuilder<IAICentralPi
 
     public static string ConfigName => "BulkHead";
 
-    public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(ILogger logger,
+    public static IAICentralGenericStepFactory<IAICentralPipelineStep> BuildFromConfig(ILogger logger,
         IConfigurationSection section)
     {
         var properties = section.GetSection("Properties").Get<BulkHeadConfiguration>()!;
         Guard.NotNull(properties, section, "Properties");
         Guard.NotNull(properties.MaxConcurrency, section, nameof(properties.MaxConcurrency));
 
-        return new BulkHeadProviderBuilder(properties);
+        return new BulkHeadProviderFactory(properties);
     }
 }

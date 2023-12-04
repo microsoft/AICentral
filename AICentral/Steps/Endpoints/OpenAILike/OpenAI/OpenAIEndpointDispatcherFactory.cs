@@ -3,7 +3,7 @@ using AICentral.Core;
 
 namespace AICentral.Steps.Endpoints.OpenAILike.OpenAI;
 
-public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuilder
+public class OpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFactory
 {
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string _apiKey;
@@ -11,7 +11,7 @@ public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuild
     private readonly int? _maxConcurrency;
     private readonly string _id;
 
-    public OpenAIEndpointDispatcherBuilder(Dictionary<string, string> modelMappings,
+    public OpenAIEndpointDispatcherFactory(Dictionary<string, string> modelMappings,
         string apiKey,
         string? organization, 
         int? maxConcurrency)
@@ -31,12 +31,12 @@ public class OpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuild
 
     public static string ConfigName => "OpenAIEndpoint";
 
-    public static IAICentralEndpointDispatcherBuilder BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
+    public static IAICentralEndpointDispatcherFactory BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
     {
         var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.AICentralPipelineOpenAIEndpointPropertiesConfig>();
         Guard.NotNull(properties, configurationSection, "Properties");
         
-        return new OpenAIEndpointDispatcherBuilder(
+        return new OpenAIEndpointDispatcherFactory(
             Guard.NotNull(properties!.ModelMappings, configurationSection, nameof(properties.ModelMappings)),
             Guard.NotNull(properties.ApiKey, configurationSection, nameof(properties.ApiKey)),
             properties.Organization,

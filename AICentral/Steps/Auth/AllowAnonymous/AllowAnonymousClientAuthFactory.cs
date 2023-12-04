@@ -1,6 +1,6 @@
 ﻿namespace AICentral.Steps.Auth.AllowAnonymous;
 
-public class AllowAnonymousClientAuthBuilder: IAICentralClientAuthBuilder
+public class AllowAnonymousClientAuthFactory: IAICentralClientAuthFactory
 {
     public void RegisterServices(IServiceCollection services)
     {
@@ -11,9 +11,9 @@ public class AllowAnonymousClientAuthBuilder: IAICentralClientAuthBuilder
         return new AllowAnonymousClientAuthProvider();
     }
 
-    public static IAICentralClientAuthBuilder BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
+    public static IAICentralClientAuthFactory BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
     {
-        return new AllowAnonymousClientAuthBuilder();
+        return new AllowAnonymousClientAuthFactory();
     }
 
     public static string ConfigName => "AllowAnonymous";

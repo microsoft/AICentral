@@ -3,7 +3,7 @@ using AICentral.Core;
 
 namespace AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
 
-public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuilder
+public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFactory
 {
     private readonly IEndpointAuthorisationHandler _authHandler;
     private readonly string _languageUrl;
@@ -11,7 +11,7 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
     private readonly string _id;
     private readonly int? _maxConcurrency;
 
-    public AzureOpenAIEndpointDispatcherBuilder(
+    public AzureOpenAIEndpointDispatcherFactory(
         string languageUrl,
         Dictionary<string, string> modelMappings,
         AuthenticationType authenticationType,
@@ -43,7 +43,7 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
 
     public static string ConfigName => "AzureOpenAIEndpoint";
 
-    public static IAICentralEndpointDispatcherBuilder BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
+    public static IAICentralEndpointDispatcherFactory BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
     {
         var properties = configurationSection.GetSection("Properties")
             .Get<ConfigurationTypes.AICentralPipelineAzureOpenAIEndpointPropertiesConfig>();
@@ -63,7 +63,7 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
             authenticationType = AuthenticationType.EntraPassThrough;
         }
 
-        return new AzureOpenAIEndpointDispatcherBuilder(
+        return new AzureOpenAIEndpointDispatcherFactory(
             Guard.NotNull(properties!.LanguageEndpoint, configurationSection, nameof(properties.LanguageEndpoint)),
             modelMappings,
             authenticationType.Value,

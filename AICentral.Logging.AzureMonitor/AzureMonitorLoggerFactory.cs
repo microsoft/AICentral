@@ -7,14 +7,14 @@ namespace AICentral.Logging.AzureMonitor;
 /// <summary>
 /// Logs out usage information to Azure Monitor
 /// </summary>
-public class AzureMonitorLoggerBuilder : IAICentralGenericStepBuilder<IAICentralPipelineStep>
+public class AzureMonitorLoggerFactory : IAICentralGenericStepFactory<IAICentralPipelineStep>
 {
     private readonly string _workspaceId;
     private readonly string _key;
     private readonly bool _logPrompt;
     private readonly bool _logResponse;
 
-    public AzureMonitorLoggerBuilder(
+    public AzureMonitorLoggerFactory(
         string workspaceId,
         string key,
         bool logPrompt,
@@ -28,7 +28,7 @@ public class AzureMonitorLoggerBuilder : IAICentralGenericStepBuilder<IAICentral
 
     public static string ConfigName => "AzureMonitorLogger";
 
-    public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(
+    public static IAICentralGenericStepFactory<IAICentralPipelineStep> BuildFromConfig(
         ILogger logger, 
         IConfigurationSection configurationSection)
     {
@@ -37,7 +37,7 @@ public class AzureMonitorLoggerBuilder : IAICentralGenericStepBuilder<IAICentral
         
         Guard.NotNull(properties, configurationSection, "Properties");
 
-        return new AzureMonitorLoggerBuilder(
+        return new AzureMonitorLoggerFactory(
             Guard.NotNull(properties.WorkspaceId, configurationSection, nameof(properties.WorkspaceId)),
             Guard.NotNull(properties.Key, configurationSection, nameof(properties.Key)),
             Guard.NotNull(properties.LogPrompt, configurationSection, nameof(properties.LogPrompt))!.Value,

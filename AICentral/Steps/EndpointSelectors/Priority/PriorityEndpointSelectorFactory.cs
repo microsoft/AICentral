@@ -4,17 +4,17 @@ using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors.Priority;
 
-public class PriorityEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
+public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
-    private readonly IAICentralEndpointDispatcherBuilder[] _prioritisedOpenAiEndpoints;
-    private readonly IAICentralEndpointDispatcherBuilder[] _fallbackOpenAiEndpoints;
+    private readonly IAICentralEndpointDispatcherFactory[] _prioritisedOpenAIEndpoints;
+    private readonly IAICentralEndpointDispatcherFactory[] _fallbackOpenAIEndpoints;
 
-    public PriorityEndpointSelectorBuilder(
-        IAICentralEndpointDispatcherBuilder[] prioritisedOpenAiEndpoints,
-        IAICentralEndpointDispatcherBuilder[] fallbackOpenAiEndpoints)
+    public PriorityEndpointSelectorFactory(
+        IAICentralEndpointDispatcherFactory[] prioritisedOpenAIEndpoints,
+        IAICentralEndpointDispatcherFactory[] fallbackOpenAIEndpoints)
     {
-        _prioritisedOpenAiEndpoints = prioritisedOpenAiEndpoints;
-        _fallbackOpenAiEndpoints = fallbackOpenAiEndpoints;
+        _prioritisedOpenAIEndpoints = prioritisedOpenAIEndpoints;
+        _fallbackOpenAIEndpoints = fallbackOpenAIEndpoints;
     }
 
     public void RegisterServices(IServiceCollection services)
@@ -23,10 +23,10 @@ public class PriorityEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
 
     public static string ConfigName => "Prioritised";
 
-    public static IAICentralEndpointSelectorBuilder BuildFromConfig(
+    public static IAICentralEndpointSelectorFactory BuildFromConfig(
         ILogger logger, 
         IConfigurationSection configurationSection,
-        Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints)
+        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints)
     {
         var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.PriorityEndpointConfig>();
         Guard.NotNull(properties, configurationSection, "Properties");
@@ -45,17 +45,17 @@ public class PriorityEndpointSelectorBuilder : IAICentralEndpointSelectorBuilder
                     nameof(properties.FallbackEndpoints))
                 .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, configurationSection, ""));
 
-        return new PriorityEndpointSelectorBuilder(
+        return new PriorityEndpointSelectorFactory(
             prioritisedEndpoints.ToArray(),
             fallbackEndpoints.ToArray()
         );
     }
 
     public IEndpointSelector Build(
-        Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher> builtEndpointDictionary)
+        Dictionary<IAICentralEndpointDispatcherFactory, IAICentralEndpointDispatcher> builtEndpointDictionary)
     {
         return new PriorityEndpointSelector(
-            _prioritisedOpenAiEndpoints.Select(x => builtEndpointDictionary[x]).ToArray(),
-            _fallbackOpenAiEndpoints.Select(x => builtEndpointDictionary[x]).ToArray());
+            _prioritisedOpenAIEndpoints.Select(x => builtEndpointDictionary[x]).ToArray(),
+            _fallbackOpenAIEndpoints.Select(x => builtEndpointDictionary[x]).ToArray());
     }
 }
