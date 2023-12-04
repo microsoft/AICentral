@@ -16,10 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="readme.md">
-        <Pack>true</Pack>
-        <PackagePath>\</PackagePath>
-      </None>
+        <None Include="readme.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 </Project>
