@@ -15,6 +15,7 @@ public class ConfigurationBasedPipelineBuilder
 
     private readonly
         Dictionary<string, Func<ILogger, IConfigurationSection, Dictionary<string, IAICentralEndpointDispatcherFactory>,
+            Dictionary<string, IAICentralEndpointSelectorFactory>,
             IAICentralEndpointSelectorFactory>> _endpointSelectorConfigurations = new();
 
     private readonly Dictionary<string,
@@ -70,7 +71,7 @@ public class ConfigurationBasedPipelineBuilder
                             x.Config);
                     });
 
-        var endpointSelectors =
+        var allEndpointSelectors =
             configurationSection
                 .GetSection("EndpointSelectors")
                 .GetChildren()
@@ -78,19 +79,22 @@ public class ConfigurationBasedPipelineBuilder
                 {
                     TypeInfo = x.Get<ConfigurationTypes.AICentralTypeAndNameConfig>(),
                     Config = x
-                })
-                .ToDictionary(
-                    x => Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name"),
-                    x =>
-                    {
-                        startupLogger.LogInformation("Configuring Endpoint Selector {Name}", x.TypeInfo!.Name);
-                        return _endpointSelectorConfigurations[
-                            Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
-                            throw new ArgumentException("No Type specified for Endpoint")](
-                            startupLogger,
-                            x.Config,
-                            endpoints);
-                    });
+                });
+
+        var endpointSelectors = new Dictionary<string, IAICentralEndpointSelectorFactory>();
+        foreach (var x in allEndpointSelectors)
+        {
+            Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name");
+            startupLogger.LogInformation("Configuring Endpoint Selector {Name}", x.TypeInfo!.Name);
+            endpointSelectors.Add(x.TypeInfo.Name!,
+                _endpointSelectorConfigurations[
+                    Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
+                    throw new ArgumentException("No Type specified for Endpoint")](
+                    startupLogger,
+                    x.Config,
+                    endpoints,
+                    endpointSelectors));
+        }
 
         var authProviders =
             configurationSection

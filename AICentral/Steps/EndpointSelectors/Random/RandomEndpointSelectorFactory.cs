@@ -29,7 +29,8 @@ public class RandomEndpointSelectorFactory : IAICentralEndpointSelectorFactory
     public static IAICentralEndpointSelectorFactory BuildFromConfig(
         ILogger logger, 
         IConfigurationSection configurationSection,
-        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints)
+        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints,
+        Dictionary<string, IAICentralEndpointSelectorFactory> endpointSelectors)
     {
         var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.RandomEndpointConfig>();
         Guard.NotNull(properties, configurationSection, "Properties");

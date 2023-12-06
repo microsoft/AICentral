@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using AICentral.Core;
 using AICentral.Steps.Endpoints;
-using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Steps.EndpointSelectors.LowestLatency;
 
@@ -9,7 +8,10 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IAICentralEndpointDispatcher[] _openAiServers;
-    private readonly ConcurrentDictionary<IAICentralEndpointDispatcher, ConcurrentQueue<double>> _recentLatencies = new();
+
+    private readonly ConcurrentDictionary<IAICentralEndpointDispatcher, ConcurrentQueue<double>> _recentLatencies =
+        new();
+
     private const int RequiredCount = 150;
 
     public LowestLatencyEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
@@ -17,8 +19,10 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
         _openAiServers = openAiServers;
     }
 
-    public override async Task<AICentralResponse> Handle(HttpContext context,
+    public override async Task<AICentralResponse> Handle(
+        HttpContext context,
         AICallInformation aiCallInformation,
+        bool isLastChance,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<LowestLatencyEndpointSelector>>();
@@ -28,18 +32,19 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
         {
             try
             {
-                var responseMessage =
-                    await chosen.Handle(context, aiCallInformation,
-                        cancellationToken); //awaiting to unwrap any Aggregate Exceptions
-
-                UpdateLatencies(chosen, responseMessage.RequestInformation);
-
-                return await HandleResponse(
-                    logger,
+                return await chosen.Handle(
                     context,
-                    responseMessage,
-                    !toTry.Any(),
-                    cancellationToken);
+                    aiCallInformation,
+                    (requestInformation, responseMessage, sanitisedHeaders) =>
+                    {
+                        UpdateLatencies(chosen, requestInformation);
+                        return HandleResponse(
+                            logger,
+                            context,
+                            (requestInformation, responseMessage, sanitisedHeaders),
+                            isLastChance && !toTry.Any(), cancellationToken);
+                    },
+                    cancellationToken); //awaiting to unwrap any Aggregate Exceptions
             }
             catch (HttpRequestException e)
             {
@@ -94,5 +99,4 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
 
         return queue.Sum() / queue.Count;
     }
-
 }

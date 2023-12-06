@@ -15,13 +15,12 @@ public class SingleEndpointSelector : EndpointSelectorBase
     public override async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
         CancellationToken cancellationToken)
     {
-        var responseMessage = await _endpoint.Handle(context, aiCallInformation, cancellationToken);
-        return await HandleResponse(
-            context.RequestServices.GetRequiredService<ILogger<SingleEndpointSelector>>(),
+        return await _endpoint.Handle(
             context,
-            responseMessage,
-            true,
-            cancellationToken
-        );
+            aiCallInformation,
+            (requestInformation, responseMessage, sanitisedHeaders) => HandleResponse(
+                context.RequestServices.GetRequiredService<ILogger<SingleEndpointSelector>>(), context,
+                (requestInformation, responseMessage, sanitisedHeaders), true, cancellationToken),
+            cancellationToken);
     }
 }

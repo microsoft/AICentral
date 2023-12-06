@@ -3,7 +3,7 @@ using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors.Single;
 
-public class SingleEndpointSelectorFactory: IAICentralEndpointSelectorFactory
+public class SingleEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
     private readonly IAICentralEndpointDispatcherFactory _endpointDispatcherFactory;
     private Lazy<SingleEndpointSelector> _endpointSelector;
@@ -11,7 +11,8 @@ public class SingleEndpointSelectorFactory: IAICentralEndpointSelectorFactory
     public SingleEndpointSelectorFactory(IAICentralEndpointDispatcherFactory endpointDispatcherFactory)
     {
         _endpointDispatcherFactory = endpointDispatcherFactory;
-        _endpointSelector = new Lazy<SingleEndpointSelector>(() => new SingleEndpointSelector(endpointDispatcherFactory.Build()));
+        _endpointSelector =
+            new Lazy<SingleEndpointSelector>(() => new SingleEndpointSelector(endpointDispatcherFactory.Build()));
     }
 
     public IEndpointSelector Build()
@@ -25,7 +26,11 @@ public class SingleEndpointSelectorFactory: IAICentralEndpointSelectorFactory
 
     public static string ConfigName => "SingleEndpoint";
 
-    public static IAICentralEndpointSelectorFactory BuildFromConfig(ILogger logger, IConfigurationSection configSection, Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints)
+    public static IAICentralEndpointSelectorFactory BuildFromConfig(
+        ILogger logger,
+        IConfigurationSection configSection,
+        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints,
+        Dictionary<string, IAICentralEndpointSelectorFactory> endpointSelectors)
     {
         var properties = configSection.GetSection("Properties");
         Guard.NotNull(properties, properties, "Properties");
@@ -34,7 +39,7 @@ public class SingleEndpointSelectorFactory: IAICentralEndpointSelectorFactory
         endpoint = Guard.NotNull(endpoint, configSection, "Endpoint");
         return new SingleEndpointSelectorFactory(endpoints[endpoint]);
     }
-    
+
     public object WriteDebug()
     {
         return new

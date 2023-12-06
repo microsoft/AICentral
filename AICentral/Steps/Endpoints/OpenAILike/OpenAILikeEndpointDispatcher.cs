@@ -22,10 +22,12 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         _modelMappings = modelMappings;
     }
 
-    public async Task<(AICentralRequestInformation RequestInformation, HttpResponseMessage RawResponseMessage,
-        Dictionary<string, StringValues> SanistisedHeaders)> Handle(
+    public async Task<AICentralResponse> Handle(
         HttpContext context,
         AICallInformation callInformation,
+        Func<AICentralRequestInformation, HttpResponseMessage, Dictionary<string, StringValues>,
+            Task<AICentralResponse>> responseHandler,
+        bool isLastChance,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherFactory>>();
@@ -38,18 +40,18 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
 
         if (MappedModelFoundAsEmptyString(callInformation, mappedModelName))
         {
-            return (
-                new AICentralRequestInformation(
-                    HostUriBase,
-                    callInformation.IncomingCallDetails.AICallType,
-                    callInformation.IncomingCallDetails.PromptText,
-                    DateTimeOffset.Now,
-                    TimeSpan.Zero
-                ),
+            var aiCentralRequestInformation = new AICentralRequestInformation(
+                HostUriBase,
+                callInformation.IncomingCallDetails.AICallType,
+                callInformation.IncomingCallDetails.PromptText,
+                DateTimeOffset.Now,
+                TimeSpan.Zero);
+
+            return await responseHandler(
+                aiCentralRequestInformation,
                 new HttpResponseMessage(HttpStatusCode.NotFound),
                 new Dictionary<string, StringValues>());
         }
-
 
         try
         {
@@ -91,12 +93,17 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
                     now,
                     sw.Elapsed);
 
-            return (requestInformation, openAiResponse, SanitiseHeaders(context, openAiResponse));
+            var result = await responseHandler(requestInformation, openAiResponse,
+                SanitiseHeaders(context, openAiResponse));
+
+            return result;
         }
         catch (NotSupportedException ne)
         {
             logger.LogWarning(ne, "Invalid usage detected");
-            return (new AICentralRequestInformation(
+
+            var result = await responseHandler(
+                new AICentralRequestInformation(
                     HostUriBase,
                     AICallType.Other,
                     callInformation.IncomingCallDetails.PromptText,
@@ -104,6 +111,8 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
                     TimeSpan.Zero),
                 new HttpResponseMessage(HttpStatusCode.BadRequest),
                 new Dictionary<string, StringValues>());
+
+            return result;
         }
     }
 

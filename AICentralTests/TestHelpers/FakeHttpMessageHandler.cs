@@ -8,7 +8,6 @@ namespace AICentralTests.TestHelpers;
 public class FakeHttpMessageHandler : HttpMessageHandler
 {
     private readonly FakeHttpMessageHandlerSeeder _seeder;
-    private long _bulkHeadCount;
 
     public FakeHttpMessageHandler(FakeHttpMessageHandlerSeeder seeder)
     {

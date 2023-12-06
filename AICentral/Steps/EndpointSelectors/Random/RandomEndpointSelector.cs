@@ -15,6 +15,7 @@ public class RandomEndpointSelector : EndpointSelectorBase
 
     public override async Task<AICentralResponse> Handle(HttpContext context,
         AICallInformation aiCallInformation,
+        bool isLastChance,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelector>>();
@@ -26,14 +27,13 @@ public class RandomEndpointSelector : EndpointSelectorBase
             toTry.Remove(chosen);
             try
             {
-                var responseMessage =
-                    await chosen.Handle(context, aiCallInformation, cancellationToken); //awaiting to unwrap any Aggregate Exceptions
-                return await HandleResponse(
-                    logger,
+                return await chosen.Handle(
                     context,
-                    responseMessage,
-                    !toTry.Any(),
-                    cancellationToken);
+                    aiCallInformation,
+                    (requestInformation, responseMessage, sanitisedHeaders) => HandleResponse(logger, context,
+                        (requestInformation, responseMessage, sanitisedHeaders), isLastChance && !toTry.Any(),
+                        cancellationToken),
+                    cancellationToken); //awaiting to unwrap any Aggregate Exceptions
             }
             catch (HttpRequestException e)
             {
@@ -49,5 +49,4 @@ public class RandomEndpointSelector : EndpointSelectorBase
 
         throw new InvalidOperationException("Failed to satisfy request");
     }
-
 }

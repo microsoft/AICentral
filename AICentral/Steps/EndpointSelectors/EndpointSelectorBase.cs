@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using AICentral.Core;
-using AICentral.Steps.Endpoints;
 using Microsoft.DeepDev;
 using Microsoft.Extensions.Primitives;
 
@@ -91,5 +90,6 @@ public abstract class EndpointSelectorBase : IEndpointSelector
     public abstract Task<AICentralResponse> Handle(
         HttpContext context,
         AICallInformation aiCallInformation,
+        bool isLastChance,
         CancellationToken cancellationToken);
 }
