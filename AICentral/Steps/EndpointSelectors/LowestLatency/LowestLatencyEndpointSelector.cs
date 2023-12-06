@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using AICentral.Core;
 using AICentral.Steps.Endpoints;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Steps.EndpointSelectors.LowestLatency;
 
@@ -31,14 +32,12 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
                     await chosen.Handle(context, aiCallInformation,
                         cancellationToken); //awaiting to unwrap any Aggregate Exceptions
 
-                UpdateLatencies(chosen, responseMessage);
+                UpdateLatencies(chosen, responseMessage.RequestInformation);
 
                 return await HandleResponse(
                     logger,
                     context,
-                    chosen,
-                    responseMessage.Item1,
-                    responseMessage.Item2,
+                    responseMessage,
                     !toTry.Any(),
                     cancellationToken);
             }
@@ -57,15 +56,14 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
         throw new InvalidOperationException("Failed to satisfy request");
     }
 
-    private void UpdateLatencies(IAICentralEndpointDispatcher endpoint,
-        (AICentralRequestInformation, HttpResponseMessage) responseMessage)
+    private void UpdateLatencies(IAICentralEndpointDispatcher endpoint, AICentralRequestInformation requestInformation)
     {
         if (!_recentLatencies.ContainsKey(endpoint))
         {
             _recentLatencies[endpoint] = new ConcurrentQueue<double>();
         }
 
-        _recentLatencies[endpoint].Enqueue(responseMessage.Item1.Duration.TotalMilliseconds);
+        _recentLatencies[endpoint].Enqueue(requestInformation.Duration.TotalMilliseconds);
 
         //only hold onto a specified number of items
         var currentCount = _recentLatencies[endpoint].Count;

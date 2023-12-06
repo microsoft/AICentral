@@ -5,10 +5,9 @@ namespace AICentral.Steps.Endpoints;
 
 public interface IAICentralEndpointDispatcher
 {
-    Task<(AICentralRequestInformation, HttpResponseMessage)> Handle(
-        HttpContext context, 
+    Task<(AICentralRequestInformation RequestInformation, HttpResponseMessage RawResponseMessage,
+        Dictionary<string, StringValues> SanistisedHeaders)> Handle(
+        HttpContext context,
         AICallInformation callInformation,
         CancellationToken cancellationToken);
-
-    Dictionary<string, StringValues> SanitiseHeaders(HttpContext context, HttpResponseMessage openAiResponse);
 }

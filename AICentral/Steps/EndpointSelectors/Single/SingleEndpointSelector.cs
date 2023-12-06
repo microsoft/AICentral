@@ -19,12 +19,9 @@ public class SingleEndpointSelector : EndpointSelectorBase
         return await HandleResponse(
             context.RequestServices.GetRequiredService<ILogger<SingleEndpointSelector>>(),
             context,
-            _endpoint,
-            responseMessage.Item1,
-            responseMessage.Item2,
+            responseMessage,
             true,
             cancellationToken
         );
     }
-
 }

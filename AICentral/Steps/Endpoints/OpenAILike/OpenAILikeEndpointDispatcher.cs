@@ -22,15 +22,16 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         _modelMappings = modelMappings;
     }
 
-    public async Task<(AICentralRequestInformation, HttpResponseMessage)> Handle(
+    public async Task<(AICentralRequestInformation RequestInformation, HttpResponseMessage RawResponseMessage,
+        Dictionary<string, StringValues> SanistisedHeaders)> Handle(
         HttpContext context,
-        AICallInformation callInformation, 
+        AICallInformation callInformation,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherFactory>>();
 
         var incomingModelName = callInformation.IncomingCallDetails.IncomingModelName ?? string.Empty;
-        
+
         var mappedModelName = _modelMappings.TryGetValue(incomingModelName, out var mapping)
             ? mapping
             : incomingModelName;
@@ -44,7 +45,9 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
                     callInformation.IncomingCallDetails.PromptText,
                     DateTimeOffset.Now,
                     TimeSpan.Zero
-                ), new HttpResponseMessage(HttpStatusCode.NotFound));
+                ),
+                new HttpResponseMessage(HttpStatusCode.NotFound),
+                new Dictionary<string, StringValues>());
         }
 
 
@@ -88,7 +91,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
                     now,
                     sw.Elapsed);
 
-            return (requestInformation, openAiResponse);
+            return (requestInformation, openAiResponse, SanitiseHeaders(context, openAiResponse));
         }
         catch (NotSupportedException ne)
         {
@@ -99,7 +102,8 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
                     callInformation.IncomingCallDetails.PromptText,
                     DateTimeOffset.Now,
                     TimeSpan.Zero),
-                new HttpResponseMessage(HttpStatusCode.BadRequest));
+                new HttpResponseMessage(HttpStatusCode.BadRequest),
+                new Dictionary<string, StringValues>());
         }
     }
 
@@ -108,27 +112,33 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         return callInformation.IncomingCallDetails.AICallType != AICallType.Other && mappedModelName == string.Empty;
     }
 
-    private Task<HttpRequestMessage> BuildNewRequest(HttpContext context, AICallInformation callInformation, string? mappedModelName)
+    private Task<HttpRequestMessage> BuildNewRequest(HttpContext context, AICallInformation callInformation,
+        string? mappedModelName)
     {
-        var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method), BuildUri(context, callInformation, mappedModelName));
+        var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method),
+            BuildUri(context, callInformation, mappedModelName));
         foreach (var header in context.Request.Headers)
         {
             if (HeadersToIgnore.Contains(header.Key, StringComparer.InvariantCultureIgnoreCase)) continue;
-            
+
             if (!newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()) &&
                 newRequest.Content != null)
             {
                 newRequest.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
             }
         }
+
         return Task.FromResult(newRequest);
     }
 
-    protected abstract Task CustomiseRequest(HttpContext context, AICallInformation callInformation, HttpRequestMessage newRequest, string? newModelName);
+    protected abstract Task CustomiseRequest(HttpContext context, AICallInformation callInformation,
+        HttpRequestMessage newRequest, string? newModelName);
 
-    public abstract Dictionary<string, StringValues> SanitiseHeaders(HttpContext context, HttpResponseMessage openAiResponse);
+    public abstract Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,
+        HttpResponseMessage openAiResponse);
 
     protected abstract string HostUriBase { get; }
 
-    protected abstract string BuildUri(HttpContext context, AICallInformation aiCallInformation, string? mappedModelName);
+    protected abstract string BuildUri(HttpContext context, AICallInformation aiCallInformation,
+        string? mappedModelName);
 }

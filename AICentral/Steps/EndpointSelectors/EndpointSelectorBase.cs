@@ -17,23 +17,20 @@ public abstract class EndpointSelectorBase : IEndpointSelector
 
     /// <param name="logger"></param>
     /// <param name="context"></param>
-    /// <param name="aiCentralEndpointDispatcher"></param>
-    /// <param name="requestInformation"></param>
     /// <param name="openAiResponse"></param>
-    /// <param name="lastChanceMustHandle">Used if you have no more servers to try. When this happens we will proxy back whatever response we can.</param>
+    /// <param name="lastChanceMustHandle"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected async Task<AICentralResponse> HandleResponse(ILogger logger,
-        HttpContext context,
-        IAICentralEndpointDispatcher aiCentralEndpointDispatcher,
-        AICentralRequestInformation requestInformation,
-        HttpResponseMessage openAiResponse,
-        bool lastChanceMustHandle,
+    protected async Task<AICentralResponse> HandleResponse(
+        ILogger logger, 
+        HttpContext context, 
+        (AICentralRequestInformation RequestInformation, HttpResponseMessage RawResponseMessage, Dictionary<string, StringValues> SanistisedHeaders) openAiResponse, 
+        bool lastChanceMustHandle, 
         CancellationToken cancellationToken)
     {
-        if (openAiResponse.StatusCode == HttpStatusCode.OK)
+        if (openAiResponse.RawResponseMessage.StatusCode == HttpStatusCode.OK)
         {
-            context.Response.Headers.TryAdd("x-aicentral-server", new StringValues(requestInformation.LanguageUrl));
+            context.Response.Headers.TryAdd("x-aicentral-server", new StringValues(openAiResponse.RequestInformation.LanguageUrl));
         }
         else
         {
@@ -43,41 +40,44 @@ public abstract class EndpointSelectorBase : IEndpointSelector
             }
 
             context.Response.Headers.TryAdd("x-aicentral-failed-servers",
-                StringValues.Concat(header, requestInformation.LanguageUrl));
+                StringValues.Concat(header, openAiResponse.RequestInformation.LanguageUrl));
         }
 
         //Now blow up if we didn't succeed
         if (!lastChanceMustHandle)
         {
-            openAiResponse.EnsureSuccessStatusCode();
+            openAiResponse.RawResponseMessage.EnsureSuccessStatusCode();
         }
 
-        var adjustedHeaders = aiCentralEndpointDispatcher.SanitiseHeaders(context, openAiResponse);
-        CopyHeadersToResponse(context.Response, adjustedHeaders);
+        CopyHeadersToResponse(context.Response, openAiResponse.SanistisedHeaders);
 
-        if (openAiResponse.Headers.TransferEncodingChunked == true)
+        if (openAiResponse.RawResponseMessage.Headers.TransferEncodingChunked == true)
         {
             logger.LogDebug("Detected chunked encoding response. Streaming response back to consumer");
-            return await ServerSideEventResponseHandler.Handle(Tokenisers, context, cancellationToken, openAiResponse,
-                requestInformation);
+            return await ServerSideEventResponseHandler.Handle(
+                Tokenisers, 
+                context, 
+                cancellationToken, 
+                openAiResponse.RawResponseMessage,
+                openAiResponse.RequestInformation);
         }
 
-        if ((openAiResponse.Content.Headers.ContentType?.MediaType ?? string.Empty).Contains("json",
+        if ((openAiResponse.RawResponseMessage.Content.Headers.ContentType?.MediaType ?? string.Empty).Contains("json",
                 StringComparison.InvariantCultureIgnoreCase))
         {
             logger.LogDebug("Detected non-chunked encoding response. Sending response back to consumer");
             return await JsonResponseHandler.Handle(
                 context,
                 cancellationToken,
-                openAiResponse,
-                requestInformation);
+                openAiResponse.RawResponseMessage,
+                openAiResponse.RequestInformation);
         }
 
         return await StreamResponseHandler.Handle(
             context,
             cancellationToken,
-            openAiResponse,
-            requestInformation);
+            openAiResponse.RawResponseMessage,
+            openAiResponse.RequestInformation);
     }
 
     private static void CopyHeadersToResponse(HttpResponse response, Dictionary<string, StringValues> headersToProxy)

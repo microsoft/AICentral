@@ -31,9 +31,7 @@ public class RandomEndpointSelector : EndpointSelectorBase
                 return await HandleResponse(
                     logger,
                     context,
-                    chosen,
-                    responseMessage.Item1,
-                    responseMessage.Item2,
+                    responseMessage,
                     !toTry.Any(),
                     cancellationToken);
             }
