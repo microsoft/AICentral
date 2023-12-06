@@ -97,12 +97,4 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
         return queue.Sum() / queue.Count;
     }
 
-    public override object WriteDebug()
-    {
-        return new
-        {
-            Type = "Lowest Latency Router",
-            Endpoints = _openAiServers.Select(x => WriteDebug())
-        };
-    }
 }

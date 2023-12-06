@@ -138,14 +138,14 @@ public class TestAICentralPipelineBuilder
         params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherBuilder($"https://{x.hostname}", new Dictionary<string, string>()
+            new AzureOpenAIEndpointDispatcherFactory($"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
                 AuthenticationType.ApiKey,
                 Guid.NewGuid().ToString())).ToArray();
 
-        _endpointBuilder = new LowestLatencyEndpointSelectorBuilder(_openAiEndpointDispatcherBuilders!);
+        _endpointFactory = new LowestLatencyEndpointSelectorFactory(_openAiEndpointDispatcherBuilders!);
         return this;
     }
 
