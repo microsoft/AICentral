@@ -2,10 +2,15 @@
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+    paths:
+      - '/AICentral/**/*'
   pull_request:
     branches:
       - main
+    paths:
+      - '/AICentral/**/*'
   workflow_dispatch:
 
 jobs:

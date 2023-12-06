@@ -1,5 +1,4 @@
 ﻿using AICentral.Core;
-using AICentral.Steps.EndpointSelectors;
 
 namespace AICentral.Steps.Auth.AllowAnonymous;
 
@@ -11,13 +10,5 @@ public class AllowAnonymousClientAuthProvider : IAICentralClientAuthStep
         return pipeline.Next(context, aiCallInformation, cancellationToken);
     }
 
-
-    public object WriteDebug()
-    {
-        return new { auth = "No Consumer Auth" };
-    }
-
-    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
-    {
-    }
+    public static readonly AllowAnonymousClientAuthProvider Instance = new AllowAnonymousClientAuthProvider();
 }

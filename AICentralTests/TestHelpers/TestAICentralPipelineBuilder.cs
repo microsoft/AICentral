@@ -2,7 +2,6 @@
 using AICentral;
 using AICentral.Configuration.JSON;
 using AICentral.Core;
-using AICentral.Steps;
 using AICentral.Steps.Auth;
 using AICentral.Steps.Auth.AllowAnonymous;
 using AICentral.Steps.Auth.ApiKey;
@@ -22,16 +21,16 @@ namespace AICentralTests.TestHelpers;
 
 public class TestAICentralPipelineBuilder
 {
-    private IAICentralClientAuthBuilder? _auth;
-    private IAICentralEndpointSelectorBuilder? _endpointBuilder;
-    private IAICentralEndpointDispatcherBuilder[]? _openAiEndpointDispatcherBuilders;
+    private IAICentralClientAuthFactory? _auth;
+    private IAICentralEndpointSelectorFactory? _endpointFactory;
+    private IAICentralEndpointDispatcherFactory[]? _openAiEndpointDispatcherBuilders;
     private int? _windowInSeconds;
     private int? _requestsPerWindow;
     private int? _allowedConcurrency;
 
     public TestAICentralPipelineBuilder WithApiKeyAuth(string key1, string key2)
     {
-        _auth = new ApiKeyClientAuthBuilder(
+        _auth = new ApiKeyClientAuthFactory(
             new ConfigurationTypes.ApiKeyClientAuthConfig()
             {
                 Clients = new[]
@@ -49,13 +48,13 @@ public class TestAICentralPipelineBuilder
 
     public TestAICentralPipelineBuilder WithNoAuth()
     {
-        _auth = new AllowAnonymousClientAuthBuilder();
+        _auth = new AllowAnonymousClientAuthFactory();
         return this;
     }
 
     public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel, int? maxConcurrency = null)
     {
-        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherBuilder($"https://{hostname}",
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherFactory($"https://{hostname}",
             new Dictionary<string, string>()
             {
                 [model] = mappedModel
@@ -64,7 +63,7 @@ public class TestAICentralPipelineBuilder
             Guid.NewGuid().ToString(),
             maxConcurrency);
 
-        _endpointBuilder = new SingleEndpointSelectorBuilder(openAiEndpointDispatcherBuilder);
+        _endpointFactory = new SingleEndpointSelectorFactory(openAiEndpointDispatcherBuilder);
         _openAiEndpointDispatcherBuilders = new[] { openAiEndpointDispatcherBuilder };
 
         return this;
@@ -73,7 +72,7 @@ public class TestAICentralPipelineBuilder
 
     public TestAICentralPipelineBuilder WithSingleOpenAIEndpoint(string model, string mappedModel)
     {
-        var openAiEndpointDispatcherBuilder = new OpenAIEndpointDispatcherBuilder(
+        var openAiEndpointDispatcherBuilder = new OpenAIEndpointDispatcherFactory(
             new Dictionary<string, string>()
             {
                 [model] = mappedModel
@@ -82,7 +81,7 @@ public class TestAICentralPipelineBuilder
             Guid.NewGuid().ToString(),
             null);
 
-        _endpointBuilder = new SingleEndpointSelectorBuilder(openAiEndpointDispatcherBuilder);
+        _endpointFactory = new SingleEndpointSelectorFactory(openAiEndpointDispatcherBuilder);
         _openAiEndpointDispatcherBuilders = new[] { openAiEndpointDispatcherBuilder };
 
         return this;
@@ -93,27 +92,27 @@ public class TestAICentralPipelineBuilder
         (string hostname, string model, string mappedModel)[] fallbackEndpoints
     )
     {
-        IAICentralEndpointDispatcherBuilder[] priorityOpenAiEndpointDispatcherBuilder = priorityEndpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherBuilder($"https://{x.hostname}", new Dictionary<string, string>()
+        IAICentralEndpointDispatcherFactory[] priorityOpenAIEndpointDispatcherBuilder = priorityEndpoints.Select(x =>
+            new AzureOpenAIEndpointDispatcherFactory($"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
                 AuthenticationType.ApiKey,
                 Guid.NewGuid().ToString())).ToArray();
 
-        IAICentralEndpointDispatcherBuilder[] fallbackOpenAiEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherBuilder($"https://{x.hostname}", new Dictionary<string, string>()
+        IAICentralEndpointDispatcherFactory[] fallbackOpenAIEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
+            new AzureOpenAIEndpointDispatcherFactory($"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
                 AuthenticationType.ApiKey,
                 Guid.NewGuid().ToString())).ToArray();
 
-        _openAiEndpointDispatcherBuilders = priorityOpenAiEndpointDispatcherBuilder
-            .Union(fallbackOpenAiEndpointDispatcherBuilder).ToArray();
+        _openAiEndpointDispatcherBuilders = priorityOpenAIEndpointDispatcherBuilder
+            .Union(fallbackOpenAIEndpointDispatcherBuilder).ToArray();
 
-        _endpointBuilder = new PriorityEndpointSelectorBuilder(priorityOpenAiEndpointDispatcherBuilder,
-            fallbackOpenAiEndpointDispatcherBuilder);
+        _endpointFactory = new PriorityEndpointSelectorFactory(priorityOpenAIEndpointDispatcherBuilder,
+            fallbackOpenAIEndpointDispatcherBuilder);
 
         return this;
     }
@@ -123,14 +122,14 @@ public class TestAICentralPipelineBuilder
         params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherBuilder($"https://{x.hostname}", new Dictionary<string, string>()
+            new AzureOpenAIEndpointDispatcherFactory($"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
                 AuthenticationType.ApiKey,
                 Guid.NewGuid().ToString())).ToArray();
 
-        _endpointBuilder = new RandomEndpointSelectorBuilder(_openAiEndpointDispatcherBuilders!);
+        _endpointFactory = new RandomEndpointSelectorFactory(_openAiEndpointDispatcherBuilders!);
 
         return this;
     }
@@ -159,7 +158,7 @@ public class TestAICentralPipelineBuilder
     public AICentralPipelineAssembler Assemble(string host)
     {
         var id = Guid.NewGuid().ToString();
-        var genericSteps = new Dictionary<string, IAICentralPipelineStepBuilder<IAICentralPipelineStep>>();
+        var genericSteps = new Dictionary<string, IAICentralGenericStepFactory>();
         var steps = new List<string>();
 
         if (_windowInSeconds != null)
@@ -176,21 +175,21 @@ public class TestAICentralPipelineBuilder
         if (_allowedConcurrency != null)
         {
             var stepId = Guid.NewGuid().ToString();
-            genericSteps[stepId] = new BulkHeadProviderBuilder(new BulkHeadConfiguration()
+            genericSteps[stepId] = new BulkHeadProviderFactory(new BulkHeadConfiguration()
                 { MaxConcurrency = _allowedConcurrency });
             steps.Add(stepId);
         }
 
         return new AICentralPipelineAssembler(
             HeaderMatchRouter.WithHostHeader,
-            new Dictionary<string, IAICentralClientAuthBuilder>()
+            new Dictionary<string, IAICentralClientAuthFactory>()
             {
-                [id] = _auth ?? new AllowAnonymousClientAuthBuilder(),
+                [id] = _auth ?? new AllowAnonymousClientAuthFactory(),
             },
             _openAiEndpointDispatcherBuilders!.ToDictionary(x => Guid.NewGuid().ToString(), x => x),
-            new Dictionary<string, IAICentralEndpointSelectorBuilder>()
+            new Dictionary<string, IAICentralEndpointSelectorFactory>()
             {
-                [id] = _endpointBuilder!
+                [id] = _endpointFactory!
             },
             genericSteps,
             new[]

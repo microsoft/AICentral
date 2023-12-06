@@ -7,14 +7,15 @@ namespace AICentral.Logging.AzureMonitor;
 /// <summary>
 /// Logs out usage information to Azure Monitor
 /// </summary>
-public class AzureMonitorLoggerBuilder : IAICentralGenericStepBuilder<IAICentralPipelineStep>
+public class AzureMonitorLoggerFactory : IAICentralGenericStepFactory
 {
     private readonly string _workspaceId;
     private readonly string _key;
     private readonly bool _logPrompt;
     private readonly bool _logResponse;
+    private readonly Lazy<IAICentralPipelineStep> _logger;
 
-    public AzureMonitorLoggerBuilder(
+    public AzureMonitorLoggerFactory(
         string workspaceId,
         string key,
         bool logPrompt,
@@ -24,11 +25,18 @@ public class AzureMonitorLoggerBuilder : IAICentralGenericStepBuilder<IAICentral
         _key = key;
         _logPrompt = logPrompt;
         _logResponse = logResponse;
+        _logger = new Lazy<IAICentralPipelineStep>(() => new AzureMonitorLogger(new LoggerConfiguration().WriteTo
+                .AzureAnalytics(
+                    _workspaceId,
+                    _key,
+                    logName: "AILogs"
+                ).CreateLogger(), _workspaceId, _logPrompt, _logResponse
+        ));
     }
 
     public static string ConfigName => "AzureMonitorLogger";
 
-    public static IAICentralGenericStepBuilder<IAICentralPipelineStep> BuildFromConfig(
+    public static IAICentralGenericStepFactory BuildFromConfig(
         ILogger logger, 
         IConfigurationSection configurationSection)
     {
@@ -37,7 +45,7 @@ public class AzureMonitorLoggerBuilder : IAICentralGenericStepBuilder<IAICentral
         
         Guard.NotNull(properties, configurationSection, "Properties");
 
-        return new AzureMonitorLoggerBuilder(
+        return new AzureMonitorLoggerFactory(
             Guard.NotNull(properties.WorkspaceId, configurationSection, nameof(properties.WorkspaceId)),
             Guard.NotNull(properties.Key, configurationSection, nameof(properties.Key)),
             Guard.NotNull(properties.LogPrompt, configurationSection, nameof(properties.LogPrompt))!.Value,
@@ -47,14 +55,24 @@ public class AzureMonitorLoggerBuilder : IAICentralGenericStepBuilder<IAICentral
 
     public IAICentralPipelineStep Build()
     {
-        return new AzureMonitorLogger(new LoggerConfiguration().WriteTo.AzureAnalytics(
-                _workspaceId,
-                _key
-            ).CreateLogger(), _workspaceId, _logPrompt, _logResponse
-        );
+        return _logger.Value;
     }
 
     public void RegisterServices(IServiceCollection services)
+    {
+    }
+    
+    public object WriteDebug()
+    {
+        return new
+        {
+            Type = "AzureMonitorLogging",
+            LogPrompt = _logPrompt,
+            WorkspaceId = _workspaceId
+        };
+    }
+
+    public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
     {
     }
 }

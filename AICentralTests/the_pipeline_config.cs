@@ -47,15 +47,24 @@ public class the_pipeline_config
                             }
                         }
                     },
+                    AuthProviders = new[]
+                    {
+                        new
+                        {
+                            Type = "AllowAnonymous",
+                            Name = "anonymous"
+                        }
+                    },
                     Pipelines = new[]
                     {
                         new ConfigurationTypes.AICentralPipelineConfig()
                         {
                             Name = "test-pipeline",
                             Host = "my-test-host.localtest.me",
+                            AuthProvider = "anonymous",
                             EndpointSelector = "default-endpoint-selector",
                         }
-                    }
+                    },
                 }
             }))
         );

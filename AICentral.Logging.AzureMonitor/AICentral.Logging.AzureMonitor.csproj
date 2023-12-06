@@ -5,16 +5,21 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <OutputType>Library</OutputType>
+        <IsPackable>true</IsPackable>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
+        <PackageProjectUrl>https://github.com/graemefoster/AICentral</PackageProjectUrl>
+        <PackageLicenseUrl>https://licenses.nuget.org/MIT</PackageLicenseUrl>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AICentral.Core\AICentral.Core.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
+        <PackageReference Include="AICentral.Core" Version="0.4.1" />
         <PackageReference Include="Serilog" Version="3.1.0-dev-02078" />
         <PackageReference Include="Serilog.AspNetCore" Version="7.0.1-dev-00320" />
         <PackageReference Include="Serilog.Sinks.AzureAnalytics" Version="5.0.0" />
     </ItemGroup>
-    
+
+    <ItemGroup>
+        <None Include="readme.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+
 </Project>

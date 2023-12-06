@@ -88,8 +88,6 @@ public abstract class EndpointSelectorBase : IEndpointSelector
         }
     }
 
-    public abstract object WriteDebug();
-
     public abstract Task<AICentralResponse> Handle(
         HttpContext context,
         AICallInformation aiCallInformation,

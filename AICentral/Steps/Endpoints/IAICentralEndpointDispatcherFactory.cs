@@ -1,6 +1,6 @@
 ﻿namespace AICentral.Steps.Endpoints;
 
-public interface IAICentralEndpointDispatcherBuilder
+public interface IAICentralEndpointDispatcherFactory
 {
     static virtual string ConfigName  => throw new NotImplementedException();
 
@@ -8,8 +8,10 @@ public interface IAICentralEndpointDispatcherBuilder
 
     IAICentralEndpointDispatcher Build();
 
-    static virtual IAICentralEndpointDispatcherBuilder BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
+    static virtual IAICentralEndpointDispatcherFactory BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
     {
         throw new NotImplementedException();
     }
+
+    object WriteDebug();
 }

@@ -1,7 +1,6 @@
 ﻿using System.Reflection;
 using AICentral.Configuration.JSON;
 using AICentral.Core;
-using AICentral.Steps;
 using AICentral.Steps.Auth;
 using AICentral.Steps.Endpoints;
 using AICentral.Steps.EndpointSelectors;
@@ -11,44 +10,44 @@ namespace AICentral.Configuration;
 
 public class ConfigurationBasedPipelineBuilder
 {
-    private readonly Dictionary<string, Func<ILogger, IConfigurationSection, IAICentralEndpointDispatcherBuilder>>
+    private readonly Dictionary<string, Func<ILogger, IConfigurationSection, IAICentralEndpointDispatcherFactory>>
         _endpointConfigurationBuilders = new();
 
     private readonly
-        Dictionary<string, Func<ILogger, IConfigurationSection, Dictionary<string, IAICentralEndpointDispatcherBuilder>,
-            IAICentralEndpointSelectorBuilder>> _endpointSelectorConfigurations = new();
+        Dictionary<string, Func<ILogger, IConfigurationSection, Dictionary<string, IAICentralEndpointDispatcherFactory>,
+            IAICentralEndpointSelectorFactory>> _endpointSelectorConfigurations = new();
 
     private readonly Dictionary<string,
-            Func<ILogger, IConfigurationSection, IAICentralPipelineStepBuilder<IAICentralPipelineStep>>>
+            Func<ILogger, IConfigurationSection, IAICentralGenericStepFactory>>
         _genericStepBuilders = new();
 
     private readonly
-        Dictionary<string, Func<ILogger, IConfigurationSection, IAICentralClientAuthBuilder>>
+        Dictionary<string, Func<ILogger, IConfigurationSection, IAICentralClientAuthFactory>>
         _authProviderBuilders = new();
 
-    private void RegisterAuthProvider<T>() where T : IAICentralClientAuthBuilder =>
+    private void RegisterAuthProvider<T>() where T : IAICentralClientAuthFactory =>
         _authProviderBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
-    private void RegisterEndpoint<T>() where T : IAICentralEndpointDispatcherBuilder =>
+    private void RegisterEndpoint<T>() where T : IAICentralEndpointDispatcherFactory =>
         _endpointConfigurationBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
     // ReSharper disable once UnusedMember.Local
-    private void RegisterEndpointSelector<T>() where T : IAICentralEndpointSelectorBuilder =>
+    private void RegisterEndpointSelector<T>() where T : IAICentralEndpointSelectorFactory =>
         _endpointSelectorConfigurations.Add(T.ConfigName, T.BuildFromConfig);
 
-    private void RegisterGenericStep<T>() where T : IAICentralGenericStepBuilder<IAICentralPipelineStep> =>
+    private void RegisterGenericStep<T>() where T : IAICentralGenericStepFactory =>
         _genericStepBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
     public AICentralPipelineAssembler BuildPipelinesFromConfig(ILogger startupLogger,
         IConfigurationSection configurationSection,
         params Assembly[] additionalAssembliesToScan)
     {
-        RegisterBuilders<IAICentralEndpointSelectorBuilder>(additionalAssembliesToScan,
+        RegisterBuilders<IAICentralEndpointSelectorFactory>(additionalAssembliesToScan,
             nameof(RegisterEndpointSelector));
-        RegisterBuilders<IAICentralEndpointDispatcherBuilder>(additionalAssembliesToScan, nameof(RegisterEndpoint));
-        RegisterBuilders<IAICentralGenericStepBuilder<IAICentralPipelineStep>>(additionalAssembliesToScan,
+        RegisterBuilders<IAICentralEndpointDispatcherFactory>(additionalAssembliesToScan, nameof(RegisterEndpoint));
+        RegisterBuilders<IAICentralGenericStepFactory>(additionalAssembliesToScan,
             nameof(RegisterGenericStep));
-        RegisterBuilders<IAICentralClientAuthBuilder>(additionalAssembliesToScan, nameof(RegisterAuthProvider));
+        RegisterBuilders<IAICentralClientAuthFactory>(additionalAssembliesToScan, nameof(RegisterAuthProvider));
 
         var endpoints =
             configurationSection

@@ -52,12 +52,4 @@ public class RandomEndpointSelector : EndpointSelectorBase
         throw new InvalidOperationException("Failed to satisfy request");
     }
 
-    public override object WriteDebug()
-    {
-        return new
-        {
-            Type = "Random Router",
-            Endpoints = _openAiServers.Select(x => WriteDebug())
-        };
-    }
 }

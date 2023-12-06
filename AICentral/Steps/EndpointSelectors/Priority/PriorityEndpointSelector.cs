@@ -7,32 +7,32 @@ namespace AICentral.Steps.EndpointSelectors.Priority;
 public class PriorityEndpointSelector : EndpointSelectorBase
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
-    private readonly IAICentralEndpointDispatcher[] _prioritisedOpenAiEndpoints;
-    private readonly IAICentralEndpointDispatcher[] _fallbackOpenAiEndpoints;
+    private readonly IAICentralEndpointDispatcher[] _prioritisedOpenAIEndpoints;
+    private readonly IAICentralEndpointDispatcher[] _fallbackOpenAIEndpoints;
 
     public PriorityEndpointSelector(
-        IAICentralEndpointDispatcher[] prioritisedOpenAiEndpoints,
-        IAICentralEndpointDispatcher[] fallbackOpenAiEndpoints)
+        IAICentralEndpointDispatcher[] prioritisedOpenAIEndpoints,
+        IAICentralEndpointDispatcher[] fallbackOpenAIEndpoints)
     {
-        _prioritisedOpenAiEndpoints = prioritisedOpenAiEndpoints;
-        _fallbackOpenAiEndpoints = fallbackOpenAiEndpoints;
+        _prioritisedOpenAIEndpoints = prioritisedOpenAIEndpoints;
+        _fallbackOpenAIEndpoints = fallbackOpenAIEndpoints;
     }
 
     public override async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelector>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<PriorityEndpointSelector>>();
         try
         {
             logger.LogDebug("Prioritised Endpoint selector handling request");
-            return await Handle(context, aiCallInformation, cancellationToken, _prioritisedOpenAiEndpoints, false);
+            return await Handle(context, aiCallInformation, cancellationToken, _prioritisedOpenAIEndpoints, false);
         }
         catch (HttpRequestException e)
         {
             try
             {
                 logger.LogWarning(e, "Prioritised Endpoint selector failed with primary. Trying fallback servers");
-                return await Handle(context, aiCallInformation, cancellationToken, _fallbackOpenAiEndpoints, true);
+                return await Handle(context, aiCallInformation, cancellationToken, _fallbackOpenAIEndpoints, true);
             }
             catch (HttpRequestException ex)
             {
@@ -49,7 +49,7 @@ public class PriorityEndpointSelector : EndpointSelectorBase
         IAICentralEndpointDispatcher[] endpoints,
         bool isFallbackCollection)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelectorBuilder>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelectorFactory>>();
         var toTry = endpoints.ToList();
         do
         {
@@ -83,13 +83,4 @@ public class PriorityEndpointSelector : EndpointSelectorBase
         throw new InvalidOperationException("Failed to satisfy request");
     }
 
-    public override object WriteDebug()
-    {
-        return new
-        {
-            Type = "Priority Router",
-            PrioritisedEndpoints = _prioritisedOpenAiEndpoints.Select(x => x.WriteDebug()),
-            FallbackEndpoints = _fallbackOpenAiEndpoints.Select(x => x.WriteDebug()),
-        };
-    }
 }

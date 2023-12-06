@@ -19,7 +19,7 @@ builder.Host.UseSerilog(logger);
 builder.Services.AddAICentral(
     builder.Configuration,
     startupLogger: new SerilogLoggerProvider(logger).CreateLogger("AICentralStartup"),
-    additionalComponentAssemblies: typeof(AzureMonitorLoggerBuilder).Assembly);
+    additionalComponentAssemblies: typeof(AzureMonitorLoggerFactory).Assembly);
 
 builder.Services.AddRazorPages();
 

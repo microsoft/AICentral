@@ -1,10 +1,7 @@
-﻿using AICentral.Configuration;
-using AICentral.Configuration.JSON;
+﻿using AICentral.Configuration.JSON;
 using AICentral.Core;
 using AICentral.IncomingServiceDetector;
-using AICentral.Steps;
 using AICentral.Steps.Auth;
-using AICentral.Steps.Auth.AllowAnonymous;
 using AICentral.Steps.Endpoints;
 using AICentral.Steps.EndpointSelectors;
 using AICentral.Steps.Routes;
@@ -12,31 +9,26 @@ using AICentral.Steps.Routes;
 namespace AICentral;
 
 /// <summary>
-/// Responsible for assembling the pipelines from all the builder representations.
+/// Responsible for assembling the pipelines from all the factories.
 /// This class will also Add all the required services needed for the pipelines.
 /// </summary>
 public class AICentralPipelineAssembler
 {
     private readonly Func<string, HeaderMatchRouter> _routeBuilder;
-    private readonly Dictionary<string, IAICentralClientAuthBuilder> _authProviders;
-    private readonly Dictionary<string, IAICentralEndpointDispatcherBuilder> _endpoints;
-    private readonly Dictionary<string, IAICentralEndpointSelectorBuilder> _endpointSelectors;
-    private readonly Dictionary<string, IAICentralPipelineStepBuilder<IAICentralPipelineStep>> _genericSteps;
+    private readonly Dictionary<string, IAICentralClientAuthFactory> _authProviders;
+    private readonly Dictionary<string, IAICentralEndpointDispatcherFactory> _endpoints;
+    private readonly Dictionary<string, IAICentralEndpointSelectorFactory> _endpointSelectors;
+    private readonly Dictionary<string, IAICentralGenericStepFactory> _genericSteps;
     private readonly ConfigurationTypes.AICentralPipelineConfig[] _pipelines;
-
-    private Dictionary<IAICentralClientAuthBuilder, IAICentralClientAuthStep>? _builtAuthProviders;
-    private Dictionary<IAICentralEndpointDispatcherBuilder, IAICentralEndpointDispatcher>? _builtEndpoints;
-    private Dictionary<IAICentralPipelineStepBuilder<IAICentralPipelineStep>, IAICentralPipelineStep>? _builtSteps;
-    private Dictionary<IAICentralEndpointSelectorBuilder, IEndpointSelector>? _builtEndpointSelectors;
 
     private bool _servicesAdded;
 
     public AICentralPipelineAssembler(
         Func<string, HeaderMatchRouter> routeBuilder,
-        Dictionary<string, IAICentralClientAuthBuilder> authProviders,
-        Dictionary<string, IAICentralEndpointDispatcherBuilder> endpoints,
-        Dictionary<string, IAICentralEndpointSelectorBuilder> endpointSelectors,
-        Dictionary<string, IAICentralPipelineStepBuilder<IAICentralPipelineStep>> genericSteps,
+        Dictionary<string, IAICentralClientAuthFactory> authProviders,
+        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints,
+        Dictionary<string, IAICentralEndpointSelectorFactory> endpointSelectors,
+        Dictionary<string, IAICentralGenericStepFactory> genericSteps,
         ConfigurationTypes.AICentralPipelineConfig[] pipelines)
     {
         _routeBuilder = routeBuilder;
@@ -55,12 +47,7 @@ public class AICentralPipelineAssembler
         foreach (var endpoint in _endpoints) endpoint.Value.RegisterServices(services);
         foreach (var endpointSelector in _endpointSelectors) endpointSelector.Value.RegisterServices(services);
         foreach (var step in _genericSteps) step.Value.RegisterServices(services);
-
-        _builtAuthProviders = _authProviders.ToDictionary(x => x.Value, x => x.Value.Build());
-        _builtEndpoints = _endpoints.ToDictionary(x => x.Value, x => x.Value.Build());
-        _builtSteps = _genericSteps.ToDictionary(x => x.Value, x => x.Value.Build());
-        _builtEndpointSelectors = _endpointSelectors.ToDictionary(x => x.Value, x => x.Value.Build(_builtEndpoints));
-
+        
         var pipelines = BuildPipelines(startupLogger);
         services.AddSingleton(pipelines);
 
@@ -69,40 +56,6 @@ public class AICentralPipelineAssembler
         services.AddSingleton<IAIServiceDetector, OpenAIDetector>();
 
         return pipelines;
-    }
-
-
-    private static TRuntimeType GetMiddlewareOrNoOp<TType, TRuntimeType>(
-        string? pipelineConfigName,
-        Dictionary<string, TType> providers,
-        Dictionary<TType, TRuntimeType> runtime,
-        string? providerName,
-        TRuntimeType? fallback)
-        where TType : IAICentralPipelineStepBuilder<TRuntimeType> where TRuntimeType : IAICentralPipelineStep
-    {
-        if (string.IsNullOrEmpty(providerName))
-            return fallback ?? throw new ArgumentException($"Can not find pipeline step {providerName}");
-
-        return providers.TryGetValue(providerName, out var provider)
-            ? runtime[provider]
-            : throw new ArgumentException(
-                $"Can not satisfy request for middleware {providerName} in pipeline {pipelineConfigName ?? "<unknown>"}. Did you forget to configure it?");
-    }
-
-    private static IEndpointSelector GetEndpointSelector(
-        string? pipelineConfigName,
-        Dictionary<string, IAICentralEndpointSelectorBuilder> providers,
-        Dictionary<IAICentralEndpointSelectorBuilder, IEndpointSelector> runtime,
-        string? providerName,
-        IEndpointSelector? fallback)
-    {
-        if (string.IsNullOrEmpty(providerName))
-            return fallback ?? throw new ArgumentException($"Can not find pipeline step {providerName}");
-
-        return providers.TryGetValue(providerName, out var provider)
-            ? runtime[provider]
-            : throw new ArgumentException(
-                $"Can not satisfy request for Endpoint Selector {providerName} in pipeline {pipelineConfigName ?? "<unknown>"}. Did you forget to configure it?");
     }
 
     private AICentralPipelines BuildPipelines(ILogger startupLogger)
@@ -123,31 +76,28 @@ public class AICentralPipelineAssembler
                     var routeBuilder =
                         _routeBuilder(
                             Guard.NotNullOrEmptyOrWhitespace(pipelineConfig.Host, nameof(pipelineConfig.Host)));
-                    
+
                     startupLogger.LogInformation("Configuring Pipeline {Name} on Host {Host}", pipelineConfig.Name,
                         pipelineConfig.Host);
 
                     var pipeline = new AICentralPipeline(
                         pipelineName,
                         routeBuilder,
-                        GetMiddlewareOrNoOp(
-                            pipelineConfig.Name,
-                            _authProviders,
-                            _builtAuthProviders!,
-                            pipelineConfig.AuthProvider,
-                            new AllowAnonymousClientAuthProvider()),
-                        pipelineSteps.Select(step => GetMiddlewareOrNoOp(
-                            pipelineConfig.Name,
-                            _genericSteps,
-                            _builtSteps!,
-                            step,
-                            default)).ToArray(),
-                        GetEndpointSelector(
-                            pipelineConfig.Name,
-                            _endpointSelectors,
-                            _builtEndpointSelectors!,
-                            pipelineConfig.EndpointSelector,
-                            default));
+                        _authProviders.ContainsKey(pipelineConfig.AuthProvider ??
+                                                   throw new ArgumentException(
+                                                       $"No AuthProvider for pipeline {pipelineConfig.Name}"))
+                            ? _authProviders[pipelineConfig.AuthProvider ?? string.Empty]
+                            : throw new ArgumentException($"Cannot find Auth Provider {pipelineConfig.AuthProvider}"),
+                        pipelineSteps.Select(step =>
+                            _genericSteps.ContainsKey(step)
+                                ? _genericSteps[step ?? string.Empty]
+                                : throw new ArgumentException($"Cannot find Step {step}")).ToArray(),
+                        _endpointSelectors.ContainsKey(
+                            pipelineConfig.EndpointSelector ??
+                            throw new ArgumentException($"No EndpointSelector for pipeline {pipelineConfig.Name}"))
+                            ? _endpointSelectors[pipelineConfig.EndpointSelector ?? string.Empty]
+                            : throw new ArgumentException(
+                                $"Cannot find EndpointSelector {pipelineConfig.EndpointSelector}"));
 
                     startupLogger.LogInformation("Configured Pipeline {Name} on Host {Host}", pipelineConfig.Name,
                         pipelineConfig.Host);

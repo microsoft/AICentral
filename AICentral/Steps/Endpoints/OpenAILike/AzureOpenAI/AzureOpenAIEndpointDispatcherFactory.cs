@@ -3,15 +3,16 @@ using AICentral.Core;
 
 namespace AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
 
-public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcherBuilder
+public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFactory
 {
     private readonly IEndpointAuthorisationHandler _authHandler;
     private readonly string _languageUrl;
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string _id;
     private readonly int? _maxConcurrency;
+    private readonly Lazy<IAICentralEndpointDispatcher> _endpointDispatcher;
 
-    public AzureOpenAIEndpointDispatcherBuilder(
+    public AzureOpenAIEndpointDispatcherFactory(
         string languageUrl,
         Dictionary<string, string> modelMappings,
         AuthenticationType authenticationType,
@@ -33,6 +34,9 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
             AuthenticationType.EntraPassThrough => new BearerTokenPassThroughAuth(),
             _ => throw new ArgumentOutOfRangeException(nameof(authenticationType), authenticationType, null)
         };
+
+        _endpointDispatcher = new Lazy<IAICentralEndpointDispatcher>(() =>
+            new AzureOpenAIEndpointDispatcher(_id, _languageUrl, _modelMappings, _authHandler));
     }
 
     public void RegisterServices(IServiceCollection services)
@@ -43,7 +47,7 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
 
     public static string ConfigName => "AzureOpenAIEndpoint";
 
-    public static IAICentralEndpointDispatcherBuilder BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
+    public static IAICentralEndpointDispatcherFactory BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
     {
         var properties = configurationSection.GetSection("Properties")
             .Get<ConfigurationTypes.AICentralPipelineAzureOpenAIEndpointPropertiesConfig>();
@@ -63,7 +67,7 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
             authenticationType = AuthenticationType.EntraPassThrough;
         }
 
-        return new AzureOpenAIEndpointDispatcherBuilder(
+        return new AzureOpenAIEndpointDispatcherFactory(
             Guard.NotNull(properties!.LanguageEndpoint, configurationSection, nameof(properties.LanguageEndpoint)),
             modelMappings,
             authenticationType.Value,
@@ -73,6 +77,18 @@ public class AzureOpenAIEndpointDispatcherBuilder : IAICentralEndpointDispatcher
 
     public IAICentralEndpointDispatcher Build()
     {
-        return new AzureOpenAIEndpointDispatcher(_id, _languageUrl, _modelMappings, _authHandler);
+        return _endpointDispatcher.Value;
     }
+    
+    public object WriteDebug()
+    {
+        return new
+        {
+            Type = "AzureOpenAI",
+            Url = _languageUrl,
+            Mappings = _modelMappings,
+            Auth = _authHandler.WriteDebug()
+        };
+    }
+
 }
