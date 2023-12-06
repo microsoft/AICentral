@@ -16,16 +16,16 @@ public class HttpAIEndpointDispatcher
         _logger = logger;
     }
 
-    public async Task<HttpResponseMessage> Dispatch(HttpRequestMessage request, CancellationToken cancellationToken)
+    public async Task<HttpResponseMessage> Dispatch(Uri uri, HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        _logger.LogDebug("Making call to {Endpoint}", request.RequestUri);
+        _logger.LogDebug("Making call to {Endpoint}", uri);
 
         //HttpCompletionOption.ResponseHeadersRead ensures we can get to streaming results much quicker.
         var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
         _logger.LogDebug(
             "Called {Endpoint}. Response Code: {ResponseCode}", 
-            request.RequestUri, 
+            uri, 
             response.StatusCode);
 
         return response;
