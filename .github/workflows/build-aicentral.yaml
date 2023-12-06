@@ -2,7 +2,10 @@
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+    paths:
+      - '/AICentral/**/*'
   pull_request:
     branches:
       - main
