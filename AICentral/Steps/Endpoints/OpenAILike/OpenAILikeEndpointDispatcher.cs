@@ -50,8 +50,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
 
         try
         {
-            var uri = new Uri(BuildUri(context, callInformation, mappedModelName));
-            var newRequest = await BuildNewRequest(uri, context, callInformation, mappedModelName);
+            var newRequest = await BuildNewRequest(context, callInformation, mappedModelName);
             await CustomiseRequest(context, callInformation, newRequest, mappedModelName);
 
             logger.LogDebug(
@@ -72,7 +71,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
                 );
 
             sw.Start();
-            var openAiResponse = await typedDispatcher.Dispatch(uri, newRequest, cancellationToken);
+            var openAiResponse = await typedDispatcher.Dispatch(newRequest, cancellationToken);
 
             //this will retry the operation for retryable status codes. When we reach here we might not want
             //to stream the response if it wasn't a 200.
@@ -109,9 +108,9 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         return callInformation.IncomingCallDetails.AICallType != AICallType.Other && mappedModelName == string.Empty;
     }
 
-    private Task<HttpRequestMessage> BuildNewRequest(Uri uri, HttpContext context, AICallInformation callInformation, string? mappedModelName)
+    private Task<HttpRequestMessage> BuildNewRequest(HttpContext context, AICallInformation callInformation, string? mappedModelName)
     {
-        var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method), uri);
+        var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method), BuildUri(context, callInformation, mappedModelName));
         foreach (var header in context.Request.Headers)
         {
             if (HeadersToIgnore.Contains(header.Key, StringComparer.InvariantCultureIgnoreCase)) continue;
