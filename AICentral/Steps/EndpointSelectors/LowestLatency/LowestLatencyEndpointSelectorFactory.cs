@@ -29,8 +29,7 @@ public class LowestLatencyEndpointSelectorFactory : IAICentralEndpointSelectorFa
     public static IAICentralEndpointSelectorFactory BuildFromConfig(
         ILogger logger, 
         IConfigurationSection configurationSection,
-        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints,
-        Dictionary<string, IAICentralEndpointSelectorFactory> endpointSelectors
+        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints
         )
     {
         var properties = configurationSection.GetSection("Properties").Get<LowestLatencyEndpointConfig>();
@@ -38,7 +37,7 @@ public class LowestLatencyEndpointSelectorFactory : IAICentralEndpointSelectorFa
 
         return new LowestLatencyEndpointSelectorFactory(
             Guard.NotNull(properties!.Endpoints, configurationSection, "Endpoints")
-                .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, configurationSection, "Endpoint"))
+                .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : throw new ArgumentException($"Cannot find Endpoint {x} in built endpoints"))
                 .ToArray());
     }
     
@@ -48,7 +47,7 @@ public class LowestLatencyEndpointSelectorFactory : IAICentralEndpointSelectorFa
         return new
         {
             Type = "Lowest Latency Router",
-            Endpoints = _openAiServers.Select(x => WriteDebug())
+            Endpoints = _openAiServers.Select(x => x.WriteDebug())
         };
     }
 }

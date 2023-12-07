@@ -1,0 +1,59 @@
+﻿[
+    
+  {
+        
+    "Name":  "test-pipeline",
+        
+    "RouteMatch":  {
+            
+      "Host":  "my-test-host.localtest.me"
+    
+        },
+        
+    "ClientAuth":  {
+            
+      "auth":  "No Consumer Auth"
+    
+        },
+        
+    "Steps":  [],
+        
+    "EndpointSelector":  {
+            
+      "Type":  "SingleEndpoint",
+            
+      "Endpoints":  [
+                
+        {
+                    
+          "Type":  "Lowest Latency Router",
+                    
+          "Endpoints":  [
+                        
+            {
+                            
+              "Type":  "AzureOpenAI",
+                            
+              "Url":  "https://somehere.com",
+                            
+              "Mappings":  {},
+                            
+              "Auth":  {
+                                
+                "Type":  "Bearer Token Pass-Through"
+              
+                            }
+            
+                        }
+          
+                    ]
+        
+                }
+      
+            ]
+    
+        }
+  
+    }
+
+]

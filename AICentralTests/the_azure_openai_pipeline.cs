@@ -107,7 +107,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public void cannot_proxy_an_image_request_from_azure_openai_endpoint_to_openai_downstream()
     {
         var client = new OpenAIClient(
-            new Uri("http://openai-to-azure.localtest.me"),
+            new Uri("http://azure-openai-to-openai.localtest.me"),
             new AzureKeyCredential("ignore"),
             new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
             {

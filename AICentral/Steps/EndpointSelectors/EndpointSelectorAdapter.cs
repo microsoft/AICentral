@@ -1,16 +1,15 @@
 ﻿using AICentral.Core;
 using AICentral.Steps.Endpoints;
-using Microsoft.Extensions.Primitives;
 
-namespace AICentral.Steps.EndpointSelectors.Single;
+namespace AICentral.Steps.EndpointSelectors;
 
 internal class EndpointSelectorAdapter : IAICentralEndpointDispatcher
 {
-    private readonly IEndpointSelector _endpointSelector;
+    private readonly IAICentralEndpointSelectorFactory _endpointSelectorFactory;
 
-    public EndpointSelectorAdapter(IEndpointSelector endpointSelector)
+    public EndpointSelectorAdapter(IAICentralEndpointSelectorFactory endpointSelectorFactory)
     {
-        _endpointSelector = endpointSelector;
+        _endpointSelectorFactory = endpointSelectorFactory;
     }
 
     /// <summary>
@@ -27,6 +26,6 @@ internal class EndpointSelectorAdapter : IAICentralEndpointDispatcher
         bool isLastChance,
         CancellationToken cancellationToken)
     {
-        return _endpointSelector.Handle(context, callInformation, isLastChance, cancellationToken);
+        return _endpointSelectorFactory.Build().Handle(context, callInformation, isLastChance, cancellationToken);
     }
 }

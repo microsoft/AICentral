@@ -8,7 +8,7 @@ public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
     private readonly IAICentralEndpointDispatcherFactory[] _prioritisedOpenAIEndpoints;
     private readonly IAICentralEndpointDispatcherFactory[] _fallbackOpenAIEndpoints;
-    private Lazy<PriorityEndpointSelector> _endpointSelector;
+    private readonly Lazy<PriorityEndpointSelector> _endpointSelector;
 
     public PriorityEndpointSelectorFactory(
         IAICentralEndpointDispatcherFactory[] prioritisedOpenAIEndpoints,
@@ -30,8 +30,7 @@ public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
     public static IAICentralEndpointSelectorFactory BuildFromConfig(
         ILogger logger,
         IConfigurationSection configurationSection,
-        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints,
-        Dictionary<string, IAICentralEndpointSelectorFactory> endpointSelectors)
+        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints)
     {
         var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.PriorityEndpointConfig>();
         Guard.NotNull(properties, configurationSection, "Properties");

@@ -7,7 +7,7 @@ namespace AICentral.Steps.EndpointSelectors.Random;
 public class RandomEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
     private readonly IAICentralEndpointDispatcherFactory[] _openAiServers;
-    private Lazy<RandomEndpointSelector> _endpointSelector;
+    private readonly Lazy<RandomEndpointSelector> _endpointSelector;
 
     public RandomEndpointSelectorFactory(IAICentralEndpointDispatcherFactory[] openAiServers)
     {
@@ -29,8 +29,7 @@ public class RandomEndpointSelectorFactory : IAICentralEndpointSelectorFactory
     public static IAICentralEndpointSelectorFactory BuildFromConfig(
         ILogger logger, 
         IConfigurationSection configurationSection,
-        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints,
-        Dictionary<string, IAICentralEndpointSelectorFactory> endpointSelectors)
+        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints)
     {
         var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.RandomEndpointConfig>();
         Guard.NotNull(properties, configurationSection, "Properties");
