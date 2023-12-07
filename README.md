@@ -7,12 +7,21 @@
 AI Central gives you control over your AI services.
 
 - Intelligent Routing
+  - Random endpoint selector
+  - Prioritised endpoint selector with fallback
+  - Lowest Latency endpoint selector
 - Custom consumer OAuth2 authorisation
-- Fallback AI service
-- Round Robin AI services
 - Circuit breakers, and backoff-retry over downstream AI services
-- Prompt and usage logging
+- Local token rate limiting
+  - By consumer / by endpoint
+  - By number of tokens (including streaming by estimated token count)
+- Local request rate limiting
+  - By consumer / by endpoint
+- Bulkhead support for buffering requests to backend
+- Prompt and usage logging to Azure Monitor
   - **Works for streaming endpoints as-well as non streaming**
+
+> Extensibility model makes it easy to build your own plugins
 
 ## Configuration
 
