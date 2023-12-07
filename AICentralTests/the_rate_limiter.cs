@@ -23,6 +23,10 @@ public class the_rate_limiter : IClassFixture<TestWebApplicationFactory<Program>
     [Fact]
     public async Task rate_limits()
     {
+
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        
         var result = await _httpClient.PostAsync(
             "http://azure-with-rate-limiter.localtest.me/openai/deployments/random/chat/completions?api-version=2023-05-15",
             new StringContent(JsonConvert.SerializeObject(new

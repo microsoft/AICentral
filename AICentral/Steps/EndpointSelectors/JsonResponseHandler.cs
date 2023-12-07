@@ -1,5 +1,6 @@
 using System.Net;
 using AICentral.Core;
+using AICentral.Steps.Endpoints.OpenAILike;
 using AICentral.Steps.Endpoints.ResultHandlers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -37,7 +38,7 @@ public static class JsonResponseHandler
                 promptTokens,
                 completionTokens,
                 totalTokens,
-                context.Connection.RemoteIpAddress?.ToString() ?? "",
+                context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
                 requestInformation.StartDate,
                 requestInformation.Duration);
 

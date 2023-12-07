@@ -14,6 +14,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
 {
     protected override IHost CreateHost(IHostBuilder builder)
     {
+        builder.UseEnvironment("tests");
         builder.ConfigureServices(services =>
         {
             services.AddSingleton<ILoggerFactory>(new LoggerFactory(new[]
@@ -37,13 +38,17 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.OpenAIServiceWithSingleOpenAIEndpoint(),
                 TestPipelines.AzureOpenAIServiceWithRateLimitingAndSingleEndpoint(),
                 TestPipelines.AzureOpenAIServiceWithBulkHeadOnPipelineAndSingleEndpoint(),
-                TestPipelines.AzureOpenAIServiceWithBulkHeadOnSingleEndpoint()
+                TestPipelines.AzureOpenAIServiceWithBulkHeadOnSingleEndpoint(),
+                TestPipelines.AzureOpenAILowestLatencyEndpoint(),
+                TestPipelines.AzureOpenAIServiceWithSingleEndpointSelectorHierarchy()
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));
             assembler.AddServices(services, NullLogger.Instance);
 
-            var fakeClient = new HttpClient(new FakeHttpMessageHandler());
+            var seeder = new FakeHttpMessageHandlerSeeder();
+            var fakeClient = new HttpClient(new FakeHttpMessageHandler(seeder));
+            services.AddSingleton(seeder);
             services.AddSingleton<IHttpClientFactory>(new FakeHttpClientFactory(fakeClient));
         });
         return base.CreateHost(builder);

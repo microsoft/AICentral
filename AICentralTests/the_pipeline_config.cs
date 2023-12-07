@@ -2,6 +2,7 @@
 using AICentral;
 using AICentral.Configuration;
 using AICentral.Configuration.JSON;
+using AICentral.Logging.AzureMonitor;
 using ApprovalTests;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -69,9 +70,10 @@ public class the_pipeline_config
             }))
         );
 
-        var host = WebApplication.CreateBuilder();
+        var host = WebApplication.CreateBuilder(new WebApplicationOptions() {EnvironmentName = "test"});
         host.Configuration.AddJsonStream(stream);
-        host.Services.AddAICentral(host.Configuration);
+        host.Services.AddAICentral(host.Configuration,
+            additionalComponentAssemblies: typeof(AzureMonitorLogger).Assembly);
         var app = host.Build();
 
         var pipelines = app.Services.GetRequiredService<AICentralPipelines>();

@@ -4,6 +4,7 @@ using AICentral.Core;
 using AICentral.Steps.Auth;
 using AICentral.Steps.Endpoints;
 using AICentral.Steps.EndpointSelectors;
+using AICentral.Steps.EndpointSelectors.Single;
 using AICentral.Steps.Routes;
 
 namespace AICentral.Configuration;
@@ -70,7 +71,7 @@ public class ConfigurationBasedPipelineBuilder
                             x.Config);
                     });
 
-        var endpointSelectors =
+        var allEndpointSelectors =
             configurationSection
                 .GetSection("EndpointSelectors")
                 .GetChildren()
@@ -78,19 +79,30 @@ public class ConfigurationBasedPipelineBuilder
                 {
                     TypeInfo = x.Get<ConfigurationTypes.AICentralTypeAndNameConfig>(),
                     Config = x
-                })
-                .ToDictionary(
-                    x => Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name"),
-                    x =>
-                    {
-                        startupLogger.LogInformation("Configuring Endpoint Selector {Name}", x.TypeInfo!.Name);
-                        return _endpointSelectorConfigurations[
-                            Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
-                            throw new ArgumentException("No Type specified for Endpoint")](
-                            startupLogger,
-                            x.Config,
-                            endpoints);
-                    });
+                });
+
+        var endpointSelectors = new Dictionary<string, IAICentralEndpointSelectorFactory>();
+        foreach (var x in allEndpointSelectors)
+        {
+            Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name");
+            startupLogger.LogInformation("Configuring Endpoint Selector {Name}", x.TypeInfo!.Name);
+            var aiCentralEndpointSelectorFactory = _endpointSelectorConfigurations[
+                Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
+                throw new ArgumentException("No Type specified for Endpoint")](
+                startupLogger,
+                x.Config,
+                endpoints);
+            
+            endpointSelectors.Add(x.TypeInfo!.Name!, aiCentralEndpointSelectorFactory);
+            if (endpoints.ContainsKey(x.TypeInfo!.Name!))
+            {
+                startupLogger.LogWarning("Unable to use Endpoint Selector {Name} as a virtual endpoint within another Endpoint Selector, as it already exists as an Endpoint", x.TypeInfo!.Name!);
+            }
+            else
+            {
+                endpoints.Add(x.TypeInfo!.Name!, new EndpointSelectorAdapterFactory(aiCentralEndpointSelectorFactory));
+            }
+        }
 
         var authProviders =
             configurationSection

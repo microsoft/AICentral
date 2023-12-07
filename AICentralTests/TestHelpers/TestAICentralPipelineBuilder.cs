@@ -10,6 +10,7 @@ using AICentral.Steps.Endpoints;
 using AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
 using AICentral.Steps.Endpoints.OpenAILike.OpenAI;
 using AICentral.Steps.EndpointSelectors;
+using AICentral.Steps.EndpointSelectors.LowestLatency;
 using AICentral.Steps.EndpointSelectors.Priority;
 using AICentral.Steps.EndpointSelectors.Random;
 using AICentral.Steps.EndpointSelectors.Single;
@@ -51,7 +52,8 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
-    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel, int? maxConcurrency = null)
+    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel,
+        int? maxConcurrency = null)
     {
         var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherFactory($"https://{hostname}",
             new Dictionary<string, string>()
@@ -118,7 +120,7 @@ public class TestAICentralPipelineBuilder
 
 
     public TestAICentralPipelineBuilder WithRandomEndpoints(
-        (string hostname, string model, string mappedModel)[] endpoints)
+        params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
             new AzureOpenAIEndpointDispatcherFactory($"https://{x.hostname}", new Dictionary<string, string>()
@@ -133,6 +135,20 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
+    public TestAICentralPipelineBuilder WithLowestLatencyEndpoints(
+        params (string hostname, string model, string mappedModel)[] endpoints)
+    {
+        _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
+            new AzureOpenAIEndpointDispatcherFactory($"https://{x.hostname}", new Dictionary<string, string>()
+                {
+                    [x.model] = x.mappedModel
+                },
+                AuthenticationType.ApiKey,
+                Guid.NewGuid().ToString())).ToArray();
+
+        _endpointFactory = new LowestLatencyEndpointSelectorFactory(_openAiEndpointDispatcherBuilders!);
+        return this;
+    }
 
     public TestAICentralPipelineBuilder WithBulkHead(int maxConcurrency)
     {
@@ -195,6 +211,24 @@ public class TestAICentralPipelineBuilder
     {
         _requestsPerWindow = requestsPerWindow;
         _windowInSeconds = windowInSeconds;
+        return this;
+    }
+
+    public TestAICentralPipelineBuilder WithHierarchicalEndpointSelector(string endpoint200, string model, string mappedModel)
+    {
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherFactory(
+            $"https://{endpoint200}",
+            new Dictionary<string, string>()
+            {
+                [model] = mappedModel
+            },
+            AuthenticationType.ApiKey,
+            Guid.NewGuid().ToString());
+
+        var endpointFactory = new SingleEndpointSelectorFactory(openAiEndpointDispatcherBuilder);
+        _endpointFactory = new SingleEndpointSelectorFactory(new EndpointSelectorAdapterFactory(endpointFactory));
+        _openAiEndpointDispatcherBuilders = new[] { openAiEndpointDispatcherBuilder };
+
         return this;
     }
 }

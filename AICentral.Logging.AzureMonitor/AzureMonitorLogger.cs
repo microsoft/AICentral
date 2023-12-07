@@ -26,18 +26,18 @@ public class AzureMonitorLogger : IAICentralPipelineStep
 
         _serilogAzureLogAnalyticsLogger.Information(
             "AzureOpenAI call. ClientIP:{ClientIP} Host:{OpenAIHost}. Type:{CallType}. Model:{Model}. Prompt:{Prompt}. Response:{Response}. Estimated Prompt Tokens:{EstimatedPromptTokens}. Estimated Completion Tokens:{EstimatedCompletionTokens}. Prompt Tokens:{PromptTokens}. Completion Tokens:{CompletionTokens}. Total Tokens:{TotalTokens}. Duration:{Duration}",
-            result.AiCentralUsageInformation.RemoteIpAddress,
-            result.AiCentralUsageInformation.OpenAIHost,
-            result.AiCentralUsageInformation.CallType.ToString(),
-            result.AiCentralUsageInformation.ModelName,
-            _logPrompt ? result.AiCentralUsageInformation.Prompt : "**redacted**",
-            _logResponse ? result.AiCentralUsageInformation.Response : "**redacted**",
-            result.AiCentralUsageInformation.EstimatedPromptTokens,
-            result.AiCentralUsageInformation.EstimatedCompletionTokens,
-            result.AiCentralUsageInformation.PromptTokens,
-            result.AiCentralUsageInformation.CompletionTokens,
-            result.AiCentralUsageInformation.TotalTokens,
-            result.AiCentralUsageInformation.Duration);
+            result.AICentralUsageInformation.RemoteIpAddress,
+            result.AICentralUsageInformation.OpenAIHost,
+            result.AICentralUsageInformation.CallType.ToString(),
+            result.AICentralUsageInformation.ModelName,
+            _logPrompt ? result.AICentralUsageInformation.Prompt : "**redacted**",
+            _logResponse ? result.AICentralUsageInformation.Response : "**redacted**",
+            result.AICentralUsageInformation.EstimatedPromptTokens,
+            result.AICentralUsageInformation.EstimatedCompletionTokens,
+            result.AICentralUsageInformation.PromptTokens,
+            result.AICentralUsageInformation.CompletionTokens,
+            result.AICentralUsageInformation.TotalTokens,
+            result.AICentralUsageInformation.Duration);
 
         return result;
     }

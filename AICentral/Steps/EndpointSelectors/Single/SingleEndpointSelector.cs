@@ -3,7 +3,7 @@ using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors.Single;
 
-public class SingleEndpointSelector : EndpointSelectorBase
+public class SingleEndpointSelector : IEndpointSelector
 {
     private readonly IAICentralEndpointDispatcher _endpoint;
 
@@ -12,19 +12,16 @@ public class SingleEndpointSelector : EndpointSelectorBase
         _endpoint = endpoint;
     }
 
-    public override async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
+    public async Task<AICentralResponse> Handle(
+        HttpContext context,
+        AICallInformation aiCallInformation,
+        bool isLastChance,
         CancellationToken cancellationToken)
     {
-        var responseMessage = await _endpoint.Handle(context, aiCallInformation, cancellationToken);
-        return await HandleResponse(
-            context.RequestServices.GetRequiredService<ILogger<SingleEndpointSelector>>(),
+        return await _endpoint.Handle(
             context,
-            _endpoint,
-            responseMessage.Item1,
-            responseMessage.Item2,
-            true,
-            cancellationToken
-        );
+            aiCallInformation,
+            isLastChance,
+            cancellationToken);
     }
-
 }

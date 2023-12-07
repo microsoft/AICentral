@@ -3,7 +3,7 @@ using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors.Random;
 
-public class RandomEndpointSelector : EndpointSelectorBase
+public class RandomEndpointSelector : IEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IAICentralEndpointDispatcher[] _openAiServers;
@@ -13,11 +13,12 @@ public class RandomEndpointSelector : EndpointSelectorBase
         _openAiServers = openAiServers;
     }
 
-    public override async Task<AICentralResponse> Handle(HttpContext context,
+    public async Task<AICentralResponse> Handle(HttpContext context,
         AICallInformation aiCallInformation,
+        bool isLastChance,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelectorFactory>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelector>>();
         var toTry = _openAiServers.ToList();
         logger.LogDebug("Random Endpoint selector is handling request");
         do
@@ -26,16 +27,11 @@ public class RandomEndpointSelector : EndpointSelectorBase
             toTry.Remove(chosen);
             try
             {
-                var responseMessage =
-                    await chosen.Handle(context, aiCallInformation, cancellationToken); //awaiting to unwrap any Aggregate Exceptions
-                return await HandleResponse(
-                    logger,
+                return await chosen.Handle(
                     context,
-                    chosen,
-                    responseMessage.Item1,
-                    responseMessage.Item2,
-                    !toTry.Any(),
-                    cancellationToken);
+                    aiCallInformation,
+                    isLastChance && !toTry.Any(),
+                    cancellationToken); //awaiting to unwrap any Aggregate Exceptions
             }
             catch (HttpRequestException e)
             {
@@ -51,5 +47,4 @@ public class RandomEndpointSelector : EndpointSelectorBase
 
         throw new InvalidOperationException("Failed to satisfy request");
     }
-
 }

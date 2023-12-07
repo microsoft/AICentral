@@ -4,7 +4,7 @@ using AICentral.Steps.EndpointSelectors.Random;
 
 namespace AICentral.Steps.EndpointSelectors.Priority;
 
-public class PriorityEndpointSelector : EndpointSelectorBase
+public class PriorityEndpointSelector : IEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IAICentralEndpointDispatcher[] _prioritisedOpenAIEndpoints;
@@ -18,10 +18,13 @@ public class PriorityEndpointSelector : EndpointSelectorBase
         _fallbackOpenAIEndpoints = fallbackOpenAIEndpoints;
     }
 
-    public override async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
+    public async Task<AICentralResponse> Handle(
+        HttpContext context,
+        AICallInformation aiCallInformation,
+        bool isLastChance,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelectorFactory>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<PriorityEndpointSelector>>();
         try
         {
             logger.LogDebug("Prioritised Endpoint selector handling request");
@@ -32,7 +35,7 @@ public class PriorityEndpointSelector : EndpointSelectorBase
             try
             {
                 logger.LogWarning(e, "Prioritised Endpoint selector failed with primary. Trying fallback servers");
-                return await Handle(context, aiCallInformation, cancellationToken, _fallbackOpenAIEndpoints, true);
+                return await Handle(context, aiCallInformation, cancellationToken, _fallbackOpenAIEndpoints, isLastChance);
             }
             catch (HttpRequestException ex)
             {
@@ -47,7 +50,7 @@ public class PriorityEndpointSelector : EndpointSelectorBase
         AICallInformation aiCallInformation,
         CancellationToken cancellationToken,
         IAICentralEndpointDispatcher[] endpoints,
-        bool isFallbackCollection)
+        bool isLastChance)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelectorFactory>>();
         var toTry = endpoints.ToList();
@@ -57,16 +60,12 @@ public class PriorityEndpointSelector : EndpointSelectorBase
             toTry.Remove(chosen);
             try
             {
-                var responseMessage = await chosen.Handle(context, aiCallInformation, cancellationToken); //awaiting to unwrap any Aggregate Exceptions
-                
-                return await HandleResponse(
-                    logger,
-                    context,
-                    chosen,
-                    responseMessage.Item1,
-                    responseMessage.Item2,
-                    isFallbackCollection && !toTry.Any(),
-                    cancellationToken);
+                return
+                    await chosen.Handle(
+                        context,
+                        aiCallInformation,
+                        isLastChance,
+                        cancellationToken); //awaiting to unwrap any Aggregate Exceptions
             }
             catch (HttpRequestException e)
             {
@@ -82,5 +81,4 @@ public class PriorityEndpointSelector : EndpointSelectorBase
 
         throw new InvalidOperationException("Failed to satisfy request");
     }
-
 }

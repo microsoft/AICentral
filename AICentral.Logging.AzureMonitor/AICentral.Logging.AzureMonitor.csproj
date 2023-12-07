@@ -7,15 +7,17 @@
         <OutputType>Library</OutputType>
         <IsPackable>true</IsPackable>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
-        <PackageProjectUrl>https://github.com/graemefoster/AICentral</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/microsoft/AICentral</PackageProjectUrl>
         <PackageLicenseUrl>https://licenses.nuget.org/MIT</PackageLicenseUrl>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AICentral.Core" Version="0.4.1" />
-        <PackageReference Include="Serilog" Version="3.1.0-dev-02078" />
-        <PackageReference Include="Serilog.AspNetCore" Version="7.0.1-dev-00320" />
+        <PackageReference Include="AICentral.Core" Version="0.5.1-also-allow-hiera0001" />
+        <PackageReference Include="Serilog" Version="3.1.1" />
         <PackageReference Include="Serilog.Sinks.AzureAnalytics" Version="5.0.0" />
+        <None Include="readme.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
     <ItemGroup>

@@ -28,6 +28,9 @@ public class the_openai_pipeline : IClassFixture<TestWebApplicationFactory<Progr
     [Fact]
     public async Task can_dispatch_to_an_azure_openai_endpoint()
     {
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+
         var result = await _httpClient.PostAsync(
             "http://openai-to-azure.localtest.me/v1/chat/completions",
             new StringContent(JsonConvert.SerializeObject(new
@@ -68,6 +71,9 @@ public class the_openai_pipeline : IClassFixture<TestWebApplicationFactory<Progr
     [Fact]
     public async Task works_with_the_azure_sdk_chat_completions()
     {
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+
         _httpClient.DefaultRequestHeaders.Host = "openai-to-azure.localtest.me";
         var client = new OpenAIClient(
             "ignore",
@@ -89,6 +95,9 @@ public class the_openai_pipeline : IClassFixture<TestWebApplicationFactory<Progr
     [Fact]
     public async Task works_with_the_azure_sdk_completions()
     {
+        _factory.SeedCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+            () => Task.FromResult(AICentralFakeResponses.FakeCompletionsResponse()));
+
         _httpClient.DefaultRequestHeaders.Host = "openai-to-azure.localtest.me";
         var client = new OpenAIClient(
             "ignore",
@@ -130,6 +139,9 @@ public class the_openai_pipeline : IClassFixture<TestWebApplicationFactory<Progr
     [Fact]
     public async Task can_proxy_a_whisper_audio_request()
     {
+        _factory.Seed($"https://api.openai.com/v1/audio/transcriptions",
+            () => Task.FromResult(AICentralFakeResponses.FakeOpenAIAudioTranscriptionResponse()));
+
         _httpClient.DefaultRequestHeaders.Host = "openai-to-openai.localtest.me";
         var client = new OpenAIClient(
             "ignore",

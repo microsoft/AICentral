@@ -54,7 +54,7 @@ All endpoints are wrapped with a Polly Policy. We
 
 Endpoint Selectors define clusters of Endpoints, along with logic for choosing which and when to use.
 
-We ship 3 Endpoint Selectors:
+We ship 4 Endpoint Selectors:
 
 ### Single Endpoint Selector
 
@@ -66,6 +66,7 @@ We ship 3 Endpoint Selectors:
 ```json
 {
     "Type": "SingleEndpoint",
+    "Name": "my-name",
     "Properties": {
         "Endpoint": "endpoint-name-from-earlier"
     }
@@ -81,6 +82,7 @@ We ship 3 Endpoint Selectors:
 ```json
 {
     "Type": "RandomCluster",
+    "Name": "my-name",
     "Properties": {
         "Endpoints": [
             "endpoint-name-from-earlier",
@@ -94,24 +96,91 @@ We ship 3 Endpoint Selectors:
 ### Prioritised Endpoint Selector
 
 - For the Priority services
-    - Picks an endpoint at random and tries it.
-    - If we fail, we pick from the remaining ones.
-    - And so-on, until we get a response, or fail.
+  - Picks an endpoint at random and tries it.
+  - If we fail, we pick from the remaining ones.
+  - And so-on, until we get a response, or fail.
 - If we failed, repeat for the fallback services
 
 ```json
 {
-    "Type": "Prioritised",
+  "Type": "Prioritised",
+  "Name": "my-name",
+  "Properties": {
+    "PriorityEndpoints": [
+      "endpoint-name-from-earlier",
+      "another-endpoint-name-from-earlier"
+    ],
+    "FallbackEndpoints": [
+      "yet-another-endpoint-name-from-earlier",
+      "and-yet-another-endpoint-name-from-earlier"
+    ]
+  }
+}
+```
+
+### Lowest Latency Endpoint Selector
+
+This runs a rolling average of the duration to call the downstream OpenAI endpoints. It will over time prioritise the fastest endpoints.
+The implementation maintains the duration of the last 10 requests to an endpoint, and executes your request trying the quickest first.
+
+```json
+{
+    "Type": "LowestLatency",
+    "Name": "my-name",
     "Properties": {
-        "PriorityEndpoints": [
+        "Endpoints": [
             "endpoint-name-from-earlier",
             "another-endpoint-name-from-earlier"
+          ]
+    }
+}
+```
+
+## Referencing Endpoint Selectors from Endpoint Selectors
+
+To support more complex Endpoint Selectors we support referencing an Endpoint Selector from another Endpoint Selector.
+
+The implementation relies on the order of your Selectors. You can only reference selectors that have been defined earlier. This sample shows a Lowest Latency endpoint used for the priority endpoints in a Prioritised endpoint selector.
+
+```json
+{
+  "AICentral": {
+    "Endpoints": [ "... define endpoints" ],
+    "EndpointSelectors": [
+      {
+        "Type": "LowestLatency",
+        "Name": "lowest-latency-group",
+        "Properties": {
+          "Endpoints": [
+            "endpoint-name-from-earlier",
+            "another-endpoint-name-from-earlier"
+          ]
+        }
+      },
+      {
+        "Type": "Prioritised",
+        "Properties": {
+          "PriorityEndpoints": [
+            "lowest-latency-group" //references the lowest-latency-group defined before this
           ],
-        "FallbackEndpoints": [
+          "FallbackEndpoints": [
             "yet-another-endpoint-name-from-earlier",
             "and-yet-another-endpoint-name-from-earlier"
           ]
-    }
+        }
+      },
+      {
+        
+      }
+    ],
+    "Pipelines": [
+      {
+        "Name": "MyPipeline",
+        "Host": "<host-name-we-listen-for-requests-on>",
+        "EndpointSelector": "name-from-above"
+      }
+    ]
+  }
 }
 ```
 

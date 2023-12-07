@@ -85,7 +85,7 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         return deepClone;
     }
 
-    public override Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,
+    protected override Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,
         HttpResponseMessage openAiResponse)
     {
         return openAiResponse.Headers.ToDictionary(x => x.Key, x => new StringValues(x.Value.ToArray()));

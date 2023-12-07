@@ -55,7 +55,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         return incomingContent;
     }
 
-    public override Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,
+    protected override Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,
         HttpResponseMessage openAiResponse)
     {
         var proxiedHeaders = new Dictionary<string, StringValues>();

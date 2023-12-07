@@ -8,7 +8,7 @@ public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
     private readonly IAICentralEndpointDispatcherFactory[] _prioritisedOpenAIEndpoints;
     private readonly IAICentralEndpointDispatcherFactory[] _fallbackOpenAIEndpoints;
-    private Lazy<PriorityEndpointSelector> _endpointSelector;
+    private readonly Lazy<PriorityEndpointSelector> _endpointSelector;
 
     public PriorityEndpointSelectorFactory(
         IAICentralEndpointDispatcherFactory[] prioritisedOpenAIEndpoints,

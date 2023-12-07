@@ -15,14 +15,15 @@ public class AICentralPipelineExecutor : IAICentralPipelineExecutor, IDisposable
         _pipelineEnumerator = steps.GetEnumerator();
     }
 
-    public async Task<AICentralResponse> Next(HttpContext context, AICallInformation requestDetails, CancellationToken cancellationToken)
+    public async Task<AICentralResponse> Next(HttpContext context, AICallInformation requestDetails,
+        CancellationToken cancellationToken)
     {
         if (_pipelineEnumerator.MoveNext())
         {
             return await _pipelineEnumerator.Current.Handle(context, requestDetails, this, cancellationToken);
         }
 
-        return await _endpointSelector.Handle(context, requestDetails, cancellationToken);
+        return await _endpointSelector.Handle(context, requestDetails, true, cancellationToken);
     }
 
     public void Dispose()
@@ -30,4 +31,3 @@ public class AICentralPipelineExecutor : IAICentralPipelineExecutor, IDisposable
         _pipelineEnumerator.Dispose();
     }
 }
-
