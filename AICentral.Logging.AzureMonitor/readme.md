@@ -9,8 +9,11 @@
       "Type": "AspNetCoreFixedWindowRateLimiting",
       "Name": "window-rate-limiter",
       "Properties": {
-        "Window": "00:00:10",
-        "PermitLimit": 5
+        "LimitType": "PerConsumer|PerAICentralEndpoint",
+        "Options": {
+          "Window": 10,
+          "PermitLimit": 100
+        }
       }
     },
     {

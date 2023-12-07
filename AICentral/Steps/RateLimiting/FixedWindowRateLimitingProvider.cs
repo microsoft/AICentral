@@ -1,16 +1,15 @@
 ﻿using System.Threading.RateLimiting;
 using AICentral.Core;
-using AICentral.Steps.EndpointSelectors;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace AICentral.Steps.RateLimiting;
 
 public class FixedWindowRateLimitingProvider : IAICentralGenericStepFactory, IAICentralPipelineStep
 {
-    private readonly FixedWindowRateLimiterOptions _fixedWindowRateLimiterOptions;
+    private readonly AICentralFixedWindowRateLimiterOptions _fixedWindowRateLimiterOptions;
     private readonly string _id;
 
-    public FixedWindowRateLimitingProvider(FixedWindowRateLimiterOptions fixedWindowRateLimiterOptions)
+    public FixedWindowRateLimitingProvider(AICentralFixedWindowRateLimiterOptions fixedWindowRateLimiterOptions)
     {
         _fixedWindowRateLimiterOptions = fixedWindowRateLimiterOptions;
         _id = Guid.NewGuid().ToString();
@@ -18,18 +17,22 @@ public class FixedWindowRateLimitingProvider : IAICentralGenericStepFactory, IAI
 
     public void RegisterServices(IServiceCollection services)
     {
-        services.AddRateLimiter( options =>
+        services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = 429;
-            options.AddFixedWindowLimiter(_id, window =>
-            {
-                window.Window = _fixedWindowRateLimiterOptions.Window;
-                window.PermitLimit = _fixedWindowRateLimiterOptions.PermitLimit;
-                window.QueueLimit = _fixedWindowRateLimiterOptions.QueueLimit;
-                window.QueueProcessingOrder = _fixedWindowRateLimiterOptions.QueueProcessingOrder;
-                window.AutoReplenishment = _fixedWindowRateLimiterOptions.AutoReplenishment;
-            });
+            _fixedWindowRateLimiterOptions.Options!.AutoReplenishment = false;
+            options.AddPolicy(_id,
+                ctx => RateLimitPartition.GetFixedWindowLimiter(GetPartitionId(ctx),
+                    _ => _fixedWindowRateLimiterOptions.Options));
         });
+    }
+
+    private string GetPartitionId(HttpContext context)
+    {
+        var id = _fixedWindowRateLimiterOptions.LimitType == FixedWindowRateLimitingLimitType.PerAICentralEndpoint
+            ? "__endpoint"
+            : context.User.Identity?.Name ?? "unknown";
+        return id;
     }
 
     public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
@@ -41,11 +44,13 @@ public class FixedWindowRateLimitingProvider : IAICentralGenericStepFactory, IAI
     public static string ConfigName => "AspNetCoreFixedWindowRateLimiting";
 
     public static IAICentralGenericStepFactory BuildFromConfig(
-        ILogger logger, 
+        ILogger logger,
         IConfigurationSection configurationSection)
     {
-        var properties = configurationSection.GetSection("Properties").Get<FixedWindowRateLimiterOptions>()!;
+        var properties = configurationSection.GetSection("Properties").Get<AICentralFixedWindowRateLimiterOptions>()!;
         Guard.NotNull(properties, configurationSection, "Properties");
+        Guard.NotNull(properties.LimitType, configurationSection, nameof(properties.LimitType));
+        Guard.NotNull(properties.Options, configurationSection, nameof(properties.Options));
 
         return new FixedWindowRateLimitingProvider(properties);
     }
@@ -70,5 +75,4 @@ public class FixedWindowRateLimitingProvider : IAICentralGenericStepFactory, IAI
             Properties = _fixedWindowRateLimiterOptions
         };
     }
-    
 }

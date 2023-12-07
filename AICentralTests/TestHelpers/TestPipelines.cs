@@ -1,4 +1,6 @@
 ﻿using AICentral;
+using AICentral.Steps.RateLimiting;
+using AICentral.Steps.TokenBasedRateLimiting;
 
 namespace AICentralTests.TestHelpers;
 
@@ -19,6 +21,33 @@ public static class TestPipelines
             .WithRateLimiting(60, 1)
             .Assemble("azure-with-rate-limiter.localtest.me");
 
+    
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithClientPartitionedRateLimiter() =>
+        new TestAICentralPipelineBuilder()
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "random", "Model1")
+            .WithRateLimiting(2, 1, FixedWindowRateLimitingLimitType.PerConsumer)
+            .WithApiKeyAuth(
+                ("client-1", "123", "234"),
+                ("client-2", "345", "456")
+            )
+            .Assemble("azure-with-client-partitioned-rate-limiter.localtest.me");
+
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithTokenRateLimitingAndSingleEndpoint() =>
+        new TestAICentralPipelineBuilder()
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "random", "Model1")
+            .WithTokenRateLimiting(60, 50, TokenBasedRateLimitingLimitType.PerAICentralEndpoint)
+            .Assemble("azure-with-token-rate-limiter.localtest.me");
+    
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithClientPartitionedTokenRateLimiter() =>
+        new TestAICentralPipelineBuilder()
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "random", "Model1")
+            .WithTokenRateLimiting(2, 50, TokenBasedRateLimitingLimitType.PerConsumer)
+            .WithApiKeyAuth(
+                ("client-1", "123", "234"),
+                ("client-2", "345", "456")
+            )
+            .Assemble("azure-with-client-partitioned-token-rate-limiter.localtest.me");
+
     public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleEndpointSelectorHierarchy() =>
         new TestAICentralPipelineBuilder()
             .WithHierarchicalEndpointSelector(AICentralFakeResponses.Endpoint200, "random", "Model1")
@@ -37,7 +66,7 @@ public static class TestPipelines
     public static AICentralPipelineAssembler AzureOpenAIServiceWithRandomAzureOpenAIEndpoints() =>
         new TestAICentralPipelineBuilder()
             .WithRandomEndpoints(
-                (AICentralFakeResponses.Endpoint200, "random", "Model1"), 
+                (AICentralFakeResponses.Endpoint200, "random", "Model1"),
                 (AICentralFakeResponses.Endpoint200Number2, "random", "Model1"))
             .Assemble("azure-to-azure-openai.localtest.me");
 
@@ -53,7 +82,7 @@ public static class TestPipelines
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithAuth() =>
         new TestAICentralPipelineBuilder()
-            .WithApiKeyAuth("123", "456")
+            .WithApiKeyAuth(("client-1", "123", "456"))
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "api-key-auth", "Model1")
             .Assemble("azure-with-auth.localtest.me");
 
