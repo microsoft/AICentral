@@ -19,6 +19,11 @@ public static class TestPipelines
             .WithRateLimiting(60, 1)
             .Assemble("azure-with-rate-limiter.localtest.me");
 
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleEndpointSelectorHierarchy() =>
+        new TestAICentralPipelineBuilder()
+            .WithHierarchicalEndpointSelector(AICentralFakeResponses.Endpoint200, "random", "Model1")
+            .Assemble("azure-hierarchical-selector.localtest.me");
+
     public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleAzureOpenAIEndpoint() =>
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "gpt-3.5-turbo", "Model1")

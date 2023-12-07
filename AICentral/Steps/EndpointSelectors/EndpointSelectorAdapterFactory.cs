@@ -2,10 +2,10 @@
 
 namespace AICentral.Steps.EndpointSelectors;
 
-internal class EndpointSelectorAdapterFactory : IAICentralEndpointDispatcherFactory
+public class EndpointSelectorAdapterFactory : IAICentralEndpointDispatcherFactory
 {
     private readonly Lazy<EndpointSelectorAdapter> _instance;
-    private IAICentralEndpointSelectorFactory _centralEndpointSelectorFactory;
+    private readonly IAICentralEndpointSelectorFactory _centralEndpointSelectorFactory;
 
     public EndpointSelectorAdapterFactory(IAICentralEndpointSelectorFactory centralEndpointSelectorFactory)
     {

@@ -3,7 +3,7 @@ using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors;
 
-internal class EndpointSelectorAdapter : IAICentralEndpointDispatcher
+public class EndpointSelectorAdapter : IAICentralEndpointDispatcher
 {
     private readonly IAICentralEndpointSelectorFactory _endpointSelectorFactory;
 

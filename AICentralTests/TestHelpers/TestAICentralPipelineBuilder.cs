@@ -52,7 +52,8 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
-    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel, int? maxConcurrency = null)
+    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel,
+        int? maxConcurrency = null)
     {
         var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherFactory($"https://{hostname}",
             new Dictionary<string, string>()
@@ -210,6 +211,24 @@ public class TestAICentralPipelineBuilder
     {
         _requestsPerWindow = requestsPerWindow;
         _windowInSeconds = windowInSeconds;
+        return this;
+    }
+
+    public TestAICentralPipelineBuilder WithHierarchicalEndpointSelector(string endpoint200, string model, string mappedModel)
+    {
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherFactory(
+            $"https://{endpoint200}",
+            new Dictionary<string, string>()
+            {
+                [model] = mappedModel
+            },
+            AuthenticationType.ApiKey,
+            Guid.NewGuid().ToString());
+
+        var endpointFactory = new SingleEndpointSelectorFactory(openAiEndpointDispatcherBuilder);
+        _endpointFactory = new SingleEndpointSelectorFactory(new EndpointSelectorAdapterFactory(endpointFactory));
+        _openAiEndpointDispatcherBuilders = new[] { openAiEndpointDispatcherBuilder };
+
         return this;
     }
 }
