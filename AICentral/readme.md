@@ -12,7 +12,7 @@ AI Central gives you control over your AI services.
 
 ## Configuration
 
-See [docs on Github](https://github.com/graemefoster/AICentral/) for more details.
+See [docs on Github](https://github.com/microsoft/AICentral/) for more details.
 
 ## Minimal
 

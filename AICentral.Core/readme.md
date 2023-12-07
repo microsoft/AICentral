@@ -2,7 +2,7 @@
 
 This package contains the Core Interfaces for building your own Extensibility into AI Central.
 
-See [https://github.com/graemefoster/AICentral/tree/main/AICentral.Logging.AzureMonitor](https://github.com/graemefoster/AICentral/tree/main/AICentral.Logging.AzureMonitor) for an example.
+See [https://github.com/microsoft/AICentral/tree/main/AICentral.Logging.AzureMonitor](https://github.com/microsoft/AICentral/tree/main/AICentral.Logging.AzureMonitor) for an example.
 
 ## Structure
 An extensibility project requires 3 classes:

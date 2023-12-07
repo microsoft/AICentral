@@ -1,6 +1,6 @@
 # AI Central
 
-![main](https://github.com/graemefoster/aicentral/actions/workflows/build.yaml/badge.svg)
+![main](https://github.com/microsoft/aicentral/actions/workflows/build.yaml/badge.svg)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/mit)
 [![NuGet Status](http://img.shields.io/nuget/v/aicentral.svg?style=flat)](https://www.nuget.org/packages/aicentral/)
 

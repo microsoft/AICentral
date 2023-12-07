@@ -7,7 +7,7 @@
         <OutputType>Library</OutputType>
         <IsPackable>true</IsPackable>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
-        <PackageProjectUrl>https://github.com/graemefoster/AICentral</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/microsoft/AICentral</PackageProjectUrl>
         <PackageLicenseUrl>https://licenses.nuget.org/MIT</PackageLicenseUrl>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
