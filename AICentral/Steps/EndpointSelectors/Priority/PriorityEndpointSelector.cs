@@ -35,8 +35,7 @@ public class PriorityEndpointSelector : IEndpointSelector
             try
             {
                 logger.LogWarning(e, "Prioritised Endpoint selector failed with primary. Trying fallback servers");
-                return await Handle(context, aiCallInformation, cancellationToken, _fallbackOpenAiEndpoints, true);
-                    isLastChance);
+                return await Handle(context, aiCallInformation, cancellationToken, _fallbackOpenAIEndpoints, isLastChance);
             }
             catch (HttpRequestException ex)
             {
