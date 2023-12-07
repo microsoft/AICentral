@@ -1,5 +1,7 @@
-﻿using System.Threading.RateLimiting;
+﻿using System.Globalization;
+using System.Threading.RateLimiting;
 using AICentral.Core;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Steps.TokenBasedRateLimiting;
 
@@ -50,8 +52,14 @@ public class TokenBasedRateLimitingProvider : IAICentralGenericStepFactory, IAIC
         IAICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
-        if (HasExceededTokenLimit(context))
+        if (HasExceededTokenLimit(context, out var retryAt))
         {
+            var resultHandler = Results.StatusCode(429);
+            if (retryAt != null)
+            {
+                context.Response.Headers.RetryAfter = new StringValues(retryAt.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture));
+            }
+
             return new AICentralResponse(
                 new AICentralUsageInformation(
                     string.Empty,
@@ -60,7 +68,7 @@ public class TokenBasedRateLimitingProvider : IAICentralGenericStepFactory, IAIC
                     aiCallInformation.IncomingCallDetails.AICallType,
                     null, null, null, null, null, null, null,
                     context.Connection.RemoteIpAddress?.ToString() ?? string.Empty, DateTimeOffset.Now, TimeSpan.Zero),
-                Results.StatusCode(429));
+                resultHandler);
         }
 
         var result = await pipeline.Next(context, aiCallInformation, cancellationToken);
@@ -78,9 +86,11 @@ public class TokenBasedRateLimitingProvider : IAICentralGenericStepFactory, IAIC
         return result;
     }
 
-    private bool HasExceededTokenLimit(HttpContext context)
+    private bool HasExceededTokenLimit(HttpContext context, out TimeSpan? retryAfter)
     {
         using var lease = _rateLimiter.AttemptAcquire(context, 0);
+        lease.TryGetMetadata(MetadataName.RetryAfter.Name, out object? retry);
+        retryAfter = retry as TimeSpan?;
         return !lease.IsAcquired;
     }
 

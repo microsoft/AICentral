@@ -77,7 +77,7 @@ public class the_token_rate_limiter : IClassFixture<TestWebApplicationFactory<Pr
 
         //takes a while for the tokenisers to spin up, which happens after the rate-limiter has registered a request
         await Call("123");
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        await Task.Delay(TimeSpan.FromSeconds(3));
 
         var client1Call1 = await Call("123");
         var client2Call1 = await Call("456");
@@ -88,6 +88,9 @@ public class the_token_rate_limiter : IClassFixture<TestWebApplicationFactory<Pr
         client1Call2.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
         client2Call1.StatusCode.ShouldBe(HttpStatusCode.OK);
         client2Call2.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
+
+        client1Call2.Headers.ShouldContain(x => x.Key == "Retry-After");
+        client2Call2.Headers.ShouldContain(x => x.Key == "Retry-After");
         
         await Task.Delay(TimeSpan.FromSeconds(3));
         
