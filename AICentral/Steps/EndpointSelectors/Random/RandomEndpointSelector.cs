@@ -3,7 +3,7 @@ using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors.Random;
 
-public class RandomEndpointSelector : EndpointSelectorBase
+public class RandomEndpointSelector : IEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IAICentralEndpointDispatcher[] _openAiServers;
@@ -13,7 +13,7 @@ public class RandomEndpointSelector : EndpointSelectorBase
         _openAiServers = openAiServers;
     }
 
-    public override async Task<AICentralResponse> Handle(HttpContext context,
+    public async Task<AICentralResponse> Handle(HttpContext context,
         AICallInformation aiCallInformation,
         bool isLastChance,
         CancellationToken cancellationToken)
@@ -30,9 +30,7 @@ public class RandomEndpointSelector : EndpointSelectorBase
                 return await chosen.Handle(
                     context,
                     aiCallInformation,
-                    (requestInformation, responseMessage, sanitisedHeaders) => HandleResponse(logger, context,
-                        (requestInformation, responseMessage, sanitisedHeaders), isLastChance && !toTry.Any(),
-                        cancellationToken),
+                    isLastChance && !toTry.Any(),
                     cancellationToken); //awaiting to unwrap any Aggregate Exceptions
             }
             catch (HttpRequestException e)

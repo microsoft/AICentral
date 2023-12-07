@@ -37,7 +37,7 @@ public static class JsonResponseHandler
                 promptTokens,
                 completionTokens,
                 totalTokens,
-                context.Connection.RemoteIpAddress?.ToString() ?? "",
+                context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
                 requestInformation.StartDate,
                 requestInformation.Duration);
 

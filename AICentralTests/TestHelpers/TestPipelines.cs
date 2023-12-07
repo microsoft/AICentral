@@ -10,6 +10,7 @@ public static class TestPipelines
                 (AICentralFakeResponses.FastEndpoint, "random", "Model1"),
                 (AICentralFakeResponses.SlowEndpoint, "random", "Model1")
             )
+            .WithBulkHead(5)
             .Assemble("lowest-latency-tester.localtest.me");
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithRateLimitingAndSingleEndpoint() =>

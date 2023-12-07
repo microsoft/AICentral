@@ -2,7 +2,9 @@
 using System.Net;
 using AICentral.Core;
 using AICentral.Steps.Endpoints.OpenAILike.OpenAI;
+using AICentral.Steps.EndpointSelectors;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.DeepDev;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Primitives;
 
@@ -12,7 +14,15 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
 {
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string _id;
-    private static readonly string[] HeadersToIgnore = { "Host", "Authorization", "api-key" };
+
+    private static readonly HashSet<string> HeadersToIgnore = new(new[] { "host", "authorization", "api-key" });
+
+    private static readonly Dictionary<string, ITokenizer> Tokenisers = new()
+    {
+        ["gpt-3.5-turbo-0613"] = TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo").Result,
+        ["gpt-35-turbo"] = TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo").Result,
+        ["gpt-4"] = TokenizerBuilder.CreateByModelNameAsync("gpt-4").Result,
+    };
 
     protected OpenAILikeEndpointDispatcher(
         string id,
@@ -25,8 +35,6 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
     public async Task<AICentralResponse> Handle(
         HttpContext context,
         AICallInformation callInformation,
-        Func<AICentralRequestInformation, HttpResponseMessage, Dictionary<string, StringValues>,
-            Task<AICentralResponse>> responseHandler,
         bool isLastChance,
         CancellationToken cancellationToken)
     {
@@ -34,85 +42,149 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
 
         var incomingModelName = callInformation.IncomingCallDetails.IncomingModelName ?? string.Empty;
 
-        var mappedModelName = _modelMappings.TryGetValue(incomingModelName, out var mapping)
-            ? mapping
-            : incomingModelName;
+        var mappedModelName = _modelMappings.GetValueOrDefault(incomingModelName, incomingModelName);
 
         if (MappedModelFoundAsEmptyString(callInformation, mappedModelName))
         {
-            var aiCentralRequestInformation = new AICentralRequestInformation(
+            return new AICentralResponse(
+                new AICentralUsageInformation(
+                    HostUriBase,
+                    string.Empty,
+                    context.User.Identity?.Name ?? "unknown",
+                    callInformation.IncomingCallDetails.AICallType,
+                    callInformation.IncomingCallDetails.PromptText,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+                    DateTimeOffset.Now, TimeSpan.Zero
+                ), Results.NotFound(new { message = "Unknown model" }));
+        }
+
+        HttpRequestMessage? newRequest = default;
+        try
+        {
+            newRequest = BuildNewRequest(context, callInformation, mappedModelName);
+        }
+        catch (InvalidOperationException ie)
+        {
+            return new AICentralResponse(
+                new AICentralUsageInformation(
+                    HostUriBase,
+                    string.Empty,
+                    context.User.Identity?.Name ?? "unknown",
+                    callInformation.IncomingCallDetails.AICallType,
+                    callInformation.IncomingCallDetails.PromptText,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+                    DateTimeOffset.Now, TimeSpan.Zero
+                ), Results.BadRequest(new { message = ie.Message }));
+        }
+
+        await CustomiseRequest(context, callInformation, newRequest!, mappedModelName);
+
+        logger.LogDebug(
+            "Rewritten URL from {OriginalUrl} to {NewUrl}. Incoming Model: {IncomingModelName}. Mapped Model: {MappedModelName}",
+            context.Request.GetEncodedUrl(),
+            newRequest.RequestUri!.AbsoluteUri,
+            incomingModelName,
+            mappedModelName);
+
+        var now = DateTimeOffset.Now;
+        var sw = new Stopwatch();
+
+        var typedDispatcher = context.RequestServices
+            .GetRequiredService<ITypedHttpClientFactory<HttpAIEndpointDispatcher>>()
+            .CreateClient(
+                context.RequestServices.GetRequiredService<IHttpClientFactory>()
+                    .CreateClient(_id)
+            );
+
+        sw.Start();
+
+        var openAiResponse = await typedDispatcher.Dispatch(newRequest, cancellationToken);
+
+        //this will retry the operation for retryable status codes. When we reach here we might not want
+        //to stream the response if it wasn't a 200.
+        sw.Stop();
+
+        if (openAiResponse.StatusCode == HttpStatusCode.OK)
+        {
+            context.Response.Headers.TryAdd("x-aicentral-server", new StringValues(HostUriBase));
+        }
+        else
+        {
+            if (context.Response.Headers.TryGetValue("x-aicentral-failed-servers", out var header))
+            {
+                context.Response.Headers.Remove("x-aicentral-failed-servers");
+            }
+
+            context.Response.Headers.TryAdd("x-aicentral-failed-servers", StringValues.Concat(header, HostUriBase));
+        }
+
+        //Blow up if we didn't succeed and we don't have another option.
+        if (!isLastChance)
+        {
+            openAiResponse.EnsureSuccessStatusCode();
+        }
+
+        //decision point... If this is a streaming request, then we should start streaming the result now.
+        logger.LogDebug("Received Azure Open AI Response. Status Code: {StatusCode}", openAiResponse.StatusCode);
+
+        var requestInformation =
+            new AICentralRequestInformation(
                 HostUriBase,
                 callInformation.IncomingCallDetails.AICallType,
                 callInformation.IncomingCallDetails.PromptText,
-                DateTimeOffset.Now,
-                TimeSpan.Zero);
+                now,
+                sw.Elapsed);
 
-            return await responseHandler(
-                aiCentralRequestInformation,
-                new HttpResponseMessage(HttpStatusCode.NotFound),
-                new Dictionary<string, StringValues>());
+        CopyHeadersToResponse(context.Response, SanitiseHeaders(context, openAiResponse));
+
+        if (openAiResponse.Headers.TransferEncodingChunked == true)
+        {
+            logger.LogDebug("Detected chunked encoding response. Streaming response back to consumer");
+            return await ServerSideEventResponseHandler.Handle(
+                Tokenisers,
+                context,
+                cancellationToken,
+                openAiResponse,
+                requestInformation);
         }
 
-        try
+        if ((openAiResponse.Content.Headers.ContentType?.MediaType ?? string.Empty).Contains(
+                "json",
+                StringComparison.InvariantCultureIgnoreCase))
         {
-            var newRequest = await BuildNewRequest(context, callInformation, mappedModelName);
-            await CustomiseRequest(context, callInformation, newRequest, mappedModelName);
-
-            logger.LogDebug(
-                "Rewritten URL from {OriginalUrl} to {NewUrl}. Incoming Model: {IncomingModelName}. Mapped Model: {MappedModelName}",
-                context.Request.GetEncodedUrl(),
-                newRequest.RequestUri!.AbsoluteUri,
-                incomingModelName,
-                mappedModelName);
-
-            var now = DateTimeOffset.Now;
-            var sw = new Stopwatch();
-
-            var typedDispatcher = context.RequestServices
-                .GetRequiredService<ITypedHttpClientFactory<HttpAIEndpointDispatcher>>()
-                .CreateClient(
-                    context.RequestServices.GetRequiredService<IHttpClientFactory>()
-                        .CreateClient(_id)
-                );
-
-            sw.Start();
-            var openAiResponse = await typedDispatcher.Dispatch(newRequest, cancellationToken);
-
-            //this will retry the operation for retryable status codes. When we reach here we might not want
-            //to stream the response if it wasn't a 200.
-            sw.Stop();
-
-            //decision point... If this is a streaming request, then we should start streaming the result now.
-            logger.LogDebug("Received Azure Open AI Response. Status Code: {StatusCode}", openAiResponse.StatusCode);
-
-            var requestInformation =
-                new AICentralRequestInformation(
-                    HostUriBase,
-                    callInformation.IncomingCallDetails.AICallType,
-                    callInformation.IncomingCallDetails.PromptText,
-                    now,
-                    sw.Elapsed);
-
-            var result = await responseHandler(requestInformation, openAiResponse,
-                SanitiseHeaders(context, openAiResponse));
-
-            return result;
+            logger.LogDebug("Detected non-chunked encoding response. Sending response back to consumer");
+            return await JsonResponseHandler.Handle(
+                context,
+                cancellationToken,
+                openAiResponse,
+                requestInformation);
         }
-        catch (NotSupportedException ne)
+
+        return await StreamResponseHandler.Handle(
+            context,
+            cancellationToken,
+            openAiResponse,
+            requestInformation);
+    }
+
+
+    private static void CopyHeadersToResponse(HttpResponse response, Dictionary<string, StringValues> headersToProxy)
+    {
+        foreach (var header in headersToProxy)
         {
-            logger.LogWarning(ne, "Invalid usage detected");
-
-            var result = await responseHandler(
-                new AICentralRequestInformation(
-                    HostUriBase,
-                    AICallType.Other,
-                    callInformation.IncomingCallDetails.PromptText,
-                    DateTimeOffset.Now,
-                    TimeSpan.Zero),
-                new HttpResponseMessage(HttpStatusCode.BadRequest),
-                new Dictionary<string, StringValues>());
-
-            return result;
+            response.Headers.TryAdd(header.Key, header.Value);
         }
     }
 
@@ -121,14 +193,14 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         return callInformation.IncomingCallDetails.AICallType != AICallType.Other && mappedModelName == string.Empty;
     }
 
-    private Task<HttpRequestMessage> BuildNewRequest(HttpContext context, AICallInformation callInformation,
+    private HttpRequestMessage BuildNewRequest(HttpContext context, AICallInformation callInformation,
         string? mappedModelName)
     {
         var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method),
             BuildUri(context, callInformation, mappedModelName));
         foreach (var header in context.Request.Headers)
         {
-            if (HeadersToIgnore.Contains(header.Key, StringComparer.InvariantCultureIgnoreCase)) continue;
+            if (HeadersToIgnore.Contains(header.Key.ToLowerInvariant())) continue;
 
             if (!newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()) &&
                 newRequest.Content != null)
@@ -137,13 +209,13 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
             }
         }
 
-        return Task.FromResult(newRequest);
+        return newRequest;
     }
 
     protected abstract Task CustomiseRequest(HttpContext context, AICallInformation callInformation,
         HttpRequestMessage newRequest, string? newModelName);
 
-    public abstract Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,
+    protected abstract Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,
         HttpResponseMessage openAiResponse);
 
     protected abstract string HostUriBase { get; }

@@ -4,7 +4,7 @@ using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors.LowestLatency;
 
-public class LowestLatencyEndpointSelector : EndpointSelectorBase
+public class LowestLatencyEndpointSelector : IEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IAICentralEndpointDispatcher[] _openAiServers;
@@ -12,14 +12,14 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
     private readonly ConcurrentDictionary<IAICentralEndpointDispatcher, ConcurrentQueue<double>> _recentLatencies =
         new();
 
-    private const int RequiredCount = 150;
+    private const int RequiredCount = 10;
 
     public LowestLatencyEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
     {
         _openAiServers = openAiServers;
     }
 
-    public override async Task<AICentralResponse> Handle(
+    public async Task<AICentralResponse> Handle(
         HttpContext context,
         AICallInformation aiCallInformation,
         bool isLastChance,
@@ -27,24 +27,21 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<LowestLatencyEndpointSelector>>();
         var toTry = _openAiServers.OrderBy(GetRecentAverageLatencyFor).ToArray();
-        logger.LogDebug("Random Endpoint selector is handling request");
+        logger.LogDebug("Lowest Latency selector is handling request");
+        var tried = 0;
         foreach (var chosen in toTry)
         {
             try
             {
-                return await chosen.Handle(
+                var response = await chosen.Handle(
                     context,
                     aiCallInformation,
-                    (requestInformation, responseMessage, sanitisedHeaders) =>
-                    {
-                        UpdateLatencies(chosen, requestInformation);
-                        return HandleResponse(
-                            logger,
-                            context,
-                            (requestInformation, responseMessage, sanitisedHeaders),
-                            isLastChance && !toTry.Any(), cancellationToken);
-                    },
+                    isLastChance && (tried == toTry.Length - 1),
                     cancellationToken); //awaiting to unwrap any Aggregate Exceptions
+
+                UpdateLatencies(logger, chosen, response.AICentralUsageInformation);
+
+                return response;
             }
             catch (HttpRequestException e)
             {
@@ -56,12 +53,17 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
 
                 logger.LogWarning(e, "Failed to handle request. Trying another endpoint");
             }
+            finally
+            {
+                tried++;
+            }
         }
 
         throw new InvalidOperationException("Failed to satisfy request");
     }
 
-    private void UpdateLatencies(IAICentralEndpointDispatcher endpoint, AICentralRequestInformation requestInformation)
+    private void UpdateLatencies(ILogger<LowestLatencyEndpointSelector> logger, IAICentralEndpointDispatcher endpoint,
+        AICentralUsageInformation requestInformation)
     {
         if (!_recentLatencies.ContainsKey(endpoint))
         {
@@ -69,6 +71,7 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
         }
 
         _recentLatencies[endpoint].Enqueue(requestInformation.Duration.TotalMilliseconds);
+        logger.LogDebug("Endpoint {Endpoint} has a latency of {Latency}ms", requestInformation.OpenAIHost, requestInformation.Duration.TotalMilliseconds);
 
         //only hold onto a specified number of items
         var currentCount = _recentLatencies[endpoint].Count;
@@ -84,8 +87,8 @@ public class LowestLatencyEndpointSelector : EndpointSelectorBase
 
     private double GetRecentAverageLatencyFor(IAICentralEndpointDispatcher endpoint)
     {
-        var canAverage = _recentLatencies.TryGetValue(endpoint, out var queue);
-        if (!canAverage)
+        var hasLatencyData = _recentLatencies.TryGetValue(endpoint, out var queue);
+        if (!hasLatencyData)
         {
             //try and get some data. Might need to check failure count here as-well, although the circuit breaker should ensure often failing endpoint gives up quickly.
             return _rnd.Next(0, 5);

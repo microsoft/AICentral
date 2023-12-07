@@ -2,6 +2,7 @@
 using AICentralTests.TestHelpers;
 using Newtonsoft.Json;
 using Shouldly;
+using Xunit.Abstractions;
 
 namespace AICentralTests;
 
@@ -10,9 +11,10 @@ public class the_lowest_latency_endpoint_selector : IClassFixture<TestWebApplica
     private readonly TestWebApplicationFactory<Program> _factory;
     private readonly HttpClient _httpClient;
 
-    public the_lowest_latency_endpoint_selector(TestWebApplicationFactory<Program> factory)
+    public the_lowest_latency_endpoint_selector(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
     {
         _factory = factory;
+        _factory.OutputHelper = testOutputHelper;
         _httpClient = factory.CreateClient();
     }
 
@@ -27,18 +29,18 @@ public class the_lowest_latency_endpoint_selector : IClassFixture<TestWebApplica
         var rnd = new Random(Environment.TickCount);
         _factory.SeedChatCompletions(AICentralFakeResponses.FastEndpoint, "Model1", async () =>
             {
-                await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(0, 10)));
+                await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(0, 5)));
                 return AICentralFakeResponses.FakeChatCompletionsResponse();
             });
         _factory.SeedChatCompletions(AICentralFakeResponses.SlowEndpoint, "Model1", async () =>
             {
-                await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(50, 100)));
+                await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(10, 35)));
                 return AICentralFakeResponses.FakeChatCompletionsResponse();
             });
 
-        var results = await Task.WhenAll(Enumerable.Range(0, 2000).Select(async _ =>
+        var results = await Task.WhenAll(Enumerable.Range(0, 100).Select(async _ =>
         {
-            await Task.Delay(rnd.Next(0, 1000));
+            await Task.Delay(rnd.Next(0, 25));
             return await _httpClient.PostAsync(
                 "http://lowest-latency-tester.localtest.me/openai/deployments/random/chat/completions?api-version=2023-05-15",
                 new StringContent(JsonConvert.SerializeObject(new
@@ -54,7 +56,7 @@ public class the_lowest_latency_endpoint_selector : IClassFixture<TestWebApplica
         var slowEndpointCount = results.Count(x => x.Headers.GetValues("x-aicentral-server").Single().EndsWith(AICentralFakeResponses.SlowEndpoint));
         var fastEndpointCount = results.Count(x => x.Headers.GetValues("x-aicentral-server").Single().EndsWith(AICentralFakeResponses.FastEndpoint));
 
-        fastEndpointCount.ShouldBeInRange(1300, 2000);
-        slowEndpointCount.ShouldBeInRange(0, 700);
+        fastEndpointCount.ShouldBeInRange(70, 100);
+        slowEndpointCount.ShouldBeInRange(0, 30);
     }
 }

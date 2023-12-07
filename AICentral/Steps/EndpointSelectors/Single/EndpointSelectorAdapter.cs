@@ -18,16 +18,13 @@ internal class EndpointSelectorAdapter : IAICentralEndpointDispatcher
     /// </summary>
     /// <param name="context"></param>
     /// <param name="callInformation"></param>
-    /// <param name="responseHandler"></param>
+    /// <param name="isLastChance"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public Task<AICentralResponse> Handle(
         HttpContext context,
         AICallInformation callInformation,
-        Func<AICentralRequestInformation,
-            HttpResponseMessage,
-            Dictionary<string, StringValues>,
-            Task<AICentralResponse>> responseHandler,
+        bool isLastChance,
         CancellationToken cancellationToken)
     {
         return _endpointSelector.Handle(context, callInformation, isLastChance, cancellationToken);

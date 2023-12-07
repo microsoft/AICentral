@@ -4,7 +4,7 @@ using AICentral.Steps.EndpointSelectors.Random;
 
 namespace AICentral.Steps.EndpointSelectors.Priority;
 
-public class PriorityEndpointSelector : EndpointSelectorBase
+public class PriorityEndpointSelector : IEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IAICentralEndpointDispatcher[] _prioritisedOpenAIEndpoints;
@@ -18,8 +18,8 @@ public class PriorityEndpointSelector : EndpointSelectorBase
         _fallbackOpenAIEndpoints = fallbackOpenAIEndpoints;
     }
 
-    public override async Task<AICentralResponse> Handle(
-        HttpContext context, 
+    public async Task<AICentralResponse> Handle(
+        HttpContext context,
         AICallInformation aiCallInformation,
         bool isLastChance,
         CancellationToken cancellationToken)
@@ -35,7 +35,8 @@ public class PriorityEndpointSelector : EndpointSelectorBase
             try
             {
                 logger.LogWarning(e, "Prioritised Endpoint selector failed with primary. Trying fallback servers");
-                return await Handle(context, aiCallInformation, cancellationToken, _fallbackOpenAIEndpoints, isLastChance);
+                return await Handle(context, aiCallInformation, cancellationToken, _fallbackOpenAIEndpoints,
+                    isLastChance);
             }
             catch (HttpRequestException ex)
             {
@@ -64,9 +65,7 @@ public class PriorityEndpointSelector : EndpointSelectorBase
                     await chosen.Handle(
                         context,
                         aiCallInformation,
-                        (requestInformation, responseMessage, sanitisedHeaders) => HandleResponse(logger, context,
-                            (requestInformation, responseMessage, sanitisedHeaders),
-                            isLastChance && !toTry.Any(), cancellationToken),
+                        isLastChance,
                         cancellationToken); //awaiting to unwrap any Aggregate Exceptions
             }
             catch (HttpRequestException e)

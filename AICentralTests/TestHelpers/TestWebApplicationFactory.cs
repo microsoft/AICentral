@@ -14,6 +14,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
 {
     protected override IHost CreateHost(IHostBuilder builder)
     {
+        builder.UseEnvironment("tests");
         builder.ConfigureServices(services =>
         {
             services.AddSingleton<ILoggerFactory>(new LoggerFactory(new[]

@@ -14,13 +14,13 @@ public class FakeHttpMessageHandler : HttpMessageHandler
         _seeder = seeder;
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(
+    protected override Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
         if (_seeder.SeededResponses.TryGetValue(request.RequestUri!.AbsoluteUri, out var response))
         {
-            return await response();
+            return response();
         }
 
         throw new NotSupportedException($"No fake response registered for {request.RequestUri.AbsoluteUri}");
