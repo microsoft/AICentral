@@ -41,7 +41,9 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.AzureOpenAIServiceWithBulkHeadOnSingleEndpoint(),
                 TestPipelines.AzureOpenAILowestLatencyEndpoint(),
                 TestPipelines.AzureOpenAIServiceWithSingleEndpointSelectorHierarchy(),
-                TestPipelines.AzureOpenAIServiceWithClientPartitionedRateLimiter()
+                TestPipelines.AzureOpenAIServiceWithClientPartitionedRateLimiter(),
+                TestPipelines.AzureOpenAIServiceWithTokenRateLimitingAndSingleEndpoint(),
+                TestPipelines.AzureOpenAIServiceWithClientPartitionedTokenRateLimiter()
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));

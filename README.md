@@ -156,8 +156,11 @@ This pipeline will:
         "Type": "AspNetCoreFixedWindowRateLimiting",
         "Name": "window-rate-limiter",
         "Properties": {
-          "Window": 10,
-          "PermitLimit": 100
+          "LimitType": "PerConsumer|PerAICentralEndpoint",
+          "Options": {
+            "Window": 10,
+            "PermitLimit": 100
+          }
         }
       },
       {

@@ -1,21 +1,24 @@
-﻿using System.Collections.Concurrent;
-using System.Threading.RateLimiting;
+﻿using System.Threading.RateLimiting;
 using AICentral.Core;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace AICentral.Steps.TokenBasedRateLimiting;
 
 public class TokenBasedRateLimitingProvider : IAICentralGenericStepFactory, IAICentralPipelineStep
 {
     private readonly TokenBasedRateLimiterOptions _rateLimiterOptions;
-    private PartitionedRateLimiter<HttpContext> _rateLimiter;
+    private readonly PartitionedRateLimiter<HttpContext> _rateLimiter;
 
     public TokenBasedRateLimitingProvider(TokenBasedRateLimiterOptions fixedWindowRateLimiterOptions)
     {
         _rateLimiterOptions = fixedWindowRateLimiterOptions;
         _rateLimiter = PartitionedRateLimiter.Create<HttpContext, string>(ctx =>
             new RateLimitPartition<string>(GetPartitionId(ctx),
-                _ => new SlidingWindowRateLimiter(new SlidingWindowRateLimiterOptions())));
+                _ => new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions()
+                {
+                    Window = TimeSpan.FromSeconds(_rateLimiterOptions.Window!.Value),
+                    PermitLimit = _rateLimiterOptions.PermitLimit!.Value,
+                    AutoReplenishment = false
+                })));
     }
 
     public void RegisterServices(IServiceCollection services)

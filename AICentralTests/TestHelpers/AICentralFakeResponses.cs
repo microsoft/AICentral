@@ -14,7 +14,7 @@ public class AICentralFakeResponses
     public static readonly string SlowEndpoint = Guid.NewGuid().ToString();
     public static readonly string FakeResponseId = "chatcmpl-6v7mkQj980V1yBec6ETrKPRqFjNw9";
 
-    public static HttpResponseMessage FakeChatCompletionsResponse()
+    public static HttpResponseMessage FakeChatCompletionsResponse(int? totalTokens = 126)
     {
         var response = new HttpResponseMessage();
         response.Content = new StringContent(
@@ -28,7 +28,7 @@ public class AICentralFakeResponses
                 {
                     prompt_tokens = 58,
                     completion_tokens = 68,
-                    total_tokens = 126
+                    total_tokens = totalTokens
                 },
                 choices = new[]
                 {

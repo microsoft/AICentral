@@ -16,6 +16,7 @@ using AICentral.Steps.EndpointSelectors.Random;
 using AICentral.Steps.EndpointSelectors.Single;
 using AICentral.Steps.RateLimiting;
 using AICentral.Steps.Routes;
+using AICentral.Steps.TokenBasedRateLimiting;
 
 namespace AICentralTests.TestHelpers;
 
@@ -28,6 +29,9 @@ public class TestAICentralPipelineBuilder
     private int? _requestsPerWindow;
     private int? _allowedConcurrency;
     private FixedWindowRateLimitingLimitType? _fixedWindowLimitType;
+    private int? _tokenWindowSize;
+    private int? _tokensPerWindow;
+    private TokenBasedRateLimitingLimitType? _tokenLimitType;
 
     public TestAICentralPipelineBuilder WithApiKeyAuth(params (string clientName, string key1, string key2)[] clients)
     {
@@ -176,6 +180,18 @@ public class TestAICentralPipelineBuilder
             steps.Add(stepId);
         }
 
+        if (_tokenWindowSize != null)
+        {
+            var stepId = Guid.NewGuid().ToString();
+            genericSteps[stepId] = new TokenBasedRateLimitingProvider(new TokenBasedRateLimiterOptions()
+            {
+                LimitType = _tokenLimitType,
+                PermitLimit = _tokensPerWindow,
+                Window = _tokenWindowSize
+            });
+            steps.Add(stepId);
+        }
+
         if (_allowedConcurrency != null)
         {
             var stepId = Guid.NewGuid().ToString();
@@ -216,6 +232,15 @@ public class TestAICentralPipelineBuilder
         _fixedWindowLimitType = limitType;
         _requestsPerWindow = requestsPerWindow;
         _windowInSeconds = windowInSeconds;
+        return this;
+    }
+
+    public TestAICentralPipelineBuilder WithTokenRateLimiting(int windowSize, int completionTokensPerWindow,
+        TokenBasedRateLimitingLimitType? limitType = TokenBasedRateLimitingLimitType.PerAICentralEndpoint)
+    {
+        _tokenWindowSize = windowSize;
+        _tokensPerWindow = completionTokensPerWindow;
+        _tokenLimitType = limitType;
         return this;
     }
 
