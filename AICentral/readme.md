@@ -29,7 +29,7 @@ This sample produces a AI-Central proxy that
         "Type": "AzureOpenAIEndpoint",
         "Name": "openai-1",
         "Properties": {
-          "LanguageEndpoint": "https://<my-ai>.openai.azure.com",
+          "LanguageEndpoint": "https://<my-ai>.openai.azure.com"
         }
       }
     ],
@@ -46,7 +46,7 @@ This sample produces a AI-Central proxy that
       {
         "Name": "OpenAIPipeline",
         "Host": "mypipeline.mydomain.com",
-        "EndpointSelector": "default",
+        "EndpointSelector": "default"
       }
     ]
   }

@@ -115,6 +115,54 @@ We ship 3 Endpoint Selectors:
 }
 ```
 
+## Referencing Endpoint Selectors from Endpoint Selectors
+
+To support more complex Endpoint Selectors we support referencing an Endpoint Selector from another Endpoint Selector.
+
+The implementation relies on the order of your Selectors. You can only reference selectors that have been defined earlier. This sample shows a Lowest Latency endpoint used for the priority endpoints in a Prioritised endpoint selector.
+
+```json
+{
+  "AICentral": {
+    "Endpoints": [ "... define endpoints" ],
+    "EndpointSelectors": [
+      {
+        "Type": "LowestLatency",
+        "Name": "lowest-latency-group",
+        "Properties": {
+          "Endpoints": [
+            "endpoint-name-from-earlier",
+            "another-endpoint-name-from-earlier"
+          ]
+        }
+      },
+      {
+        "Type": "Prioritised",
+        "Properties": {
+          "PriorityEndpoints": [
+            "lowest-latency-group" //references the lowest-latency-group defined before this
+          ],
+          "FallbackEndpoints": [
+            "yet-another-endpoint-name-from-earlier",
+            "and-yet-another-endpoint-name-from-earlier"
+          ]
+        }
+      },
+      {
+        
+      }
+    ],
+    "Pipelines": [
+      {
+        "Name": "MyPipeline",
+        "Host": "<host-name-we-listen-for-requests-on>",
+        "EndpointSelector": "name-from-above"
+      }
+    ]
+  }
+}
+```
+
 ## Minimal Pipeline configuration
 
 Using Endpoints and Endpoint Selectors we can create a pipeline like this:
