@@ -16,7 +16,7 @@ public class AffinityEndpointHelper
     public static bool IsAffinityRequest(
         AICallInformation callInformation,
         IEnumerable<IAICentralEndpointDispatcher> availableDispatchers,
-        out IEndpointSelector? singleEndpointSelector)
+        out IAICentralEndpointSelector? singleEndpointSelector)
     {
         if (callInformation.IncomingCallDetails.AICallType == AICallType.Other)
         {
@@ -29,7 +29,7 @@ public class AffinityEndpointHelper
                         availableDispatchers.SingleOrDefault(x => x.IsAffinityRequestToMe(affinityHeader[0]!));
                     if (aiCentralEndpointDispatcher != null)
                     {
-                        singleEndpointSelector = new SingleEndpointSelector(aiCentralEndpointDispatcher);
+                        singleEndpointSelector = new SingleIaiCentralEndpointSelector(aiCentralEndpointDispatcher);
                         return true;
                     }
                 }
@@ -40,9 +40,9 @@ public class AffinityEndpointHelper
         return false;
     }
 
-    public static IEnumerable<IAICentralEndpointDispatcher> FlattenedEndpoints(IEndpointSelector endpointSelector)
+    public static IEnumerable<IAICentralEndpointDispatcher> FlattenedEndpoints(IAICentralEndpointSelector iaiCentralEndpointSelector)
     {
-        foreach (var endpoint in endpointSelector.ContainedEndpoints())
+        foreach (var endpoint in iaiCentralEndpointSelector.ContainedEndpoints())
         {
             if (endpoint is EndpointSelectorAdapter endpointSelectorAdapter)
             {

@@ -1,6 +1,6 @@
 ﻿namespace AICentral.Core;
 
-public interface IEndpointSelector
+public interface IAICentralEndpointSelector
 {
     Task<AICentralResponse> Handle(
         HttpContext context, 

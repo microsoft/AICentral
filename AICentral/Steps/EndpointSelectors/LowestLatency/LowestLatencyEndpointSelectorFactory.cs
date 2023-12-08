@@ -6,16 +6,16 @@ namespace AICentral.Steps.EndpointSelectors.LowestLatency;
 public class LowestLatencyEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
     private readonly IAICentralEndpointDispatcherFactory[] _openAiServers;
-    private readonly Lazy<LowestLatencyEndpointSelector> _endpointSelector;
+    private readonly Lazy<LowestLatencyIaiCentralEndpointSelector> _endpointSelector;
 
     public LowestLatencyEndpointSelectorFactory(IAICentralEndpointDispatcherFactory[] openAiServers)
     {
         _openAiServers = openAiServers.ToArray();
-        _endpointSelector = new Lazy<LowestLatencyEndpointSelector>(() => new LowestLatencyEndpointSelector(
+        _endpointSelector = new Lazy<LowestLatencyIaiCentralEndpointSelector>(() => new LowestLatencyIaiCentralEndpointSelector(
             _openAiServers.Select(x => x.Build()).ToArray()));
     }
 
-    public IEndpointSelector Build()
+    public IAICentralEndpointSelector Build()
     {
         return _endpointSelector.Value;
     }

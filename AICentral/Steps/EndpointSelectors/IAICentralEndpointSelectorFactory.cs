@@ -13,7 +13,7 @@ public interface IAICentralEndpointSelectorFactory
         Dictionary<string, IAICentralEndpointDispatcherFactory> aiCentralEndpoints
         ) => throw new NotImplementedException();
 
-    IEndpointSelector Build();
+    IAICentralEndpointSelector Build();
 
     void RegisterServices(IServiceCollection services);
 

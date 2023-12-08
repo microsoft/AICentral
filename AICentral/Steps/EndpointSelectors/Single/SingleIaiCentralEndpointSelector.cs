@@ -3,11 +3,11 @@ using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors.Single;
 
-public class SingleEndpointSelector : IEndpointSelector
+public class SingleIaiCentralEndpointSelector : IAICentralEndpointSelector
 {
     private readonly IAICentralEndpointDispatcher _endpoint;
 
-    public SingleEndpointSelector(IAICentralEndpointDispatcher endpoint)
+    public SingleIaiCentralEndpointSelector(IAICentralEndpointDispatcher endpoint)
     {
         _endpoint = endpoint;
     }

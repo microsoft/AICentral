@@ -45,7 +45,7 @@ public class AICentralPipeline
         logger.LogDebug("Detected {RequestType} / {CallType} from incoming request",
             requestDetails.IncomingCallDetails.ServiceType, requestDetails.IncomingCallDetails.AICallType);
 
-        IEndpointSelector? endpointSelector;
+        IAICentralEndpointSelector? endpointSelector;
         if (requestDetails.IncomingCallDetails.AICallType == AICallType.Other)
         {
             endpointSelector = FindAffinityServer(requestDetails) ?? _endpointSelector.Build();
@@ -61,7 +61,7 @@ public class AICentralPipeline
         return result;
     }
 
-    private IEndpointSelector? FindAffinityServer(AICallInformation requestDetails)
+    private IAICentralEndpointSelector? FindAffinityServer(AICallInformation requestDetails)
     {
         var availableEndpointSelectors = AffinityEndpointHelper.FlattenedEndpoints(_endpointSelector.Build());
         AffinityEndpointHelper.IsAffinityRequest(requestDetails, availableEndpointSelectors,

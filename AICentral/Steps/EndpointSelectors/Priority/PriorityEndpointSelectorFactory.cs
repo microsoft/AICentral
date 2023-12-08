@@ -8,7 +8,7 @@ public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
     private readonly IAICentralEndpointDispatcherFactory[] _prioritisedOpenAIEndpoints;
     private readonly IAICentralEndpointDispatcherFactory[] _fallbackOpenAIEndpoints;
-    private readonly Lazy<PriorityEndpointSelector> _endpointSelector;
+    private readonly Lazy<PriorityIaiCentralEndpointSelector> _endpointSelector;
 
     public PriorityEndpointSelectorFactory(
         IAICentralEndpointDispatcherFactory[] prioritisedOpenAIEndpoints,
@@ -16,7 +16,7 @@ public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
     {
         _prioritisedOpenAIEndpoints = prioritisedOpenAIEndpoints;
         _fallbackOpenAIEndpoints = fallbackOpenAIEndpoints;
-        _endpointSelector = new Lazy<PriorityEndpointSelector>(() => new PriorityEndpointSelector(
+        _endpointSelector = new Lazy<PriorityIaiCentralEndpointSelector>(() => new PriorityIaiCentralEndpointSelector(
             _prioritisedOpenAIEndpoints.Select(x => x.Build()).ToArray(),
             _fallbackOpenAIEndpoints.Select(x => x.Build()).ToArray()));
     }
@@ -58,7 +58,7 @@ public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
         );
     }
 
-    public IEndpointSelector Build()
+    public IAICentralEndpointSelector Build()
     {
         return _endpointSelector.Value;
     }
