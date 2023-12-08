@@ -81,6 +81,12 @@ app.Run();
         }
       }
     ],
+    "AuthProviders": [
+      {
+        "Type": "AllowAnonymous",
+        "Name": "allow-anonymous-auth"
+      }
+    ],
     "EndpointSelectors": [
       {
         "Type": "SingleEndpoint",
@@ -94,6 +100,7 @@ app.Run();
       {
         "Name": "AzureOpenAIPipeline",
         "Host": "mypipeline.mydomain.com",
+        "AuthProvider": "allow-anonymous-auth",
         "EndpointSelector": "default"
       }
     ]
