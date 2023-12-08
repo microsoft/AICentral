@@ -10,6 +10,7 @@ AI Central gives you control over your AI services.
   - Random endpoint selector
   - Prioritised endpoint selector with fallback
   - Lowest Latency endpoint selector
+- Can proxy asynchronous requests such as Azure Open AI Image Generation across fleets of servers
 - Custom consumer OAuth2 authorisation
 - Circuit breakers, and backoff-retry over downstream AI services
 - Local token rate limiting
@@ -80,6 +81,12 @@ app.Run();
         }
       }
     ],
+    "AuthProviders": [
+      {
+        "Type": "AllowAnonymous",
+        "Name": "allow-anonymous-auth"
+      }
+    ],
     "EndpointSelectors": [
       {
         "Type": "SingleEndpoint",
@@ -93,6 +100,7 @@ app.Run();
       {
         "Name": "AzureOpenAIPipeline",
         "Host": "mypipeline.mydomain.com",
+        "AuthProvider": "allow-anonymous-auth",
         "EndpointSelector": "default"
       }
     ]

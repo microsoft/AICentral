@@ -182,8 +182,26 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     }
 
     [Fact]
-    public void will_not_proxy_unknown_requests_to_a_multi_endpoint()
+    public async Task will_follow_affinity_requests_to_allow_async_against_a_multi_endpoint()
     {
+        //test will fail on the first endpoint, so has to pick the second. This test should always pass, as the 2nd call to check the image completion status
+        //will always have an affinity header to the working endpoint.
+        _factory.Seed(
+            $"https://{AICentralFakeResponses.Endpoint200}/openai/images/generations:submit?api-version=2023-09-01-preview",
+            () => Task.FromResult(AICentralFakeResponses.NotFoundResponse()));
+
+        _factory.Seed(
+            $"https://{AICentralFakeResponses.Endpoint200}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview",
+            () => Task.FromResult(AICentralFakeResponses.NotFoundResponse()));
+
+        _factory.Seed(
+            $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/images/generations:submit?api-version=2023-09-01-preview",
+            () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIImageResponse()));
+
+        _factory.Seed(
+            $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview",
+            () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIImageStatusResponse()));
+
         var client = new OpenAIClient(
             new Uri("http://azure-to-azure-openai.localtest.me"),
             new AzureKeyCredential("ignore"),
@@ -193,11 +211,12 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
                 Transport = new HttpClientTransport(_httpClient),
             });
 
-        Should.Throw<RequestFailedException>(async () =>
-            await client.GetImageGenerationsAsync(
-                new ImageGenerationOptions()
-                {
-                    Prompt = "Me building an Open AI Reverse Proxy",
-                }));
+        var response = await client.GetImageGenerationsAsync(
+            new ImageGenerationOptions()
+            {
+                Prompt = "Me building an Open AI Reverse Proxy",
+            });
+        
+        response.HasValue.ShouldBeTrue();
     }
 }

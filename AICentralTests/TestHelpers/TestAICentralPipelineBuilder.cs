@@ -58,7 +58,9 @@ public class TestAICentralPipelineBuilder
     public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel,
         int? maxConcurrency = null)
     {
-        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherFactory($"https://{hostname}",
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherFactory(
+            hostname,
+            $"https://{hostname}",
             new Dictionary<string, string>()
             {
                 [model] = mappedModel
@@ -74,9 +76,10 @@ public class TestAICentralPipelineBuilder
     }
 
 
-    public TestAICentralPipelineBuilder WithSingleOpenAIEndpoint(string model, string mappedModel)
+    public TestAICentralPipelineBuilder WithSingleOpenAIEndpoint(string name, string model, string mappedModel)
     {
         var openAiEndpointDispatcherBuilder = new OpenAIEndpointDispatcherFactory(
+            name,
             new Dictionary<string, string>()
             {
                 [model] = mappedModel
@@ -97,7 +100,9 @@ public class TestAICentralPipelineBuilder
     )
     {
         IAICentralEndpointDispatcherFactory[] priorityOpenAIEndpointDispatcherBuilder = priorityEndpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherFactory($"https://{x.hostname}", new Dictionary<string, string>()
+            new AzureOpenAIEndpointDispatcherFactory(
+                x.hostname,
+                $"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
@@ -105,7 +110,9 @@ public class TestAICentralPipelineBuilder
                 Guid.NewGuid().ToString())).ToArray();
 
         IAICentralEndpointDispatcherFactory[] fallbackOpenAIEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherFactory($"https://{x.hostname}", new Dictionary<string, string>()
+            new AzureOpenAIEndpointDispatcherFactory(
+                x.hostname,
+                $"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
@@ -126,7 +133,9 @@ public class TestAICentralPipelineBuilder
         params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherFactory($"https://{x.hostname}", new Dictionary<string, string>()
+            new AzureOpenAIEndpointDispatcherFactory(
+                x.hostname,
+                $"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
@@ -142,7 +151,9 @@ public class TestAICentralPipelineBuilder
         params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherFactory($"https://{x.hostname}", new Dictionary<string, string>()
+            new AzureOpenAIEndpointDispatcherFactory(
+                x.hostname,
+                $"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
@@ -248,6 +259,7 @@ public class TestAICentralPipelineBuilder
         string mappedModel)
     {
         var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherFactory(
+            endpoint200,
             $"https://{endpoint200}",
             new Dictionary<string, string>()
             {

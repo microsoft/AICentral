@@ -1,4 +1,6 @@
-﻿namespace AICentral.Steps.Endpoints;
+﻿using AICentral.Core;
+
+namespace AICentral.Steps.Endpoints;
 
 public interface IAICentralEndpointDispatcherFactory
 {

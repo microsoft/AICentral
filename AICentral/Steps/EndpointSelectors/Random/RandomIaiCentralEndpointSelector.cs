@@ -3,12 +3,12 @@ using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors.Random;
 
-public class RandomEndpointSelector : IEndpointSelector
+public class RandomIaiCentralEndpointSelector : IAICentralEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IAICentralEndpointDispatcher[] _openAiServers;
 
-    public RandomEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
+    public RandomIaiCentralEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
     {
         _openAiServers = openAiServers;
     }
@@ -18,7 +18,7 @@ public class RandomEndpointSelector : IEndpointSelector
         bool isLastChance,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelector>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<RandomIaiCentralEndpointSelector>>();
         var toTry = _openAiServers.ToList();
         logger.LogDebug("Random Endpoint selector is handling request");
         do
@@ -46,5 +46,10 @@ public class RandomEndpointSelector : IEndpointSelector
         } while (toTry.Count > 0);
 
         throw new InvalidOperationException("Failed to satisfy request");
+    }
+
+    public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
+    {
+        return _openAiServers;
     }
 }

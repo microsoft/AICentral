@@ -72,12 +72,12 @@ public static class TestPipelines
 
     public static AICentralPipelineAssembler OpenAIServiceWithSingleOpenAIEndpoint() =>
         new TestAICentralPipelineBuilder()
-            .WithSingleOpenAIEndpoint("openaiendpoint", "gpt-3.5-turbo")
+            .WithSingleOpenAIEndpoint("openai-single", "openaimodel", "gpt-3.5-turbo")
             .Assemble("openai-to-openai.localtest.me");
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleOpenAIEndpoint() =>
         new TestAICentralPipelineBuilder()
-            .WithSingleOpenAIEndpoint("openaiendpoint", "gpt-3.5-turbo")
+            .WithSingleOpenAIEndpoint("openai-single", "openaimodel", "gpt-3.5-turbo")
             .Assemble("azure-openai-to-openai.localtest.me");
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithAuth() =>

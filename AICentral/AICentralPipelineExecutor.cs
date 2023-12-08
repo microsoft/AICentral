@@ -4,14 +4,14 @@ namespace AICentral;
 
 public class AICentralPipelineExecutor : IAICentralPipelineExecutor, IDisposable
 {
-    private readonly IEndpointSelector _endpointSelector;
+    private readonly IAICentralEndpointSelector _iaiCentralEndpointSelector;
     private readonly IEnumerator<IAICentralPipelineStep> _pipelineEnumerator;
 
     public AICentralPipelineExecutor(
         IEnumerable<IAICentralPipelineStep> steps,
-        IEndpointSelector endpointSelector)
+        IAICentralEndpointSelector iaiCentralEndpointSelector)
     {
-        _endpointSelector = endpointSelector;
+        _iaiCentralEndpointSelector = iaiCentralEndpointSelector;
         _pipelineEnumerator = steps.GetEnumerator();
     }
 
@@ -23,7 +23,7 @@ public class AICentralPipelineExecutor : IAICentralPipelineExecutor, IDisposable
             return await _pipelineEnumerator.Current.Handle(context, requestDetails, this, cancellationToken);
         }
 
-        return await _endpointSelector.Handle(context, requestDetails, true, cancellationToken);
+        return await _iaiCentralEndpointSelector.Handle(context, requestDetails, true, cancellationToken);
     }
 
     public void Dispose()

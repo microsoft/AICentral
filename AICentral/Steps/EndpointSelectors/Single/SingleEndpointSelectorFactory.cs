@@ -6,16 +6,16 @@ namespace AICentral.Steps.EndpointSelectors.Single;
 public class SingleEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
     private readonly IAICentralEndpointDispatcherFactory _endpointDispatcherFactory;
-    private readonly Lazy<SingleEndpointSelector> _endpointSelector;
+    private readonly Lazy<SingleIaiCentralEndpointSelector> _endpointSelector;
 
     public SingleEndpointSelectorFactory(IAICentralEndpointDispatcherFactory endpointDispatcherFactory)
     {
         _endpointDispatcherFactory = endpointDispatcherFactory;
         _endpointSelector =
-            new Lazy<SingleEndpointSelector>(() => new SingleEndpointSelector(endpointDispatcherFactory.Build()));
+            new Lazy<SingleIaiCentralEndpointSelector>(() => new SingleIaiCentralEndpointSelector(endpointDispatcherFactory.Build()));
     }
 
-    public IEndpointSelector Build()
+    public IAICentralEndpointSelector Build()
     {
         return _endpointSelector.Value;
     }

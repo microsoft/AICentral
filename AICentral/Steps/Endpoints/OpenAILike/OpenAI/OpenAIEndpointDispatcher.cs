@@ -13,9 +13,10 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
     private readonly string _apiKey;
 
     public OpenAIEndpointDispatcher(string id,
+        string endpointName,
         Dictionary<string, string> modelMappings,
         string apiKey,
-        string? organization) : base(id, modelMappings)
+        string? organization) : base(id, endpointName, modelMappings)
     {
         _organization = organization;
         _apiKey = apiKey;

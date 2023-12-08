@@ -4,7 +4,7 @@ using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors.LowestLatency;
 
-public class LowestLatencyEndpointSelector : IEndpointSelector
+public class LowestLatencyIaiCentralEndpointSelector : IAICentralEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IAICentralEndpointDispatcher[] _openAiServers;
@@ -14,7 +14,7 @@ public class LowestLatencyEndpointSelector : IEndpointSelector
 
     private const int RequiredCount = 10;
 
-    public LowestLatencyEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
+    public LowestLatencyIaiCentralEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
     {
         _openAiServers = openAiServers;
     }
@@ -25,7 +25,7 @@ public class LowestLatencyEndpointSelector : IEndpointSelector
         bool isLastChance,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<LowestLatencyEndpointSelector>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<LowestLatencyIaiCentralEndpointSelector>>();
         var toTry = _openAiServers.OrderBy(GetRecentAverageLatencyFor).ToArray();
         logger.LogDebug("Lowest Latency selector is handling request");
         var tried = 0;
@@ -62,7 +62,12 @@ public class LowestLatencyEndpointSelector : IEndpointSelector
         throw new InvalidOperationException("Failed to satisfy request");
     }
 
-    private void UpdateLatencies(ILogger<LowestLatencyEndpointSelector> logger, IAICentralEndpointDispatcher endpoint,
+    public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
+    {
+        return _openAiServers;
+    }
+
+    private void UpdateLatencies(ILogger<LowestLatencyIaiCentralEndpointSelector> logger, IAICentralEndpointDispatcher endpoint,
         AICentralUsageInformation requestInformation)
     {
         if (!_recentLatencies.ContainsKey(endpoint))
