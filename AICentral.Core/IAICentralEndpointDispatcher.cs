@@ -1,6 +1,4 @@
-﻿using AICentral.Core;
-
-namespace AICentral.Steps.Endpoints;
+﻿namespace AICentral.Core;
 
 public interface IAICentralEndpointDispatcher
 {
@@ -9,4 +7,7 @@ public interface IAICentralEndpointDispatcher
         AICallInformation callInformation,
         bool isLastChance,
         CancellationToken cancellationToken);
+
+    bool IsAffinityRequestToMe(string affinityHeaderValue);
+    
 }

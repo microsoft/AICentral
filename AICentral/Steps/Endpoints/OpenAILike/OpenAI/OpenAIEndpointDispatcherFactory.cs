@@ -5,24 +5,26 @@ namespace AICentral.Steps.Endpoints.OpenAILike.OpenAI;
 
 public class OpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFactory
 {
+    private readonly string _endpointName;
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string? _organization;
     private readonly int? _maxConcurrency;
     private readonly string _id;
     private readonly Lazy<IAICentralEndpointDispatcher> _endpointDispatcher;
 
-    public OpenAIEndpointDispatcherFactory(Dictionary<string, string> modelMappings,
+    public OpenAIEndpointDispatcherFactory(string endpointName, Dictionary<string, string> modelMappings,
         string apiKey,
-        string? organization, 
+        string? organization,
         int? maxConcurrency)
     {
         _id = Guid.NewGuid().ToString();
+        _endpointName = endpointName;
         _modelMappings = modelMappings;
         _organization = organization;
         _maxConcurrency = maxConcurrency;
 
         _endpointDispatcher = new Lazy<IAICentralEndpointDispatcher>(() =>
-            new OpenAIEndpointDispatcher(_id, _modelMappings, apiKey, _organization));
+            new OpenAIEndpointDispatcher(_id, _endpointName, _modelMappings, apiKey, _organization));
     }
 
     public void RegisterServices(IServiceCollection services)
@@ -39,6 +41,7 @@ public class OpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFacto
         Guard.NotNull(properties, configurationSection, "Properties");
         
         return new OpenAIEndpointDispatcherFactory(
+            configurationSection.GetValue<string>("Name")!,
             Guard.NotNull(properties!.ModelMappings, configurationSection, nameof(properties.ModelMappings)),
             Guard.NotNull(properties.ApiKey, configurationSection, nameof(properties.ApiKey)),
             properties.Organization,

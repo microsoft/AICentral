@@ -41,19 +41,32 @@ public class AICentralPipeline
 
         var detector = context.RequestServices.GetRequiredService<IncomingCallDetector>();
         var requestDetails = await detector.Detect(context.Request, cancellationToken);
-        
-        logger.LogDebug("Detected {RequestType} / {CallType} from incoming request", requestDetails.IncomingCallDetails.ServiceType, requestDetails.IncomingCallDetails.AICallType);
 
-        var endpointSelector = _endpointSelector.Build();
-        if (requestDetails.IncomingCallDetails.AICallType == AICallType.Other && !(endpointSelector is SingleEndpointSelector))
+        logger.LogDebug("Detected {RequestType} / {CallType} from incoming request",
+            requestDetails.IncomingCallDetails.ServiceType, requestDetails.IncomingCallDetails.AICallType);
+
+        IEndpointSelector? endpointSelector;
+        if (requestDetails.IncomingCallDetails.AICallType == AICallType.Other)
         {
-            return UnableToProxyUnknownCallTypesToMultiNodeClusters(context, requestDetails);
+            endpointSelector = FindAffinityServer(requestDetails) ?? _endpointSelector.Build();
+        }
+        else
+        {
+            endpointSelector = _endpointSelector.Build();
         }
 
-        using var executor = new AICentralPipelineExecutor(_pipelineSteps.Select(x => x.Build()), endpointSelector);
+        using var executor = new AICentralPipelineExecutor(_pipelineSteps.Select(x => x.Build()), endpointSelector!);
         var result = await executor.Next(context, requestDetails, cancellationToken);
         logger.LogInformation("Executed Pipeline {PipelineName}", _name);
         return result;
+    }
+
+    private IEndpointSelector? FindAffinityServer(AICallInformation requestDetails)
+    {
+        var availableEndpointSelectors = AffinityEndpointHelper.FlattenedEndpoints(_endpointSelector.Build());
+        AffinityEndpointHelper.IsAffinityRequest(requestDetails, availableEndpointSelectors,
+            out var affinityEndpointSelector);
+        return affinityEndpointSelector;
     }
 
     /// <summary>
@@ -101,7 +114,7 @@ public class AICentralPipeline
     {
         var route = _router.BuildRoute(webApplication,
             async (HttpContext ctx, CancellationToken token) => (await Execute(ctx, token)).ResultHandler);
-        
+
         _clientAuthStep.ConfigureRoute(webApplication, route);
         foreach (var step in _pipelineSteps) step.ConfigureRoute(webApplication, route);
     }

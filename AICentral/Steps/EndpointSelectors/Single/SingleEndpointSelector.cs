@@ -12,16 +12,21 @@ public class SingleEndpointSelector : IEndpointSelector
         _endpoint = endpoint;
     }
 
-    public async Task<AICentralResponse> Handle(
+    public Task<AICentralResponse> Handle(
         HttpContext context,
         AICallInformation aiCallInformation,
         bool isLastChance,
         CancellationToken cancellationToken)
     {
-        return await _endpoint.Handle(
+        return _endpoint.Handle(
             context,
             aiCallInformation,
             isLastChance,
             cancellationToken);
+    }
+
+    public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
+    {
+        return new[] { _endpoint };
     }
 }

@@ -45,6 +45,11 @@ public class PriorityEndpointSelector : IEndpointSelector
         }
     }
 
+    public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
+    {
+        return _fallbackOpenAIEndpoints.Concat(_prioritisedOpenAIEndpoints);
+    }
+
     private async Task<AICentralResponse> Handle(
         HttpContext context,
         AICallInformation aiCallInformation,

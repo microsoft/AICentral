@@ -12,6 +12,7 @@ namespace AICentral.Steps.Endpoints.OpenAILike;
 
 public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatcher
 {
+    public string EndpointName { get; }
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string _id;
 
@@ -26,8 +27,10 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
 
     protected OpenAILikeEndpointDispatcher(
         string id,
+        string endpointName,
         Dictionary<string, string> modelMappings)
     {
+        EndpointName = endpointName;
         _id = id;
         _modelMappings = modelMappings;
     }
@@ -177,6 +180,11 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
             cancellationToken,
             openAiResponse,
             requestInformation);
+    }
+
+    public bool IsAffinityRequestToMe(string affinityHeaderValue)
+    {
+        return EndpointName == affinityHeaderValue;
     }
 
 

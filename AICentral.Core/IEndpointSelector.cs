@@ -7,4 +7,6 @@ public interface IEndpointSelector
         AICallInformation aiCallInformation, 
         bool isLastChance,
         CancellationToken cancellationToken);
+
+    IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints();
 }

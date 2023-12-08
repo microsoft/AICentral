@@ -62,6 +62,11 @@ public class LowestLatencyEndpointSelector : IEndpointSelector
         throw new InvalidOperationException("Failed to satisfy request");
     }
 
+    public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
+    {
+        return _openAiServers;
+    }
+
     private void UpdateLatencies(ILogger<LowestLatencyEndpointSelector> logger, IAICentralEndpointDispatcher endpoint,
         AICentralUsageInformation requestInformation)
     {

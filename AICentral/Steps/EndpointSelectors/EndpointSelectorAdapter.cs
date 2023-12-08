@@ -1,5 +1,4 @@
 ﻿using AICentral.Core;
-using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors;
 
@@ -27,5 +26,28 @@ public class EndpointSelectorAdapter : IAICentralEndpointDispatcher
         CancellationToken cancellationToken)
     {
         return _endpointSelectorFactory.Build().Handle(context, callInformation, isLastChance, cancellationToken);
+    }
+
+    public bool IsAffinityRequestToMe(string affinityHeaderValue)
+    {
+        return false;
+    }
+
+    public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
+    {
+        foreach (var endpoint in _endpointSelectorFactory.Build().ContainedEndpoints())
+        {
+            if (endpoint is EndpointSelectorAdapter endpointSelectorAdapter)
+            {
+                foreach (var wrappedEndpoint in endpointSelectorAdapter.ContainedEndpoints())
+                {
+                    yield return wrappedEndpoint;
+                }
+            }
+            else
+            {
+                yield return endpoint;
+            }
+        }
     }
 }

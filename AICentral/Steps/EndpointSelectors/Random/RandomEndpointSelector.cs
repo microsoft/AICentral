@@ -47,4 +47,9 @@ public class RandomEndpointSelector : IEndpointSelector
 
         throw new InvalidOperationException("Failed to satisfy request");
     }
+
+    public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
+    {
+        return _openAiServers;
+    }
 }

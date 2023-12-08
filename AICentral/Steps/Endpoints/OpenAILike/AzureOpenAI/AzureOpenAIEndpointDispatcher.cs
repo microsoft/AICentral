@@ -10,15 +10,16 @@ namespace AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
 public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
 {
     private static readonly string[] HeaderPrefixesToCopy = { "x-", "apim", "operation-location" };
-
     private readonly string _languageUrl;
     private readonly IEndpointAuthorisationHandler _authHandler;
+    internal const string AzureOpenAIHostAffinityHeader = "ai-central-host-affinity";
 
     public AzureOpenAIEndpointDispatcher(
         string id,
         string languageUrl,
+        string endpointName,
         Dictionary<string, string> modelMappings,
-        IEndpointAuthorisationHandler authHandler) : base(id, modelMappings)
+        IEndpointAuthorisationHandler authHandler) : base(id, endpointName, modelMappings)
     {
         _languageUrl = languageUrl.EndsWith('/') ? languageUrl[..^1] : languageUrl;
         _authHandler = authHandler;
@@ -77,20 +78,22 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         return proxiedHeaders;
     }
 
-    private string AdjustAzureOpenAILocationToAICentralHost(HttpContext context,
+    private string AdjustAzureOpenAILocationToAICentralHost(
+        HttpContext context,
         KeyValuePair<string, IEnumerable<string>> header)
     {
         var locationRaw = header.Value.Single();
         var location = new Uri(locationRaw);
+        var queryParts = QueryHelpers.ParseQuery(location.Query);
+        queryParts.Add(AzureOpenAIHostAffinityHeader, EndpointName);
+        
         var builder = new UriBuilder(
             context.Request.Scheme,
             context.Request.Host.Host,
             context.Request.Host.Port ?? 443,
-            location.AbsolutePath,
-            location.Query
+            location.AbsolutePath
         );
-
-        return builder.Uri.AbsoluteUri;
+        return QueryHelpers.AddQueryString(builder.ToString(), queryParts);
     }
 
     protected override string HostUriBase => _languageUrl;
@@ -107,6 +110,9 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
             AICallType.Embeddings => "embeddings",
             _ => string.Empty
         };
+
+        var incomingQuery = aiCallInformation.QueryString;
+        incomingQuery.Remove(AzureOpenAIHostAffinityHeader);
 
         return aiCallInformation.IncomingCallDetails.AICallType == AICallType.Other
             ? aiCallInformation.IncomingCallDetails.ServiceType == AIServiceType.AzureOpenAI
