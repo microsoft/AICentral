@@ -40,10 +40,11 @@ public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcher
             new AzureOpenAIEndpointDispatcher(_id, _languageUrl, endpointName, _modelMappings, _authHandler));
     }
 
-    public void RegisterServices(IServiceCollection services)
+    public void RegisterServices(AICentralOptions options, IServiceCollection services)
     {
         services.AddHttpClient<HttpAIEndpointDispatcher>(_id)
-            .AddPolicyHandler(ResiliencyStrategy.Build(_maxConcurrency));
+            .AddPolicyHandler(ResiliencyStrategy.Build(_maxConcurrency))
+            .ConfigurePrimaryHttpMessageHandler(() => options.FinalMessageHandler ?? new HttpClientHandler());
     }
 
     public static string ConfigName => "AzureOpenAIEndpoint";

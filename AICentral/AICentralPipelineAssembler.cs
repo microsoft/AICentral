@@ -39,15 +39,19 @@ public class AICentralPipelineAssembler
         _pipelines = pipelines;
     }
 
-    public AICentralPipelines AddServices(IServiceCollection services, ILogger startupLogger)
+    public AICentralPipelines AddServices(IServiceCollection services, Action<AICentralOptions> configureOptions,
+        ILogger startupLogger)
     {
+        var options = new AICentralOptions();
+        configureOptions?.Invoke(options);
+
         _servicesAdded = _servicesAdded ? throw new InvalidOperationException("AICentral is already built") : true;
 
         foreach (var authProvider in _authProviders) authProvider.Value.RegisterServices(services);
-        foreach (var endpoint in _endpoints) endpoint.Value.RegisterServices(services);
+        foreach (var endpoint in _endpoints) endpoint.Value.RegisterServices(options, services);
         foreach (var endpointSelector in _endpointSelectors) endpointSelector.Value.RegisterServices(services);
         foreach (var step in _genericSteps) step.Value.RegisterServices(services);
-        
+
         var pipelines = BuildPipelines(startupLogger);
         services.AddSingleton(pipelines);
 
@@ -122,4 +126,9 @@ public class AICentralPipelineAssembler
             otherAssembler._pipelines.Union(_pipelines).ToArray()
         );
     }
+}
+
+public class AICentralOptions
+{
+    public HttpMessageHandler? FinalMessageHandler { get; set; }
 }

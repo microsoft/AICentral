@@ -12,6 +12,7 @@ public static class ConfigurationEx
         IConfiguration configuration,
         string configSectionName = "AICentral",
         ILogger? startupLogger = null,
+        Action<AICentralOptions>? configureOptions = null,
         params Assembly[] additionalComponentAssemblies)
     {
         var logger = startupLogger ?? NullLogger.Instance;
@@ -23,31 +24,7 @@ public static class ConfigurationEx
                 configuration.GetSection(configSectionName),
                 additionalComponentAssemblies);
 
-        configurationPipelineBuilder.AddServices(services, logger);
-
-        return services;
-    }
-    
-    public static IServiceCollection AddAICentralNew(
-        this IServiceCollection services,
-        IConfiguration configuration,
-        string configSectionName = "AICentral",
-        ILogger? startupLogger = null,
-        params Assembly[] additionalComponentAssemblies)
-    {
-        var logger = startupLogger ?? NullLogger.Instance;
-        logger.LogInformation("AICentral - Initialising pipelines");
-
-        var genericSteps = AssemblyEx.GetTypesOfType<IAICentralPipelineStep>();
-        
-
-        var configurationPipelineBuilder = new ConfigurationBasedPipelineBuilder()
-            .BuildPipelinesFromConfig(
-                logger,
-                configuration.GetSection(configSectionName),
-                additionalComponentAssemblies);
-
-        configurationPipelineBuilder.AddServices(services, logger);
+        configurationPipelineBuilder.AddServices(services, configureOptions, logger);
 
         return services;
     }

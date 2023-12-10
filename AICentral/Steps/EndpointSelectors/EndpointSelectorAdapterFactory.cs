@@ -14,7 +14,7 @@ public class EndpointSelectorAdapterFactory : IAICentralEndpointDispatcherFactor
         _instance = new Lazy<EndpointSelectorAdapter>(() => new EndpointSelectorAdapter(centralEndpointSelectorFactory));
     }
 
-    public void RegisterServices(IServiceCollection services)
+    public void RegisterServices(AICentralOptions options, IServiceCollection services)
     {
     }
 
@@ -30,8 +30,7 @@ public class EndpointSelectorAdapterFactory : IAICentralEndpointDispatcherFactor
 
     public static string ConfigName => "__internal_use_only";
 
-    public static IAICentralEndpointDispatcherFactory BuildFromConfig(ILogger logger,
-        IConfigurationSection configurationSection)
+    public static IAICentralEndpointDispatcherFactory BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
     {
         throw new NotImplementedException();
     }

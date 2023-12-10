@@ -6,7 +6,7 @@ public interface IAICentralEndpointDispatcherFactory
 {
     static virtual string ConfigName  => throw new NotImplementedException();
 
-    void RegisterServices(IServiceCollection services);
+    void RegisterServices(AICentralOptions options, IServiceCollection services);
 
     IAICentralEndpointDispatcher Build();
 

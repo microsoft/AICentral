@@ -10,7 +10,8 @@ using Xunit.Abstractions;
 
 namespace AICentralTests.TestHelpers;
 
-public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram>, ITestOutputHelperAccessor where TProgram : class
+public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram>, ITestOutputHelperAccessor
+    where TProgram : class
 {
     protected override IHost CreateHost(IHostBuilder builder)
     {
@@ -47,12 +48,9 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));
-            assembler.AddServices(services, NullLogger.Instance);
-
             var seeder = new FakeHttpMessageHandlerSeeder();
-            var fakeClient = new HttpClient(new FakeHttpMessageHandler(seeder));
+            assembler.AddServices(services, options => { options.FinalMessageHandler = new FakeHttpMessageHandler(seeder); }, NullLogger.Instance);
             services.AddSingleton(seeder);
-            services.AddSingleton<IHttpClientFactory>(new FakeHttpClientFactory(fakeClient));
         });
         return base.CreateHost(builder);
     }
