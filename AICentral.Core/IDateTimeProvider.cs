@@ -1,4 +1,4 @@
-﻿namespace AICentral;
+﻿namespace AICentral.Core;
 
 public interface IDateTimeProvider
 {

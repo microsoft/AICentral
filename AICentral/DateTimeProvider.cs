@@ -1,4 +1,6 @@
-﻿namespace AICentral;
+﻿using AICentral.Core;
+
+namespace AICentral;
 
 public class DateTimeProvider: IDateTimeProvider
 {
