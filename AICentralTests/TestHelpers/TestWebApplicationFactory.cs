@@ -51,6 +51,11 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
             var seeder = new FakeHttpMessageHandlerSeeder();
             assembler.AddServices(services, options => { options.FinalMessageHandler = new FakeHttpMessageHandler(seeder); }, NullLogger.Instance);
             services.AddSingleton(seeder);
+
+            var fakeDateTimeProvider = new FakeDateTimeProvider();
+            services.AddSingleton<IDateTimeProvider>(fakeDateTimeProvider);
+            services.AddSingleton(fakeDateTimeProvider);
+
         });
         return base.CreateHost(builder);
     }

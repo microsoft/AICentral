@@ -60,6 +60,7 @@ public class TokenBasedRateLimitingProvider : IAICentralGenericStepFactory, IAIC
                 context.Response.Headers.RetryAfter = new StringValues(retryAt.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture));
             }
 
+            var dateTimeProvider = context.RequestServices.GetRequiredService<IDateTimeProvider>();
             return new AICentralResponse(
                 new AICentralUsageInformation(
                     string.Empty,
@@ -67,7 +68,7 @@ public class TokenBasedRateLimitingProvider : IAICentralGenericStepFactory, IAIC
                     context.User.Identity?.Name ?? string.Empty,
                     aiCallInformation.IncomingCallDetails.AICallType,
                     null, null, null, null, null, null, null,
-                    context.Connection.RemoteIpAddress?.ToString() ?? string.Empty, DateTimeOffset.Now, TimeSpan.Zero),
+                    context.Connection.RemoteIpAddress?.ToString() ?? string.Empty, dateTimeProvider.Now, TimeSpan.Zero),
                 resultHandler);
         }
 

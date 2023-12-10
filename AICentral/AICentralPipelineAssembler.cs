@@ -1,6 +1,6 @@
-﻿using AICentral.Configuration.JSON;
+﻿using AICentral.CallDetectors;
+using AICentral.Configuration.JSON;
 using AICentral.Core;
-using AICentral.IncomingServiceDetector;
 using AICentral.Steps.Auth;
 using AICentral.Steps.Endpoints;
 using AICentral.Steps.EndpointSelectors;
@@ -46,6 +46,9 @@ public class AICentralPipelineAssembler
         configureOptions?.Invoke(options);
 
         _servicesAdded = _servicesAdded ? throw new InvalidOperationException("AICentral is already built") : true;
+
+        services.AddSingleton<DateTimeProvider>();
+        services.AddSingleton<InMemoryRateLimitingTracker>();
 
         foreach (var authProvider in _authProviders) authProvider.Value.RegisterServices(services);
         foreach (var endpoint in _endpoints) endpoint.Value.RegisterServices(options, services);

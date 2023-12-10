@@ -7,12 +7,12 @@ namespace AICentral.Steps.EndpointSelectors.Random;
 public class RandomEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
     private readonly IAICentralEndpointDispatcherFactory[] _openAiServers;
-    private readonly Lazy<RandomIaiCentralEndpointSelector> _endpointSelector;
+    private readonly Lazy<RandomAICentralEndpointSelector> _endpointSelector;
 
     public RandomEndpointSelectorFactory(IAICentralEndpointDispatcherFactory[] openAiServers)
     {
         _openAiServers = openAiServers.ToArray();
-        _endpointSelector = new Lazy<RandomIaiCentralEndpointSelector>(() => new RandomIaiCentralEndpointSelector(_openAiServers.Select(x => x.Build()).ToArray()));
+        _endpointSelector = new Lazy<RandomAICentralEndpointSelector>(() => new RandomAICentralEndpointSelector(_openAiServers.Select(x => x.Build()).ToArray()));
     }
 
     public IAICentralEndpointSelector Build()
