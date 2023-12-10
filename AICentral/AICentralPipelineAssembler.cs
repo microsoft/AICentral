@@ -39,7 +39,7 @@ public class AICentralPipelineAssembler
         _pipelines = pipelines;
     }
 
-    public AICentralPipelines AddServices(IServiceCollection services, Action<AICentralOptions> configureOptions,
+    public AICentralPipelines AddServices(IServiceCollection services, Action<AICentralOptions>? configureOptions,
         ILogger startupLogger)
     {
         var options = new AICentralOptions();
