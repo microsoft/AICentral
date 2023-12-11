@@ -52,8 +52,11 @@ public class TokenBasedRateLimitingProvider : IAICentralGenericStepFactory, IAIC
         IAICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
+        var logger = context.RequestServices.GetRequiredService<ILogger<TokenBasedRateLimitingProvider>>();
         if (HasExceededTokenLimit(context, out var retryAt))
         {
+            logger.LogDebug("Detected token limit breach for {User}. Retry available in {Retry}",
+                context.User.Identity?.Name ?? "unknown", retryAt ?? TimeSpan.Zero);
             var resultHandler = Results.StatusCode(429);
             if (retryAt != null)
             {
@@ -83,6 +86,9 @@ public class TokenBasedRateLimitingProvider : IAICentralGenericStepFactory, IAIC
             context,
             Math.Min(Convert.ToInt32(rateLimiterStatistics?.CurrentAvailablePermits ?? 0),
                 result.AICentralUsageInformation.TotalTokens.Value));
+
+        logger.LogDebug("New tokens consumed by {User}. New Count {Count}",
+            context.User.Identity?.Name ?? "unknown", rateLimiterStatistics?.CurrentAvailablePermits + result.AICentralUsageInformation.TotalTokens.Value);
 
         return result;
     }

@@ -8,7 +8,7 @@ public static class ResiliencyStrategy
 {
     private static bool ShouldRetry(HttpResponseMessage response)
     {
-        return (int)response.StatusCode >= 500 || (int)response.StatusCode < 599;
+        return (int)response.StatusCode >= 500 && (int)response.StatusCode < 599;
     }
 
     public static IAsyncPolicy<HttpResponseMessage> Build(int? maxConcurrency)
