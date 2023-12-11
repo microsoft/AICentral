@@ -1,5 +1,4 @@
-﻿using System.Drawing.Printing;
-using AICentral;
+﻿using AICentral;
 using AICentral.Core;
 using MartinCostello.Logging.XUnit;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -20,12 +19,13 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
         builder.ConfigureServices(services =>
         {
             services.AddSingleton<ILoggerFactory>(new LoggerFactory(new[]
-            {
-                new XUnitLoggerProvider(this, new XUnitLoggerOptions())
-            }, new LoggerFilterOptions()
-            {
-                MinLevel = LogLevel.Trace
-            }));
+                {
+                    new XUnitLoggerProvider(this, new XUnitLoggerOptions())
+                },
+                new LoggerFilterOptions()
+                {
+                    MinLevel = LogLevel.Trace
+                }));
 
             services.Remove(services.Single(x => x.ServiceType == typeof(AICentralPipelines)));
 
@@ -50,31 +50,15 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));
             var seeder = new FakeHttpMessageHandlerSeeder();
-            assembler.AddServices(services, options => { options.FinalMessageHandler = new FakeHttpMessageHandler(seeder); }, NullLogger.Instance);
+            assembler.AddServices(services, new FakeHttpMessageHandler(seeder), NullLogger.Instance);
             services.AddSingleton(seeder);
 
             var fakeDateTimeProvider = new FakeDateTimeProvider();
             services.AddSingleton<IDateTimeProvider>(fakeDateTimeProvider);
             services.AddSingleton(fakeDateTimeProvider);
-
         });
         return base.CreateHost(builder);
     }
 
     public ITestOutputHelper? OutputHelper { get; set; }
-
-    class FakeHttpClientFactory : IHttpClientFactory
-    {
-        private readonly HttpClient _fakeClient;
-
-        public FakeHttpClientFactory(HttpClient fakeClient)
-        {
-            _fakeClient = fakeClient;
-        }
-
-        public HttpClient CreateClient(string name)
-        {
-            return _fakeClient;
-        }
-    }
 }

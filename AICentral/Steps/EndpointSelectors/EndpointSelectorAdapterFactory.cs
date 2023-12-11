@@ -14,7 +14,7 @@ public class EndpointSelectorAdapterFactory : IAICentralEndpointDispatcherFactor
         _instance = new Lazy<EndpointSelectorAdapter>(() => new EndpointSelectorAdapter(centralEndpointSelectorFactory));
     }
 
-    public void RegisterServices(AICentralOptions options, IServiceCollection services)
+    public void RegisterServices(HttpMessageHandler? httpMessageHandler, IServiceCollection services)
     {
     }
 

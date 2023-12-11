@@ -44,13 +44,13 @@ public class FixedWindowRateLimitingProvider : IAICentralGenericStepFactory, IAI
     public static string ConfigName => "AspNetCoreFixedWindowRateLimiting";
 
     public static IAICentralGenericStepFactory BuildFromConfig(
-        ILogger logger,
-        IConfigurationSection configurationSection)
+        ILogger logger, 
+        AICentralTypeAndNameConfig config)
     {
-        var properties = configurationSection.GetSection("Properties").Get<AICentralFixedWindowRateLimiterOptions>()!;
-        Guard.NotNull(properties, configurationSection, "Properties");
-        Guard.NotNull(properties.LimitType, configurationSection, nameof(properties.LimitType));
-        Guard.NotNull(properties.Options, configurationSection, nameof(properties.Options));
+        var properties = config.TypedProperties<AICentralFixedWindowRateLimiterOptions>()!;
+        Guard.NotNull(properties, "Properties");
+        Guard.NotNull(properties.LimitType, nameof(properties.LimitType));
+        Guard.NotNull(properties.Options, nameof(properties.Options));
 
         return new FixedWindowRateLimitingProvider(properties);
     }

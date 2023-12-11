@@ -24,12 +24,10 @@ public class BulkHeadProviderFactory : IAICentralGenericStepFactory
 
     public static string ConfigName => "BulkHead";
 
-    public static IAICentralGenericStepFactory BuildFromConfig(ILogger logger,
-        IConfigurationSection section)
+    public static IAICentralGenericStepFactory BuildFromConfig(ILogger logger, AICentralTypeAndNameConfig config)
     {
-        var properties = section.GetSection("Properties").Get<BulkHeadConfiguration>()!;
-        Guard.NotNull(properties, section, "Properties");
-        Guard.NotNull(properties.MaxConcurrency, section, nameof(properties.MaxConcurrency));
+        var properties = config.TypedProperties<BulkHeadConfiguration>()!;
+        Guard.NotNull(properties.MaxConcurrency, nameof(properties.MaxConcurrency));
 
         return new BulkHeadProviderFactory(properties);
     }

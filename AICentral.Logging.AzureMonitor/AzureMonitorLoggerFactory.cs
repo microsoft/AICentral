@@ -38,18 +38,16 @@ public class AzureMonitorLoggerFactory : IAICentralGenericStepFactory
 
     public static IAICentralGenericStepFactory BuildFromConfig(
         ILogger logger, 
-        IConfigurationSection configurationSection)
+        AICentralTypeAndNameConfig config)
     {
-        var properties = configurationSection.GetSection("Properties")
-            .Get<AzureMonitorLoggingConfig>()!;
-        
-        Guard.NotNull(properties, configurationSection, "Properties");
+        var properties = config.TypedProperties<AzureMonitorLoggingConfig>()!;
+        Guard.NotNull(properties, "Properties");
 
         return new AzureMonitorLoggerFactory(
-            Guard.NotNull(properties.WorkspaceId, configurationSection, nameof(properties.WorkspaceId)),
-            Guard.NotNull(properties.Key, configurationSection, nameof(properties.Key)),
-            Guard.NotNull(properties.LogPrompt, configurationSection, nameof(properties.LogPrompt))!.Value,
-            Guard.NotNull(properties.LogResponse, configurationSection, nameof(properties.LogResponse))!.Value
+            Guard.NotNull(properties.WorkspaceId, nameof(properties.WorkspaceId)),
+            Guard.NotNull(properties.Key, nameof(properties.Key)),
+            Guard.NotNull(properties.LogPrompt, nameof(properties.LogPrompt))!.Value,
+            Guard.NotNull(properties.LogResponse, nameof(properties.LogResponse))!.Value
         );
     }
 

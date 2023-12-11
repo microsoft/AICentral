@@ -1,5 +1,5 @@
 ﻿using AICentral.CallDetectors;
-using AICentral.Configuration.JSON;
+using AICentral.Configuration;
 using AICentral.Core;
 using AICentral.Steps.Auth;
 using AICentral.Steps.Endpoints;
@@ -19,7 +19,7 @@ public class AICentralPipelineAssembler
     private readonly Dictionary<string, IAICentralEndpointDispatcherFactory> _endpoints;
     private readonly Dictionary<string, IAICentralEndpointSelectorFactory> _endpointSelectors;
     private readonly Dictionary<string, IAICentralGenericStepFactory> _genericSteps;
-    private readonly ConfigurationTypes.AICentralPipelineConfig[] _pipelines;
+    private readonly AICentralPipelineConfig[] _pipelines;
 
     private bool _servicesAdded;
 
@@ -29,7 +29,7 @@ public class AICentralPipelineAssembler
         Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints,
         Dictionary<string, IAICentralEndpointSelectorFactory> endpointSelectors,
         Dictionary<string, IAICentralGenericStepFactory> genericSteps,
-        ConfigurationTypes.AICentralPipelineConfig[] pipelines)
+        AICentralPipelineConfig[] pipelines)
     {
         _routeBuilder = routeBuilder;
         _authProviders = authProviders;
@@ -39,19 +39,18 @@ public class AICentralPipelineAssembler
         _pipelines = pipelines;
     }
 
-    public AICentralPipelines AddServices(IServiceCollection services, Action<AICentralOptions>? configureOptions,
+    public AICentralPipelines AddServices(
+        IServiceCollection services,
+        HttpMessageHandler? optionalHandler,
         ILogger startupLogger)
     {
-        var options = new AICentralOptions();
-        configureOptions?.Invoke(options);
-
         _servicesAdded = _servicesAdded ? throw new InvalidOperationException("AICentral is already built") : true;
 
         services.AddSingleton<DateTimeProvider>();
         services.AddSingleton<InMemoryRateLimitingTracker>();
 
         foreach (var authProvider in _authProviders) authProvider.Value.RegisterServices(services);
-        foreach (var endpoint in _endpoints) endpoint.Value.RegisterServices(options, services);
+        foreach (var endpoint in _endpoints) endpoint.Value.RegisterServices(optionalHandler, services);
         foreach (var endpointSelector in _endpointSelectors) endpointSelector.Value.RegisterServices(services);
         foreach (var step in _genericSteps) step.Value.RegisterServices(services);
 
@@ -61,6 +60,7 @@ public class AICentralPipelineAssembler
         services.AddSingleton<IncomingCallDetector>();
         services.AddSingleton<IAIServiceDetector, AzureOpenAIDetector>();
         services.AddSingleton<IAIServiceDetector, OpenAIDetector>();
+        services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
         return pipelines;
     }
@@ -129,9 +129,4 @@ public class AICentralPipelineAssembler
             otherAssembler._pipelines.Union(_pipelines).ToArray()
         );
     }
-}
-
-public class AICentralOptions
-{
-    public HttpMessageHandler? FinalMessageHandler { get; set; }
 }

@@ -1,15 +1,14 @@
-﻿using AICentral.Configuration.JSON;
-using AICentral.Core;
+﻿using AICentral.Core;
 
 namespace AICentral.Steps.Auth.ApiKey;
 
 public class ApiKeyClientAuthFactory : IAICentralClientAuthFactory
 {
-    private readonly ConfigurationTypes.ApiKeyClientAuthConfig _config;
+    private readonly ApiKeyClientAuthConfig _config;
     private readonly string _policyId = Guid.NewGuid().ToString();
     private readonly Lazy<ApiKeyClientAuthProvider> _singleton;
 
-    public ApiKeyClientAuthFactory(ConfigurationTypes.ApiKeyClientAuthConfig config)
+    public ApiKeyClientAuthFactory(ApiKeyClientAuthConfig config)
     {
         _config = config;
         _singleton = new Lazy<ApiKeyClientAuthProvider>(() => new ApiKeyClientAuthProvider());
@@ -37,14 +36,13 @@ public class ApiKeyClientAuthFactory : IAICentralClientAuthFactory
 
     public static IAICentralClientAuthFactory BuildFromConfig(
         ILogger logger, 
-        IConfigurationSection configurationSection)
+        AICentralTypeAndNameConfig config)
     {
-        var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.ApiKeyClientAuthConfig>();
-        Guard.NotNull(properties, configurationSection, "Properties");
+        var properties = config.TypedProperties<ApiKeyClientAuthConfig>();
 
         return new ApiKeyClientAuthFactory(
             properties!.Clients!.Length == 0
-                ? throw new ArgumentException($"You must provide Clients in {configurationSection.Path}")
+                ? throw new ArgumentException($"You must provide Clients in {config.ConfigurationSection?.Path ?? "the ApiKey config section"}")
                 : properties);
     }
 

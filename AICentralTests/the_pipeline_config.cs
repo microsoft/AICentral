@@ -1,8 +1,8 @@
 ﻿using System.Text;
 using AICentral;
 using AICentral.Configuration;
-using AICentral.Configuration.JSON;
 using AICentral.Logging.AzureMonitor;
+using AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
 using ApprovalTests;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,9 +28,10 @@ public class the_pipeline_config
                         {
                             Type = "AzureOpenAIEndpoint",
                             Name = "test-endpoint",
-                            Properties = new ConfigurationTypes.AICentralPipelineAzureOpenAIEndpointPropertiesConfig()
+                            Properties = new AICentralPipelineAzureOpenAIEndpointPropertiesConfig()
                             {
                                 ApiKey = "1234",
+                                AuthenticationType = "ApiKey",
                                 LanguageEndpoint = "https://somehere.com",
                                 ModelMappings = new Dictionary<string, string>()
                             }
@@ -58,7 +59,7 @@ public class the_pipeline_config
                     },
                     Pipelines = new[]
                     {
-                        new ConfigurationTypes.AICentralPipelineConfig()
+                        new AICentralPipelineConfig()
                         {
                             Name = "test-pipeline",
                             Host = "my-test-host.localtest.me",

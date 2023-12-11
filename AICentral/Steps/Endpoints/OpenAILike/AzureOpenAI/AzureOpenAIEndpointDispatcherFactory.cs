@@ -1,5 +1,5 @@
-﻿using AICentral.Configuration.JSON;
-using AICentral.Core;
+﻿using AICentral.Core;
+using Polly;
 
 namespace AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
 
@@ -8,15 +8,15 @@ public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcher
     private readonly IEndpointAuthorisationHandler _authHandler;
     private readonly string _languageUrl;
     private readonly Dictionary<string, string> _modelMappings;
+    private readonly Lazy<IAICentralEndpointDispatcher> _endpointDispatcher;
     private readonly string _id;
     private readonly int? _maxConcurrency;
-    private readonly Lazy<IAICentralEndpointDispatcher> _endpointDispatcher;
-
+    
     public AzureOpenAIEndpointDispatcherFactory(
         string endpointName,
         string languageUrl,
         Dictionary<string, string> modelMappings,
-        AuthenticationType authenticationType,
+        string authenticationType,
         string? authenticationKey,
         int? maxConcurrency = null)
     {
@@ -26,13 +26,13 @@ public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcher
         _modelMappings = modelMappings;
         _maxConcurrency = maxConcurrency;
 
-        _authHandler = authenticationType switch
+        _authHandler = authenticationType.ToLowerInvariant() switch
         {
-            AuthenticationType.ApiKey => new KeyAuth(authenticationKey ??
+            "apikey" => new KeyAuth(authenticationKey ??
                                                      throw new ArgumentException(
                                                          "Missing api-key for Authentication Type")),
-            AuthenticationType.Entra => new EntraAuth(),
-            AuthenticationType.EntraPassThrough => new BearerTokenPassThroughAuth(),
+            "entra" => new EntraAuth(),
+            "entrapassthrough" => new BearerTokenPassThroughAuth(),
             _ => throw new ArgumentOutOfRangeException(nameof(authenticationType), authenticationType, null)
         };
 
@@ -40,30 +40,31 @@ public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcher
             new AzureOpenAIEndpointDispatcher(_id, _languageUrl, endpointName, _modelMappings, _authHandler));
     }
 
-    public void RegisterServices(AICentralOptions options, IServiceCollection services)
+    public void RegisterServices(HttpMessageHandler? httpMessageHandler, IServiceCollection services)
     {
         services.AddHttpClient<HttpAIEndpointDispatcher>(_id)
             .AddPolicyHandler(ResiliencyStrategy.Build(_maxConcurrency))
-            .ConfigurePrimaryHttpMessageHandler(() => options.FinalMessageHandler ?? new HttpClientHandler());
+            .ConfigurePrimaryHttpMessageHandler(() => httpMessageHandler ?? new HttpClientHandler());
     }
 
     public static string ConfigName => "AzureOpenAIEndpoint";
 
-    public static IAICentralEndpointDispatcherFactory BuildFromConfig(ILogger logger,
-        IConfigurationSection configurationSection)
+    public static IAICentralEndpointDispatcherFactory BuildFromConfig(
+        ILogger logger,
+        AICentralTypeAndNameConfig config)
     {
-        var properties = configurationSection.GetSection("Properties")
-            .Get<ConfigurationTypes.AICentralPipelineAzureOpenAIEndpointPropertiesConfig>();
-
-        Guard.NotNull(properties, configurationSection, "Properties");
+        var properties = config.TypedProperties<AICentralPipelineAzureOpenAIEndpointPropertiesConfig>();
+        
+        Guard.NotNull(properties, "Properties");
 
         var modelMappings = properties!.ModelMappings;
         var authenticationType = properties.AuthenticationType;
         if (modelMappings == null)
         {
             logger.LogWarning(
-                "Pipeline {ConfigurationSectionPath} has no model mappings configured. All requests will use default behaviour of passing model name straight through",
-                configurationSection.Path);
+                "Endpoint {Name} has no model mappings configured. All requests will use default behaviour of passing model name straight through",
+                config.Name);
+
             modelMappings = new Dictionary<string, string>();
         }
 
@@ -71,15 +72,15 @@ public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcher
         {
             logger.LogWarning(
                 "Pipeline {ConfigurationSectionPath} has no AuthType configured. Defaulting to AAD pass-through",
-                configurationSection.Path);
-            authenticationType = AuthenticationType.EntraPassThrough;
+                config.Name);
+            authenticationType = "EntraPassThrough";
         }
 
         return new AzureOpenAIEndpointDispatcherFactory(
-            configurationSection.GetValue<string>("Name")!,
-            Guard.NotNull(properties!.LanguageEndpoint, configurationSection, nameof(properties.LanguageEndpoint)),
+            config.Name!,
+            Guard.NotNull(properties.LanguageEndpoint, nameof(properties.LanguageEndpoint)),
             modelMappings,
-            authenticationType.Value,
+            authenticationType,
             properties.ApiKey,
             properties.MaxConcurrency);
     }

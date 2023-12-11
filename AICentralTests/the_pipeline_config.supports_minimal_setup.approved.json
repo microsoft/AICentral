@@ -34,7 +34,7 @@
                     
           "Auth":  {
                         
-            "Type":  "Bearer Token Pass-Through"
+            "Type":  "ApiKey"
           
                     }
         

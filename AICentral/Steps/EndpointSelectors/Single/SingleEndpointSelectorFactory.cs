@@ -1,5 +1,4 @@
 ﻿using AICentral.Core;
-using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors.Single;
 
@@ -28,14 +27,13 @@ public class SingleEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 
     public static IAICentralEndpointSelectorFactory BuildFromConfig(
         ILogger logger,
-        IConfigurationSection configSection,
+        AICentralTypeAndNameConfig config,
         Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints)
     {
-        var properties = configSection.GetSection("Properties");
-        Guard.NotNull(properties, properties, "Properties");
+        var properties = config.TypedProperties<SingleEndpointConfig>();
 
-        var endpoint = properties.GetValue<string>("Endpoint");
-        endpoint = Guard.NotNull(endpoint, configSection, "Endpoint");
+        var endpoint = properties.Endpoint;
+        endpoint = Guard.NotNull(endpoint, "Endpoint");
         return new SingleEndpointSelectorFactory(endpoints[endpoint]);
     }
 
@@ -47,4 +45,9 @@ public class SingleEndpointSelectorFactory : IAICentralEndpointSelectorFactory
             Endpoints = new[] { _endpointDispatcherFactory.WriteDebug() }
         };
     }
+}
+
+public class SingleEndpointConfig
+{
+    public string? Endpoint { get; init; }
 }

@@ -4,7 +4,7 @@ namespace AICentral.Steps.Auth;
 
 public interface IAICentralClientAuthFactory : IAICentralPipelineStepFactory<IAICentralClientAuthStep>
 {
-    static virtual IAICentralClientAuthFactory BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
+    static virtual IAICentralClientAuthFactory BuildFromConfig(ILogger logger, AICentralTypeAndNameConfig config)
     {
         throw new NotImplementedException();
     }

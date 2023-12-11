@@ -28,15 +28,15 @@ public class LowestLatencyEndpointSelectorFactory : IAICentralEndpointSelectorFa
 
     public static IAICentralEndpointSelectorFactory BuildFromConfig(
         ILogger logger, 
-        IConfigurationSection configurationSection,
+        AICentralTypeAndNameConfig config,
         Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints
         )
     {
-        var properties = configurationSection.GetSection("Properties").Get<LowestLatencyEndpointConfig>();
-        Guard.NotNull(properties, configurationSection, "Properties");
+        var properties = config.TypedProperties<LowestLatencyEndpointConfig>();
+        Guard.NotNull(properties, "Properties");
 
         return new LowestLatencyEndpointSelectorFactory(
-            Guard.NotNull(properties!.Endpoints, configurationSection, "Endpoints")
+            Guard.NotNull(properties.Endpoints, "Endpoints")
                 .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : throw new ArgumentException($"Cannot find Endpoint {x} in built endpoints"))
                 .ToArray());
     }

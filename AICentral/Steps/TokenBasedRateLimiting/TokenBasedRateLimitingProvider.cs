@@ -35,10 +35,10 @@ public class TokenBasedRateLimitingProvider : IAICentralGenericStepFactory, IAIC
 
     public static IAICentralGenericStepFactory BuildFromConfig(
         ILogger logger,
-        IConfigurationSection configurationSection)
+        AICentralTypeAndNameConfig config)
     {
-        var properties = configurationSection.GetSection("Properties").Get<TokenBasedRateLimiterOptions>()!;
-        Guard.NotNull(properties, configurationSection, "Properties");
+        var properties = config.TypedProperties<TokenBasedRateLimiterOptions>()!;
+        Guard.NotNull(properties, "Properties");
 
         return new TokenBasedRateLimitingProvider(properties);
     }
