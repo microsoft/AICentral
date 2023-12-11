@@ -1,6 +1,7 @@
 using AICentral;
 using AICentral.Configuration;
 using AICentral.Logging.AzureMonitor;
+using OpenTelemetry.Metrics;
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
@@ -22,6 +23,11 @@ builder.Services.AddAICentral(
     additionalComponentAssemblies: typeof(AzureMonitorLoggerFactory).Assembly);
 
 builder.Services.AddRazorPages();
+
+builder.Services.AddOpenTelemetry().WithMetrics(otelMetricsBuilder =>
+    otelMetricsBuilder.AddMeter(AICentralPipeline.AICentralMeterName)
+        .AddConsoleExporter()
+);
 
 var app = builder.Build();
 
