@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using AICentral.Core;
 using AICentral.Steps.Endpoints.OpenAILike;
@@ -18,7 +19,8 @@ public class ServerSideEventResponseHandler
         HttpResponseMessage openAiResponse,
         AICentralRequestInformation requestInformation)
     {
-        
+        using var activity = AICentralActivitySource.AICentralRequestActivitySource.StartActivity("StreamingResponse");
+
         //send the headers down to the client
         context.Response.StatusCode = (int)openAiResponse.StatusCode;
 

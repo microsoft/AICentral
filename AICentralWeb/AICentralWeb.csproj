@@ -23,6 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.0.0" />
       <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.7.0" />
       <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.7.0" />
       <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.6.0-rc.1" />

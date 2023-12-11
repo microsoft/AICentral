@@ -1,12 +1,39 @@
 using AICentral;
 using AICentral.Configuration;
 using AICentral.Logging.AzureMonitor;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
+using Azure.Monitor.OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services
+        .AddOpenTelemetry()
+        .WithMetrics(metrics =>
+        {
+            metrics.AddAspNetCoreInstrumentation()
+                .AddMeter(AICentralActivitySource.AICentralTelemetryName);
+        })
+        .WithTracing(tracing =>
+        {
+            if (builder.Environment.IsDevelopment())
+            {
+                // We want to view all traces in development
+                tracing.SetSampler(new AlwaysOnSampler());
+            }
+
+            tracing.AddAspNetCoreInstrumentation()
+                .AddSource(AICentralActivitySource.AICentralTelemetryName);
+
+        })
+        .UseAzureMonitor();
+}
 
 var logger = new LoggerConfiguration()
     .MinimumLevel.Verbose()
@@ -23,11 +50,6 @@ builder.Services.AddAICentral(
     additionalComponentAssemblies: typeof(AzureMonitorLoggerFactory).Assembly);
 
 builder.Services.AddRazorPages();
-
-builder.Services.AddOpenTelemetry().WithMetrics(otelMetricsBuilder =>
-    otelMetricsBuilder.AddMeter(AICentralPipeline.AICentralMeterName)
-        .AddConsoleExporter()
-);
 
 var app = builder.Build();
 

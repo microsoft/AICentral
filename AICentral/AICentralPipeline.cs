@@ -3,10 +3,7 @@ using System.Diagnostics.Metrics;
 using AICentral.Core;
 using AICentral.Steps.Auth;
 using AICentral.Steps.EndpointSelectors;
-using AICentral.Steps.EndpointSelectors.Single;
 using AICentral.Steps.Routes;
-using AICentral.Steps.TokenBasedRateLimiting;
-using Newtonsoft.Json;
 
 namespace AICentral;
 
@@ -18,19 +15,20 @@ public class AICentralPipeline
     private readonly IList<IAICentralGenericStepFactory> _pipelineSteps;
     private readonly IAICentralEndpointSelectorFactory _endpointSelector;
 
-    private readonly Meter _aiCentralMeter;
-    private readonly Counter<int> _requestMeter;
-    private readonly Counter<int> _failedRequestMeter;
-    private readonly Counter<int> _tokenMeter;
-    private readonly Counter<int> _successRequestMeter;
-    private readonly ActivitySource _aiCentralRequestActivitySource;
+    private static readonly Counter<int> RequestMeter =
+        AICentralActivitySource.AICentralMeter.CreateCounter<int>("aicentral.requests.count");
 
-    public static readonly string AICentralMeterName = typeof(AICentralPipeline).Assembly.GetName().Name!;
+    private static readonly Counter<int> FailedRequestMeter =
+        AICentralActivitySource.AICentralMeter.CreateCounter<int>("aicentral.failedrequests.count");
 
-    private static readonly string AICentralMeterVersion =
-        typeof(AICentralPipeline).Assembly.GetName().Version!.ToString();
+    private static readonly Counter<int> TokenMeter =
+        AICentralActivitySource.AICentralMeter.CreateCounter<int>("aicentral.tokens.sum");
 
-    private readonly Histogram<double> _durationMeter;
+    private static readonly Counter<int> SuccessRequestMeter =
+        AICentralActivitySource.AICentralMeter.CreateCounter<int>("aicentral.successfulrequests.count");
+
+    private static readonly Histogram<double> DurationMeter =
+        AICentralActivitySource.AICentralMeter.CreateHistogram<double>("aicentral.downstreamrequest.duration");
 
     public AICentralPipeline(
         string name,
@@ -44,21 +42,12 @@ public class AICentralPipeline
         _clientAuthStep = clientAuthStep;
         _pipelineSteps = pipelineSteps.Select(x => x).ToArray();
         _endpointSelector = endpointSelector;
-
-        _aiCentralMeter = new Meter(AICentralMeterName, AICentralMeterVersion);
-        _requestMeter = _aiCentralMeter.CreateCounter<int>("aicentral.requests.count");
-        _failedRequestMeter = _aiCentralMeter.CreateCounter<int>("aicentral.failedrequests.count");
-        _successRequestMeter = _aiCentralMeter.CreateCounter<int>("aicentral.successfulrequests.count");
-        _tokenMeter = _aiCentralMeter.CreateCounter<int>("aicentral.tokens.sum");
-        _durationMeter = _aiCentralMeter.CreateHistogram<double>("aicentral.downstreamrequest.duration");
-
-        _aiCentralRequestActivitySource = new ActivitySource("aicentral");
     }
 
     public async Task<AICentralResponse> Execute(HttpContext context, CancellationToken cancellationToken)
     {
         // Create a new Activity scoped to the method
-        using var activity = _aiCentralRequestActivitySource.StartActivity("AICentalRequest");
+        using var activity = AICentralActivitySource.AICentralRequestActivitySource.StartActivity("AICentalRequest");
 
         var logger = context.RequestServices.GetRequiredService<ILogger<AICentralPipeline>>();
         using var scope = logger.BeginScope(new
@@ -86,29 +75,34 @@ public class AICentralPipeline
 
 
         using var executor = new AICentralPipelineExecutor(_pipelineSteps.Select(x => x.Build()), endpointSelector);
-        _requestMeter.Add(1);
+        RequestMeter.Add(1);
         try
         {
             var result = await executor.Next(context, requestDetails, cancellationToken);
             logger.LogInformation("Executed Pipeline {PipelineName}", _name);
-            _successRequestMeter.Add(1);
+            SuccessRequestMeter.Add(1);
 
             var tagList = new TagList();
             tagList.Add("Model", result.AICentralUsageInformation.ModelName);
             tagList.Add("Endpoint", result.AICentralUsageInformation.OpenAIHost);
-
-            _durationMeter.Record(result.AICentralUsageInformation.Duration.TotalMilliseconds, tagList);
+            DurationMeter.Record(result.AICentralUsageInformation.Duration.TotalMilliseconds, tagList);
 
             if (result.AICentralUsageInformation.TotalTokens != null)
             {
-                _tokenMeter.Add(result.AICentralUsageInformation.TotalTokens.Value, tagList);
+                TokenMeter.Add(result.AICentralUsageInformation.TotalTokens.Value, tagList);
             }
+
+            activity?.AddTag("AICentral.Duration", result.AICentralUsageInformation.Duration);
+            activity?.AddTag("AICentral.Model", result.AICentralUsageInformation.ModelName);
+            activity?.AddTag("AICentral.CallType", result.AICentralUsageInformation.CallType);
+            activity?.AddTag("AICentral.TotalTokens", result.AICentralUsageInformation.TotalTokens);
+            activity?.AddTag("AICentral.OpenAIHost", result.AICentralUsageInformation.OpenAIHost);
 
             return result;
         }
         catch
         {
-            _failedRequestMeter.Add(1);
+            FailedRequestMeter.Add(1);
             throw;
         }
     }
