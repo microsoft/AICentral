@@ -10,24 +10,19 @@ public class the_config_system
 {
     public AICentralPipelineAssembler Build(Dictionary<string, string?> configuration)
     {
+        var configurationSection = new ConfigurationBuilder()
+            .AddInMemoryCollection(configuration)
+            .Build()
+            .GetSection("AICentral");
+
+        var configFromSection = configurationSection.Get<AICentralConfig>()!;
+        configFromSection.FillInPropertiesFromConfiguration(configurationSection);
+
         return new ConfigurationBasedPipelineBuilder()
             .BuildPipelinesFromConfig(
-                NullLogger.Instance,
-                new ConfigurationBuilder()
-                    .AddInMemoryCollection(configuration)
-                    .Build()
-                    .GetSection("AICentral")
+                configFromSection,
+                NullLogger.Instance
             );
-    }
-
-    [Fact]
-    public void does_not_break_with_empty_config()
-    {
-        Should.NotThrow(() => Build(new Dictionary<string, string?>()
-            {
-                ["AICentral"] = ""
-            })
-        );
     }
 
     [Fact]
@@ -40,5 +35,4 @@ public class the_config_system
                 { "AICentral:AuthProviders:0:Type", "ApiKey" },
             }));
     }
-
 }

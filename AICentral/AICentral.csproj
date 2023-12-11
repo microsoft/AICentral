@@ -14,7 +14,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AICentral.Core" Version="0.5.2" />
         <PackageReference Include="Azure.Identity" Version="1.10.3"/>
         <PackageReference Include="Microsoft.AspNetCore.RateLimiting" Version="7.0.0-rc.2.22476.2"/>
         <PackageReference Include="Microsoft.DeepDev.TokenizerLib" Version="1.3.2"/>
@@ -30,6 +29,10 @@
 
     <ItemGroup>
         <None Include="readme.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AICentral.Core\AICentral.Core.csproj" />
     </ItemGroup>
 
 </Project>

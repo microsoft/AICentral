@@ -1,9 +1,4 @@
-﻿using System.Net;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-namespace AICentralTests.TestHelpers;
+﻿namespace AICentralTests.TestHelpers;
 
 public class FakeHttpMessageHandler : HttpMessageHandler
 {

@@ -1,4 +1,6 @@
-﻿namespace AICentral.Steps.Auth.AllowAnonymous;
+﻿using AICentral.Core;
+
+namespace AICentral.Steps.Auth.AllowAnonymous;
 
 public class AllowAnonymousClientAuthFactory: IAICentralClientAuthFactory
 {
@@ -22,7 +24,7 @@ public class AllowAnonymousClientAuthFactory: IAICentralClientAuthFactory
         //No-op
     }
 
-    public static IAICentralClientAuthFactory BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
+    public static IAICentralClientAuthFactory BuildFromConfig(ILogger logger, AICentralTypeAndNameConfig config)
     {
         return new AllowAnonymousClientAuthFactory();
     }

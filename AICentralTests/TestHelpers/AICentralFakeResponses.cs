@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using Newtonsoft.Json;
 
@@ -101,7 +102,7 @@ public class AICentralFakeResponses
     public static HttpResponseMessage FakeAzureOpenAIImageStatusResponse()
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK);
-        var created = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var created = DateTimeOffset.Now.ToUnixTimeSeconds();
         response.Content = new StringContent(
             JsonConvert.SerializeObject(new
             {
@@ -153,6 +154,14 @@ public class AICentralFakeResponses
     {
         var response = new HttpResponseMessage();
         response.StatusCode = HttpStatusCode.InternalServerError;
+        return response;
+    }
+
+    public static HttpResponseMessage RateLimitResponse(TimeSpan retryAfter)
+    {
+        var response = new HttpResponseMessage();
+        response.StatusCode = HttpStatusCode.TooManyRequests;
+        response.Headers.RetryAfter = new RetryConditionHeaderValue(retryAfter);
         return response;
     }
 }

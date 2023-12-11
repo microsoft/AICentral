@@ -1,5 +1,4 @@
-﻿using AICentral.Configuration.JSON;
-using AICentral.Core;
+﻿using AICentral.Core;
 using AICentral.Steps.Endpoints;
 
 namespace AICentral.Steps.EndpointSelectors.Random;
@@ -7,12 +6,12 @@ namespace AICentral.Steps.EndpointSelectors.Random;
 public class RandomEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
     private readonly IAICentralEndpointDispatcherFactory[] _openAiServers;
-    private readonly Lazy<RandomIaiCentralEndpointSelector> _endpointSelector;
+    private readonly Lazy<RandomAICentralEndpointSelector> _endpointSelector;
 
     public RandomEndpointSelectorFactory(IAICentralEndpointDispatcherFactory[] openAiServers)
     {
         _openAiServers = openAiServers.ToArray();
-        _endpointSelector = new Lazy<RandomIaiCentralEndpointSelector>(() => new RandomIaiCentralEndpointSelector(_openAiServers.Select(x => x.Build()).ToArray()));
+        _endpointSelector = new Lazy<RandomAICentralEndpointSelector>(() => new RandomAICentralEndpointSelector(_openAiServers.Select(x => x.Build()).ToArray()));
     }
 
     public IAICentralEndpointSelector Build()
@@ -28,15 +27,15 @@ public class RandomEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 
     public static IAICentralEndpointSelectorFactory BuildFromConfig(
         ILogger logger, 
-        IConfigurationSection configurationSection,
+        AICentralTypeAndNameConfig config,
         Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints)
     {
-        var properties = configurationSection.GetSection("Properties").Get<ConfigurationTypes.RandomEndpointConfig>();
-        Guard.NotNull(properties, configurationSection, "Properties");
+        var properties = config.TypedProperties<RandomEndpointConfig>();
+        Guard.NotNull(properties, "Properties");
 
         return new RandomEndpointSelectorFactory(
-            Guard.NotNull(properties!.Endpoints, configurationSection, "Endpoints")
-                .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, configurationSection, "Endpoint"))
+            Guard.NotNull(properties!.Endpoints, "Endpoints")
+                .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, "Endpoint"))
                 .ToArray());
     }
     

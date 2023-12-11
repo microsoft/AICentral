@@ -4,6 +4,7 @@ using AICentral.Steps.Auth;
 using AICentral.Steps.EndpointSelectors;
 using AICentral.Steps.EndpointSelectors.Single;
 using AICentral.Steps.Routes;
+using AICentral.Steps.TokenBasedRateLimiting;
 
 namespace AICentral;
 
@@ -79,6 +80,7 @@ public class AICentralPipeline
     private static AICentralResponse UnableToProxyUnknownCallTypesToMultiNodeClusters(HttpContext context,
         AICallInformation requestDetails)
     {
+        var dateTimeProvider = context.RequestServices.GetRequiredService<IDateTimeProvider>();
         return new AICentralResponse(
             new AICentralUsageInformation(
                 string.Empty,
@@ -93,7 +95,7 @@ public class AICentralPipeline
                 0,
                 0,
                 context.Connection.RemoteIpAddress?.ToString() ?? "",
-                DateTimeOffset.Now,
+                dateTimeProvider.Now,
                 TimeSpan.Zero),
             Results.BadRequest(new { reason = "Unable to proxy 'other' calls to an endpoint cluster." }));
     }

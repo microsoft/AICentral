@@ -35,10 +35,10 @@ public class TokenBasedRateLimitingProvider : IAICentralGenericStepFactory, IAIC
 
     public static IAICentralGenericStepFactory BuildFromConfig(
         ILogger logger,
-        IConfigurationSection configurationSection)
+        AICentralTypeAndNameConfig config)
     {
-        var properties = configurationSection.GetSection("Properties").Get<TokenBasedRateLimiterOptions>()!;
-        Guard.NotNull(properties, configurationSection, "Properties");
+        var properties = config.TypedProperties<TokenBasedRateLimiterOptions>()!;
+        Guard.NotNull(properties, "Properties");
 
         return new TokenBasedRateLimitingProvider(properties);
     }
@@ -52,14 +52,18 @@ public class TokenBasedRateLimitingProvider : IAICentralGenericStepFactory, IAIC
         IAICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
+        var logger = context.RequestServices.GetRequiredService<ILogger<TokenBasedRateLimitingProvider>>();
         if (HasExceededTokenLimit(context, out var retryAt))
         {
+            logger.LogDebug("Detected token limit breach for {User}. Retry available in {Retry}",
+                context.User.Identity?.Name ?? "unknown", retryAt ?? TimeSpan.Zero);
             var resultHandler = Results.StatusCode(429);
             if (retryAt != null)
             {
                 context.Response.Headers.RetryAfter = new StringValues(retryAt.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture));
             }
 
+            var dateTimeProvider = context.RequestServices.GetRequiredService<IDateTimeProvider>();
             return new AICentralResponse(
                 new AICentralUsageInformation(
                     string.Empty,
@@ -67,7 +71,7 @@ public class TokenBasedRateLimitingProvider : IAICentralGenericStepFactory, IAIC
                     context.User.Identity?.Name ?? string.Empty,
                     aiCallInformation.IncomingCallDetails.AICallType,
                     null, null, null, null, null, null, null,
-                    context.Connection.RemoteIpAddress?.ToString() ?? string.Empty, DateTimeOffset.Now, TimeSpan.Zero),
+                    context.Connection.RemoteIpAddress?.ToString() ?? string.Empty, dateTimeProvider.Now, TimeSpan.Zero),
                 resultHandler);
         }
 
@@ -82,6 +86,9 @@ public class TokenBasedRateLimitingProvider : IAICentralGenericStepFactory, IAIC
             context,
             Math.Min(Convert.ToInt32(rateLimiterStatistics?.CurrentAvailablePermits ?? 0),
                 result.AICentralUsageInformation.TotalTokens.Value));
+
+        logger.LogDebug("New tokens consumed by {User}. New Count {Count}",
+            context.User.Identity?.Name ?? "unknown", rateLimiterStatistics?.CurrentAvailablePermits + result.AICentralUsageInformation.TotalTokens.Value);
 
         return result;
     }

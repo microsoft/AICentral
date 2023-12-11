@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Polly;
+﻿using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
 
@@ -7,14 +6,15 @@ namespace AICentral.Steps.Endpoints;
 
 public static class ResiliencyStrategy
 {
-    private static readonly HttpStatusCode[] StatusCodesToRetry = { HttpStatusCode.TooManyRequests };
+    private static bool ShouldRetry(HttpResponseMessage response)
+    {
+        return (int)response.StatusCode >= 500 && (int)response.StatusCode < 599;
+    }
 
     public static IAsyncPolicy<HttpResponseMessage> Build(int? maxConcurrency)
     {
         var handler = new PredicateBuilder<HttpResponseMessage>()
-            .HandleResult(r => StatusCodesToRetry.Contains(r.StatusCode))
-            .Handle<HttpRequestException>(e =>
-                e.StatusCode.HasValue && StatusCodesToRetry.Contains(e.StatusCode.Value));
+            .HandleResult(ShouldRetry);
 
         var policy = new ResiliencePipelineBuilder<HttpResponseMessage>()
             .AddCircuitBreaker(new CircuitBreakerStrategyOptions<HttpResponseMessage>

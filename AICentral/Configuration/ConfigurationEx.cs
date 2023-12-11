@@ -1,6 +1,4 @@
 ﻿using System.Reflection;
-using AICentral.Core;
-using AICentral.Steps;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AICentral.Configuration;
@@ -12,42 +10,24 @@ public static class ConfigurationEx
         IConfiguration configuration,
         string configSectionName = "AICentral",
         ILogger? startupLogger = null,
+        Action<AICentralConfig>? configureOptions = null,
         params Assembly[] additionalComponentAssemblies)
     {
         var logger = startupLogger ?? NullLogger.Instance;
         logger.LogInformation("AICentral - Initialising pipelines");
 
-        var configurationPipelineBuilder = new ConfigurationBasedPipelineBuilder()
-            .BuildPipelinesFromConfig(
-                logger,
-                configuration.GetSection(configSectionName),
-                additionalComponentAssemblies);
-
-        configurationPipelineBuilder.AddServices(services, logger);
-
-        return services;
-    }
-    
-    public static IServiceCollection AddAICentralNew(
-        this IServiceCollection services,
-        IConfiguration configuration,
-        string configSectionName = "AICentral",
-        ILogger? startupLogger = null,
-        params Assembly[] additionalComponentAssemblies)
-    {
-        var logger = startupLogger ?? NullLogger.Instance;
-        logger.LogInformation("AICentral - Initialising pipelines");
-
-        var genericSteps = AssemblyEx.GetTypesOfType<IAICentralPipelineStep>();
-        
+        var configFromSection = configuration.GetSection(configSectionName);
+        var typedConfig = configFromSection.Exists() ? configFromSection.Get<AICentralConfig>()! : new AICentralConfig();
+        typedConfig.FillInPropertiesFromConfiguration(configuration.GetSection(configSectionName));
+        configureOptions?.Invoke(typedConfig);
 
         var configurationPipelineBuilder = new ConfigurationBasedPipelineBuilder()
             .BuildPipelinesFromConfig(
+                typedConfig,
                 logger,
-                configuration.GetSection(configSectionName),
                 additionalComponentAssemblies);
 
-        configurationPipelineBuilder.AddServices(services, logger);
+        configurationPipelineBuilder.AddServices(services, typedConfig.HttpMessageHandler, logger);
 
         return services;
     }

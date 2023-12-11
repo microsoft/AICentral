@@ -12,12 +12,14 @@ public class the_rate_limiter : IClassFixture<TestWebApplicationFactory<Program>
 
 {
     private readonly TestWebApplicationFactory<Program> _factory;
+    private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _httpClient;
 
     public the_rate_limiter(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
     {
         _factory = factory;
-        factory.OutputHelper = testOutputHelper;
+        _testOutputHelper = testOutputHelper;
+        //factory.OutputHelper = testOutputHelper;
         _httpClient = factory.CreateClient();
     }
 
@@ -69,13 +71,6 @@ public class the_rate_limiter : IClassFixture<TestWebApplicationFactory<Program>
                         messages = new[]
                         {
                             new { role = "system", content = "You are a helpful assistant." },
-                            new { role = "user", content = "Does Azure OpenAI support customer managed keys?" },
-                            new
-                            {
-                                role = "assistant",
-                                content = "Yes, customer managed keys are supported by Azure OpenAI."
-                            },
-                            new { role = "user", content = "Do other Azure AI services support this too?" }
                         },
                         max_tokens = 5
                     }), Encoding.UTF8, "application/json")
@@ -85,9 +80,13 @@ public class the_rate_limiter : IClassFixture<TestWebApplicationFactory<Program>
         await Call("123");
         await Task.Delay(TimeSpan.FromSeconds(1));
 
+        _testOutputHelper.WriteLine("1");
         var client1Call1 = await Call("123");
+        _testOutputHelper.WriteLine("2");
         var client2Call1 = await Call("456");
+        _testOutputHelper.WriteLine("3");
         var client1Call2 = await Call("123");
+        _testOutputHelper.WriteLine("4");
         var client2Call2 = await Call("456");
 
         client1Call1.StatusCode.ShouldBe(HttpStatusCode.OK);

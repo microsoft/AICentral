@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net;
+using System.Net.Http.Headers;
 using AICentral.Core;
 using AICentral.Steps.Endpoints.OpenAILike.OpenAI;
 using AICentral.Steps.EndpointSelectors;
@@ -15,6 +16,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
     public string EndpointName { get; }
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string _id;
+    private static readonly HttpResponseMessage RateLimitedFakeResponse = new(HttpStatusCode.TooManyRequests);
 
     private static readonly HashSet<string> HeadersToIgnore = new(new[] { "host", "authorization", "api-key" });
 
@@ -42,6 +44,8 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherFactory>>();
+        var rateLimitingTracker = context.RequestServices.GetRequiredService<InMemoryRateLimitingTracker>();
+        var dateTimeProvider = context.RequestServices.GetRequiredService<IDateTimeProvider>();
 
         var incomingModelName = callInformation.IncomingCallDetails.IncomingModelName ?? string.Empty;
 
@@ -63,7 +67,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
                     null,
                     null,
                     context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
-                    DateTimeOffset.Now, TimeSpan.Zero
+                    dateTimeProvider.Now, TimeSpan.Zero
                 ), Results.NotFound(new { message = "Unknown model" }));
         }
 
@@ -88,9 +92,17 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
                     null,
                     null,
                     context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
-                    DateTimeOffset.Now, TimeSpan.Zero
+                    dateTimeProvider.Now, TimeSpan.Zero
                 ), Results.BadRequest(new { message = ie.Message }));
         }
+
+        if (rateLimitingTracker.IsRateLimiting(newRequest.RequestUri!.Host, out var until))
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+            response.Headers.RetryAfter = new RetryConditionHeaderValue(until!.Value);
+            RateLimitedFakeResponse.EnsureSuccessStatusCode();
+        }
+
 
         await CustomiseRequest(context, callInformation, newRequest!, mappedModelName);
 
@@ -101,7 +113,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
             incomingModelName,
             mappedModelName);
 
-        var now = DateTimeOffset.Now;
+        var now = dateTimeProvider.Now;
         var sw = new Stopwatch();
 
         var typedDispatcher = context.RequestServices
@@ -118,6 +130,11 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         //this will retry the operation for retryable status codes. When we reach here we might not want
         //to stream the response if it wasn't a 200.
         sw.Stop();
+
+        if (openAiResponse.StatusCode == HttpStatusCode.TooManyRequests)
+        {
+            rateLimitingTracker.RateLimiting(newRequest.RequestUri.Host, openAiResponse.Headers.RetryAfter);
+        }
 
         if (openAiResponse.StatusCode == HttpStatusCode.OK)
         {

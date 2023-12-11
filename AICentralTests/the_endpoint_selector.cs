@@ -2,7 +2,7 @@
 using System.Text;
 using AICentral;
 using AICentral.Configuration;
-using AICentral.Configuration.JSON;
+using AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
 using AICentralTests.TestHelpers;
 using ApprovalTests;
 using Azure;
@@ -43,11 +43,12 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
                         {
                             Type = "AzureOpenAIEndpoint",
                             Name = "test-endpoint",
-                            Properties = new ConfigurationTypes.AICentralPipelineAzureOpenAIEndpointPropertiesConfig()
+                            Properties = new AICentralPipelineAzureOpenAIEndpointPropertiesConfig()
                             {
                                 ApiKey = "1234",
                                 LanguageEndpoint = "https://somehere.com",
-                                ModelMappings = new Dictionary<string, string>()
+                                ModelMappings = new Dictionary<string, string>(),
+                                AuthenticationType = "ApiKey"
                             }
                         }
                     },
@@ -82,7 +83,7 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
                     },
                     Pipelines = new[]
                     {
-                        new ConfigurationTypes.AICentralPipelineConfig()
+                        new AICentralPipelineConfig()
                         {
                             Name = "test-pipeline",
                             Host = "my-test-host.localtest.me",
@@ -118,7 +119,7 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
                         {
                             Type = "AzureOpenAIEndpoint",
                             Name = "test-endpoint",
-                            Properties = new ConfigurationTypes.AICentralPipelineAzureOpenAIEndpointPropertiesConfig()
+                            Properties = new AICentralPipelineAzureOpenAIEndpointPropertiesConfig()
                             {
                                 ApiKey = "1234",
                                 LanguageEndpoint = "https://somehere.com",
@@ -157,7 +158,7 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
                     },
                     Pipelines = new[]
                     {
-                        new ConfigurationTypes.AICentralPipelineConfig()
+                        new AICentralPipelineConfig()
                         {
                             Name = "test-pipeline",
                             Host = "my-test-host.localtest.me",

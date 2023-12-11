@@ -1,14 +1,15 @@
-﻿using Microsoft.Identity.Web;
+﻿using AICentral.Core;
+using Microsoft.Identity.Web;
 
 namespace AICentral.Steps.Auth.Entra;
 
 public class EntraClientAuthFactory : IAICentralClientAuthFactory
 {
-    private readonly IConfigurationSection _configSection;
+    private readonly AICentralTypeAndNameConfig _configSection;
     private readonly string _id;
     private readonly Lazy<EntraClientAuthProvider> _provider;
 
-    public EntraClientAuthFactory(IConfigurationSection configSection)
+    public EntraClientAuthFactory(AICentralTypeAndNameConfig configSection)
     {
         _configSection = configSection;
         _id = Guid.NewGuid().ToString();
@@ -20,7 +21,7 @@ public class EntraClientAuthFactory : IAICentralClientAuthFactory
     /// </summary>
     public void RegisterServices(IServiceCollection services)
     {
-        services.AddAuthentication().AddMicrosoftIdentityWebApi(_configSection, "Properties", _id);
+        services.AddAuthentication().AddMicrosoftIdentityWebApi(_configSection.ConfigurationSection!, "Properties", _id);
         services.AddAuthorizationBuilder().AddPolicy(_id, policyBuilder => policyBuilder.RequireAuthenticatedUser().AddAuthenticationSchemes(_id));
     }
 
@@ -33,9 +34,9 @@ public class EntraClientAuthFactory : IAICentralClientAuthFactory
 
     public static IAICentralClientAuthFactory BuildFromConfig(
         ILogger logger, 
-        IConfigurationSection configurationSection)
+        AICentralTypeAndNameConfig config)
     {
-        return new EntraClientAuthFactory(configurationSection);
+        return new EntraClientAuthFactory(config);
     }
     
     /// <summary>

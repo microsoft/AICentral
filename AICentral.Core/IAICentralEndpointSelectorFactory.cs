@@ -1,7 +1,4 @@
-﻿using AICentral.Core;
-using AICentral.Steps.Endpoints;
-
-namespace AICentral.Steps.EndpointSelectors;
+﻿namespace AICentral.Core;
 
 public interface IAICentralEndpointSelectorFactory
 {
@@ -9,7 +6,7 @@ public interface IAICentralEndpointSelectorFactory
 
     static virtual IAICentralEndpointSelectorFactory BuildFromConfig(
         ILogger logger, 
-        IConfigurationSection section,
+        AICentralTypeAndNameConfig config,
         Dictionary<string, IAICentralEndpointDispatcherFactory> aiCentralEndpoints
         ) => throw new NotImplementedException();
 

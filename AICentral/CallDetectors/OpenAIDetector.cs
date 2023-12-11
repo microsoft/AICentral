@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace AICentral.IncomingServiceDetector;
+namespace AICentral.CallDetectors;
 
 public class OpenAIDetector : IAIServiceDetector
 {

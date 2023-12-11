@@ -1,29 +1,27 @@
 ﻿using System.Reflection;
-using AICentral.Configuration.JSON;
 using AICentral.Core;
 using AICentral.Steps.Auth;
-using AICentral.Steps.Endpoints;
 using AICentral.Steps.EndpointSelectors;
-using AICentral.Steps.EndpointSelectors.Single;
 using AICentral.Steps.Routes;
 
 namespace AICentral.Configuration;
 
 public class ConfigurationBasedPipelineBuilder
 {
-    private readonly Dictionary<string, Func<ILogger, IConfigurationSection, IAICentralEndpointDispatcherFactory>>
+    private readonly Dictionary<string, Func<ILogger, AICentralTypeAndNameConfig, IAICentralEndpointDispatcherFactory>>
         _endpointConfigurationBuilders = new();
 
     private readonly
-        Dictionary<string, Func<ILogger, IConfigurationSection, Dictionary<string, IAICentralEndpointDispatcherFactory>,
+        Dictionary<string, Func<ILogger, AICentralTypeAndNameConfig,
+            Dictionary<string, IAICentralEndpointDispatcherFactory>,
             IAICentralEndpointSelectorFactory>> _endpointSelectorConfigurations = new();
 
     private readonly Dictionary<string,
-            Func<ILogger, IConfigurationSection, IAICentralGenericStepFactory>>
+            Func<ILogger, AICentralTypeAndNameConfig, IAICentralGenericStepFactory>>
         _genericStepBuilders = new();
 
     private readonly
-        Dictionary<string, Func<ILogger, IConfigurationSection, IAICentralClientAuthFactory>>
+        Dictionary<string, Func<ILogger, AICentralTypeAndNameConfig, IAICentralClientAuthFactory>>
         _authProviderBuilders = new();
 
     private void RegisterAuthProvider<T>() where T : IAICentralClientAuthFactory =>
@@ -39,8 +37,9 @@ public class ConfigurationBasedPipelineBuilder
     private void RegisterGenericStep<T>() where T : IAICentralGenericStepFactory =>
         _genericStepBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
-    public AICentralPipelineAssembler BuildPipelinesFromConfig(ILogger startupLogger,
-        IConfigurationSection configurationSection,
+    public AICentralPipelineAssembler BuildPipelinesFromConfig(
+        AICentralConfig configuration,
+        ILogger startupLogger,
         params Assembly[] additionalAssembliesToScan)
     {
         RegisterBuilders<IAICentralEndpointSelectorFactory>(additionalAssembliesToScan,
@@ -51,105 +50,76 @@ public class ConfigurationBasedPipelineBuilder
         RegisterBuilders<IAICentralClientAuthFactory>(additionalAssembliesToScan, nameof(RegisterAuthProvider));
 
         var endpoints =
-            configurationSection
-                .GetSection("Endpoints")
-                .GetChildren()
-                .Select(x => new
-                {
-                    TypeInfo = x.Get<ConfigurationTypes.AICentralTypeAndNameConfig>(),
-                    Config = x
-                })
+            configuration
+                .Endpoints!
                 .ToDictionary(
-                    x => Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name"),
+                    x => Guard.NotNull(x.Name, "Name"),
                     x =>
                     {
-                        startupLogger.LogInformation("Configuring Endpoint {Name}", x.TypeInfo!.Name);
+                        startupLogger.LogInformation("Configuring Endpoint {Name}", x.Name);
                         return _endpointConfigurationBuilders[
-                            Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
+                            Guard.NotNull(x.Type, "Type") ??
                             throw new ArgumentException("No Type specified for Endpoint")](
                             startupLogger,
-                            x.Config);
+                            x);
                     });
 
-        var allEndpointSelectors =
-            configurationSection
-                .GetSection("EndpointSelectors")
-                .GetChildren()
-                .Select(x => new
-                {
-                    TypeInfo = x.Get<ConfigurationTypes.AICentralTypeAndNameConfig>(),
-                    Config = x
-                });
-
         var endpointSelectors = new Dictionary<string, IAICentralEndpointSelectorFactory>();
-        foreach (var x in allEndpointSelectors)
+        foreach (var x in configuration.EndpointSelectors!)
         {
-            Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name");
-            startupLogger.LogInformation("Configuring Endpoint Selector {Name}", x.TypeInfo!.Name);
+            Guard.NotNull(x.Name, "Name");
+            startupLogger.LogInformation("Configuring Endpoint Selector {Name}", x.Name);
             var aiCentralEndpointSelectorFactory = _endpointSelectorConfigurations[
-                Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
+                Guard.NotNull(x.Type, "Type") ??
                 throw new ArgumentException("No Type specified for Endpoint")](
                 startupLogger,
-                x.Config,
+                x,
                 endpoints);
-            
-            endpointSelectors.Add(x.TypeInfo!.Name!, aiCentralEndpointSelectorFactory);
-            if (endpoints.ContainsKey(x.TypeInfo!.Name!))
+
+            endpointSelectors.Add(x.Name!, aiCentralEndpointSelectorFactory);
+            if (endpoints.ContainsKey(x.Name!))
             {
-                startupLogger.LogWarning("Unable to use Endpoint Selector {Name} as a virtual endpoint within another Endpoint Selector, as it already exists as an Endpoint", x.TypeInfo!.Name!);
+                startupLogger.LogWarning(
+                    "Unable to use Endpoint Selector {Name} as a virtual endpoint within another Endpoint Selector, as it already exists as an Endpoint",
+                    x.Name!);
             }
             else
             {
-                endpoints.Add(x.TypeInfo!.Name!, new EndpointSelectorAdapterFactory(aiCentralEndpointSelectorFactory));
+                endpoints.Add(x.Name!, new EndpointSelectorAdapterFactory(aiCentralEndpointSelectorFactory));
             }
         }
 
         var authProviders =
-            configurationSection
-                .GetSection("AuthProviders")
-                .GetChildren()
-                .Select(x => new
-                {
-                    TypeInfo = x.Get<ConfigurationTypes.AICentralTypeAndNameConfig>(),
-                    Config = x
-                })
+            configuration
+                .AuthProviders!
                 .ToDictionary(
-                    x => Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name"),
+                    x => Guard.NotNull(x.Name, "Name"),
                     x =>
                     {
-                        startupLogger.LogInformation("Configuring AuthProviders {Name}", x.TypeInfo!.Name);
+                        startupLogger.LogInformation("Configuring AuthProviders {Name}", x.Name);
                         return _authProviderBuilders[
-                            Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
+                            Guard.NotNull(x.Type, "Type") ??
                             throw new ArgumentException("No Type specified for Endpoint")](
                             startupLogger,
-                            x.Config
+                            x
                         );
                     });
 
         var genericSteps =
-            configurationSection
-                .GetSection("GenericSteps")
-                .GetChildren()
-                .Select(x => new
-                {
-                    TypeInfo = x.Get<ConfigurationTypes.AICentralTypeAndNameConfig>(),
-                    Config = x
-                })
+            configuration
+                .GenericSteps!
                 .ToDictionary(
-                    x => Guard.NotNull(x.TypeInfo?.Name, x.Config, "Name"),
+                    x => Guard.NotNull(x.Name, "Name"),
                     x =>
                     {
-                        startupLogger.LogInformation("Configuring AuthProviders {Name}", x.TypeInfo!.Name);
+                        startupLogger.LogInformation("Configuring AuthProviders {Name}", x.Name);
                         return _genericStepBuilders[
-                            Guard.NotNull(x.TypeInfo?.Type, x.Config, "Type") ??
+                            Guard.NotNull(x.Type, "Type") ??
                             throw new ArgumentException("No Type specified for Endpoint")](
                             startupLogger,
-                            x.Config
+                            x
                         );
                     });
-
-        var typedConfig = configurationSection
-            .Get<ConfigurationTypes.AICentralConfig>();
 
         //create an object that can wire all this together
         var builder = new AICentralPipelineAssembler(
@@ -158,7 +128,7 @@ public class ConfigurationBasedPipelineBuilder
             endpoints,
             endpointSelectors,
             genericSteps,
-            typedConfig?.Pipelines ?? Array.Empty<ConfigurationTypes.AICentralPipelineConfig>()
+            configuration.Pipelines ?? Array.Empty<AICentralPipelineConfig>()
         );
 
         return builder;
