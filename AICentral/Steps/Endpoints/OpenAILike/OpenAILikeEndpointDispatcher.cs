@@ -113,6 +113,16 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
             incomingModelName,
             mappedModelName);
 
+        using var source = AICentralActivitySource.AICentralRequestActivitySource.CreateActivity(
+            "Calling AI Service",
+            ActivityKind.Client,
+            Activity.Current!.Context,
+            new Dictionary<string, object?>()
+            {
+                ["ModelName"] = mappedModelName,
+                ["ServiceType"] = callInformation.IncomingCallDetails.ServiceType
+            }
+        );
         var now = dateTimeProvider.Now;
         var sw = new Stopwatch();
 

@@ -88,7 +88,7 @@ public class TokenBasedRateLimitingProvider : IAICentralGenericStepFactory, IAIC
                 result.AICentralUsageInformation.TotalTokens.Value));
 
         logger.LogDebug("New tokens consumed by {User}. New Count {Count}",
-            context.User.Identity?.Name ?? "unknown", rateLimiterStatistics?.CurrentAvailablePermits + result.AICentralUsageInformation.TotalTokens.Value);
+            context.User.Identity?.Name ?? "unknown", rateLimiterStatistics?.CurrentAvailablePermits - result.AICentralUsageInformation.TotalTokens.Value);
 
         return result;
     }

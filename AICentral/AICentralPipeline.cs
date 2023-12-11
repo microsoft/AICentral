@@ -1,10 +1,9 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using AICentral.Core;
 using AICentral.Steps.Auth;
 using AICentral.Steps.EndpointSelectors;
-using AICentral.Steps.EndpointSelectors.Single;
 using AICentral.Steps.Routes;
-using AICentral.Steps.TokenBasedRateLimiting;
 
 namespace AICentral;
 
@@ -15,6 +14,21 @@ public class AICentralPipeline
     private readonly IAICentralClientAuthFactory _clientAuthStep;
     private readonly IList<IAICentralGenericStepFactory> _pipelineSteps;
     private readonly IAICentralEndpointSelectorFactory _endpointSelector;
+
+    private static readonly Counter<int> RequestMeter =
+        AICentralActivitySource.AICentralMeter.CreateCounter<int>("aicentral.requests.count");
+
+    private static readonly Counter<int> FailedRequestMeter =
+        AICentralActivitySource.AICentralMeter.CreateCounter<int>("aicentral.failedrequests.count");
+
+    private static readonly Counter<int> TokenMeter =
+        AICentralActivitySource.AICentralMeter.CreateCounter<int>("aicentral.tokens.sum");
+
+    private static readonly Counter<int> SuccessRequestMeter =
+        AICentralActivitySource.AICentralMeter.CreateCounter<int>("aicentral.successfulrequests.count");
+
+    private static readonly Histogram<double> DurationMeter =
+        AICentralActivitySource.AICentralMeter.CreateHistogram<double>("aicentral.downstreamrequest.duration");
 
     public AICentralPipeline(
         string name,
@@ -32,6 +46,9 @@ public class AICentralPipeline
 
     public async Task<AICentralResponse> Execute(HttpContext context, CancellationToken cancellationToken)
     {
+        // Create a new Activity scoped to the method
+        using var activity = AICentralActivitySource.AICentralRequestActivitySource.StartActivity("AICentalRequest");
+
         var logger = context.RequestServices.GetRequiredService<ILogger<AICentralPipeline>>();
         using var scope = logger.BeginScope(new
         {
@@ -56,10 +73,38 @@ public class AICentralPipeline
             endpointSelector = _endpointSelector.Build();
         }
 
-        using var executor = new AICentralPipelineExecutor(_pipelineSteps.Select(x => x.Build()), endpointSelector!);
-        var result = await executor.Next(context, requestDetails, cancellationToken);
-        logger.LogInformation("Executed Pipeline {PipelineName}", _name);
-        return result;
+
+        using var executor = new AICentralPipelineExecutor(_pipelineSteps.Select(x => x.Build()), endpointSelector);
+        RequestMeter.Add(1);
+        try
+        {
+            var result = await executor.Next(context, requestDetails, cancellationToken);
+            logger.LogInformation("Executed Pipeline {PipelineName}", _name);
+            SuccessRequestMeter.Add(1);
+
+            var tagList = new TagList();
+            tagList.Add("Model", result.AICentralUsageInformation.ModelName);
+            tagList.Add("Endpoint", result.AICentralUsageInformation.OpenAIHost);
+            DurationMeter.Record(result.AICentralUsageInformation.Duration.TotalMilliseconds, tagList);
+
+            if (result.AICentralUsageInformation.TotalTokens != null)
+            {
+                TokenMeter.Add(result.AICentralUsageInformation.TotalTokens.Value, tagList);
+            }
+
+            activity?.AddTag("AICentral.Duration", result.AICentralUsageInformation.Duration);
+            activity?.AddTag("AICentral.Model", result.AICentralUsageInformation.ModelName);
+            activity?.AddTag("AICentral.CallType", result.AICentralUsageInformation.CallType);
+            activity?.AddTag("AICentral.TotalTokens", result.AICentralUsageInformation.TotalTokens);
+            activity?.AddTag("AICentral.OpenAIHost", result.AICentralUsageInformation.OpenAIHost);
+
+            return result;
+        }
+        catch
+        {
+            FailedRequestMeter.Add(1);
+            throw;
+        }
     }
 
     private IAICentralEndpointSelector? FindAffinityServer(AICallInformation requestDetails)

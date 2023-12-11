@@ -4,8 +4,8 @@ namespace AICentral.Configuration;
 
     public class AICentralConfig
     {
-        public bool EnableDiagnosticsHeaders { get; set; } = false;
-        public bool EnableOpenTelemetry { get; set; } = false;
+        //public bool EnableDiagnosticsHeaders { get; set; } = false; TODO implement this
+
         public AICentralPipelineConfig[]? Pipelines { get; init; }
         public AICentralTypeAndNameConfig[]? Endpoints { get; set; }
         public AICentralTypeAndNameConfig[]? EndpointSelectors { get; set; }
