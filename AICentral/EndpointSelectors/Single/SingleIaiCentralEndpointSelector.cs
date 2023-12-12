@@ -1,0 +1,31 @@
+﻿using AICentral.Core;
+
+namespace AICentral.EndpointSelectors.Single;
+
+public class SingleIaiCentralEndpointSelector : IAICentralEndpointSelector
+{
+    private readonly IAICentralEndpointDispatcher _endpoint;
+
+    public SingleIaiCentralEndpointSelector(IAICentralEndpointDispatcher endpoint)
+    {
+        _endpoint = endpoint;
+    }
+
+    public Task<AICentralResponse> Handle(
+        HttpContext context,
+        AICallInformation aiCallInformation,
+        bool isLastChance,
+        CancellationToken cancellationToken)
+    {
+        return _endpoint.Handle(
+            context,
+            aiCallInformation,
+            isLastChance,
+            cancellationToken);
+    }
+
+    public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
+    {
+        return new[] { _endpoint };
+    }
+}

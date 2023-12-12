@@ -1,12 +1,17 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using AICentral.Auth;
 using AICentral.Core;
-using AICentral.Steps.Auth;
-using AICentral.Steps.EndpointSelectors;
-using AICentral.Steps.Routes;
+using AICentral.EndpointSelectors;
+using AICentral.Routes;
 
 namespace AICentral;
 
+/// <summary>
+/// Represents a Pipeline. This class is the main entry path for a request after it's been matched by a route.
+/// It's a stateless class which emits telemetry, but the main work of executing steps is performed by the
+/// AICentralPipelineExecutor class. An instance of AICentralPipelineExecutor is created to encapsulate each request to OpenAI.
+/// </summary>
 public class AICentralPipeline
 {
     private readonly string _name;
@@ -21,8 +26,8 @@ public class AICentralPipeline
     private static readonly Counter<int> FailedRequestMeter =
         AICentralActivitySource.AICentralMeter.CreateCounter<int>("aicentral.failedrequests.count");
 
-    private static readonly Counter<int> TokenMeter =
-        AICentralActivitySource.AICentralMeter.CreateCounter<int>("aicentral.tokens.sum");
+    private static readonly Histogram<int> TokenMeter =
+        AICentralActivitySource.AICentralMeter.CreateHistogram<int>("aicentral.tokens.sum");
 
     private static readonly Counter<int> SuccessRequestMeter =
         AICentralActivitySource.AICentralMeter.CreateCounter<int>("aicentral.successfulrequests.count");
@@ -44,7 +49,18 @@ public class AICentralPipeline
         _endpointSelector = endpointSelector;
     }
 
-    public async Task<AICentralResponse> Execute(HttpContext context, CancellationToken cancellationToken)
+    /// <summary>
+    /// Orchestrates the request through the pipeline. This method is called by the route handler.
+    /// This method ultimately creates an instance of AICentralPipelineExecutor to execute the request.
+    /// </summary>
+    /// <remarks>
+    /// If an affinity header is detected to a non chat-like endpoint, we will switch the EndpointSelector to one
+    /// containing only that downstream server.
+    /// </remarks>
+    /// <param name="context"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    private async Task<AICentralResponse> Execute(HttpContext context, CancellationToken cancellationToken)
     {
         // Create a new Activity scoped to the method
         using var activity = AICentralActivitySource.AICentralRequestActivitySource.StartActivity("AICentalRequest");
@@ -82,14 +98,17 @@ public class AICentralPipeline
             logger.LogInformation("Executed Pipeline {PipelineName}", _name);
             SuccessRequestMeter.Add(1);
 
-            var tagList = new TagList();
-            tagList.Add("Model", result.AICentralUsageInformation.ModelName);
-            tagList.Add("Endpoint", result.AICentralUsageInformation.OpenAIHost);
+            var tagList = new TagList
+            {
+                { "Model", result.AICentralUsageInformation.ModelName },
+                { "Endpoint", result.AICentralUsageInformation.OpenAIHost }
+            };
+            
             DurationMeter.Record(result.AICentralUsageInformation.Duration.TotalMilliseconds, tagList);
 
             if (result.AICentralUsageInformation.TotalTokens != null)
             {
-                TokenMeter.Add(result.AICentralUsageInformation.TotalTokens.Value, tagList);
+                TokenMeter.Record(result.AICentralUsageInformation.TotalTokens.Value, tagList);
             }
 
             activity?.AddTag("AICentral.Duration", result.AICentralUsageInformation.Duration);
@@ -114,37 +133,7 @@ public class AICentralPipeline
             out var affinityEndpointSelector);
         return affinityEndpointSelector;
     }
-
-    /// <summary>
-    /// safety first - Azure Open AI uses a async model for images which would need affinity. We could build this 
-    /// in, but for now, let's return a bad-request
-    /// </summary>
-    /// <param name="context"></param>
-    /// <param name="requestDetails"></param>
-    /// <returns></returns>
-    private static AICentralResponse UnableToProxyUnknownCallTypesToMultiNodeClusters(HttpContext context,
-        AICallInformation requestDetails)
-    {
-        var dateTimeProvider = context.RequestServices.GetRequiredService<IDateTimeProvider>();
-        return new AICentralResponse(
-            new AICentralUsageInformation(
-                string.Empty,
-                string.Empty,
-                context.User.Identity?.Name ?? "unknown",
-                requestDetails.IncomingCallDetails.AICallType,
-                requestDetails.IncomingCallDetails.PromptText,
-                string.Empty,
-                0,
-                0,
-                0,
-                0,
-                0,
-                context.Connection.RemoteIpAddress?.ToString() ?? "",
-                dateTimeProvider.Now,
-                TimeSpan.Zero),
-            Results.BadRequest(new { reason = "Unable to proxy 'other' calls to an endpoint cluster." }));
-    }
-
+    
     public object WriteDebug()
     {
         return new

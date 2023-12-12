@@ -1,22 +1,21 @@
 ﻿using System.Threading.RateLimiting;
 using AICentral;
+using AICentral.Auth;
+using AICentral.Auth.AllowAnonymous;
+using AICentral.Auth.ApiKey;
+using AICentral.BulkHead;
 using AICentral.Configuration;
 using AICentral.Core;
-using AICentral.Steps.Auth;
-using AICentral.Steps.Auth.AllowAnonymous;
-using AICentral.Steps.Auth.ApiKey;
-using AICentral.Steps.BulkHead;
-using AICentral.Steps.Endpoints;
-using AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
-using AICentral.Steps.Endpoints.OpenAILike.OpenAI;
-using AICentral.Steps.EndpointSelectors;
-using AICentral.Steps.EndpointSelectors.LowestLatency;
-using AICentral.Steps.EndpointSelectors.Priority;
-using AICentral.Steps.EndpointSelectors.Random;
-using AICentral.Steps.EndpointSelectors.Single;
-using AICentral.Steps.RateLimiting;
-using AICentral.Steps.Routes;
-using AICentral.Steps.TokenBasedRateLimiting;
+using AICentral.Endpoints.OpenAILike.AzureOpenAI;
+using AICentral.Endpoints.OpenAILike.OpenAI;
+using AICentral.EndpointSelectors;
+using AICentral.EndpointSelectors.LowestLatency;
+using AICentral.EndpointSelectors.Priority;
+using AICentral.EndpointSelectors.Random;
+using AICentral.EndpointSelectors.Single;
+using AICentral.RateLimiting;
+using AICentral.Routes;
+using AICentral.TokenBasedRateLimiting;
 
 namespace AICentralTests.TestHelpers;
 

@@ -6,7 +6,9 @@ AI Central gives you control over your AI services.
 - Custom consumer OAuth2 authorisation
 - Fallback AI service
 - Round Robin AI services
+- Lowest Latency AI service
 - Circuit breakers, and backoff-retry over downstream AI services
+- Request based and Token based rate limiting
 - Prompt and usage logging
     - **Works for streaming endpoints as-well as non streaming**
 

@@ -2,7 +2,7 @@
 
 namespace AICentral.Configuration;
 
-public class AssemblyEx
+public static class AssemblyEx
 {
     public static Type[] GetTypesOfType<T>(params Assembly[] additionalAssembliesToScan)
     {
