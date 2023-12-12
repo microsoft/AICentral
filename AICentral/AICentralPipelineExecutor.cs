@@ -1,12 +1,24 @@
 ﻿using AICentral.Core;
+using AICentral.EndpointSelectors;
+using Microsoft.DeepDev;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral;
 
-public class AICentralPipelineExecutor : IAICentralPipelineExecutor, IDisposable
+public class AICentralPipelineExecutor : IAICentralPipelineExecutor, IAICentralResponseGenerator, IDisposable
 {
     private readonly IAICentralEndpointSelector _iaiCentralEndpointSelector;
     private readonly IEnumerator<IAICentralPipelineStep> _pipelineEnumerator;
+    private readonly IList<IAICentralPipelineStep> _outputHandlers = new List<IAICentralPipelineStep>();
 
+    private static readonly Dictionary<string, Lazy<Task<ITokenizer>>> Tokenisers = new()
+    {
+        ["gpt-3.5-turbo-0613"] =
+            new Lazy<Task<ITokenizer>>(() => TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo")),
+        ["gpt-35-turbo"] = new Lazy<Task<ITokenizer>>(() => TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo")),
+        ["gpt-4"] = new Lazy<Task<ITokenizer>>(() => TokenizerBuilder.CreateByModelNameAsync("gpt-4")),
+    };
+    
     public AICentralPipelineExecutor(
         IEnumerable<IAICentralPipelineStep> steps,
         IAICentralEndpointSelector iaiCentralEndpointSelector)
@@ -15,19 +27,97 @@ public class AICentralPipelineExecutor : IAICentralPipelineExecutor, IDisposable
         _pipelineEnumerator = steps.GetEnumerator();
     }
 
-    public async Task<AICentralResponse> Next(HttpContext context, AICallInformation requestDetails,
+    public Task<AICentralResponse> Next(HttpContext context, AICallInformation requestDetails,
         CancellationToken cancellationToken)
     {
+
         if (_pipelineEnumerator.MoveNext())
         {
-            return await _pipelineEnumerator.Current.Handle(context, requestDetails, this, cancellationToken);
+            _outputHandlers.Add(_pipelineEnumerator.Current);
+            return _pipelineEnumerator.Current.Handle(context, requestDetails, this, cancellationToken);
         }
 
-        return await _iaiCentralEndpointSelector.Handle(context, requestDetails, true, cancellationToken);
+        return _iaiCentralEndpointSelector.Handle(context, requestDetails, true, this, cancellationToken);
     }
 
     public void Dispose()
     {
         _pipelineEnumerator.Dispose();
     }
+
+    /// <summary>
+    /// Give everything a chance to change / add headers. The main reason is the token limits that are sent back from Open AI.
+    /// They become a bit meaningless when you are load balancing across multiple servers.
+    /// </summary>
+    /// <param name="requestInformation"></param>
+    /// <param name="context"></param>
+    /// <param name="rawResponse"></param>
+    /// <param name="sanitisedResponseHeaders"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    async Task<AICentralResponse> IAICentralResponseGenerator.BuildResponse(
+        DownstreamRequestInformation requestInformation, HttpContext context,
+        HttpResponseMessage rawResponse, Dictionary<string, StringValues> sanitisedResponseHeaders,
+        CancellationToken cancellationToken)
+    {
+        await _iaiCentralEndpointSelector.BuildResponseHeaders(context, rawResponse, sanitisedResponseHeaders);
+        
+        foreach (var completedStep in _outputHandlers)
+        {
+            await completedStep.BuildResponseHeaders(context, rawResponse, sanitisedResponseHeaders);
+        }
+
+        return await HandleResponse(requestInformation, context, rawResponse, sanitisedResponseHeaders, cancellationToken);
+    }
+
+    private Task<AICentralResponse> HandleResponse(
+        DownstreamRequestInformation requestInformation,
+        HttpContext context, 
+        HttpResponseMessage openAiResponse,
+        Dictionary<string, StringValues> sanitisedResponseHeaders, 
+        CancellationToken cancellationToken)
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<AICentralPipelineExecutor>>();
+
+        //decision point... If this is a streaming request, then we should start streaming the result now.
+        logger.LogDebug("Received Azure Open AI Response. Status Code: {StatusCode}", openAiResponse.StatusCode);
+        
+        CopyHeadersToResponse(context.Response, sanitisedResponseHeaders);
+
+        if (openAiResponse.Headers.TransferEncodingChunked == true)
+        {
+            logger.LogDebug("Detected chunked encoding response. Streaming response back to consumer");
+            return ServerSideEventResponseHandler.Handle(
+                Tokenisers,
+                context,
+                cancellationToken,
+                openAiResponse,
+                requestInformation);
+        }
+
+        if ((openAiResponse.Content.Headers.ContentType?.MediaType ?? string.Empty).Contains("json", StringComparison.InvariantCultureIgnoreCase))
+        {
+            logger.LogDebug("Detected non-chunked encoding response. Sending response back to consumer");
+            return JsonResponseHandler.Handle(
+                context,
+                cancellationToken,
+                openAiResponse,
+                requestInformation);
+        }
+
+        return StreamResponseHandler.Handle(
+            context,
+            cancellationToken,
+            openAiResponse,
+            requestInformation);
+    }
+    
+    private static void CopyHeadersToResponse(HttpResponse response, Dictionary<string, StringValues> headersToProxy)
+    {
+        foreach (var header in headersToProxy)
+        {
+            response.Headers.TryAdd(header.Key, header.Value);
+        }
+    }
+
 }

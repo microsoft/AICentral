@@ -1,12 +1,13 @@
 ﻿using AICentral.Core;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.EndpointSelectors.Single;
 
-public class SingleIaiCentralEndpointSelector : IAICentralEndpointSelector
+public class SingleEndpointSelector : IAICentralEndpointSelector
 {
     private readonly IAICentralEndpointDispatcher _endpoint;
 
-    public SingleIaiCentralEndpointSelector(IAICentralEndpointDispatcher endpoint)
+    public SingleEndpointSelector(IAICentralEndpointDispatcher endpoint)
     {
         _endpoint = endpoint;
     }
@@ -15,17 +16,24 @@ public class SingleIaiCentralEndpointSelector : IAICentralEndpointSelector
         HttpContext context,
         AICallInformation aiCallInformation,
         bool isLastChance,
+        IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
         return _endpoint.Handle(
             context,
             aiCallInformation,
             isLastChance,
+            responseGenerator,
             cancellationToken);
     }
 
     public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
     {
         return new[] { _endpoint };
+    }
+    
+    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
+    {
+        return Task.CompletedTask;
     }
 }

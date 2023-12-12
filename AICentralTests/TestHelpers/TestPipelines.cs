@@ -1,7 +1,6 @@
 ﻿using AICentral;
 using AICentral.Configuration;
 using AICentral.RateLimiting;
-using AICentral.TokenBasedRateLimiting;
 
 namespace AICentralTests.TestHelpers;
 
@@ -26,7 +25,7 @@ public static class TestPipelines
     public static AICentralPipelineAssembler AzureOpenAIServiceWithClientPartitionedRateLimiter() =>
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "random", "Model1")
-            .WithRateLimiting(2, 1, FixedWindowRateLimitingLimitType.PerConsumer)
+            .WithRateLimiting(2, 1, RateLimitingLimitType.PerConsumer)
             .WithApiKeyAuth(
                 ("client-1", "123", "234"),
                 ("client-2", "345", "456")
@@ -36,13 +35,13 @@ public static class TestPipelines
     public static AICentralPipelineAssembler AzureOpenAIServiceWithTokenRateLimitingAndSingleEndpoint() =>
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "random", "Model1")
-            .WithTokenRateLimiting(60, 50, TokenBasedRateLimitingLimitType.PerAICentralEndpoint)
+            .WithTokenRateLimiting(60, 50, RateLimitingLimitType.PerAICentralEndpoint)
             .Assemble("azure-with-token-rate-limiter.localtest.me");
     
     public static AICentralPipelineAssembler AzureOpenAIServiceWithClientPartitionedTokenRateLimiter() =>
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "random", "Model1")
-            .WithTokenRateLimiting(2, 50, TokenBasedRateLimitingLimitType.PerConsumer)
+            .WithTokenRateLimiting(2, 50, RateLimitingLimitType.PerConsumer)
             .WithApiKeyAuth(
                 ("client-1", "123", "234"),
                 ("client-2", "345", "456")

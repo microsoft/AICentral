@@ -5,12 +5,12 @@ namespace AICentral.EndpointSelectors.LowestLatency;
 public class LowestLatencyEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
     private readonly IAICentralEndpointDispatcherFactory[] _openAiServers;
-    private readonly Lazy<LowestLatencyIaiCentralEndpointSelector> _endpointSelector;
+    private readonly Lazy<LowestLatencyEndpointSelector> _endpointSelector;
 
     public LowestLatencyEndpointSelectorFactory(IAICentralEndpointDispatcherFactory[] openAiServers)
     {
         _openAiServers = openAiServers.ToArray();
-        _endpointSelector = new Lazy<LowestLatencyIaiCentralEndpointSelector>(() => new LowestLatencyIaiCentralEndpointSelector(
+        _endpointSelector = new Lazy<LowestLatencyEndpointSelector>(() => new LowestLatencyEndpointSelector(
             _openAiServers.Select(x => x.Build()).ToArray()));
     }
 

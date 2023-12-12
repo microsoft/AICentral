@@ -29,7 +29,7 @@ public class AffinityEndpointHelper
                         availableDispatchers.SingleOrDefault(x => x.IsAffinityRequestToMe(affinityHeader[0]!));
                     if (aiCentralEndpointDispatcher != null)
                     {
-                        singleEndpointSelector = new SingleIaiCentralEndpointSelector(aiCentralEndpointDispatcher);
+                        singleEndpointSelector = new SingleEndpointSelector(aiCentralEndpointDispatcher);
                         return true;
                     }
                 }

@@ -5,13 +5,13 @@ namespace AICentral.EndpointSelectors.Single;
 public class SingleEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
     private readonly IAICentralEndpointDispatcherFactory _endpointDispatcherFactory;
-    private readonly Lazy<SingleIaiCentralEndpointSelector> _endpointSelector;
+    private readonly Lazy<SingleEndpointSelector> _endpointSelector;
 
     public SingleEndpointSelectorFactory(IAICentralEndpointDispatcherFactory endpointDispatcherFactory)
     {
         _endpointDispatcherFactory = endpointDispatcherFactory;
         _endpointSelector =
-            new Lazy<SingleIaiCentralEndpointSelector>(() => new SingleIaiCentralEndpointSelector(endpointDispatcherFactory.Build()));
+            new Lazy<SingleEndpointSelector>(() => new SingleEndpointSelector(endpointDispatcherFactory.Build()));
     }
 
     public IAICentralEndpointSelector Build()
@@ -45,9 +45,4 @@ public class SingleEndpointSelectorFactory : IAICentralEndpointSelectorFactory
             Endpoints = new[] { _endpointDispatcherFactory.WriteDebug() }
         };
     }
-}
-
-public class SingleEndpointConfig
-{
-    public string? Endpoint { get; init; }
 }

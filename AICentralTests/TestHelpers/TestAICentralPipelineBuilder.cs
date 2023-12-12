@@ -15,7 +15,6 @@ using AICentral.EndpointSelectors.Random;
 using AICentral.EndpointSelectors.Single;
 using AICentral.RateLimiting;
 using AICentral.Routes;
-using AICentral.TokenBasedRateLimiting;
 
 namespace AICentralTests.TestHelpers;
 
@@ -27,10 +26,10 @@ public class TestAICentralPipelineBuilder
     private int? _windowInSeconds;
     private int? _requestsPerWindow;
     private int? _allowedConcurrency;
-    private FixedWindowRateLimitingLimitType? _fixedWindowLimitType;
+    private RateLimitingLimitType? _fixedWindowLimitType;
     private int? _tokenWindowSize;
     private int? _tokensPerWindow;
-    private TokenBasedRateLimitingLimitType? _tokenLimitType;
+    private RateLimitingLimitType? _tokenLimitType;
 
     public TestAICentralPipelineBuilder WithApiKeyAuth(params (string clientName, string key1, string key2)[] clients)
     {
@@ -235,7 +234,7 @@ public class TestAICentralPipelineBuilder
     }
 
     public TestAICentralPipelineBuilder WithRateLimiting(int windowInSeconds, int requestsPerWindow,
-        FixedWindowRateLimitingLimitType? limitType = FixedWindowRateLimitingLimitType.PerAICentralEndpoint)
+        RateLimitingLimitType? limitType = RateLimitingLimitType.PerAICentralEndpoint)
     {
         _fixedWindowLimitType = limitType;
         _requestsPerWindow = requestsPerWindow;
@@ -244,7 +243,7 @@ public class TestAICentralPipelineBuilder
     }
 
     public TestAICentralPipelineBuilder WithTokenRateLimiting(int windowSize, int completionTokensPerWindow,
-        TokenBasedRateLimitingLimitType? limitType = TokenBasedRateLimitingLimitType.PerAICentralEndpoint)
+        RateLimitingLimitType? limitType = RateLimitingLimitType.PerAICentralEndpoint)
     {
         _tokenWindowSize = windowSize;
         _tokensPerWindow = completionTokensPerWindow;

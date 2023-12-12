@@ -17,15 +17,17 @@ public class EndpointSelectorAdapter : IAICentralEndpointDispatcher
     /// <param name="context"></param>
     /// <param name="callInformation"></param>
     /// <param name="isLastChance"></param>
+    /// <param name="responseGenerator"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public Task<AICentralResponse> Handle(
         HttpContext context,
         AICallInformation callInformation,
         bool isLastChance,
+        IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
-        return _endpointSelectorFactory.Build().Handle(context, callInformation, isLastChance, cancellationToken);
+        return _endpointSelectorFactory.Build().Handle(context, callInformation, isLastChance, responseGenerator, cancellationToken);
     }
 
     public bool IsAffinityRequestToMe(string affinityHeaderValue)

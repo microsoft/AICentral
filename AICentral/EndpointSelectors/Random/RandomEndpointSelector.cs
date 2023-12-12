@@ -1,13 +1,14 @@
 ﻿using AICentral.Core;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.EndpointSelectors.Random;
 
-public class RandomAICentralEndpointSelector : IAICentralEndpointSelector
+public class RandomEndpointSelector : IAICentralEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IAICentralEndpointDispatcher[] _openAiServers;
 
-    public RandomAICentralEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
+    public RandomEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
     {
         _openAiServers = openAiServers;
     }
@@ -15,9 +16,10 @@ public class RandomAICentralEndpointSelector : IAICentralEndpointSelector
     public async Task<AICentralResponse> Handle(HttpContext context,
         AICallInformation aiCallInformation,
         bool isLastChance,
+        IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<RandomAICentralEndpointSelector>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelector>>();
         var toTry = _openAiServers.ToList();
         logger.LogDebug("Random Endpoint selector is handling request");
         do
@@ -30,6 +32,7 @@ public class RandomAICentralEndpointSelector : IAICentralEndpointSelector
                     context,
                     aiCallInformation,
                     isLastChance && !toTry.Any(),
+                    responseGenerator,
                     cancellationToken); //awaiting to unwrap any Aggregate Exceptions
             }
             catch (HttpRequestException e)
@@ -51,4 +54,12 @@ public class RandomAICentralEndpointSelector : IAICentralEndpointSelector
     {
         return _openAiServers;
     }
+    
+    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
+    {
+        rawHeaders.Remove("x-ratelimit-remaining-tokens");
+        rawHeaders.Remove("x-ratelimit-remaining-requests");
+        return Task.CompletedTask;
+    }
+
 }

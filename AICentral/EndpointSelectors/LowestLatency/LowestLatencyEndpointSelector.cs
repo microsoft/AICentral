@@ -1,9 +1,10 @@
 ﻿using System.Collections.Concurrent;
 using AICentral.Core;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.EndpointSelectors.LowestLatency;
 
-public class LowestLatencyIaiCentralEndpointSelector : IAICentralEndpointSelector
+public class LowestLatencyEndpointSelector : IAICentralEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IAICentralEndpointDispatcher[] _openAiServers;
@@ -13,7 +14,7 @@ public class LowestLatencyIaiCentralEndpointSelector : IAICentralEndpointSelecto
 
     private const int RequiredCount = 10;
 
-    public LowestLatencyIaiCentralEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
+    public LowestLatencyEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
     {
         _openAiServers = openAiServers;
     }
@@ -22,9 +23,10 @@ public class LowestLatencyIaiCentralEndpointSelector : IAICentralEndpointSelecto
         HttpContext context,
         AICallInformation aiCallInformation,
         bool isLastChance,
+        IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<LowestLatencyIaiCentralEndpointSelector>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<LowestLatencyEndpointSelector>>();
         var toTry = _openAiServers.OrderBy(GetRecentAverageLatencyFor).ToArray();
         logger.LogDebug("Lowest Latency selector is handling request");
         var tried = 0;
@@ -36,6 +38,7 @@ public class LowestLatencyIaiCentralEndpointSelector : IAICentralEndpointSelecto
                     context,
                     aiCallInformation,
                     isLastChance && (tried == toTry.Length - 1),
+                    responseGenerator,
                     cancellationToken); //awaiting to unwrap any Aggregate Exceptions
 
                 UpdateLatencies(logger, chosen, response.AICentralUsageInformation);
@@ -66,7 +69,14 @@ public class LowestLatencyIaiCentralEndpointSelector : IAICentralEndpointSelecto
         return _openAiServers;
     }
 
-    private void UpdateLatencies(ILogger<LowestLatencyIaiCentralEndpointSelector> logger, IAICentralEndpointDispatcher endpoint,
+    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
+    {
+        rawHeaders.Remove("x-ratelimit-remaining-tokens");
+        rawHeaders.Remove("x-ratelimit-remaining-requests");
+        return Task.CompletedTask;
+    }
+
+    private void UpdateLatencies(ILogger<LowestLatencyEndpointSelector> logger, IAICentralEndpointDispatcher endpoint,
         AICentralUsageInformation requestInformation)
     {
         if (!_recentLatencies.ContainsKey(endpoint))
