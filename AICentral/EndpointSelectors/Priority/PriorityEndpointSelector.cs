@@ -3,13 +3,13 @@ using AICentral.EndpointSelectors.Random;
 
 namespace AICentral.EndpointSelectors.Priority;
 
-public class PriorityIaiCentralEndpointSelector : IAICentralEndpointSelector
+public class PriorityEndpointSelector : IAICentralEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IAICentralEndpointDispatcher[] _prioritisedOpenAIEndpoints;
     private readonly IAICentralEndpointDispatcher[] _fallbackOpenAIEndpoints;
 
-    public PriorityIaiCentralEndpointSelector(
+    public PriorityEndpointSelector(
         IAICentralEndpointDispatcher[] prioritisedOpenAIEndpoints,
         IAICentralEndpointDispatcher[] fallbackOpenAIEndpoints)
     {
@@ -23,7 +23,7 @@ public class PriorityIaiCentralEndpointSelector : IAICentralEndpointSelector
         bool isLastChance,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<PriorityIaiCentralEndpointSelector>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<PriorityEndpointSelector>>();
         try
         {
             logger.LogDebug("Prioritised Endpoint selector handling request");

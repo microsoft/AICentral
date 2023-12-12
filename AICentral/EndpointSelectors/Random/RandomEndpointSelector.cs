@@ -2,12 +2,12 @@
 
 namespace AICentral.EndpointSelectors.Random;
 
-public class RandomAICentralEndpointSelector : IAICentralEndpointSelector
+public class RandomEndpointSelector : IAICentralEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IAICentralEndpointDispatcher[] _openAiServers;
 
-    public RandomAICentralEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
+    public RandomEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
     {
         _openAiServers = openAiServers;
     }
@@ -17,7 +17,7 @@ public class RandomAICentralEndpointSelector : IAICentralEndpointSelector
         bool isLastChance,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<RandomAICentralEndpointSelector>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelector>>();
         var toTry = _openAiServers.ToList();
         logger.LogDebug("Random Endpoint selector is handling request");
         do

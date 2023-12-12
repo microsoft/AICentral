@@ -46,8 +46,3 @@ public class SingleEndpointSelectorFactory : IAICentralEndpointSelectorFactory
         };
     }
 }
-
-public class SingleEndpointConfig
-{
-    public string? Endpoint { get; init; }
-}
