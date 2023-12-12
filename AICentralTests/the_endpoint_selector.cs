@@ -2,7 +2,7 @@
 using System.Text;
 using AICentral;
 using AICentral.Configuration;
-using AICentral.Steps.Endpoints.OpenAILike.AzureOpenAI;
+using AICentral.Endpoints.OpenAILike.AzureOpenAI;
 using AICentralTests.TestHelpers;
 using ApprovalTests;
 using Azure;

@@ -24,7 +24,7 @@ It must also override the 2 static methods on the above interface:
 
     public static IAICentralGenericStepFactory<IAICentralPipelineStep> BuildFromConfig(
         ILogger logger, 
-        IConfigurationSection configurationSection)
+        AICentralTypeAndNameConfig config)
     {
         // build a factory implementation that can provide instances (or a singleton if you prefer) of your extension. 
     }

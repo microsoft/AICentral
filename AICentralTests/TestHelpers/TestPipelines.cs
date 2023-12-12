@@ -1,6 +1,7 @@
 ﻿using AICentral;
-using AICentral.Steps.RateLimiting;
-using AICentral.Steps.TokenBasedRateLimiting;
+using AICentral.Configuration;
+using AICentral.RateLimiting;
+using AICentral.TokenBasedRateLimiting;
 
 namespace AICentralTests.TestHelpers;
 

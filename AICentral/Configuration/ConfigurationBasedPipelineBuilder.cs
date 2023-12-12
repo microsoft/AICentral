@@ -1,11 +1,17 @@
 ﻿using System.Reflection;
+using AICentral.Auth;
 using AICentral.Core;
-using AICentral.Steps.Auth;
-using AICentral.Steps.EndpointSelectors;
-using AICentral.Steps.Routes;
+using AICentral.EndpointSelectors;
+using AICentral.Routes;
 
 namespace AICentral.Configuration;
 
+/// <summary>
+/// Assists with construction of Pipeline Assemblers which build pipelines.
+/// </summary>
+/// <remarks>
+/// This class makes it easy to build Pipeline Assemblers using Asp.Net Core's Configuration system. 
+/// </remarks>
 public class ConfigurationBasedPipelineBuilder
 {
     private readonly Dictionary<string, Func<ILogger, AICentralTypeAndNameConfig, IAICentralEndpointDispatcherFactory>>
