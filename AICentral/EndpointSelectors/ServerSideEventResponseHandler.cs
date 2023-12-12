@@ -17,7 +17,7 @@ public class ServerSideEventResponseHandler
         HttpContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
-        AICentralRequestInformation requestInformation)
+        DownstreamRequestInformation requestInformation)
     {
         using var activity = AICentralActivitySource.AICentralRequestActivitySource.StartActivity("StreamingResponse");
 

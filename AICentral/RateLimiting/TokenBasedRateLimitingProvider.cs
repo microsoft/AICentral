@@ -1,14 +1,15 @@
-﻿using System.Net.Http.Headers;
-using System.Threading.RateLimiting;
+﻿using System.Threading.RateLimiting;
 using AICentral.Core;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.RateLimiting;
 
-public class TokenBasedRateLimitingProvider : RateLimitingProvider, IAICentralGenericStepFactory 
+public class TokenBasedRateLimitingProvider : RateLimitingProvider, IAICentralGenericStepFactory
 {
     private readonly TokenBasedRateLimiterOptions _rateLimiterOptions;
 
-    public TokenBasedRateLimitingProvider(TokenBasedRateLimiterOptions rateLimiterOptions): base(rateLimiterOptions.LimitType!.Value)
+    public TokenBasedRateLimitingProvider(TokenBasedRateLimiterOptions rateLimiterOptions) : base(
+        rateLimiterOptions.LimitType!.Value)
     {
         _rateLimiterOptions = rateLimiterOptions;
     }
@@ -42,8 +43,10 @@ public class TokenBasedRateLimitingProvider : RateLimitingProvider, IAICentralGe
         return aiCentralUsageInformation.TotalTokens;
     }
 
-    public override Task AdjustResponseHeaders(HttpContext context, HttpResponseHeaders responseHeaders)
+    protected override Task CustomBuildResponseHeaders(HttpContext context, Dictionary<string, StringValues> rawHeaders)
     {
+        rawHeaders.Remove("x-ratelimit-remaining-tokens");
+        rawHeaders.Add("x-ratelimit-remaining-tokens", RemainingUnits(context).ToString());
         return Task.CompletedTask;
     }
 

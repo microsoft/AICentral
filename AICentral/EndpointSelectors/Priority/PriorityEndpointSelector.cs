@@ -1,5 +1,6 @@
 ﻿using AICentral.Core;
 using AICentral.EndpointSelectors.Random;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.EndpointSelectors.Priority;
 
@@ -21,20 +22,21 @@ public class PriorityEndpointSelector : IAICentralEndpointSelector
         HttpContext context,
         AICallInformation aiCallInformation,
         bool isLastChance,
+        IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<PriorityEndpointSelector>>();
         try
         {
             logger.LogDebug("Prioritised Endpoint selector handling request");
-            return await Handle(context, aiCallInformation, cancellationToken, _prioritisedOpenAIEndpoints, false);
+            return await Handle(context, aiCallInformation, cancellationToken, _prioritisedOpenAIEndpoints, false, responseGenerator);
         }
         catch (HttpRequestException e)
         {
             try
             {
                 logger.LogWarning(e, "Prioritised Endpoint selector failed with primary. Trying fallback servers");
-                return await Handle(context, aiCallInformation, cancellationToken, _fallbackOpenAIEndpoints, isLastChance);
+                return await Handle(context, aiCallInformation, cancellationToken, _fallbackOpenAIEndpoints, isLastChance, responseGenerator);
             }
             catch (HttpRequestException ex)
             {
@@ -54,7 +56,9 @@ public class PriorityEndpointSelector : IAICentralEndpointSelector
         AICallInformation aiCallInformation,
         CancellationToken cancellationToken,
         IAICentralEndpointDispatcher[] endpoints,
-        bool isLastChance)
+        bool isLastChance,
+        IAICentralResponseGenerator responseGenerator
+        )
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelectorFactory>>();
         var toTry = endpoints.ToList();
@@ -69,6 +73,7 @@ public class PriorityEndpointSelector : IAICentralEndpointSelector
                         context,
                         aiCallInformation,
                         isLastChance,
+                        responseGenerator,
                         cancellationToken); //awaiting to unwrap any Aggregate Exceptions
             }
             catch (HttpRequestException e)
@@ -85,4 +90,12 @@ public class PriorityEndpointSelector : IAICentralEndpointSelector
 
         throw new InvalidOperationException("Failed to satisfy request");
     }
+    
+    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
+    {
+        rawHeaders.Remove("x-ratelimit-remaining-tokens");
+        rawHeaders.Remove("x-ratelimit-remaining-requests");
+        return Task.CompletedTask;
+    }
+    
 }

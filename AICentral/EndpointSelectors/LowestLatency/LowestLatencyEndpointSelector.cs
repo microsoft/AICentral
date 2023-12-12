@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using AICentral.Core;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.EndpointSelectors.LowestLatency;
 
@@ -22,6 +23,7 @@ public class LowestLatencyEndpointSelector : IAICentralEndpointSelector
         HttpContext context,
         AICallInformation aiCallInformation,
         bool isLastChance,
+        IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<LowestLatencyEndpointSelector>>();
@@ -36,6 +38,7 @@ public class LowestLatencyEndpointSelector : IAICentralEndpointSelector
                     context,
                     aiCallInformation,
                     isLastChance && (tried == toTry.Length - 1),
+                    responseGenerator,
                     cancellationToken); //awaiting to unwrap any Aggregate Exceptions
 
                 UpdateLatencies(logger, chosen, response.AICentralUsageInformation);
@@ -64,6 +67,13 @@ public class LowestLatencyEndpointSelector : IAICentralEndpointSelector
     public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
     {
         return _openAiServers;
+    }
+
+    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
+    {
+        rawHeaders.Remove("x-ratelimit-remaining-tokens");
+        rawHeaders.Remove("x-ratelimit-remaining-requests");
+        return Task.CompletedTask;
     }
 
     private void UpdateLatencies(ILogger<LowestLatencyEndpointSelector> logger, IAICentralEndpointDispatcher endpoint,

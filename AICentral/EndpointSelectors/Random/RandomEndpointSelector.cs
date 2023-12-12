@@ -1,4 +1,5 @@
 ﻿using AICentral.Core;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.EndpointSelectors.Random;
 
@@ -15,6 +16,7 @@ public class RandomEndpointSelector : IAICentralEndpointSelector
     public async Task<AICentralResponse> Handle(HttpContext context,
         AICallInformation aiCallInformation,
         bool isLastChance,
+        IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelector>>();
@@ -30,6 +32,7 @@ public class RandomEndpointSelector : IAICentralEndpointSelector
                     context,
                     aiCallInformation,
                     isLastChance && !toTry.Any(),
+                    responseGenerator,
                     cancellationToken); //awaiting to unwrap any Aggregate Exceptions
             }
             catch (HttpRequestException e)
@@ -51,4 +54,12 @@ public class RandomEndpointSelector : IAICentralEndpointSelector
     {
         return _openAiServers;
     }
+    
+    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
+    {
+        rawHeaders.Remove("x-ratelimit-remaining-tokens");
+        rawHeaders.Remove("x-ratelimit-remaining-requests");
+        return Task.CompletedTask;
+    }
+
 }

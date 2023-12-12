@@ -4,9 +4,7 @@ using System.Net.Http.Headers;
 using AICentral.Configuration;
 using AICentral.Core;
 using AICentral.Endpoints.OpenAILike.OpenAI;
-using AICentral.EndpointSelectors;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.DeepDev;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -22,13 +20,6 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
 
     private static readonly HashSet<string> HeadersToIgnore = new(new[] { "host", "authorization", "api-key" });
 
-    private static readonly Dictionary<string, Lazy<Task<ITokenizer>>> Tokenisers = new()
-    {
-        ["gpt-3.5-turbo-0613"] = new Lazy<Task<ITokenizer>>(() => TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo")),
-        ["gpt-35-turbo"] = new Lazy<Task<ITokenizer>>(() => TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo")),
-        ["gpt-4"] = new Lazy<Task<ITokenizer>>(() => TokenizerBuilder.CreateByModelNameAsync("gpt-4")),
-    };
-
     protected OpenAILikeEndpointDispatcher(
         string id,
         string endpointName,
@@ -43,6 +34,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         HttpContext context,
         AICallInformation callInformation,
         bool isLastChance,
+        IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherFactory>>();
@@ -171,62 +163,20 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         {
             openAiResponse.EnsureSuccessStatusCode();
         }
-
-        //decision point... If this is a streaming request, then we should start streaming the result now.
-        logger.LogDebug("Received Azure Open AI Response. Status Code: {StatusCode}", openAiResponse.StatusCode);
-
-        var requestInformation =
-            new AICentralRequestInformation(
+        
+        return await responseGenerator.BuildResponse(
+            new DownstreamRequestInformation(
                 HostUriBase,
                 callInformation.IncomingCallDetails.AICallType,
                 callInformation.IncomingCallDetails.PromptText,
                 now,
-                sw.Elapsed);
-
-        CopyHeadersToResponse(context.Response, SanitiseHeaders(context, openAiResponse));
-
-        if (openAiResponse.Headers.TransferEncodingChunked == true)
-        {
-            logger.LogDebug("Detected chunked encoding response. Streaming response back to consumer");
-            return await ServerSideEventResponseHandler.Handle(
-                Tokenisers,
-                context,
-                cancellationToken,
-                openAiResponse,
-                requestInformation);
-        }
-
-        if ((openAiResponse.Content.Headers.ContentType?.MediaType ?? string.Empty).Contains(
-                "json",
-                StringComparison.InvariantCultureIgnoreCase))
-        {
-            logger.LogDebug("Detected non-chunked encoding response. Sending response back to consumer");
-            return await JsonResponseHandler.Handle(
-                context,
-                cancellationToken,
-                openAiResponse,
-                requestInformation);
-        }
-
-        return await StreamResponseHandler.Handle(
-            context,
-            cancellationToken,
-            openAiResponse,
-            requestInformation);
+                sw.Elapsed),
+            context, openAiResponse, SanitiseHeaders(context, openAiResponse), cancellationToken);
     }
 
     public bool IsAffinityRequestToMe(string affinityHeaderValue)
     {
         return EndpointName == affinityHeaderValue;
-    }
-
-
-    private static void CopyHeadersToResponse(HttpResponse response, Dictionary<string, StringValues> headersToProxy)
-    {
-        foreach (var header in headersToProxy)
-        {
-            response.Headers.TryAdd(header.Key, header.Value);
-        }
     }
 
     private static bool MappedModelFoundAsEmptyString(AICallInformation callInformation, string mappedModelName)

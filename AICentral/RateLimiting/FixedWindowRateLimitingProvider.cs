@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using System.Threading.RateLimiting;
 using AICentral.Core;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.RateLimiting;
 
@@ -8,7 +9,9 @@ public class FixedWindowRateLimitingProvider : RateLimitingProvider, IAICentralG
 {
     private readonly AICentralFixedWindowRateLimiterOptions _rateLimiterOptions;
 
-    public FixedWindowRateLimitingProvider(AICentralFixedWindowRateLimiterOptions aiCentralFixedWindowRateLimiterOptions): base(aiCentralFixedWindowRateLimiterOptions.LimitType!.Value)
+    public FixedWindowRateLimitingProvider(
+        AICentralFixedWindowRateLimiterOptions aiCentralFixedWindowRateLimiterOptions) : base(
+        aiCentralFixedWindowRateLimiterOptions.LimitType!.Value)
     {
         _rateLimiterOptions = aiCentralFixedWindowRateLimiterOptions;
     }
@@ -34,18 +37,18 @@ public class FixedWindowRateLimitingProvider : RateLimitingProvider, IAICentralG
                 _ => new FixedWindowRateLimiter(_rateLimiterOptions.Options!)));
     }
 
+    protected override Task CustomBuildResponseHeaders(HttpContext context, Dictionary<string, StringValues> rawHeaders)
+    {
+        rawHeaders.Remove("x-ratelimit-remaining-requests");
+        rawHeaders.Add("x-ratelimit-remaining-requests", RemainingUnits(context).ToString());
+        return Task.CompletedTask;
+    }
+
     protected override int? UsedTokens(AICentralUsageInformation aiCentralUsageInformation)
     {
         return 1;
     }
     
-    public override Task AdjustResponseHeaders(HttpContext context, HttpResponseHeaders responseHeaders)
-    {
-        responseHeaders.Remove("x-ratelimit-remaining-requests");
-        responseHeaders.TryAddWithoutValidation("x-ratelimit-remaining-requests", RemainingUnits(context).ToString());
-        return Task.CompletedTask;
-    }
-
     public override object WriteDebug()
     {
         return new

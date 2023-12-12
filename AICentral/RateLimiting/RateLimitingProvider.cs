@@ -61,6 +61,14 @@ public abstract class RateLimitingProvider : IAICentralPipelineStep
         return result;
     }
 
+    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse,
+        Dictionary<string, StringValues> rawHeaders)
+    {
+        return CustomBuildResponseHeaders(context, rawHeaders);
+    }
+
+    protected abstract Task CustomBuildResponseHeaders(HttpContext context, Dictionary<string, StringValues> rawHeaders);
+
     protected abstract int? UsedTokens(AICentralUsageInformation aiCentralUsageInformation);
 
     private static AICentralResponse ExceededRateLimitResponse(HttpContext context, AICallInformation aiCallInformation,
@@ -87,8 +95,6 @@ public abstract class RateLimitingProvider : IAICentralPipelineStep
                 context.Connection.RemoteIpAddress?.ToString() ?? string.Empty, dateTimeProvider.Now, TimeSpan.Zero),
             resultHandler);
     }
-
-    public abstract Task AdjustResponseHeaders(HttpContext context, HttpResponseHeaders responseHeaders);
 
     private bool HasExceededTokenLimit(HttpContext context, out TimeSpan? retryAfter)
     {

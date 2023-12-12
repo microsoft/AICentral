@@ -1,4 +1,5 @@
 ﻿using AICentral.Core;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.BulkHead;
 
@@ -24,5 +25,11 @@ public class BulkHeadProvider : IAICentralPipelineStep
         {
             _semaphore.Release();
         }
+    }
+
+    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse,
+        Dictionary<string, StringValues> rawHeaders)
+    {
+        return Task.CompletedTask;
     }
 }

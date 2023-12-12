@@ -1,4 +1,5 @@
 ﻿using AICentral.Core;
+using Microsoft.Extensions.Primitives;
 using ILogger = Serilog.ILogger;
 
 namespace AICentral.Logging.AzureMonitor;
@@ -14,7 +15,7 @@ public class AzureMonitorLogger : IAICentralPipelineStep
     {
         _serilogAzureLogAnalyticsLogger = serilogAzureLogAnalyticsLogger;
         _workspaceId = workspaceId;
-        this._logPrompt = logPrompt;
+        _logPrompt = logPrompt;
         _logResponse = logResponse;
     }
     
@@ -40,5 +41,10 @@ public class AzureMonitorLogger : IAICentralPipelineStep
             result.AICentralUsageInformation.Duration);
 
         return result;
+    }
+
+    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
+    {
+        return Task.CompletedTask;
     }
 }

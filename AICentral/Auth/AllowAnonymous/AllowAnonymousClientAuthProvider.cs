@@ -1,4 +1,5 @@
 ﻿using AICentral.Core;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Auth.AllowAnonymous;
 
@@ -10,5 +11,13 @@ public class AllowAnonymousClientAuthProvider : IAICentralClientAuthStep
         return pipeline.Next(context, aiCallInformation, cancellationToken);
     }
 
-    public static readonly AllowAnonymousClientAuthProvider Instance = new AllowAnonymousClientAuthProvider();
+    public static readonly AllowAnonymousClientAuthProvider Instance = new();
+    
+    
+    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse,
+        Dictionary<string, StringValues> rawHeaders)
+    {
+        return Task.CompletedTask;
+    }
+
 }

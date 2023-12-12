@@ -15,7 +15,7 @@ public static class JsonResponseHandler
         HttpContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
-        AICentralRequestInformation requestInformation)
+        DownstreamRequestInformation requestInformation)
     {
         var rawResponse = await openAiResponse.Content.ReadAsStringAsync(cancellationToken);
         var response = (JObject)JsonConvert.DeserializeObject(rawResponse)!;

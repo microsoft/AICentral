@@ -1,4 +1,5 @@
 ﻿using AICentral.Core;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Auth.ApiKey;
 
@@ -8,5 +9,12 @@ public class ApiKeyClientAuthProvider : IAICentralClientAuthStep
         IAICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
     {
         return pipeline.Next(context, aiCallInformation, cancellationToken);
+    }
+
+
+    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse,
+        Dictionary<string, StringValues> rawHeaders)
+    {
+        return Task.CompletedTask;
     }
 }

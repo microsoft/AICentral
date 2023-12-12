@@ -1,12 +1,17 @@
-﻿namespace AICentral.Core;
+﻿using Microsoft.Extensions.Primitives;
+
+namespace AICentral.Core;
 
 public interface IAICentralEndpointSelector
 {
     Task<AICentralResponse> Handle(
-        HttpContext context, 
-        AICallInformation aiCallInformation, 
+        HttpContext context,
+        AICallInformation aiCallInformation,
         bool isLastChance,
+        IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken);
 
     IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints();
+
+    Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders);
 }

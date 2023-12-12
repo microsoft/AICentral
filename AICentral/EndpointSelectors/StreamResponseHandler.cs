@@ -10,7 +10,7 @@ public class StreamResponseHandler
         HttpContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
-        AICentralRequestInformation requestInformation)
+        DownstreamRequestInformation requestInformation)
     {
         //send the headers down to the client
         context.Response.StatusCode = (int)openAiResponse.StatusCode;

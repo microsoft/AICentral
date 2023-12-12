@@ -6,6 +6,7 @@ public interface IAICentralEndpointDispatcher
         HttpContext context,
         AICallInformation callInformation,
         bool isLastChance,
+        IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken);
 
     bool IsAffinityRequestToMe(string affinityHeaderValue);
