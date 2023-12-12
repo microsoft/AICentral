@@ -78,7 +78,7 @@ public class the_rate_limiter : IClassFixture<TestWebApplicationFactory<Program>
 
         //takes a while for the tokenisers to spin up, which happens after the rate-limiter has registered a request
         await Call("123");
-        await Task.Delay(TimeSpan.FromSeconds(1));
+        await Task.Delay(TimeSpan.FromSeconds(2));
 
         _testOutputHelper.WriteLine("1");
         var client1Call1 = await Call("123");

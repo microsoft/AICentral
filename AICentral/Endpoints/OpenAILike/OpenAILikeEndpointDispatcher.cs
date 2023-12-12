@@ -1,12 +1,14 @@
 ﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
+using AICentral.Configuration;
 using AICentral.Core;
 using AICentral.Endpoints.OpenAILike.OpenAI;
 using AICentral.EndpointSelectors;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.DeepDev;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Endpoints.OpenAILike;
@@ -20,11 +22,11 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
 
     private static readonly HashSet<string> HeadersToIgnore = new(new[] { "host", "authorization", "api-key" });
 
-    private static readonly Dictionary<string, ITokenizer> Tokenisers = new()
+    private static readonly Dictionary<string, Lazy<Task<ITokenizer>>> Tokenisers = new()
     {
-        ["gpt-3.5-turbo-0613"] = TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo").Result,
-        ["gpt-35-turbo"] = TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo").Result,
-        ["gpt-4"] = TokenizerBuilder.CreateByModelNameAsync("gpt-4").Result,
+        ["gpt-3.5-turbo-0613"] = new Lazy<Task<ITokenizer>>(() => TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo")),
+        ["gpt-35-turbo"] = new Lazy<Task<ITokenizer>>(() => TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo")),
+        ["gpt-4"] = new Lazy<Task<ITokenizer>>(() => TokenizerBuilder.CreateByModelNameAsync("gpt-4")),
     };
 
     protected OpenAILikeEndpointDispatcher(
@@ -46,6 +48,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         var logger = context.RequestServices.GetRequiredService<ILogger<OpenAIEndpointDispatcherFactory>>();
         var rateLimitingTracker = context.RequestServices.GetRequiredService<InMemoryRateLimitingTracker>();
         var dateTimeProvider = context.RequestServices.GetRequiredService<IDateTimeProvider>();
+        var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
 
         var incomingModelName = callInformation.IncomingCallDetails.IncomingModelName ?? string.Empty;
 
@@ -146,18 +149,21 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
             rateLimitingTracker.RateLimiting(newRequest.RequestUri.Host, openAiResponse.Headers.RetryAfter);
         }
 
-        if (openAiResponse.StatusCode == HttpStatusCode.OK)
+        if (config.Value.EnableDiagnosticsHeaders)
         {
-            context.Response.Headers.TryAdd("x-aicentral-server", new StringValues(HostUriBase));
-        }
-        else
-        {
-            if (context.Response.Headers.TryGetValue("x-aicentral-failed-servers", out var header))
+            if (openAiResponse.StatusCode == HttpStatusCode.OK)
             {
-                context.Response.Headers.Remove("x-aicentral-failed-servers");
+                context.Response.Headers.TryAdd("x-aicentral-server", new StringValues(HostUriBase));
             }
+            else
+            {
+                if (context.Response.Headers.TryGetValue("x-aicentral-failed-servers", out var header))
+                {
+                    context.Response.Headers.Remove("x-aicentral-failed-servers");
+                }
 
-            context.Response.Headers.TryAdd("x-aicentral-failed-servers", StringValues.Concat(header, HostUriBase));
+                context.Response.Headers.TryAdd("x-aicentral-failed-servers", StringValues.Concat(header, HostUriBase));
+            }
         }
 
         //Blow up if we didn't succeed and we don't have another option.

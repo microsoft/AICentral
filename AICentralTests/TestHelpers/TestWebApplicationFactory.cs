@@ -1,4 +1,5 @@
 ﻿using AICentral;
+using AICentral.Configuration;
 using AICentral.Core;
 using MartinCostello.Logging.XUnit;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -26,6 +27,8 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 {
                     MinLevel = LogLevel.Trace
                 }));
+
+            services.PostConfigure<AICentralConfig>(cfg => cfg.EnableDiagnosticsHeaders = true);
 
             services.Remove(services.Single(x => x.ServiceType == typeof(AICentralPipelines)));
 

@@ -1,7 +1,9 @@
 using System.Net;
+using AICentral.Configuration;
 using AICentral.Core;
 using AICentral.Endpoints.OpenAILike;
 using AICentral.Endpoints.ResultHandlers;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -9,7 +11,8 @@ namespace AICentral.EndpointSelectors;
 
 public static class JsonResponseHandler
 {
-    public static async Task<AICentralResponse> Handle(HttpContext context,
+    public static async Task<AICentralResponse> Handle(
+        HttpContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
         AICentralRequestInformation requestInformation)
@@ -44,7 +47,7 @@ public static class JsonResponseHandler
 
             return new AICentralResponse(
                 chatRequestInformation,
-                new JsonResultHandler(openAiResponse, chatRequestInformation));
+                new JsonResultHandler(openAiResponse));
         }
         else
         {
@@ -65,7 +68,7 @@ public static class JsonResponseHandler
                 requestInformation.Duration);
 
             return new AICentralResponse(chatRequestInformation,
-                new JsonResultHandler(openAiResponse, chatRequestInformation));
+                new JsonResultHandler(openAiResponse));
         }
         
     }

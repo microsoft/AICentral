@@ -11,10 +11,11 @@ namespace AICentral.EndpointSelectors;
 public class ServerSideEventResponseHandler
 {
     private static readonly int StreamingLinePrefixLength = "data:".Length;
+
     public static async Task<AICentralResponse> Handle(
-        Dictionary<string, ITokenizer> tokenisers, 
+        Dictionary<string, Lazy<Task<ITokenizer>>> tokenisers,
         HttpContext context,
-        CancellationToken cancellationToken, 
+        CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
         AICentralRequestInformation requestInformation)
     {
@@ -54,9 +55,22 @@ public class ServerSideEventResponseHandler
 
         //calculate prompt tokens
         var tokeniser = tokenisers.TryGetValue(model, out var val) ? val : tokenisers["gpt-35-turbo"];
-        var estimatedPromptTokens = requestInformation.Prompt == null ? 0 : tokeniser.Encode(requestInformation.Prompt, Array.Empty<string>()).Count;
+        int? estimatedPromptTokens = null;
+        int? estimatedCompletionTokens = null;
         var responseText = content.ToString();
-        var estimatedCompletionTokens = tokeniser.Encode(responseText, Array.Empty<string>()).Count;
+
+        try
+        {
+            estimatedPromptTokens = requestInformation.Prompt == null
+                ? 0
+                : (await tokeniser.Value).Encode(requestInformation.Prompt, Array.Empty<string>()).Count;
+            
+            estimatedCompletionTokens = (await tokeniser.Value).Encode(responseText, Array.Empty<string>()).Count;
+        }
+        catch
+        {
+            //not much we can do if we failed to create a Tokeniser (I think they are pulled from the internet)
+        }
 
         var chatRequestInformation = new AICentralUsageInformation(
             requestInformation.LanguageUrl,
@@ -75,6 +89,5 @@ public class ServerSideEventResponseHandler
             requestInformation.Duration);
 
         return new AICentralResponse(chatRequestInformation, new StreamAlreadySentResultHandler());
-        
     }
 }
