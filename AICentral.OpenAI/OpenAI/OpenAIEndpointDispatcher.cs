@@ -79,10 +79,8 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         };
 
         var requestUri = aiCallInformation.IncomingCallDetails.AICallType == AICallType.Other
-            ? aiCallInformation.IncomingCallDetails.ServiceType == AIServiceType.OpenAI
-                ? $"{OpenAIV1}{context.Request.Path}"
-                : throw new InvalidOperationException(
-                    "Unable to forward this request from an Azure Open AI request to Open AI")
+            ? throw new InvalidOperationException(
+                "Unable to forward this request from an Azure Open AI request to Open AI")
             : $"{OpenAIV1}/v1/{pathPiece}";
 
         return requestUri;

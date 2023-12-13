@@ -59,11 +59,7 @@ public class AICentralEndpointDispatcher : IAICentralEndpointDispatcher
         using var source = AICentralActivitySource.AICentralRequestActivitySource.CreateActivity(
             "Calling AI Service",
             ActivityKind.Client,
-            Activity.Current!.Context,
-            new Dictionary<string, object?>()
-            {
-                ["ServiceType"] = callInformation.IncomingCallDetails.ServiceType
-            }
+            Activity.Current!.Context
         );
         var now = dateTimeProvider.Now;
         var sw = new Stopwatch();

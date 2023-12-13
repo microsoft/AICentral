@@ -67,8 +67,8 @@ public class AICentralPipeline
             QueryHelpers.ParseQuery(context.Request.QueryString.Value ?? string.Empty)
         );
 
-        logger.LogDebug("Detected {RequestType} / {CallType} from incoming request",
-            requestDetails.IncomingCallDetails.ServiceType, requestDetails.IncomingCallDetails.AICallType);
+        logger.LogDebug("Detected {CallType} from incoming request",
+            requestDetails.IncomingCallDetails.AICallType);
 
         var endpointSelector = FindEndpointSelectorOrAffinityServer(requestDetails);
 

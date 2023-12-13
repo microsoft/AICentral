@@ -35,7 +35,7 @@ public class AzureOpenAIDetector
 
         if (aICallType == AICallType.Other)
         {
-            return new IncomingCallDetails(AIServiceType.AzureOpenAI, aICallType, null, null, null);
+            return new IncomingCallDetails(aICallType, null, null, null);
         }
 
         //Pull out the text
@@ -56,7 +56,6 @@ public class AzureOpenAIDetector
         };
 
         return new IncomingCallDetails(
-            AIServiceType.AzureOpenAI,
             aICallType,
             promptText,
             incomingModelName,

@@ -148,10 +148,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         incomingQuery.Remove(AICentralHeaders.AzureOpenAIHostAffinityHeader);
 
         return aiCallInformation.IncomingCallDetails.AICallType == AICallType.Other
-            ? aiCallInformation.IncomingCallDetails.ServiceType == AIServiceType.AzureOpenAI
-                ? QueryHelpers.AddQueryString($"{_languageUrl}{context.Request.Path}", aiCallInformation.QueryString)
-                : throw new InvalidOperationException(
-                    "Unable to forward this request from an Open AI request to Azure Open AI")
+            ? QueryHelpers.AddQueryString($"{_languageUrl}{context.Request.Path}", aiCallInformation.QueryString)
             : QueryHelpers.AddQueryString($"{_languageUrl}/openai/deployments/{mappedModelName}/{pathPiece}",
                 aiCallInformation.QueryString);
     }
