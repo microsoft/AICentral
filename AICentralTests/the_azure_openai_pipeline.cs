@@ -168,7 +168,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
 
         using var ms = new MemoryStream();
         await using var stream =
-            typeof(the_openai_pipeline).Assembly.GetManifestResourceStream("AICentralTests.Assets.Recording.m4a")!;
+            typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream("AICentralTests.Assets.Recording.m4a")!;
         await stream.CopyToAsync(ms);
 
         var response = await client.GetAudioTranscriptionAsync(new AudioTranscriptionOptions()

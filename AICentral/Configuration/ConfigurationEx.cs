@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using AICentral.Core;
+using AICentral.OpenAI.AzureOpenAI;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AICentral.Configuration;
@@ -28,7 +29,9 @@ public static class ConfigurationEx
             .BuildPipelinesFromConfig(
                 typedConfig,
                 logger,
-                additionalComponentAssemblies.Concat(new[] { typeof(AzureOpenAIDetector).Assembly }).ToArray());
+                additionalComponentAssemblies.Concat(new[]
+                        { typeof(AzureOpenAIEndpointDispatcher).Assembly, typeof(AICentralPipelineAssembler).Assembly })
+                    .ToArray());
 
         configurationPipelineBuilder.AddServices(services, typedConfig.HttpMessageHandler, logger);
 

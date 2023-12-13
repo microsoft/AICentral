@@ -31,6 +31,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\AICentral.Core\AICentral.Core.csproj" />
+      <ProjectReference Include="..\AICentral.OpenAI\AICentral.OpenAI.csproj" />
     </ItemGroup>
 
 </Project>
