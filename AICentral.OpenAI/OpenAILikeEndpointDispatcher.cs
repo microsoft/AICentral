@@ -15,7 +15,7 @@ namespace AICentral.OpenAI;
 
 public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatcher
 {
-    public string EndpointName { get; }
+    protected string EndpointName { get; }
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string _id;
     private static readonly HttpResponseMessage RateLimitedFakeResponse = new(HttpStatusCode.TooManyRequests);
@@ -50,22 +50,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
 
         if (MappedModelFoundAsEmptyString(callInformation, mappedModelName))
         {
-            return new AICentralResponse(
-                new AICentralUsageInformation(
-                    HostUriBase,
-                    string.Empty,
-                    context.User.Identity?.Name ?? "unknown",
-                    callInformation.IncomingCallDetails.AICallType,
-                    callInformation.IncomingCallDetails.PromptText,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
-                    dateTimeProvider.Now, TimeSpan.Zero
-                ), Results.NotFound(new { message = "Unknown model" }));
+            return new AICentralResponse(AICentralUsageInformation.Empty(context, callInformation.IncomingCallDetails, HostUriBase), Results.NotFound(new { message = "Unknown model" }));
         }
 
         HttpRequestMessage? newRequest = default;
@@ -75,22 +60,7 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         }
         catch (InvalidOperationException ie)
         {
-            return new AICentralResponse(
-                new AICentralUsageInformation(
-                    HostUriBase,
-                    string.Empty,
-                    context.User.Identity?.Name ?? "unknown",
-                    callInformation.IncomingCallDetails.AICallType,
-                    callInformation.IncomingCallDetails.PromptText,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
-                    dateTimeProvider.Now, TimeSpan.Zero
-                ), Results.BadRequest(new { message = ie.Message }));
+            return new AICentralResponse(AICentralUsageInformation.Empty(context, callInformation.IncomingCallDetails, HostUriBase), Results.BadRequest(new { message = ie.Message }));
         }
 
         if (rateLimitingTracker.IsRateLimiting(newRequest.RequestUri!.Host, out var until))
