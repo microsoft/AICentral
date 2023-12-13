@@ -5,12 +5,12 @@ on:
     branches:
       - main
     paths:
-      - '/AICentral.Core/**/*'
+      - '/AICentral.Core/**'
   pull_request:
     branches:
       - main
     paths:
-      - '/AICentral.Core/**/*'
+      - '/AICentral.Core/**'
   workflow_dispatch:
 
 jobs:
