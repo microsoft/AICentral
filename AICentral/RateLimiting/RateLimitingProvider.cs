@@ -47,16 +47,19 @@ public abstract class RateLimitingProvider : IAICentralPipelineStep
 
         var tokensConsumed = UsedTokens(result.AICentralUsageInformation);
 
-        var rateLimiterStatistics = _rateLimiter.GetStatistics(context);
-        using var _ = _rateLimiter.AttemptAcquire(
-            context,
-            Math.Min(
-                Convert.ToInt32(rateLimiterStatistics?.CurrentAvailablePermits ?? 0),
-                tokensConsumed!.Value));
+        if (tokensConsumed.HasValue)
+        {
+            var rateLimiterStatistics = _rateLimiter.GetStatistics(context);
+            using var _ = _rateLimiter.AttemptAcquire(
+                context,
+                Math.Min(
+                    Convert.ToInt32(rateLimiterStatistics?.CurrentAvailablePermits ?? 0),
+                    tokensConsumed.Value));
 
-        logger.LogDebug("New tokens consumed by {User}. New Count {Count}",
-            context.User.Identity?.Name ?? "unknown",
-            rateLimiterStatistics?.CurrentAvailablePermits - tokensConsumed!.Value);
+            logger.LogDebug("New tokens consumed by {User}. New Count {Count}",
+                context.User.Identity?.Name ?? "unknown",
+                rateLimiterStatistics?.CurrentAvailablePermits - tokensConsumed!.Value);
+        }
 
         return result;
     }

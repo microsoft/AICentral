@@ -20,20 +20,8 @@ public class AICentralPipeline
     private readonly IList<IAICentralGenericStepFactory> _pipelineSteps;
     private readonly IAICentralEndpointSelectorFactory _endpointSelector;
 
-    private static readonly Counter<int> RequestMeter =
-        AICentralActivitySource.AICentralMeter.CreateCounter<int>("aicentral.requests.count");
-
-    private static readonly Counter<int> FailedRequestMeter =
-        AICentralActivitySource.AICentralMeter.CreateCounter<int>("aicentral.failedrequests.count");
-
     private static readonly Histogram<int> TokenMeter =
-        AICentralActivitySource.AICentralMeter.CreateHistogram<int>("aicentral.tokens.sum");
-
-    private static readonly Counter<int> SuccessRequestMeter =
-        AICentralActivitySource.AICentralMeter.CreateCounter<int>("aicentral.successfulrequests.count");
-
-    private static readonly Histogram<double> DurationMeter =
-        AICentralActivitySource.AICentralMeter.CreateHistogram<double>("aicentral.downstreamrequest.duration");
+        AICentralActivitySource.AICentralMeter.CreateHistogram<int>("aicentral.tokens.sum", "tokens");
 
     public AICentralPipeline(
         string name,
@@ -91,12 +79,12 @@ public class AICentralPipeline
 
 
         using var executor = new AICentralPipelineExecutor(_pipelineSteps.Select(x => x.Build()), endpointSelector);
-        RequestMeter.Add(1);
+        AICentralActivitySources.RecordCounter(_name, "requests", "{requests}", 1);
         try
         {
             var result = await executor.Next(context, requestDetails, cancellationToken);
             logger.LogInformation("Executed Pipeline {PipelineName}", _name);
-            SuccessRequestMeter.Add(1);
+            AICentralActivitySources.RecordCounter(_name, "success", "{requests}", 1);
 
             var tagList = new TagList
             {
@@ -104,7 +92,7 @@ public class AICentralPipeline
                 { "Endpoint", result.AICentralUsageInformation.OpenAIHost }
             };
             
-            DurationMeter.Record(result.AICentralUsageInformation.Duration.TotalMilliseconds, tagList);
+            AICentralActivitySources.RecordHistogram(_name, "duration", "ms", result.AICentralUsageInformation.Duration.TotalMilliseconds);
 
             if (result.AICentralUsageInformation.TotalTokens != null)
             {
@@ -121,7 +109,7 @@ public class AICentralPipeline
         }
         catch
         {
-            FailedRequestMeter.Add(1);
+            AICentralActivitySources.RecordCounter(_name, "failures", "{requests}", 1);
             throw;
         }
     }

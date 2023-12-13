@@ -163,6 +163,8 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
         {
             openAiResponse.EnsureSuccessStatusCode();
         }
+
+        await ExtractDiagnostics(callInformation.IncomingCallDetails, mappedModelName, newRequest!, openAiResponse);
         
         return await responseGenerator.BuildResponse(
             new DownstreamRequestInformation(
@@ -171,8 +173,22 @@ public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatche
                 callInformation.IncomingCallDetails.PromptText,
                 now,
                 sw.Elapsed),
-            context, openAiResponse, SanitiseHeaders(context, openAiResponse), cancellationToken);
+            context, 
+            openAiResponse, 
+            SanitiseHeaders(context, openAiResponse), cancellationToken);
     }
+
+    /// <summary>
+    /// Opportunity to pull specific diagnostics and, for example, raise your own telemetry events.
+    /// </summary>
+    /// <param name="incomingCallDetails"></param>
+    /// <param name="mappedModelName"></param>
+    /// <param name="downstreamRequest"></param>
+    /// <param name="openAiResponse"></param>
+    /// <returns></returns>
+    protected abstract Task ExtractDiagnostics(IncomingCallDetails incomingCallDetails, string mappedModelName,
+        HttpRequestMessage downstreamRequest,
+        HttpResponseMessage openAiResponse);
 
     public bool IsAffinityRequestToMe(string affinityHeaderValue)
     {

@@ -49,6 +49,9 @@ public class AICentralFakeResponses
                 },
             })
             , Encoding.UTF8, "application/json");
+        
+        response.Headers.Add("x-ratelimit-remaining-requests", "12");
+        response.Headers.Add("x-ratelimit-remaining-tokens", "234");
 
         return response;
     }
