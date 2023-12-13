@@ -1,8 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Net.Http.Headers;
-using AICentral.Core;
 
-namespace AICentral.Endpoints;
+namespace AICentral.Core;
 
 public class InMemoryRateLimitingTracker
 {

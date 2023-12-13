@@ -1,10 +1,11 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 using AICentral.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 
-namespace AICentral.Endpoints.OpenAILike.OpenAI;
+namespace AICentral.OpenAI.OpenAI;
 
 public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
 {

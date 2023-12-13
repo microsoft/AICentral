@@ -1,4 +1,7 @@
-﻿namespace AICentral.Endpoints;
+﻿using AICentral.Core;
+using Microsoft.AspNetCore.Http;
+
+namespace AICentral.OpenAI;
 
 public class KeyAuth : IEndpointAuthorisationHandler
 {

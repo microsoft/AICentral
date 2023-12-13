@@ -1,18 +1,17 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using Microsoft.Identity.Client;
 
-namespace AICentral;
+namespace AICentral.Core;
 
 /// <summary>
 /// Contains the Open Telemetry Activity source you can use to emit custom metrics and traces related to AI Central
 /// </summary>
 public static class AICentralActivitySource
 {
-    public static readonly string AICentralTelemetryName = typeof(AICentralPipeline).Assembly.GetName().Name!;
+    public static readonly string AICentralTelemetryName = typeof(AICentralActivitySource).Assembly.GetName().Name!;
 
     private static readonly string AICentralMeterVersion =
-        typeof(AICentralPipeline).Assembly.GetName().Version!.ToString();
+        typeof(AICentralActivitySource).Assembly.GetName().Version!.ToString();
 
     static AICentralActivitySource()
     {

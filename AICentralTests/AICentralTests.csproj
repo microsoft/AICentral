@@ -28,6 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\AICentral.OpenAI\AICentral.OpenAI.csproj" />
       <ProjectReference Include="..\AICentralWeb\AICentralWeb.csproj" />
       <ProjectReference Include="..\AICentral\AICentral.csproj" />
     </ItemGroup>

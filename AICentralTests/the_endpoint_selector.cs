@@ -2,12 +2,10 @@
 using System.Text;
 using AICentral;
 using AICentral.Configuration;
-using AICentral.Endpoints.OpenAILike.AzureOpenAI;
+using AICentral.Core;
+using AICentral.OpenAI.AzureOpenAI;
 using AICentralTests.TestHelpers;
 using ApprovalTests;
-using Azure;
-using Azure.AI.OpenAI;
-using Azure.Core.Pipeline;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

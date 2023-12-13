@@ -1,4 +1,4 @@
-﻿namespace AICentral.Configuration;
+﻿namespace AICentral.Core;
 
 public class AICentralPipelineConfig
 {

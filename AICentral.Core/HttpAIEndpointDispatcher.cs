@@ -1,7 +1,6 @@
 ﻿using System.Net;
-using AICentral.Core;
 
-namespace AICentral.Endpoints;
+namespace AICentral.Core;
 
 /// <summary>
 /// Registered as a Typed Http Client to leverage HttpClientFactory. Created with an IAIEndpointDispatcher to allow a fake for testing purposes

@@ -1,11 +1,10 @@
 using System.Text;
 using AICentral.Core;
-using AICentral.Endpoints.ResultHandlers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SharpToken;
 
-namespace AICentral.EndpointSelectors;
+namespace AICentral.EndpointSelectors.ResultHandlers;
 
 public static class ServerSideEventResponseHandler
 {

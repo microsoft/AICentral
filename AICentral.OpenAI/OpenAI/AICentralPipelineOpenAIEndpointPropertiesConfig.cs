@@ -1,4 +1,4 @@
-﻿namespace AICentral.Endpoints.OpenAILike.OpenAI;
+﻿namespace AICentral.OpenAI.OpenAI;
 
 public class AICentralPipelineOpenAIEndpointPropertiesConfig
 {

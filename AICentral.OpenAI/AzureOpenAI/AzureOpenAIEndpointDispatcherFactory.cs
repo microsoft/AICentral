@@ -1,6 +1,8 @@
 ﻿using AICentral.Core;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
-namespace AICentral.Endpoints.OpenAILike.AzureOpenAI;
+namespace AICentral.OpenAI.AzureOpenAI;
 
 public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFactory
 {

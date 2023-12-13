@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics.Metrics;
 
-namespace AICentral;
+namespace AICentral.Core;
 
 public static class AICentralActivitySources
 {

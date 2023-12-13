@@ -1,4 +1,4 @@
-﻿namespace AICentral.Endpoints;
+﻿namespace AICentral.Core;
 
 public interface IEndpointAuthorisationHandler
 {

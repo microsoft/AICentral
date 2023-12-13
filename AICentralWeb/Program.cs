@@ -1,5 +1,6 @@
 using AICentral;
 using AICentral.Configuration;
+using AICentral.Core;
 using AICentral.Logging.AzureMonitor;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Azure.Monitor.OpenTelemetry.Exporter;

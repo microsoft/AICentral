@@ -1,15 +1,17 @@
 ﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
-using AICentral.Configuration;
 using AICentral.Core;
-using AICentral.Endpoints.OpenAILike.OpenAI;
+using AICentral.OpenAI.OpenAI;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace AICentral.Endpoints.OpenAILike;
+namespace AICentral.OpenAI;
 
 public abstract class OpenAILikeEndpointDispatcher : IAICentralEndpointDispatcher
 {

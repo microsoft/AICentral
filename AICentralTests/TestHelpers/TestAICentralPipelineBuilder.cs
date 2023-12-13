@@ -1,18 +1,17 @@
 ﻿using System.Threading.RateLimiting;
-using AICentral;
 using AICentral.Auth;
 using AICentral.Auth.AllowAnonymous;
 using AICentral.Auth.ApiKey;
 using AICentral.BulkHead;
 using AICentral.Configuration;
 using AICentral.Core;
-using AICentral.Endpoints.OpenAILike.AzureOpenAI;
-using AICentral.Endpoints.OpenAILike.OpenAI;
 using AICentral.EndpointSelectors;
 using AICentral.EndpointSelectors.LowestLatency;
 using AICentral.EndpointSelectors.Priority;
 using AICentral.EndpointSelectors.Random;
 using AICentral.EndpointSelectors.Single;
+using AICentral.OpenAI.AzureOpenAI;
+using AICentral.OpenAI.OpenAI;
 using AICentral.RateLimiting;
 using AICentral.Routes;
 

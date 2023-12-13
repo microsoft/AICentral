@@ -1,11 +1,11 @@
 ﻿using System.Text;
 using AICentral;
 using AICentral.Configuration;
-using AICentral.Endpoints.OpenAILike.AzureOpenAI;
+using AICentral.Core;
 using AICentral.Logging.AzureMonitor;
+using AICentral.OpenAI.AzureOpenAI;
 using ApprovalTests;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;

@@ -1,13 +1,9 @@
 using System.Net;
-using AICentral.Configuration;
 using AICentral.Core;
-using AICentral.Endpoints.OpenAILike;
-using AICentral.Endpoints.ResultHandlers;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace AICentral.EndpointSelectors;
+namespace AICentral.EndpointSelectors.ResultHandlers;
 
 public static class JsonResponseHandler
 {

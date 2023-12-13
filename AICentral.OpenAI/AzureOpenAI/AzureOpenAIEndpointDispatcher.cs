@@ -1,20 +1,18 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics.Metrics;
-using System.Text;
+﻿using System.Text;
 using AICentral.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace AICentral.Endpoints.OpenAILike.AzureOpenAI;
+namespace AICentral.OpenAI.AzureOpenAI;
 
 public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
 {
     private static readonly string[] HeaderPrefixesToCopy = { "x-", "apim", "operation-location" };
     private readonly string _languageUrl;
     private readonly IEndpointAuthorisationHandler _authHandler;
-    internal const string AzureOpenAIHostAffinityHeader = "ai-central-host-affinity";
 
     public AzureOpenAIEndpointDispatcher(
         string id,
@@ -122,7 +120,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         var locationRaw = header.Value.Single();
         var location = new Uri(locationRaw);
         var queryParts = QueryHelpers.ParseQuery(location.Query);
-        queryParts.Add(AzureOpenAIHostAffinityHeader, EndpointName);
+        queryParts.Add(AICentralHeaders.AzureOpenAIHostAffinityHeader, EndpointName);
 
         var builder = new UriBuilder(
             context.Request.Scheme,
@@ -149,7 +147,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         };
 
         var incomingQuery = aiCallInformation.QueryString;
-        incomingQuery.Remove(AzureOpenAIHostAffinityHeader);
+        incomingQuery.Remove(AICentralHeaders.AzureOpenAIHostAffinityHeader);
 
         return aiCallInformation.IncomingCallDetails.AICallType == AICallType.Other
             ? aiCallInformation.IncomingCallDetails.ServiceType == AIServiceType.AzureOpenAI

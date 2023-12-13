@@ -1,7 +1,4 @@
-﻿using System.Globalization;
-using AICentral.Core;
-
-namespace AICentral.Endpoints.ResultHandlers;
+﻿namespace AICentral.EndpointSelectors.ResultHandlers;
 
 public class JsonResultHandler : IResult, IDisposable
 {

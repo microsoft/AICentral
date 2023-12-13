@@ -1,6 +1,4 @@
-﻿using AICentral.Core;
-
-namespace AICentral.Configuration;
+﻿namespace AICentral.Core;
 
     public class AICentralConfig
     {
