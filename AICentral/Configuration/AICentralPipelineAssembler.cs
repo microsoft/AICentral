@@ -53,7 +53,6 @@ public class AICentralPipelineAssembler
         var pipelines = BuildPipelines(startupLogger);
         services.AddSingleton(pipelines);
 
-        services.AddSingleton<IncomingCallDetector>();
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
         return pipelines;

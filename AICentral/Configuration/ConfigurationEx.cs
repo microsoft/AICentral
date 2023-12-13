@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using AICentral.Core;
-using AICentral.OpenAI.AzureOpenAI;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AICentral.Configuration;

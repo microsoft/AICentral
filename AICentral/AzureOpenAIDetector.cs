@@ -1,11 +1,10 @@
 ﻿using AICentral.Core;
-using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace AICentral.OpenAI.AzureOpenAI;
+namespace AICentral;
 
-public class AzureOpenAIDetector : IAIServiceDetector
+public class AzureOpenAIDetector
 {
     public bool CanDetect(HttpRequest request)
     {

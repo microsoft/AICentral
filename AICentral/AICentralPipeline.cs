@@ -4,6 +4,7 @@ using AICentral.Auth;
 using AICentral.Core;
 using AICentral.EndpointSelectors;
 using AICentral.Routes;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace AICentral;
 
@@ -61,22 +62,15 @@ public class AICentralPipeline
 
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
 
-        var detector = context.RequestServices.GetRequiredService<IncomingCallDetector>();
-        var requestDetails = await detector.Detect(context.Request, cancellationToken);
+        var requestDetails = new AICallInformation(
+            await new AzureOpenAIDetector().Detect(context.Request, cancellationToken),
+            QueryHelpers.ParseQuery(context.Request.QueryString.Value ?? string.Empty)
+        );
 
         logger.LogDebug("Detected {RequestType} / {CallType} from incoming request",
             requestDetails.IncomingCallDetails.ServiceType, requestDetails.IncomingCallDetails.AICallType);
 
-        IAICentralEndpointSelector? endpointSelector;
-        if (requestDetails.IncomingCallDetails.AICallType == AICallType.Other)
-        {
-            endpointSelector = FindAffinityServer(requestDetails) ?? _endpointSelector.Build();
-        }
-        else
-        {
-            endpointSelector = _endpointSelector.Build();
-        }
-
+        var endpointSelector = FindEndpointSelectorOrAffinityServer(requestDetails);
 
         using var executor = new AICentralPipelineExecutor(_pipelineSteps.Select(x => x.Build()), endpointSelector);
         AICentralActivitySources.RecordCounter(_name, "requests", "{requests}", 1);
@@ -91,8 +85,9 @@ public class AICentralPipeline
                 { "Model", result.AICentralUsageInformation.ModelName },
                 { "Endpoint", result.AICentralUsageInformation.OpenAIHost }
             };
-            
-            AICentralActivitySources.RecordHistogram(_name, "duration", "ms", result.AICentralUsageInformation.Duration.TotalMilliseconds);
+
+            AICentralActivitySources.RecordHistogram(_name, "duration", "ms",
+                result.AICentralUsageInformation.Duration.TotalMilliseconds);
 
             if (result.AICentralUsageInformation.TotalTokens != null)
             {
@@ -114,6 +109,21 @@ public class AICentralPipeline
         }
     }
 
+    private IAICentralEndpointSelector FindEndpointSelectorOrAffinityServer(AICallInformation requestDetails)
+    {
+        IAICentralEndpointSelector? endpointSelector;
+        if (requestDetails.IncomingCallDetails.AICallType == AICallType.Other)
+        {
+            endpointSelector = FindAffinityServer(requestDetails) ?? _endpointSelector.Build();
+        }
+        else
+        {
+            endpointSelector = _endpointSelector.Build();
+        }
+
+        return endpointSelector;
+    }
+
     private IAICentralEndpointSelector? FindAffinityServer(AICallInformation requestDetails)
     {
         var availableEndpointSelectors = AffinityEndpointHelper.FlattenedEndpoints(_endpointSelector.Build());
@@ -121,7 +131,7 @@ public class AICentralPipeline
             out var affinityEndpointSelector);
         return affinityEndpointSelector;
     }
-    
+
     public object WriteDebug()
     {
         return new
