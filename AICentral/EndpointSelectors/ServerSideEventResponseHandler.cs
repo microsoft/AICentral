@@ -62,9 +62,9 @@ public static class ServerSideEventResponseHandler
         {
             estimatedPromptTokens = requestInformation.Prompt == null
                 ? 0
-                : tokeniser.Encode(requestInformation.Prompt, new HashSet<string>(), new HashSet<string>()).Count;
+                : tokeniser?.Encode(requestInformation.Prompt, new HashSet<string>(), new HashSet<string>()).Count ?? 0;
 
-            estimatedCompletionTokens = tokeniser.Encode(responseText, new HashSet<string>(), new HashSet<string>()).Count;
+            estimatedCompletionTokens = tokeniser?.Encode(responseText, new HashSet<string>(), new HashSet<string>()).Count ?? 0;
         }
         catch
         {
