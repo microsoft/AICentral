@@ -15,11 +15,13 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
 
 {
     private readonly TestWebApplicationFactory<Program> _factory;
+    private readonly ITestOutputHelper _testOutputHelper;
     private readonly HttpClient _httpClient;
 
     public the_azure_openai_pipeline(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
     {
         _factory = factory;
+        _testOutputHelper = testOutputHelper;
         factory.OutputHelper = testOutputHelper;
         _httpClient = factory.CreateClient();
     }
@@ -216,7 +218,36 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             {
                 Prompt = "Me building an Open AI Reverse Proxy",
             });
-        
+
         response.HasValue.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task can_handle_streaming_calls()
+    {
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "ModelStream",
+            () => Task.FromResult(AICentralFakeResponses.FakeStreamingCompletionsResponse()), "2023-09-01-preview");
+
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-azure.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            // ReSharper disable once RedundantArgumentDefaultValue
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_09_01_Preview)
+            {
+                Transport = new HttpClientTransport(_httpClient),
+            });
+
+        var completions = await client.GetChatCompletionsStreamingAsync(
+            new ChatCompletionsOptions("ModelStream", new[]
+            {
+                new ChatMessage(ChatRole.System, "You are a helpful assistant.")
+            }));
+
+        var output = new StringBuilder();
+        await foreach (var completion in completions)
+        {
+            output.Append(completion.ContentUpdate);
+        }
+        Approvals.Verify(output);
     }
 }

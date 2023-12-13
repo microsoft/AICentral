@@ -12,9 +12,9 @@ public class FakeHttpMessageHandlerSeeder
         SeededResponses.Add(url, response);
     }
 
-    public void SeedChatCompletions(string endpoint, string modelName, Func<Task<HttpResponseMessage>> response)
+    public void SeedChatCompletions(string endpoint, string modelName, Func<Task<HttpResponseMessage>> response, string apiVersion="2023-05-15")
     {
-        var url = $"https://{endpoint}/openai/deployments/{modelName}/chat/completions?api-version=2023-05-15";
+        var url = $"https://{endpoint}/openai/deployments/{modelName}/chat/completions?api-version={apiVersion}";
         if (SeededResponses.ContainsKey(url)) SeededResponses.Remove(url);
         SeededResponses.Add(url, response);
     }
@@ -31,10 +31,11 @@ public static class TestWebApplicationFactoryEx
 {
     public static void SeedChatCompletions(this TestWebApplicationFactory<Program> webApplicationFactory, string endpoint,
         string modelName,
-        Func<Task<HttpResponseMessage>> response)
+        Func<Task<HttpResponseMessage>> response, 
+        string apiVersion="2023-05-15")
     {
         webApplicationFactory.Services.GetRequiredService<FakeHttpMessageHandlerSeeder>()
-            .SeedChatCompletions(endpoint, modelName, response);
+            .SeedChatCompletions(endpoint, modelName, response, apiVersion);
     }
 
     public static void SeedCompletions(

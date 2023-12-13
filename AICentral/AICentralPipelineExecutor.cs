@@ -1,6 +1,5 @@
 ﻿using AICentral.Core;
 using AICentral.EndpointSelectors;
-using Microsoft.DeepDev;
 using Microsoft.Extensions.Primitives;
 
 namespace AICentral;
@@ -11,14 +10,6 @@ public class AICentralPipelineExecutor : IAICentralPipelineExecutor, IAICentralR
     private readonly IEnumerator<IAICentralPipelineStep> _pipelineEnumerator;
     private readonly IList<IAICentralPipelineStep> _outputHandlers = new List<IAICentralPipelineStep>();
 
-    private static readonly Dictionary<string, Lazy<Task<ITokenizer>>> Tokenisers = new()
-    {
-        ["gpt-3.5-turbo-0613"] =
-            new Lazy<Task<ITokenizer>>(() => TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo")),
-        ["gpt-35-turbo"] = new Lazy<Task<ITokenizer>>(() => TokenizerBuilder.CreateByModelNameAsync("gpt-3.5-turbo")),
-        ["gpt-4"] = new Lazy<Task<ITokenizer>>(() => TokenizerBuilder.CreateByModelNameAsync("gpt-4")),
-    };
-    
     public AICentralPipelineExecutor(
         IEnumerable<IAICentralPipelineStep> steps,
         IAICentralEndpointSelector iaiCentralEndpointSelector)
@@ -88,7 +79,6 @@ public class AICentralPipelineExecutor : IAICentralPipelineExecutor, IAICentralR
         {
             logger.LogDebug("Detected chunked encoding response. Streaming response back to consumer");
             return ServerSideEventResponseHandler.Handle(
-                Tokenisers,
                 context,
                 cancellationToken,
                 openAiResponse,
