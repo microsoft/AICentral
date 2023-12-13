@@ -4,10 +4,10 @@ namespace AICentral.EndpointSelectors.Random;
 
 public class RandomEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
-    private readonly IAICentralEndpointDispatcherFactory[] _openAiServers;
+    private readonly IEndpointRequestResponseHandlerFactory[] _openAiServers;
     private readonly Lazy<RandomEndpointSelector> _endpointSelector;
 
-    public RandomEndpointSelectorFactory(IAICentralEndpointDispatcherFactory[] openAiServers)
+    public RandomEndpointSelectorFactory(IEndpointRequestResponseHandlerFactory[] openAiServers)
     {
         _openAiServers = openAiServers.ToArray();
         _endpointSelector = new Lazy<RandomEndpointSelector>(() => new RandomEndpointSelector(_openAiServers.Select(x => x.Build()).ToArray()));
@@ -27,7 +27,7 @@ public class RandomEndpointSelectorFactory : IAICentralEndpointSelectorFactory
     public static IAICentralEndpointSelectorFactory BuildFromConfig(
         ILogger logger, 
         AICentralTypeAndNameConfig config,
-        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints)
+        Dictionary<string, IEndpointRequestResponseHandlerFactory> endpoints)
     {
         var properties = config.TypedProperties<RandomEndpointConfig>();
         Guard.NotNull(properties, "Properties");

@@ -4,15 +4,15 @@ using Microsoft.Extensions.Logging;
 
 namespace AICentral.OpenAI.OpenAI;
 
-public class OpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFactory
+public class OpenAIEndpointRequestResponseHandlerFactory : IEndpointRequestResponseHandlerFactory
 {
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string? _organization;
     private readonly int? _maxConcurrency;
-    private readonly Lazy<IAICentralEndpointDispatcher> _endpointDispatcher;
+    private readonly Lazy<IEndpointRequestResponseHandler> _endpointDispatcher;
     private readonly string _id;
 
-    public OpenAIEndpointDispatcherFactory(string endpointName, Dictionary<string, string> modelMappings,
+    public OpenAIEndpointRequestResponseHandlerFactory(string endpointName, Dictionary<string, string> modelMappings,
         string apiKey,
         string? organization,
         int? maxConcurrency = null)
@@ -22,7 +22,7 @@ public class OpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFacto
         _organization = organization;
         _maxConcurrency = maxConcurrency;
 
-        _endpointDispatcher = new Lazy<IAICentralEndpointDispatcher>(() =>
+        _endpointDispatcher = new Lazy<IEndpointRequestResponseHandler>(() =>
             new OpenAIEndpointDispatcher(_id, endpointName, _modelMappings, apiKey, _organization));
     }
 
@@ -35,13 +35,13 @@ public class OpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFacto
 
     public static string ConfigName => "OpenAIEndpoint";
 
-    public static IAICentralEndpointDispatcherFactory BuildFromConfig(ILogger logger,
+    public static IEndpointRequestResponseHandlerFactory BuildFromConfig(ILogger logger,
         AICentralTypeAndNameConfig config)
     {
         var properties = config.TypedProperties<AICentralPipelineOpenAIEndpointPropertiesConfig>();
         Guard.NotNull(properties, "Properties");
 
-        return new OpenAIEndpointDispatcherFactory(
+        return new OpenAIEndpointRequestResponseHandlerFactory(
             config.Name!,
             Guard.NotNull(properties.ModelMappings, nameof(properties.ModelMappings)),
             Guard.NotNull(properties.ApiKey, nameof(properties.ApiKey)),
@@ -52,9 +52,8 @@ public class OpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFacto
 
     public IAICentralEndpointDispatcher Build()
     {
-        return _endpointDispatcher.Value;
+        return new AICentralEndpointDispatcher(_endpointDispatcher.Value);
     }
-
 
     public object WriteDebug()
     {

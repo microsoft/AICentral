@@ -12,7 +12,7 @@ public class AICentralPipelineAssembler
 {
     private readonly Func<string, HeaderMatchRouter> _routeBuilder;
     private readonly Dictionary<string, IAICentralClientAuthFactory> _authProviders;
-    private readonly Dictionary<string, IAICentralEndpointDispatcherFactory> _endpoints;
+    private readonly Dictionary<string, IEndpointRequestResponseHandlerFactory> _endpoints;
     private readonly Dictionary<string, IAICentralEndpointSelectorFactory> _endpointSelectors;
     private readonly Dictionary<string, IAICentralGenericStepFactory> _genericSteps;
     private readonly AICentralPipelineConfig[] _pipelines;
@@ -22,7 +22,7 @@ public class AICentralPipelineAssembler
     public AICentralPipelineAssembler(
         Func<string, HeaderMatchRouter> routeBuilder,
         Dictionary<string, IAICentralClientAuthFactory> authProviders,
-        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints,
+        Dictionary<string, IEndpointRequestResponseHandlerFactory> endpoints,
         Dictionary<string, IAICentralEndpointSelectorFactory> endpointSelectors,
         Dictionary<string, IAICentralGenericStepFactory> genericSteps,
         AICentralPipelineConfig[] pipelines)

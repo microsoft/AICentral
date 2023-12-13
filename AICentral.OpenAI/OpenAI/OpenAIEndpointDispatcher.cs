@@ -17,13 +17,13 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         string endpointName,
         Dictionary<string, string> modelMappings,
         string apiKey,
-        string? organization) : base(id, endpointName, modelMappings)
+        string? organization) : base(id, OpenAIV1, endpointName, modelMappings)
     {
         _organization = organization;
         _apiKey = apiKey;
     }
 
-    protected override Task ExtractDiagnostics(IncomingCallDetails incomingCallDetails, string mappedModelName,
+    protected override Task ExtractDiagnostics(IncomingCallDetails incomingCallDetails,
         HttpRequestMessage downstreamRequest,
         HttpResponseMessage openAiResponse)
     {
@@ -94,11 +94,9 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         return deepClone;
     }
 
-    protected override Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,
+    protected override Dictionary<string, StringValues> SanitiseHeaders1(HttpContext context,
         HttpResponseMessage openAiResponse)
     {
         return openAiResponse.Headers.ToDictionary(x => x.Key, x => new StringValues(x.Value.ToArray()));
     }
-
-    protected override string HostUriBase => OpenAIV1;
 }

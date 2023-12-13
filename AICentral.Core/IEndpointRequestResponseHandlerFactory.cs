@@ -1,6 +1,6 @@
 ﻿namespace AICentral.Core;
 
-public interface IAICentralEndpointDispatcherFactory
+public interface IEndpointRequestResponseHandlerFactory
 {
     static virtual string ConfigName  => throw new NotImplementedException();
 
@@ -8,12 +8,12 @@ public interface IAICentralEndpointDispatcherFactory
         HttpMessageHandler? httpMessageHandler, 
         IServiceCollection services);
 
-    IAICentralEndpointDispatcher Build();
-
-    static virtual IAICentralEndpointDispatcherFactory BuildFromConfig(ILogger logger, AICentralTypeAndNameConfig config)
+    static virtual IEndpointRequestResponseHandlerFactory BuildFromConfig(ILogger logger, AICentralTypeAndNameConfig config)
     {
         throw new NotImplementedException();
     }
+
+    IAICentralEndpointDispatcher Build();
 
     object WriteDebug();
 }

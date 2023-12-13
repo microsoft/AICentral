@@ -19,14 +19,14 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         string languageUrl,
         string endpointName,
         Dictionary<string, string> modelMappings,
-        IEndpointAuthorisationHandler authHandler) : base(id, endpointName, modelMappings)
+        IEndpointAuthorisationHandler authHandler) : base(id, languageUrl, endpointName, modelMappings)
     {
         _languageUrl = languageUrl.EndsWith('/') ? languageUrl[..^1] : languageUrl;
         _authHandler = authHandler;
     }
 
-    protected override Task ExtractDiagnostics(IncomingCallDetails incomingCallDetails,
-        string mappedModelName,
+    protected override Task ExtractDiagnostics(
+        IncomingCallDetails incomingCallDetails,
         HttpRequestMessage downstreamRequest,
         HttpResponseMessage openAiResponse)
     {
@@ -36,7 +36,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
             openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-tokens", out var remainingTokens);
 
         var hostName = downstreamRequest.RequestUri!.Host.ToLowerInvariant();
-        var modelName = mappedModelName.ToLowerInvariant();
+        var modelName = "TODO"; //TODO mappedModelName.ToLowerInvariant();
         if (hasRemainingRequests)
         {
             if (long.TryParse(remainingRequests?.FirstOrDefault(), out var val))
@@ -91,7 +91,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         return incomingContent;
     }
 
-    protected override Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,
+    protected override Dictionary<string, StringValues> SanitiseHeaders1(HttpContext context,
         HttpResponseMessage openAiResponse)
     {
         var proxiedHeaders = new Dictionary<string, StringValues>();
@@ -130,8 +130,6 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         );
         return QueryHelpers.AddQueryString(builder.ToString(), queryParts);
     }
-
-    protected override string HostUriBase => _languageUrl;
 
     protected override string BuildUri(HttpContext context, AICallInformation aiCallInformation,
         string? mappedModelName)

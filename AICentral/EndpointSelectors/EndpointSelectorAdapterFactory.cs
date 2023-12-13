@@ -2,7 +2,7 @@
 
 namespace AICentral.EndpointSelectors;
 
-public class EndpointSelectorAdapterFactory : IAICentralEndpointDispatcherFactory
+public class EndpointSelectorAdapterFactory : IEndpointRequestResponseHandlerFactory
 {
     private readonly Lazy<EndpointSelectorAdapter> _instance;
     private readonly IAICentralEndpointSelectorFactory _centralEndpointSelectorFactory;
@@ -29,7 +29,7 @@ public class EndpointSelectorAdapterFactory : IAICentralEndpointDispatcherFactor
 
     public static string ConfigName => "__internal_use_only";
 
-    public static IAICentralEndpointDispatcherFactory BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
+    public static IEndpointRequestResponseHandlerFactory BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
     {
         throw new NotImplementedException();
     }

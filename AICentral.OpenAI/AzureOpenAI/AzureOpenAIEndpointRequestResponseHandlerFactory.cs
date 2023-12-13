@@ -4,16 +4,16 @@ using Microsoft.Extensions.Logging;
 
 namespace AICentral.OpenAI.AzureOpenAI;
 
-public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFactory
+public class AzureOpenAIEndpointRequestResponseHandlerFactory : IEndpointRequestResponseHandlerFactory
 {
     private readonly IEndpointAuthorisationHandler _authHandler;
     private readonly string _languageUrl;
     private readonly Dictionary<string, string> _modelMappings;
-    private readonly Lazy<IAICentralEndpointDispatcher> _endpointDispatcher;
+    private readonly Lazy<IEndpointRequestResponseHandler> _endpointDispatcher;
     private readonly string _id;
     private readonly int? _maxConcurrency;
     
-    public AzureOpenAIEndpointDispatcherFactory(
+    public AzureOpenAIEndpointRequestResponseHandlerFactory(
         string endpointName,
         string languageUrl,
         Dictionary<string, string> modelMappings,
@@ -37,7 +37,7 @@ public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcher
             _ => throw new ArgumentOutOfRangeException(nameof(authenticationType), authenticationType, null)
         };
 
-        _endpointDispatcher = new Lazy<IAICentralEndpointDispatcher>(() =>
+        _endpointDispatcher = new Lazy<IEndpointRequestResponseHandler>(() =>
             new AzureOpenAIEndpointDispatcher(_id, _languageUrl, endpointName, _modelMappings, _authHandler));
     }
 
@@ -50,7 +50,7 @@ public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcher
 
     public static string ConfigName => "AzureOpenAIEndpoint";
 
-    public static IAICentralEndpointDispatcherFactory BuildFromConfig(
+    public static IEndpointRequestResponseHandlerFactory BuildFromConfig(
         ILogger logger,
         AICentralTypeAndNameConfig config)
     {
@@ -77,7 +77,7 @@ public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcher
             authenticationType = "EntraPassThrough";
         }
 
-        return new AzureOpenAIEndpointDispatcherFactory(
+        return new AzureOpenAIEndpointRequestResponseHandlerFactory(
             config.Name!,
             Guard.NotNull(properties.LanguageEndpoint, nameof(properties.LanguageEndpoint)),
             modelMappings,
@@ -88,7 +88,7 @@ public class AzureOpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcher
 
     public IAICentralEndpointDispatcher Build()
     {
-        return _endpointDispatcher.Value;
+        return new AICentralEndpointDispatcher(_endpointDispatcher.Value);
     }
 
     public object WriteDebug()

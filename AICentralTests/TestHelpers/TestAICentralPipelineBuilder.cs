@@ -21,7 +21,7 @@ public class TestAICentralPipelineBuilder
 {
     private IAICentralClientAuthFactory? _auth;
     private IAICentralEndpointSelectorFactory? _endpointFactory;
-    private IAICentralEndpointDispatcherFactory[]? _openAiEndpointDispatcherBuilders;
+    private IEndpointRequestResponseHandlerFactory[]? _openAiEndpointDispatcherBuilders;
     private int? _windowInSeconds;
     private int? _requestsPerWindow;
     private int? _allowedConcurrency;
@@ -55,7 +55,7 @@ public class TestAICentralPipelineBuilder
     public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel,
         int? maxConcurrency = null)
     {
-        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherFactory(
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointRequestResponseHandlerFactory(
             hostname,
             $"https://{hostname}",
             new Dictionary<string, string>()
@@ -74,7 +74,7 @@ public class TestAICentralPipelineBuilder
 
     public TestAICentralPipelineBuilder WithSingleOpenAIEndpoint(string name, string model, string mappedModel)
     {
-        var openAiEndpointDispatcherBuilder = new OpenAIEndpointDispatcherFactory(
+        var openAiEndpointDispatcherBuilder = new OpenAIEndpointRequestResponseHandlerFactory(
             name,
             new Dictionary<string, string>()
             {
@@ -94,8 +94,8 @@ public class TestAICentralPipelineBuilder
         (string hostname, string model, string mappedModel)[] fallbackEndpoints
     )
     {
-        IAICentralEndpointDispatcherFactory[] priorityOpenAIEndpointDispatcherBuilder = priorityEndpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherFactory(
+        IEndpointRequestResponseHandlerFactory[] priorityOpenAIEndpointDispatcherBuilder = priorityEndpoints.Select(x =>
+            new AzureOpenAIEndpointRequestResponseHandlerFactory(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
@@ -104,8 +104,8 @@ public class TestAICentralPipelineBuilder
                 "ApiKey",
                 Guid.NewGuid().ToString())).ToArray();
 
-        IAICentralEndpointDispatcherFactory[] fallbackOpenAIEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherFactory(
+        IEndpointRequestResponseHandlerFactory[] fallbackOpenAIEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
+            new AzureOpenAIEndpointRequestResponseHandlerFactory(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
@@ -128,7 +128,7 @@ public class TestAICentralPipelineBuilder
         params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherFactory(
+            new AzureOpenAIEndpointRequestResponseHandlerFactory(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
@@ -146,7 +146,7 @@ public class TestAICentralPipelineBuilder
         params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherFactory(
+            new AzureOpenAIEndpointRequestResponseHandlerFactory(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
@@ -253,7 +253,7 @@ public class TestAICentralPipelineBuilder
     public TestAICentralPipelineBuilder WithHierarchicalEndpointSelector(string endpoint200, string model,
         string mappedModel)
     {
-        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherFactory(
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointRequestResponseHandlerFactory(
             endpoint200,
             $"https://{endpoint200}",
             new Dictionary<string, string>()

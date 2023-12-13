@@ -4,14 +4,14 @@ namespace AICentral.EndpointSelectors.Single;
 
 public class SingleEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
-    private readonly IAICentralEndpointDispatcherFactory _endpointDispatcherFactory;
+    private readonly IEndpointRequestResponseHandlerFactory _endpointRequestResponseHandlerFactory;
     private readonly Lazy<SingleEndpointSelector> _endpointSelector;
 
-    public SingleEndpointSelectorFactory(IAICentralEndpointDispatcherFactory endpointDispatcherFactory)
+    public SingleEndpointSelectorFactory(IEndpointRequestResponseHandlerFactory endpointRequestResponseHandlerFactory)
     {
-        _endpointDispatcherFactory = endpointDispatcherFactory;
+        _endpointRequestResponseHandlerFactory = endpointRequestResponseHandlerFactory;
         _endpointSelector =
-            new Lazy<SingleEndpointSelector>(() => new SingleEndpointSelector(endpointDispatcherFactory.Build()));
+            new Lazy<SingleEndpointSelector>(() => new SingleEndpointSelector(endpointRequestResponseHandlerFactory.Build()));
     }
 
     public IAICentralEndpointSelector Build()
@@ -28,7 +28,7 @@ public class SingleEndpointSelectorFactory : IAICentralEndpointSelectorFactory
     public static IAICentralEndpointSelectorFactory BuildFromConfig(
         ILogger logger,
         AICentralTypeAndNameConfig config,
-        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints)
+        Dictionary<string, IEndpointRequestResponseHandlerFactory> endpoints)
     {
         var properties = config.TypedProperties<SingleEndpointConfig>();
 
@@ -42,7 +42,7 @@ public class SingleEndpointSelectorFactory : IAICentralEndpointSelectorFactory
         return new
         {
             Type = "SingleEndpoint",
-            Endpoints = new[] { _endpointDispatcherFactory.WriteDebug() }
+            Endpoints = new[] { _endpointRequestResponseHandlerFactory.WriteDebug() }
         };
     }
 }
