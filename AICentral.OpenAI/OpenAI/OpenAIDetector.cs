@@ -1,47 +1,40 @@
 ﻿using AICentral.Core;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace AICentral.CallDetectors;
+namespace AICentral.OpenAI.OpenAI;
 
-public class AzureOpenAIDetector : IAIServiceDetector
+public class OpenAIDetector : IAIServiceDetector
 {
     public bool CanDetect(HttpRequest request)
     {
-        return request.Path.StartsWithSegments("/openai");
+        return request.Path.StartsWithSegments("/v1", out _);
     }
 
     public async Task<IncomingCallDetails> Detect(HttpRequest request, CancellationToken cancellationToken)
     {
-        request.Path.StartsWithSegments("/openai", out var remainingUrlSegments);
+        request.Path.StartsWithSegments("/v1", out var remainingUrlSegments);
+        var requestTypeRaw = remainingUrlSegments.ToString().Split('/')[1];
 
-        var remaining = remainingUrlSegments.ToString().Split('/');
-        var callType = remaining[1];
-        string? incomingModelName = default;
-
-        if (remaining[1] == "deployments")
-        {
-            incomingModelName = remaining[2];
-            callType = remaining[3];
-        }
-
-        var aICallType = callType switch
+        var aICallType = requestTypeRaw switch
         {
             "chat" => AICallType.Chat,
-            "completions" => AICallType.Completions,
             "embeddings" => AICallType.Embeddings,
+            "completions" => AICallType.Completions,
             _ => AICallType.Other
         };
 
         if (aICallType == AICallType.Other)
         {
-            return new IncomingCallDetails(AIServiceType.AzureOpenAI, aICallType, null, null, null);
+            return new IncomingCallDetails(AIServiceType.OpenAI, aICallType, null, null, null);
         }
 
         //Pull out the text
         using var requestReader = new StreamReader(request.Body);
         var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
         var requestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
+
 
         var promptText = aICallType switch
         {
@@ -55,11 +48,8 @@ public class AzureOpenAIDetector : IAIServiceDetector
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        return new IncomingCallDetails(
-            AIServiceType.AzureOpenAI,
-            aICallType,
-            promptText,
-            incomingModelName,
-            requestContent);
+        var incomingModelName = requestContent?.Value<string>("model");
+
+        return new IncomingCallDetails(AIServiceType.OpenAI, aICallType, promptText, incomingModelName, requestContent);
     }
 }

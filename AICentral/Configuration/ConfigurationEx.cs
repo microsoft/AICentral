@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using AICentral.Core;
+using AICentral.OpenAI.AzureOpenAI;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AICentral.Configuration;
@@ -18,7 +19,9 @@ public static class ConfigurationEx
         logger.LogInformation("AICentral - Initialising pipelines");
 
         var configFromSection = configuration.GetSection(configSectionName);
-        var typedConfig = configFromSection.Exists() ? configFromSection.Get<AICentralConfig>()! : new AICentralConfig();
+        var typedConfig = configFromSection.Exists()
+            ? configFromSection.Get<AICentralConfig>()!
+            : new AICentralConfig();
         typedConfig.FillInPropertiesFromConfiguration(configuration.GetSection(configSectionName));
         configureOptions?.Invoke(typedConfig);
 
@@ -26,7 +29,7 @@ public static class ConfigurationEx
             .BuildPipelinesFromConfig(
                 typedConfig,
                 logger,
-                additionalComponentAssemblies);
+                additionalComponentAssemblies.Concat(new[] { typeof(AzureOpenAIDetector).Assembly }).ToArray());
 
         configurationPipelineBuilder.AddServices(services, typedConfig.HttpMessageHandler, logger);
 

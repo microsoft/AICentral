@@ -1,7 +1,5 @@
 ﻿using AICentral.Auth;
-using AICentral.CallDetectors;
 using AICentral.Core;
-using AICentral.Endpoints;
 using AICentral.Routes;
 
 namespace AICentral.Configuration;
@@ -56,8 +54,6 @@ public class AICentralPipelineAssembler
         services.AddSingleton(pipelines);
 
         services.AddSingleton<IncomingCallDetector>();
-        services.AddSingleton<IAIServiceDetector, AzureOpenAIDetector>();
-        services.AddSingleton<IAIServiceDetector, OpenAIDetector>();
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
         return pipelines;

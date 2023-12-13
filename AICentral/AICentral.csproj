@@ -30,11 +30,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="TokenBasedRateLimiting\" />
+      <ProjectReference Include="..\AICentral.Core\AICentral.Core.csproj" />
+      <ProjectReference Include="..\AICentral.OpenAI\AICentral.OpenAI.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AICentral.Core\AICentral.Core.csproj" />
+      <Folder Include="CallDetectors\" />
     </ItemGroup>
 
 </Project>

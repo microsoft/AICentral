@@ -28,6 +28,8 @@ public class OpenAIEndpointDispatcherFactory : IAICentralEndpointDispatcherFacto
 
     public void RegisterServices(HttpMessageHandler? httpMessageHandler, IServiceCollection services)
     {
+        services.AddSingleton<IAIServiceDetector, OpenAIDetector>();
+
         services.AddHttpClient<HttpAIEndpointDispatcher>(_id)
             .AddPolicyHandler(ResiliencyStrategy.Build(_maxConcurrency))
             .ConfigurePrimaryHttpMessageHandler(() => httpMessageHandler ?? new HttpClientHandler());
