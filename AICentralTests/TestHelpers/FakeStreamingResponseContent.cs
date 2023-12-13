@@ -3,6 +3,7 @@
 public static class FakeStreamingResponseContent
 {
     public static string Response = """
+                                    data: {"id":"","object":"","created":0,"model":"","prompt_filter_results":[{"prompt_index":0,"content_filter_results":{"hate":{"filtered":false,"severity":"safe"},"self_harm":{"filtered":false,"severity":"safe"},"sexual":{"filtered":false,"severity":"safe"},"violence":{"filtered":false,"severity":"safe"}}}],"choices":[]}
                                     data: {"id":"chatcmpl-8V9BJfiDsC9QPMDdJrfN2GfrREYIX","object":"chat.completion.chunk","created":1702434153,"model":"gpt-35-turbo","choices":[{"finish_reason":null,"index":0,"delta":{"role":"assistant"}}]}
                                     data: {"id":"chatcmpl-8V9BJfiDsC9QPMDdJrfN2GfrREYIX","object":"chat.completion.chunk","created":1702434153,"model":"gpt-35-turbo","choices":[{"finish_reason":null,"index":0,"delta":{"content":"There"}}]}
                                     data: {"id":"chatcmpl-8V9BJfiDsC9QPMDdJrfN2GfrREYIX","object":"chat.completion.chunk","created":1702434153,"model":"gpt-35-turbo","choices":[{"finish_reason":null,"index":0,"delta":{"content":" once"}}]}
