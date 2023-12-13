@@ -22,6 +22,13 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         _apiKey = apiKey;
     }
 
+    protected override Task ExtractDiagnostics(IncomingCallDetails incomingCallDetails, string mappedModelName,
+        HttpRequestMessage downstreamRequest,
+        HttpResponseMessage openAiResponse)
+    {
+        return Task.CompletedTask;
+    }
+
     protected override Task CustomiseRequest(
         HttpContext context,
         AICallInformation aiCallInformation,

@@ -1,6 +1,8 @@
-﻿using System.Net;
+﻿using System.CodeDom;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
 namespace AICentralTests.TestHelpers;
@@ -47,6 +49,9 @@ public class AICentralFakeResponses
                 },
             })
             , Encoding.UTF8, "application/json");
+        
+        response.Headers.Add("x-ratelimit-remaining-requests", "12");
+        response.Headers.Add("x-ratelimit-remaining-tokens", "234");
 
         return response;
     }
@@ -80,6 +85,16 @@ public class AICentralFakeResponses
             })
             , Encoding.UTF8, "application/json");
 
+        return response;
+    }
+
+
+    public static HttpResponseMessage FakeStreamingCompletionsResponse()
+    {
+        var responseContent = FakeStreamingResponseContent.Response;
+        var response = new HttpResponseMessage();
+        response.Content = new SSEResponse(responseContent);
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
         return response;
     }
 
@@ -163,5 +178,35 @@ public class AICentralFakeResponses
         response.StatusCode = HttpStatusCode.TooManyRequests;
         response.Headers.RetryAfter = new RetryConditionHeaderValue(retryAfter);
         return response;
+    }
+
+    private class SSEResponse : HttpContent
+    {
+        private readonly string[] _knownContentLines;
+
+        public SSEResponse(string knownContent)
+        {
+            _knownContentLines = knownContent.ReplaceLineEndings("\n").Split("\n");
+            //_length = Encoding.UTF8.GetBytes(knownContent).LongLength;
+        }
+        
+        protected override async Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+        {
+            var newLine = Encoding.UTF8.GetBytes("\n");
+            foreach (var line in _knownContentLines)
+            {
+                var lineBytes = Encoding.UTF8.GetBytes(line);
+                await stream.WriteAsync(lineBytes);
+                await stream.WriteAsync(newLine);
+                await stream.WriteAsync(newLine);
+                await Task.Delay(TimeSpan.FromMilliseconds(25));
+            }
+        }
+
+        protected override bool TryComputeLength(out long length)
+        {
+            length = 0;
+            return false;
+        }
     }
 }

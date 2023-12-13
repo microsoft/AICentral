@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
+using System.Text;
 using AICentral.Core;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
@@ -24,16 +26,49 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         _languageUrl = languageUrl.EndsWith('/') ? languageUrl[..^1] : languageUrl;
         _authHandler = authHandler;
     }
-    
+
+    protected override Task ExtractDiagnostics(IncomingCallDetails incomingCallDetails,
+        string mappedModelName,
+        HttpRequestMessage downstreamRequest,
+        HttpResponseMessage openAiResponse)
+    {
+        var hasRemainingRequests =
+            openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-requests", out var remainingRequests);
+        var hasRemainingTokens =
+            openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-tokens", out var remainingTokens);
+
+        var hostName = downstreamRequest.RequestUri!.Host.ToLowerInvariant();
+        var modelName = mappedModelName.ToLowerInvariant();
+        if (hasRemainingRequests)
+        {
+            if (long.TryParse(remainingRequests?.FirstOrDefault(), out var val))
+            {
+                AICentralActivitySources.RecordGaugeMetric("remaining-requests", hostName, modelName, val);
+            }
+        }
+
+        if (hasRemainingTokens)
+        {
+            if (long.TryParse(remainingTokens?.FirstOrDefault(), out var val))
+            {
+                AICentralActivitySources.RecordGaugeMetric("remaining-tokens", hostName, modelName, val);
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+
     protected override Task CustomiseRequest(HttpContext context, AICallInformation aiCallInformation,
         HttpRequestMessage newRequest,
         string? newModelName)
     {
-
         if (aiCallInformation.IncomingCallDetails.RequestContent != null)
         {
             newRequest.Content =
-                new StringContent(RemoveModelParameterFromRequest(aiCallInformation.IncomingCallDetails.RequestContent).ToString(Formatting.None),
+                new StringContent(
+                    RemoveModelParameterFromRequest(aiCallInformation.IncomingCallDetails.RequestContent)
+                        .ToString(Formatting.None),
                     Encoding.UTF8, "application/json");
         }
         else
@@ -50,9 +85,11 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         if (incomingContent["model"] != null)
         {
             var clone = (JObject)incomingContent.DeepClone();
-            clone["model"]!.Parent!.Remove();;
+            clone["model"]!.Parent!.Remove();
+            ;
             return clone;
         }
+
         return incomingContent;
     }
 
@@ -86,7 +123,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         var location = new Uri(locationRaw);
         var queryParts = QueryHelpers.ParseQuery(location.Query);
         queryParts.Add(AzureOpenAIHostAffinityHeader, EndpointName);
-        
+
         var builder = new UriBuilder(
             context.Request.Scheme,
             context.Request.Host.Host,
@@ -117,7 +154,8 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         return aiCallInformation.IncomingCallDetails.AICallType == AICallType.Other
             ? aiCallInformation.IncomingCallDetails.ServiceType == AIServiceType.AzureOpenAI
                 ? QueryHelpers.AddQueryString($"{_languageUrl}{context.Request.Path}", aiCallInformation.QueryString)
-                : throw new InvalidOperationException("Unable to forward this request from an Open AI request to Azure Open AI")
+                : throw new InvalidOperationException(
+                    "Unable to forward this request from an Open AI request to Azure Open AI")
             : QueryHelpers.AddQueryString($"{_languageUrl}/openai/deployments/{mappedModelName}/{pathPiece}",
                 aiCallInformation.QueryString);
     }

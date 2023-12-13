@@ -1,19 +1,17 @@
 using System.Text;
 using AICentral.Core;
-using AICentral.Endpoints.OpenAILike;
 using AICentral.Endpoints.ResultHandlers;
-using Microsoft.DeepDev;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SharpToken;
 
 namespace AICentral.EndpointSelectors;
 
-public class ServerSideEventResponseHandler
+public static class ServerSideEventResponseHandler
 {
     private static readonly int StreamingLinePrefixLength = "data:".Length;
 
     public static async Task<AICentralResponse> Handle(
-        Dictionary<string, Lazy<Task<ITokenizer>>> tokenisers,
         HttpContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
@@ -38,6 +36,7 @@ public class ServerSideEventResponseHandler
 
             if (line != null)
             {
+                //Write this out as we read it so we get the fastest response back to the consumer possible. 
                 await responseWriter.WriteAsync(line);
                 await responseWriter.WriteAsync("\n");
                 await responseWriter.FlushAsync();
@@ -54,7 +53,7 @@ public class ServerSideEventResponseHandler
         }
 
         //calculate prompt tokens
-        var tokeniser = tokenisers.TryGetValue(model, out var val) ? val : tokenisers["gpt-35-turbo"];
+        var tokeniser = GptEncoding.GetEncodingForModel(model);
         int? estimatedPromptTokens = null;
         int? estimatedCompletionTokens = null;
         var responseText = content.ToString();
@@ -63,9 +62,9 @@ public class ServerSideEventResponseHandler
         {
             estimatedPromptTokens = requestInformation.Prompt == null
                 ? 0
-                : (await tokeniser.Value).Encode(requestInformation.Prompt, Array.Empty<string>()).Count;
-            
-            estimatedCompletionTokens = (await tokeniser.Value).Encode(responseText, Array.Empty<string>()).Count;
+                : tokeniser?.Encode(requestInformation.Prompt, new HashSet<string>(), new HashSet<string>()).Count ?? 0;
+
+            estimatedCompletionTokens = tokeniser?.Encode(responseText, new HashSet<string>(), new HashSet<string>()).Count ?? 0;
         }
         catch
         {

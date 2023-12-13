@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Microsoft.Identity.Client;
 
 namespace AICentral;
 
@@ -10,7 +11,8 @@ public static class AICentralActivitySource
 {
     public static readonly string AICentralTelemetryName = typeof(AICentralPipeline).Assembly.GetName().Name!;
 
-    private static readonly string AICentralMeterVersion = typeof(AICentralPipeline).Assembly.GetName().Version!.ToString();
+    private static readonly string AICentralMeterVersion =
+        typeof(AICentralPipeline).Assembly.GetName().Version!.ToString();
 
     static AICentralActivitySource()
     {
