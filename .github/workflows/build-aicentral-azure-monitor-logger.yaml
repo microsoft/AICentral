@@ -5,12 +5,12 @@ on:
     branches:
       - main
     paths:
-      - '/AICentral/**'
+      - 'AICentral/**'
   pull_request:
     branches:
       - main
     paths:
-      - '/AICentral.Logging.AzureMonitor/**'
+      - 'AICentral.Logging.AzureMonitor/**'
   workflow_dispatch:
 
 jobs:
