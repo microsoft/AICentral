@@ -40,7 +40,7 @@ public class OpenAIEndpointRequestResponseHandler : OpenAILikeEndpointRequestRes
         //if there is a model change then set the model on a new outbound JSON request. Else copy the content with no changes
         if (aiCallInformation.IncomingCallDetails.AICallType != AICallType.Other)
         {
-            newRequest.Content = IncomingContentWithInjectedModelName(aiCallInformation, mappedModelName);
+            newRequest.Content = HandleMappedModelName(aiCallInformation, mappedModelName);
         }
         else
         {
@@ -57,9 +57,16 @@ public class OpenAIEndpointRequestResponseHandler : OpenAILikeEndpointRequestRes
         return Task.CompletedTask;
     }
 
-    private static StringContent IncomingContentWithInjectedModelName(AICallInformation aiCallInformation,
+    private static StringContent HandleMappedModelName(AICallInformation aiCallInformation,
         string? mappedModelName)
     {
+        if (aiCallInformation.IncomingCallDetails.AICallType == AICallType.DALLE3)
+        {
+            //no model name for this
+            var content = aiCallInformation.IncomingCallDetails.RequestContent!.DeepClone();
+            content["model"]!.Parent!.Remove();
+            return new StringContent(content.ToString(), Encoding.UTF8, "application/json");
+        }
         return aiCallInformation.IncomingCallDetails.IncomingModelName == mappedModelName
             ? new StringContent(aiCallInformation.IncomingCallDetails.RequestContent!.ToString(), Encoding.UTF8,
                 "application/json")
