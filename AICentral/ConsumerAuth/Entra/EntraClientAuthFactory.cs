@@ -1,9 +1,9 @@
 ﻿using AICentral.Core;
 using Microsoft.Identity.Web;
 
-namespace AICentral.Auth.Entra;
+namespace AICentral.ConsumerAuth.Entra;
 
-public class EntraClientAuthFactory : IAICentralClientAuthFactory
+public class EntraClientAuthFactory : IConsumerAuthFactory
 {
     private readonly AICentralTypeAndNameConfig _configSection;
     private readonly string _id;
@@ -27,12 +27,12 @@ public class EntraClientAuthFactory : IAICentralClientAuthFactory
 
     public static string ConfigName => "Entra";
 
-    public IAICentralClientAuthStep Build()
+    public IConsumerAuthStep Build()
     {
         return _provider.Value;
     }
 
-    public static IAICentralClientAuthFactory BuildFromConfig(
+    public static IConsumerAuthFactory BuildFromConfig(
         ILogger logger, 
         AICentralTypeAndNameConfig config)
     {

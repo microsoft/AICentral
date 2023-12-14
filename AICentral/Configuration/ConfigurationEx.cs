@@ -40,7 +40,7 @@ public static class ConfigurationEx
 
     public static void UseAICentral(this WebApplication webApplication)
     {
-        var aiCentral = webApplication.Services.GetRequiredService<AICentralPipelines>();
+        var aiCentral = webApplication.Services.GetRequiredService<ConfiguredPipelines>();
         aiCentral.BuildRoutes(webApplication);
     }
 }

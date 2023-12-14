@@ -2,18 +2,18 @@
 
 namespace AICentral.Endpoints;
 
-public class AICentralEndpointDispatcherFactory : IAICentralEndpointDispatcherFactory
+public class DownstreamEndpointDispatcherFactory : IAICentralEndpointDispatcherFactory
 {
     private readonly IEndpointRequestResponseHandlerFactory _endpointDispatcherFactory;
 
-    public AICentralEndpointDispatcherFactory(IEndpointRequestResponseHandlerFactory endpointDispatcherFactory)
+    public DownstreamEndpointDispatcherFactory(IEndpointRequestResponseHandlerFactory endpointDispatcherFactory)
     {
         _endpointDispatcherFactory = endpointDispatcherFactory;
     }
     
     public IAICentralEndpointDispatcher Build()
     {
-        return new AICentralEndpointDispatcher(_endpointDispatcherFactory.Build());
+        return new DownstreamEndpointDispatcher(_endpointDispatcherFactory.Build());
     }
 
     public object WriteDebug()

@@ -77,7 +77,7 @@ public class the_pipeline_config
             additionalComponentAssemblies: typeof(AzureMonitorLogger).Assembly);
         var app = host.Build();
 
-        var pipelines = app.Services.GetRequiredService<AICentralPipelines>();
+        var pipelines = app.Services.GetRequiredService<ConfiguredPipelines>();
         Approvals.VerifyJson(JsonConvert.SerializeObject(pipelines.WriteDebug(), Formatting.Indented));
     }
 }

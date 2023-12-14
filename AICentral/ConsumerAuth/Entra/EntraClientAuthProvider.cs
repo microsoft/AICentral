@@ -1,12 +1,13 @@
 ﻿using AICentral.Core;
 using Microsoft.Extensions.Primitives;
 
-namespace AICentral.Auth.ApiKey;
+namespace AICentral.ConsumerAuth.Entra;
 
-public class ApiKeyClientAuthProvider : IAICentralClientAuthStep
+public class EntraClientAuthProvider : IConsumerAuthStep
 {
     public Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
-        IAICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
+        IAICentralPipelineExecutor pipeline,
+        CancellationToken cancellationToken)
     {
         return pipeline.Next(context, aiCallInformation, cancellationToken);
     }

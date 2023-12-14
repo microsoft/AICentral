@@ -10,14 +10,14 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Endpoints;
 
-public class AICentralEndpointDispatcher : IAICentralEndpointDispatcher
+public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 {
     private string EndpointName { get; }
     private readonly string _id;
     private readonly IEndpointRequestResponseHandler _endpointDispatcher;
     private static readonly HttpResponseMessage RateLimitedFakeResponse = new(HttpStatusCode.TooManyRequests);
 
-    public AICentralEndpointDispatcher(IEndpointRequestResponseHandler endpointDispatcher)
+    public DownstreamEndpointDispatcher(IEndpointRequestResponseHandler endpointDispatcher)
     {
         EndpointName = endpointDispatcher.EndpointName;
         _id = endpointDispatcher.Id;
@@ -31,8 +31,8 @@ public class AICentralEndpointDispatcher : IAICentralEndpointDispatcher
         IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<AICentralEndpointDispatcher>>();
-        var rateLimitingTracker = context.RequestServices.GetRequiredService<InMemoryRateLimitingTracker>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<DownstreamEndpointDispatcher>>();
+        var rateLimitingTracker = context.RequestServices.GetRequiredService<DownstreamEndpointRateLimitingTracker>();
         var dateTimeProvider = context.RequestServices.GetRequiredService<IDateTimeProvider>();
         var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
 

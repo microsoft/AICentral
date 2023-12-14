@@ -1,4 +1,4 @@
-﻿namespace AICentral.Auth.ApiKey;
+﻿namespace AICentral.ConsumerAuth.ApiKey;
 
 public class ApiKeyClientAuthConfig
 {

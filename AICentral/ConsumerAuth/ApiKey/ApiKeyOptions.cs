@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 
-namespace AICentral.Auth.ApiKey;
+namespace AICentral.ConsumerAuth.ApiKey;
 
 internal class ApiKeyOptions : AuthenticationSchemeOptions
 {

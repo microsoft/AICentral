@@ -30,7 +30,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
 
             services.PostConfigure<AICentralConfig>(cfg => cfg.EnableDiagnosticsHeaders = true);
 
-            services.Remove(services.Single(x => x.ServiceType == typeof(AICentralPipelines)));
+            services.Remove(services.Single(x => x.ServiceType == typeof(ConfiguredPipelines)));
 
             var pipelines = new[]
             {

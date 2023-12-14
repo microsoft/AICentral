@@ -1,8 +1,8 @@
 ﻿using AICentral.Core;
 
-namespace AICentral.Auth.ApiKey;
+namespace AICentral.ConsumerAuth.ApiKey;
 
-public class ApiKeyClientAuthFactory : IAICentralClientAuthFactory
+public class ApiKeyClientAuthFactory : IConsumerAuthFactory
 {
     private readonly ApiKeyClientAuthConfig _config;
     private readonly string _policyId = Guid.NewGuid().ToString();
@@ -29,12 +29,12 @@ public class ApiKeyClientAuthFactory : IAICentralClientAuthFactory
                 .AddAuthenticationSchemes(schemeName));
     }
 
-    public IAICentralClientAuthStep Build()
+    public IConsumerAuthStep Build()
     {
         return _singleton.Value;
     }
 
-    public static IAICentralClientAuthFactory BuildFromConfig(
+    public static IConsumerAuthFactory BuildFromConfig(
         ILogger logger, 
         AICentralTypeAndNameConfig config)
     {

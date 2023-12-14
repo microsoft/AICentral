@@ -1,10 +1,10 @@
 ﻿namespace AICentral;
 
-public class AICentralPipelines
+public class ConfiguredPipelines
 {
-    private readonly AICentralPipeline[] _pipelines;
+    private readonly Pipeline[] _pipelines;
 
-    public AICentralPipelines(AICentralPipeline[] pipelines)
+    public ConfiguredPipelines(Pipeline[] pipelines)
     {
         _pipelines = pipelines;
     }

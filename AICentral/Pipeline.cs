@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using AICentral.Auth;
+using AICentral.ConsumerAuth;
 using AICentral.Core;
 using AICentral.EndpointSelectors;
 using AICentral.Routes;
@@ -13,21 +13,21 @@ namespace AICentral;
 /// It's a stateless class which emits telemetry, but the main work of executing steps is performed by the
 /// AICentralPipelineExecutor class. An instance of AICentralPipelineExecutor is created to encapsulate each request to OpenAI.
 /// </summary>
-public class AICentralPipeline
+public class Pipeline
 {
     private readonly string _name;
     private readonly HeaderMatchRouter _router;
-    private readonly IAICentralClientAuthFactory _clientAuthStep;
+    private readonly IConsumerAuthFactory _clientAuthStep;
     private readonly IList<IAICentralGenericStepFactory> _pipelineSteps;
     private readonly IAICentralEndpointSelectorFactory _endpointSelector;
 
     private static readonly Histogram<int> TokenMeter =
         AICentralActivitySource.AICentralMeter.CreateHistogram<int>("aicentral.tokens.sum", "tokens");
 
-    public AICentralPipeline(
+    public Pipeline(
         string name,
         HeaderMatchRouter router,
-        IAICentralClientAuthFactory clientAuthStep,
+        IConsumerAuthFactory clientAuthStep,
         IAICentralGenericStepFactory[] pipelineSteps,
         IAICentralEndpointSelectorFactory endpointSelector)
     {
@@ -54,7 +54,7 @@ public class AICentralPipeline
         // Create a new Activity scoped to the method
         using var activity = AICentralActivitySource.AICentralRequestActivitySource.StartActivity("AICentalRequest");
 
-        var logger = context.RequestServices.GetRequiredService<ILogger<AICentralPipeline>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<Pipeline>>();
         using var scope = logger.BeginScope(new
         {
             TraceId = Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString()
@@ -72,7 +72,7 @@ public class AICentralPipeline
 
         var endpointSelector = FindEndpointSelectorOrAffinityServer(requestDetails);
 
-        using var executor = new AICentralPipelineExecutor(_pipelineSteps.Select(x => x.Build()), endpointSelector);
+        using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build()), endpointSelector);
         AICentralActivitySources.RecordCounter(_name, "requests", "{requests}", 1);
         try
         {

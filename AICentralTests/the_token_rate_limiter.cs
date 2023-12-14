@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using AICentralTests.TestHelpers;
+using AICentralWeb;
 using Newtonsoft.Json;
 using Shouldly;
 using Xunit.Abstractions;

@@ -5,13 +5,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral;
 
-public class AICentralPipelineExecutor : IAICentralPipelineExecutor, IAICentralResponseGenerator, IDisposable
+public class PipelineExecutor : IAICentralPipelineExecutor, IAICentralResponseGenerator, IDisposable
 {
     private readonly IAICentralEndpointSelector _iaiCentralEndpointSelector;
     private readonly IEnumerator<IAICentralPipelineStep> _pipelineEnumerator;
     private readonly IList<IAICentralPipelineStep> _outputHandlers = new List<IAICentralPipelineStep>();
 
-    public AICentralPipelineExecutor(
+    public PipelineExecutor(
         IEnumerable<IAICentralPipelineStep> steps,
         IAICentralEndpointSelector iaiCentralEndpointSelector)
     {
@@ -69,7 +69,7 @@ public class AICentralPipelineExecutor : IAICentralPipelineExecutor, IAICentralR
         Dictionary<string, StringValues> sanitisedResponseHeaders, 
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<AICentralPipelineExecutor>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<PipelineExecutor>>();
 
         //decision point... If this is a streaming request, then we should start streaming the result now.
         logger.LogDebug("Received Azure Open AI Response. Status Code: {StatusCode}", openAiResponse.StatusCode);

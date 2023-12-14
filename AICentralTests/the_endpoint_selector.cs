@@ -5,6 +5,7 @@ using AICentral.Configuration;
 using AICentral.Core;
 using AICentral.OpenAI.AzureOpenAI;
 using AICentralTests.TestHelpers;
+using AICentralWeb;
 using ApprovalTests;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -98,7 +99,7 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
         host.Services.AddAICentral(host.Configuration);
         var app = host.Build();
 
-        var pipelines = app.Services.GetRequiredService<AICentralPipelines>();
+        var pipelines = app.Services.GetRequiredService<ConfiguredPipelines>();
         var pipeline = JsonConvert.SerializeObject(pipelines.WriteDebug(), Formatting.Indented);
         Approvals.VerifyJson(pipeline);
     }

@@ -4,12 +4,12 @@ using AICentral.Core;
 
 namespace AICentral.Endpoints;
 
-public class InMemoryRateLimitingTracker
+internal class DownstreamEndpointRateLimitingTracker
 {
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ConcurrentDictionary<string, DateTimeOffset> _rateLimiters = new();
 
-    public InMemoryRateLimitingTracker(IDateTimeProvider dateTimeProvider)
+    public DownstreamEndpointRateLimitingTracker(IDateTimeProvider dateTimeProvider)
     {
         _dateTimeProvider = dateTimeProvider;
     }

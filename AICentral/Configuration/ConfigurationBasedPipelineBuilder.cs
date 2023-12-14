@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using AICentral.Auth;
+using AICentral.ConsumerAuth;
 using AICentral.Core;
 using AICentral.Endpoints;
 using AICentral.EndpointSelectors;
@@ -29,10 +29,10 @@ public class ConfigurationBasedPipelineBuilder
         _genericStepBuilders = new();
 
     private readonly
-        Dictionary<string, Func<ILogger, AICentralTypeAndNameConfig, IAICentralClientAuthFactory>>
+        Dictionary<string, Func<ILogger, AICentralTypeAndNameConfig, IConsumerAuthFactory>>
         _authProviderBuilders = new();
 
-    private void RegisterAuthProvider<T>() where T : IAICentralClientAuthFactory =>
+    private void RegisterAuthProvider<T>() where T : IConsumerAuthFactory =>
         _authProviderBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
     private void RegisterEndpoint<T>() where T : IEndpointRequestResponseHandlerFactory =>
@@ -55,7 +55,7 @@ public class ConfigurationBasedPipelineBuilder
         RegisterBuilders<IEndpointRequestResponseHandlerFactory>(additionalAssembliesToScan, nameof(RegisterEndpoint));
         RegisterBuilders<IAICentralGenericStepFactory>(additionalAssembliesToScan,
             nameof(RegisterGenericStep));
-        RegisterBuilders<IAICentralClientAuthFactory>(additionalAssembliesToScan, nameof(RegisterAuthProvider));
+        RegisterBuilders<IConsumerAuthFactory>(additionalAssembliesToScan, nameof(RegisterAuthProvider));
 
         var endpoints =
             configuration
@@ -65,7 +65,7 @@ public class ConfigurationBasedPipelineBuilder
                     x =>
                     {
                         startupLogger.LogInformation("Configuring Endpoint {Name}", x.Name);
-                        return (IAICentralEndpointDispatcherFactory)new AICentralEndpointDispatcherFactory(
+                        return (IAICentralEndpointDispatcherFactory)new DownstreamEndpointDispatcherFactory(
                             _endpointConfigurationBuilders[
                                 Guard.NotNull(x.Type, "Type") ??
                                 throw new ArgumentException("No Type specified for Endpoint")](

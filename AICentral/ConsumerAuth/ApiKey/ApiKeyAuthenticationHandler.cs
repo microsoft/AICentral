@@ -3,7 +3,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 
-namespace AICentral.Auth.ApiKey;
+namespace AICentral.ConsumerAuth.ApiKey;
 
 internal class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyOptions>
 {

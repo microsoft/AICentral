@@ -1,15 +1,15 @@
 ﻿using AICentral.Core;
 
-namespace AICentral.Auth.AllowAnonymous;
+namespace AICentral.ConsumerAuth.AllowAnonymous;
 
-public class AllowAnonymousClientAuthFactory: IAICentralClientAuthFactory
+public class AllowAnonymousClientAuthFactory: IConsumerAuthFactory
 {
    
     public void RegisterServices(IServiceCollection services)
     {
     }
 
-    public IAICentralClientAuthStep Build()
+    public IConsumerAuthStep Build()
     {
         return AllowAnonymousClientAuthProvider.Instance;
     }
@@ -24,7 +24,7 @@ public class AllowAnonymousClientAuthFactory: IAICentralClientAuthFactory
         //No-op
     }
 
-    public static IAICentralClientAuthFactory BuildFromConfig(ILogger logger, AICentralTypeAndNameConfig config)
+    public static IConsumerAuthFactory BuildFromConfig(ILogger logger, AICentralTypeAndNameConfig config)
     {
         return new AllowAnonymousClientAuthFactory();
     }

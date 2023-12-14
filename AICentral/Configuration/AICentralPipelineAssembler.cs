@@ -1,4 +1,4 @@
-﻿using AICentral.Auth;
+﻿using AICentral.ConsumerAuth;
 using AICentral.Core;
 using AICentral.Endpoints;
 using AICentral.Routes;
@@ -12,7 +12,7 @@ namespace AICentral.Configuration;
 public class AICentralPipelineAssembler
 {
     private readonly Func<string, HeaderMatchRouter> _routeBuilder;
-    private readonly Dictionary<string, IAICentralClientAuthFactory> _authProviders;
+    private readonly Dictionary<string, IConsumerAuthFactory> _authProviders;
     private readonly Dictionary<string, IAICentralEndpointDispatcherFactory> _endpoints;
     private readonly Dictionary<string, IAICentralEndpointSelectorFactory> _endpointSelectors;
     private readonly Dictionary<string, IAICentralGenericStepFactory> _genericSteps;
@@ -22,7 +22,7 @@ public class AICentralPipelineAssembler
 
     public AICentralPipelineAssembler(
         Func<string, HeaderMatchRouter> routeBuilder,
-        Dictionary<string, IAICentralClientAuthFactory> authProviders,
+        Dictionary<string, IConsumerAuthFactory> authProviders,
         Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints,
         Dictionary<string, IAICentralEndpointSelectorFactory> endpointSelectors,
         Dictionary<string, IAICentralGenericStepFactory> genericSteps,
@@ -36,7 +36,7 @@ public class AICentralPipelineAssembler
         _pipelines = pipelines;
     }
 
-    public AICentralPipelines AddServices(
+    public ConfiguredPipelines AddServices(
         IServiceCollection services,
         HttpMessageHandler? optionalHandler,
         ILogger startupLogger)
@@ -44,7 +44,7 @@ public class AICentralPipelineAssembler
         _servicesAdded = _servicesAdded ? throw new InvalidOperationException("AICentral is already built") : true;
 
         services.AddSingleton<DateTimeProvider>();
-        services.AddSingleton<InMemoryRateLimitingTracker>();
+        services.AddSingleton<DownstreamEndpointRateLimitingTracker>();
 
         foreach (var authProvider in _authProviders) authProvider.Value.RegisterServices(services);
         foreach (var endpoint in _endpoints) endpoint.Value.RegisterServices(optionalHandler, services);
@@ -59,13 +59,13 @@ public class AICentralPipelineAssembler
         return pipelines;
     }
 
-    private AICentralPipelines BuildPipelines(ILogger startupLogger)
+    private ConfiguredPipelines BuildPipelines(ILogger startupLogger)
     {
         if (!_servicesAdded)
             throw new InvalidOperationException(
                 "You must call AddServices on the Assembler before calling BuildPipelines.");
 
-        return new AICentralPipelines(
+        return new ConfiguredPipelines(
             _pipelines
                 .Select(pipelineConfig =>
                 {
@@ -81,7 +81,7 @@ public class AICentralPipelineAssembler
                     startupLogger.LogInformation("Configuring Pipeline {Name} on Host {Host}", pipelineConfig.Name,
                         pipelineConfig.Host);
 
-                    var pipeline = new AICentralPipeline(
+                    var pipeline = new Pipeline(
                         pipelineName,
                         routeBuilder,
                         _authProviders.ContainsKey(pipelineConfig.AuthProvider ??
