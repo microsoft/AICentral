@@ -5,6 +5,7 @@ public enum AICallType
     Chat,
     Completions,
     Embeddings,
+    DALLE3,
 
     //supported when we do a direct pass through. This is only allowed if we have the 
     //same service type on both ends, e.g. Listen for Azure Open AI requests, and proxy to Azure Open AI

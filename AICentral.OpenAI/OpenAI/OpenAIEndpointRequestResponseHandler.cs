@@ -7,13 +7,13 @@ using Newtonsoft.Json.Linq;
 
 namespace AICentral.OpenAI.OpenAI;
 
-public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
+public class OpenAIEndpointRequestResponseHandler : OpenAILikeEndpointRequestResponseHandler
 {
     internal const string OpenAIV1 = "https://api.openai.com";
     private readonly string? _organization;
     private readonly string _apiKey;
 
-    public OpenAIEndpointDispatcher(string id,
+    public OpenAIEndpointRequestResponseHandler(string id,
         string endpointName,
         Dictionary<string, string> modelMappings,
         string apiKey,
@@ -23,8 +23,9 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         _apiKey = apiKey;
     }
 
-    protected override Task ExtractDiagnostics(IncomingCallDetails incomingCallDetails,
-        HttpRequestMessage downstreamRequest,
+    protected override Task ExtractDiagnostics(
+        HttpContext context,
+        HttpRequestMessage downstreamRequest, 
         HttpResponseMessage openAiResponse)
     {
         return Task.CompletedTask;
@@ -78,7 +79,7 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
             _ => string.Empty
         };
 
-        var requestUri = aiCallInformation.IncomingCallDetails.AICallType == AICallType.Other
+        var requestUri = string.IsNullOrWhiteSpace(pathPiece)
             ? throw new InvalidOperationException(
                 "Unable to forward this request from an Azure Open AI request to Open AI")
             : $"{OpenAIV1}/v1/{pathPiece}";
@@ -92,7 +93,7 @@ public class OpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         return deepClone;
     }
 
-    protected override Dictionary<string, StringValues> SanitiseHeaders1(HttpContext context,
+    protected override Dictionary<string, StringValues> CustomSanitiseHeaders(HttpContext context,
         HttpResponseMessage openAiResponse)
     {
         return openAiResponse.Headers.ToDictionary(x => x.Key, x => new StringValues(x.Value.ToArray()));

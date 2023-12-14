@@ -7,9 +7,9 @@ namespace AICentral.OpenAI.AzureOpenAI;
 public class AzureOpenAIEndpointRequestResponseHandlerFactory : IEndpointRequestResponseHandlerFactory
 {
     private readonly IEndpointAuthorisationHandler _authHandler;
+    private readonly string _endpointName;
     private readonly string _languageUrl;
     private readonly Dictionary<string, string> _modelMappings;
-    private readonly Lazy<IEndpointRequestResponseHandler> _endpointDispatcher;
     private readonly string _id;
     private readonly int? _maxConcurrency;
     
@@ -23,6 +23,7 @@ public class AzureOpenAIEndpointRequestResponseHandlerFactory : IEndpointRequest
     {
         _id = Guid.NewGuid().ToString();
 
+        _endpointName = endpointName;
         _languageUrl = languageUrl;
         _modelMappings = modelMappings;
         _maxConcurrency = maxConcurrency;
@@ -37,8 +38,6 @@ public class AzureOpenAIEndpointRequestResponseHandlerFactory : IEndpointRequest
             _ => throw new ArgumentOutOfRangeException(nameof(authenticationType), authenticationType, null)
         };
 
-        _endpointDispatcher = new Lazy<IEndpointRequestResponseHandler>(() =>
-            new AzureOpenAIEndpointDispatcher(_id, _languageUrl, endpointName, _modelMappings, _authHandler));
     }
 
     public void RegisterServices(HttpMessageHandler? httpMessageHandler, IServiceCollection services)
@@ -54,7 +53,7 @@ public class AzureOpenAIEndpointRequestResponseHandlerFactory : IEndpointRequest
         ILogger logger,
         AICentralTypeAndNameConfig config)
     {
-        var properties = config.TypedProperties<AICentralPipelineAzureOpenAIEndpointPropertiesConfig>();
+        var properties = config.TypedProperties<AzureOpenAIEndpointPropertiesConfig>();
         
         Guard.NotNull(properties, "Properties");
 
@@ -88,7 +87,7 @@ public class AzureOpenAIEndpointRequestResponseHandlerFactory : IEndpointRequest
 
     public IEndpointRequestResponseHandler Build()
     {
-        return _endpointDispatcher.Value;
+        return new AzureOpenAIEndpointRequestResponseHandler(_id, _languageUrl, _endpointName, _modelMappings, _authHandler);
     }
 
     public object WriteDebug()

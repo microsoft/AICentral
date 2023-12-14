@@ -8,13 +8,13 @@ using Newtonsoft.Json.Linq;
 
 namespace AICentral.OpenAI.AzureOpenAI;
 
-public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
+public class AzureOpenAIEndpointRequestResponseHandler : OpenAILikeEndpointRequestResponseHandler
 {
     private static readonly string[] HeaderPrefixesToCopy = { "x-", "apim", "operation-location" };
     private readonly string _languageUrl;
     private readonly IEndpointAuthorisationHandler _authHandler;
 
-    public AzureOpenAIEndpointDispatcher(
+    public AzureOpenAIEndpointRequestResponseHandler(
         string id,
         string languageUrl,
         string endpointName,
@@ -26,7 +26,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
     }
 
     protected override Task ExtractDiagnostics(
-        IncomingCallDetails incomingCallDetails,
+        HttpContext context,
         HttpRequestMessage downstreamRequest,
         HttpResponseMessage openAiResponse)
     {
@@ -36,7 +36,10 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
             openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-tokens", out var remainingTokens);
 
         var hostName = downstreamRequest.RequestUri!.Host.ToLowerInvariant();
-        var modelName = "TODO"; //TODO mappedModelName.ToLowerInvariant();
+        var modelName = context.Items.TryGetValue(HttpItemBagMappedModelName, out var stored)
+            ? (string)stored!
+            : string.Empty;
+
         if (hasRemainingRequests)
         {
             if (long.TryParse(remainingRequests?.FirstOrDefault(), out var val))
@@ -63,11 +66,20 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
     {
         if (aiCallInformation.IncomingCallDetails.RequestContent != null)
         {
-            newRequest.Content =
-                new StringContent(
-                    RemoveModelParameterFromRequest(aiCallInformation.IncomingCallDetails.RequestContent)
+            if (aiCallInformation.IncomingCallDetails.AICallType == AICallType.DALLE3 &&
+                aiCallInformation.IncomingCallDetails.IncomingModelName != newModelName)
+            {
+                newRequest.Content = new StringContent(
+                    AdjustDalle3ModelName(newModelName, aiCallInformation.IncomingCallDetails.RequestContent.DeepClone())
                         .ToString(Formatting.None),
                     Encoding.UTF8, "application/json");
+            }
+            else
+            {
+                newRequest.Content = new StringContent(
+                    aiCallInformation.IncomingCallDetails.RequestContent.ToString(Formatting.None),
+                    Encoding.UTF8, "application/json");
+            }
         }
         else
         {
@@ -78,20 +90,26 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         return Task.CompletedTask;
     }
 
-    private static JObject RemoveModelParameterFromRequest(JObject incomingContent)
+    /// <summary>
+    /// DALL-E 3 puts the model name in the URL as-well as the body. So to map models, we need to adjust the body.
+    /// </summary>
+    /// <param name="newModelName"></param>
+    /// <param name="deepClone"></param>
+    /// <returns></returns>
+    private JToken AdjustDalle3ModelName(string? newModelName, JToken deepClone)
     {
-        if (incomingContent["model"] != null)
-        {
-            var clone = (JObject)incomingContent.DeepClone();
-            clone["model"]!.Parent!.Remove();
-            ;
-            return clone;
-        }
-
-        return incomingContent;
+        deepClone["model"] = newModelName;
+        return deepClone;
     }
 
-    protected override Dictionary<string, StringValues> SanitiseHeaders1(HttpContext context,
+    /// <summary>
+    /// Azure Open AI uses an async pattern for actions like image generation. We need to tweak the operation-location
+    /// header else the request to look for the status won't work. 
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="openAiResponse"></param>
+    /// <returns></returns>
+    protected override Dictionary<string, StringValues> CustomSanitiseHeaders(HttpContext context,
         HttpResponseMessage openAiResponse)
     {
         var proxiedHeaders = new Dictionary<string, StringValues>();
@@ -131,7 +149,9 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
         return QueryHelpers.AddQueryString(builder.ToString(), queryParts);
     }
 
-    protected override string BuildUri(HttpContext context, AICallInformation aiCallInformation,
+    protected override string BuildUri(
+        HttpContext context,
+        AICallInformation aiCallInformation,
         string? mappedModelName)
     {
         aiCallInformation.QueryString.TryAdd("api-version", "2023-05-15");
@@ -141,6 +161,7 @@ public class AzureOpenAIEndpointDispatcher : OpenAILikeEndpointDispatcher
             AICallType.Chat => "chat/completions",
             AICallType.Completions => "completions",
             AICallType.Embeddings => "embeddings",
+            AICallType.DALLE3 => "images/generations",
             _ => string.Empty
         };
 

@@ -42,7 +42,7 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
                         {
                             Type = "AzureOpenAIEndpoint",
                             Name = "test-endpoint",
-                            Properties = new AICentralPipelineAzureOpenAIEndpointPropertiesConfig()
+                            Properties = new AzureOpenAIEndpointPropertiesConfig()
                             {
                                 ApiKey = "1234",
                                 LanguageEndpoint = "https://somehere.com",
@@ -118,7 +118,7 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
                         {
                             Type = "AzureOpenAIEndpoint",
                             Name = "test-endpoint",
-                            Properties = new AICentralPipelineAzureOpenAIEndpointPropertiesConfig()
+                            Properties = new AzureOpenAIEndpointPropertiesConfig()
                             {
                                 ApiKey = "1234",
                                 LanguageEndpoint = "https://somehere.com",

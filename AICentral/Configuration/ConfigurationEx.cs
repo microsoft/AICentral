@@ -30,7 +30,7 @@ public static class ConfigurationEx
                 typedConfig,
                 logger,
                 additionalComponentAssemblies.Concat(new[]
-                        { typeof(AzureOpenAIEndpointDispatcher).Assembly, typeof(AICentralPipelineAssembler).Assembly })
+                        { typeof(AzureOpenAIEndpointRequestResponseHandler).Assembly, typeof(AICentralPipelineAssembler).Assembly })
                     .ToArray());
 
         configurationPipelineBuilder.AddServices(services, typedConfig.HttpMessageHandler, logger);

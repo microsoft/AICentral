@@ -4,12 +4,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.OpenAI;
 
-public abstract class OpenAILikeEndpointDispatcher : IEndpointRequestResponseHandler
+public abstract class OpenAILikeEndpointRequestResponseHandler : IEndpointRequestResponseHandler
 {
     private readonly Dictionary<string, string> _modelMappings;
     private static readonly HashSet<string> HeadersToIgnore = new(new[] { "host", "authorization", "api-key" });
+    protected const string HttpItemBagMappedModelName = "openailikeendpointdispatcher_mappedmodelname";
 
-    protected OpenAILikeEndpointDispatcher(
+    protected OpenAILikeEndpointRequestResponseHandler(
         string id,
         string baseUrl,
         string endpointName,
@@ -24,19 +25,14 @@ public abstract class OpenAILikeEndpointDispatcher : IEndpointRequestResponseHan
     /// <summary>
     /// Opportunity to pull specific diagnostics and, for example, raise your own telemetry events.
     /// </summary>
-    /// <param name="incomingCallDetails"></param>
+    /// <param name="context"></param>
     /// <param name="downstreamRequest"></param>
     /// <param name="openAiResponse"></param>
     /// <returns></returns>
     protected abstract Task ExtractDiagnostics(
-        IncomingCallDetails incomingCallDetails,
+        HttpContext context,
         HttpRequestMessage downstreamRequest,
         HttpResponseMessage openAiResponse);
-
-    public bool IsAffinityRequestToMe(string affinityHeaderValue)
-    {
-        return EndpointName == affinityHeaderValue;
-    }
 
     private static bool MappedModelFoundAsEmptyString(AICallInformation callInformation, string mappedModelName)
     {
@@ -87,6 +83,9 @@ public abstract class OpenAILikeEndpointDispatcher : IEndpointRequestResponseHan
 
         try
         {
+            //If we are retrying an endpoint then we might already have the mapped model name in
+            if (context.Items.ContainsKey(HttpItemBagMappedModelName)) context.Items.Remove(HttpItemBagMappedModelName);
+            context.Items.Add(HttpItemBagMappedModelName, mappedModelName);
             return new Either<HttpRequestMessage, IResult>(await BuildNewRequest(context, callInformation, mappedModelName));
         }
         catch (InvalidOperationException ie)
@@ -95,17 +94,18 @@ public abstract class OpenAILikeEndpointDispatcher : IEndpointRequestResponseHan
         }
     }
 
-    public async Task HandleResponse(IncomingCallDetails callInformationIncomingCallDetails, HttpRequestMessage newRequest,
+    public Task PreProcessResponse(IncomingCallDetails callInformationIncomingCallDetails,
+        HttpContext context,
+        HttpRequestMessage newRequest,
         HttpResponseMessage openAiResponse)
     {
-        await ExtractDiagnostics(callInformationIncomingCallDetails, newRequest, openAiResponse);
+        return ExtractDiagnostics(context, newRequest, openAiResponse);
     }
 
     public Dictionary<string, StringValues> SanitiseHeaders(HttpContext context, HttpResponseMessage openAiResponse)
     {
-        return SanitiseHeaders1(context, openAiResponse);
+        return CustomSanitiseHeaders(context, openAiResponse);
     }
     
-    protected abstract Dictionary<string, StringValues> SanitiseHeaders1(HttpContext context,
-        HttpResponseMessage openAiResponse);
+    protected abstract Dictionary<string, StringValues> CustomSanitiseHeaders(HttpContext context, HttpResponseMessage openAiResponse);
 }

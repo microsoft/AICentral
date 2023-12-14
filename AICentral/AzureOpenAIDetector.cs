@@ -30,6 +30,7 @@ public class AzureOpenAIDetector
             "chat" => AICallType.Chat,
             "completions" => AICallType.Completions,
             "embeddings" => AICallType.Embeddings,
+            "images" => remaining[1] == "deployments" ? AICallType.DALLE3 : AICallType.Other,
             _ => AICallType.Other
         };
 
@@ -50,6 +51,7 @@ public class AzureOpenAIDetector
                 requestContent["messages"]?.Select(x => x.Value<string>("content")) ??
                 Array.Empty<string>()),
             AICallType.Embeddings => requestContent.Value<string>("input") ?? string.Empty,
+            AICallType.DALLE3 => requestContent.Value<string>("prompt") ?? string.Empty,
             AICallType.Completions => string.Join(Environment.NewLine,
                 requestContent["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
             _ => throw new ArgumentOutOfRangeException()

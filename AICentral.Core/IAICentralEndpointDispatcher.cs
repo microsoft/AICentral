@@ -30,7 +30,8 @@ public interface IEndpointRequestResponseHandler
 
     Task<Either<HttpRequestMessage, IResult>> BuildRequest(AICallInformation incomingCall, HttpContext context);
 
-    Task HandleResponse(IncomingCallDetails callInformationIncomingCallDetails, HttpRequestMessage newRequest,
+    Task PreProcessResponse(IncomingCallDetails callInformationIncomingCallDetails, HttpContext context,
+        HttpRequestMessage newRequest,
         HttpResponseMessage openAiResponse);
 
     Dictionary<string, StringValues> SanitiseHeaders(HttpContext context, HttpResponseMessage openAiResponse);

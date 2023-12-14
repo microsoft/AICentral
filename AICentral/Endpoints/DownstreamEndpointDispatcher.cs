@@ -109,7 +109,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             openAiResponse.EnsureSuccessStatusCode();
         }
 
-        await _endpointDispatcher.HandleResponse(callInformation.IncomingCallDetails, newRequest, openAiResponse);
+        await _endpointDispatcher.PreProcessResponse(callInformation.IncomingCallDetails, context, newRequest, openAiResponse);
 
         return await responseGenerator.BuildResponse(
             new DownstreamRequestInformation(

@@ -1,6 +1,6 @@
 ﻿namespace AICentral.OpenAI.AzureOpenAI;
 
-public class AICentralPipelineAzureOpenAIEndpointPropertiesConfig
+public class AzureOpenAIEndpointPropertiesConfig
 {
     public string? LanguageEndpoint { get; init; }
     public Dictionary<string, string>? ModelMappings { get; init; }

@@ -53,8 +53,7 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
-    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel,
-        int? maxConcurrency = null)
+    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel)
     {
         var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointRequestResponseHandlerFactory(
             hostname,

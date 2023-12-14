@@ -49,7 +49,7 @@ public class AICentralFakeResponses
                 },
             })
             , Encoding.UTF8, "application/json");
-        
+
         response.Headers.Add("x-ratelimit-remaining-requests", "12");
         response.Headers.Add("x-ratelimit-remaining-tokens", "234");
 
@@ -106,6 +106,32 @@ public class AICentralFakeResponses
         response.Content = new StringContent(
             JsonConvert.SerializeObject(new
             {
+                id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
+                status = "notRunning",
+            })
+            , Encoding.UTF8, "application/json");
+
+        return response;
+    }
+
+    public static HttpResponseMessage FakeAzureOpenAIDALLE3ImageResponse()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK);
+        response.Headers.Add("operation-location",
+            $"https://{Endpoint200}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview");
+        response.Content = new StringContent(
+            JsonConvert.SerializeObject(new
+            {
+                created = 1702525301,
+                data = new[]
+                {
+                    new
+                    {
+                        revised_prompt =
+                            "A middle-aged computer programmer of ambiguous descent, typing code into a laptop in a spacious, brightly lit living room. Regardless of gender, they bear a somewhat weary look reflecting their extensive experience in their profession. Their room is illuminated by the warm sunbeams filtering through the window.",
+                        url = "https://somewhere-else.com"
+                    }
+                },
                 id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
                 status = "notRunning",
             })
@@ -189,7 +215,7 @@ public class AICentralFakeResponses
             _knownContentLines = knownContent.ReplaceLineEndings("\n").Split("\n");
             //_length = Encoding.UTF8.GetBytes(knownContent).LongLength;
         }
-        
+
         protected override async Task SerializeToStreamAsync(Stream stream, TransportContext? context)
         {
             var newLine = Encoding.UTF8.GetBytes("\n");

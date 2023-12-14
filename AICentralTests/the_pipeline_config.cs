@@ -28,7 +28,7 @@ public class the_pipeline_config
                         {
                             Type = "AzureOpenAIEndpoint",
                             Name = "test-endpoint",
-                            Properties = new AICentralPipelineAzureOpenAIEndpointPropertiesConfig()
+                            Properties = new AzureOpenAIEndpointPropertiesConfig()
                             {
                                 ApiKey = "1234",
                                 AuthenticationType = "ApiKey",
