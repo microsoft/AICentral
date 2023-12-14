@@ -256,8 +256,12 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     }
 
     [Fact]
-    public Task will_not_forward_dalle3_requests_to_openai()
+    public async Task will_forward_dalle3_requests_to_openai()
     {
+        _factory.Seed($"https://api.openai.com/v1/images/generations",
+            () => Task.FromResult(AICentralFakeResponses.FakeOpenAIDALLE3ImageResponse()));
+
+
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-openai.localtest.me"),
             new AzureKeyCredential("ignore"),
@@ -267,11 +271,13 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
                 Transport = new HttpClientTransport(_httpClient),
             });
 
-        return Should.ThrowAsync<RequestFailedException>(async () => await client.GetImageGenerationsAsync(
+        var result = await client.GetImageGenerationsAsync(
             new ImageGenerationOptions()
             {
                 Prompt = "Me building an Open AI Reverse Proxy",
                 DeploymentName = "openaimodel"
-            }));
+            });
+        
+        result.Value.Data.Count.ShouldBe(1);
     }
 }

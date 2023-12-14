@@ -117,8 +117,6 @@ public class AICentralFakeResponses
     public static HttpResponseMessage FakeAzureOpenAIDALLE3ImageResponse()
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK);
-        response.Headers.Add("operation-location",
-            $"https://{Endpoint200}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview");
         response.Content = new StringContent(
             JsonConvert.SerializeObject(new
             {
@@ -134,6 +132,27 @@ public class AICentralFakeResponses
                 },
                 id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
                 status = "notRunning",
+            })
+            , Encoding.UTF8, "application/json");
+
+        return response;
+    }
+
+
+    public static HttpResponseMessage FakeOpenAIDALLE3ImageResponse()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK);
+        response.Content = new StringContent(
+            JsonConvert.SerializeObject(new
+            {
+                created = 1702525301,
+                data = new[]
+                {
+                    new
+                    {
+                        url = "https://somewhere-else.com"
+                    }
+                }
             })
             , Encoding.UTF8, "application/json");
 

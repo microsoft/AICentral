@@ -76,6 +76,7 @@ public class OpenAIEndpointRequestResponseHandler : OpenAILikeEndpointRequestRes
             AICallType.Chat => "chat/completions",
             AICallType.Completions => "completions",
             AICallType.Embeddings => "embeddings",
+            AICallType.DALLE3 => "images/generations",
             _ => string.Empty
         };
 
