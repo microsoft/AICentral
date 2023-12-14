@@ -325,8 +325,11 @@ A pipeline can run multiple steps. We currently provide steps for:
         "Name": "token-rate-limiter",
         "Properties": {
           "LimitType": "PerConsumer|PerAICentralEndpoint",
-          "Window": 10,
-          "PermitLimit": 100
+          "MetricType": "Tokens",
+          "Options": {
+            "Window": 10,
+            "PermitLimit": 100
+          }
         }
       },
       {
@@ -334,6 +337,7 @@ A pipeline can run multiple steps. We currently provide steps for:
         "Name": "window-rate-limiter",
         "Properties": {
           "LimitType": "PerConsumer|PerAICentralEndpoint",
+          "MetricType": "Requests",
           "Options": {
             "Window": 10,
             "PermitLimit": 100

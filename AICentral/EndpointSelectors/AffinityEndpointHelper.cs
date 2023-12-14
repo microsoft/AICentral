@@ -1,5 +1,4 @@
 ﻿using AICentral.Core;
-using AICentral.Endpoints.OpenAILike.AzureOpenAI;
 using AICentral.EndpointSelectors.Single;
 
 namespace AICentral.EndpointSelectors;
@@ -20,7 +19,7 @@ public class AffinityEndpointHelper
     {
         if (callInformation.IncomingCallDetails.AICallType == AICallType.Other)
         {
-            if (callInformation.QueryString.TryGetValue(AzureOpenAIEndpointDispatcher.AzureOpenAIHostAffinityHeader,
+            if (callInformation.QueryString.TryGetValue(AICentralHeaders.AzureOpenAIHostAffinityHeader,
                     out var affinityHeader))
             {
                 if (affinityHeader.Count == 1)

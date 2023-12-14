@@ -174,6 +174,7 @@ This pipeline will:
         "Name": "window-rate-limiter",
         "Properties": {
           "LimitType": "PerConsumer|PerAICentralEndpoint",
+          "MetricType": "Requests",
           "Options": {
             "Window": 10,
             "PermitLimit": 100

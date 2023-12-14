@@ -1,34 +1,34 @@
 ﻿using System.Threading.RateLimiting;
-using AICentral;
-using AICentral.Auth;
-using AICentral.Auth.AllowAnonymous;
-using AICentral.Auth.ApiKey;
 using AICentral.BulkHead;
 using AICentral.Configuration;
+using AICentral.ConsumerAuth;
+using AICentral.ConsumerAuth.AllowAnonymous;
+using AICentral.ConsumerAuth.ApiKey;
 using AICentral.Core;
-using AICentral.Endpoints.OpenAILike.AzureOpenAI;
-using AICentral.Endpoints.OpenAILike.OpenAI;
+using AICentral.Endpoints;
 using AICentral.EndpointSelectors;
 using AICentral.EndpointSelectors.LowestLatency;
 using AICentral.EndpointSelectors.Priority;
 using AICentral.EndpointSelectors.Random;
 using AICentral.EndpointSelectors.Single;
+using AICentral.OpenAI.AzureOpenAI;
+using AICentral.OpenAI.OpenAI;
 using AICentral.RateLimiting;
 using AICentral.Routes;
+using FixedWindowRateLimiterOptions = AICentral.RateLimiting.FixedWindowRateLimiterOptions;
 
 namespace AICentralTests.TestHelpers;
 
 public class TestAICentralPipelineBuilder
 {
-    private IAICentralClientAuthFactory? _auth;
+    private IConsumerAuthFactory? _auth;
     private IAICentralEndpointSelectorFactory? _endpointFactory;
     private IAICentralEndpointDispatcherFactory[]? _openAiEndpointDispatcherBuilders;
     private int? _windowInSeconds;
     private int? _requestsPerWindow;
+    private int? _tokensPerWindow;
     private int? _allowedConcurrency;
     private RateLimitingLimitType? _fixedWindowLimitType;
-    private int? _tokenWindowSize;
-    private int? _tokensPerWindow;
     private RateLimitingLimitType? _tokenLimitType;
 
     public TestAICentralPipelineBuilder WithApiKeyAuth(params (string clientName, string key1, string key2)[] clients)
@@ -53,10 +53,9 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
-    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel,
-        int? maxConcurrency = null)
+    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel)
     {
-        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherFactory(
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointRequestResponseHandlerFactory(
             hostname,
             $"https://{hostname}",
             new Dictionary<string, string>()
@@ -66,8 +65,8 @@ public class TestAICentralPipelineBuilder
             "ApiKey",
             Guid.NewGuid().ToString());
 
-        _endpointFactory = new SingleEndpointSelectorFactory(openAiEndpointDispatcherBuilder);
-        _openAiEndpointDispatcherBuilders = new[] { openAiEndpointDispatcherBuilder };
+        _endpointFactory = new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
+        _openAiEndpointDispatcherBuilders = new[] { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
 
         return this;
     }
@@ -75,7 +74,7 @@ public class TestAICentralPipelineBuilder
 
     public TestAICentralPipelineBuilder WithSingleOpenAIEndpoint(string name, string model, string mappedModel)
     {
-        var openAiEndpointDispatcherBuilder = new OpenAIEndpointDispatcherFactory(
+        var openAiEndpointDispatcherBuilder = new OpenAIEndpointRequestResponseHandlerFactory(
             name,
             new Dictionary<string, string>()
             {
@@ -84,8 +83,8 @@ public class TestAICentralPipelineBuilder
             Guid.NewGuid().ToString(),
             Guid.NewGuid().ToString());
 
-        _endpointFactory = new SingleEndpointSelectorFactory(openAiEndpointDispatcherBuilder);
-        _openAiEndpointDispatcherBuilders = new[] { openAiEndpointDispatcherBuilder };
+        _endpointFactory = new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
+        _openAiEndpointDispatcherBuilders = new[] { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
 
         return this;
     }
@@ -96,29 +95,30 @@ public class TestAICentralPipelineBuilder
     )
     {
         IAICentralEndpointDispatcherFactory[] priorityOpenAIEndpointDispatcherBuilder = priorityEndpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherFactory(
+            new DownstreamEndpointDispatcherFactory(new AzureOpenAIEndpointRequestResponseHandlerFactory(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
                 "ApiKey",
-                Guid.NewGuid().ToString())).ToArray();
+                Guid.NewGuid().ToString()))).ToArray();
 
         IAICentralEndpointDispatcherFactory[] fallbackOpenAIEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherFactory(
+            new DownstreamEndpointDispatcherFactory(new AzureOpenAIEndpointRequestResponseHandlerFactory(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
                 "ApiKey",
-                Guid.NewGuid().ToString())).ToArray();
+                Guid.NewGuid().ToString()))).ToArray();
 
         _openAiEndpointDispatcherBuilders = priorityOpenAIEndpointDispatcherBuilder
             .Union(fallbackOpenAIEndpointDispatcherBuilder).ToArray();
 
-        _endpointFactory = new PriorityEndpointSelectorFactory(priorityOpenAIEndpointDispatcherBuilder,
+        _endpointFactory = new PriorityEndpointSelectorFactory(
+            priorityOpenAIEndpointDispatcherBuilder,
             fallbackOpenAIEndpointDispatcherBuilder);
 
         return this;
@@ -129,14 +129,14 @@ public class TestAICentralPipelineBuilder
         params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherFactory(
+            new DownstreamEndpointDispatcherFactory(new AzureOpenAIEndpointRequestResponseHandlerFactory(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
                 "ApiKey",
-                Guid.NewGuid().ToString())).ToArray();
+                Guid.NewGuid().ToString()))).ToArray();
 
         _endpointFactory = new RandomEndpointSelectorFactory(_openAiEndpointDispatcherBuilders!);
 
@@ -147,14 +147,14 @@ public class TestAICentralPipelineBuilder
         params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new AzureOpenAIEndpointDispatcherFactory(
+            new DownstreamEndpointDispatcherFactory(new AzureOpenAIEndpointRequestResponseHandlerFactory(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
                 "ApiKey",
-                Guid.NewGuid().ToString())).ToArray();
+                Guid.NewGuid().ToString()))).ToArray();
 
         _endpointFactory = new LowestLatencyEndpointSelectorFactory(_openAiEndpointDispatcherBuilders!);
         return this;
@@ -172,13 +172,13 @@ public class TestAICentralPipelineBuilder
         var genericSteps = new Dictionary<string, IAICentralGenericStepFactory>();
         var steps = new List<string>();
 
-        if (_windowInSeconds != null)
+        if (_windowInSeconds  != null && _requestsPerWindow != null)
         {
             var stepId = Guid.NewGuid().ToString();
-            genericSteps[stepId] = new FixedWindowRateLimitingProvider(new AICentralFixedWindowRateLimiterOptions()
+            genericSteps[stepId] = new FixedWindowRateLimitingProvider(new FixedWindowRateLimiterOptions()
             {
                 LimitType = _fixedWindowLimitType,
-                Options = new FixedWindowRateLimiterOptions()
+                Options = new System.Threading.RateLimiting.FixedWindowRateLimiterOptions()
                 {
                     Window = TimeSpan.FromSeconds(_windowInSeconds.Value),
                     PermitLimit = _requestsPerWindow!.Value
@@ -187,14 +187,18 @@ public class TestAICentralPipelineBuilder
             steps.Add(stepId);
         }
 
-        if (_tokenWindowSize != null)
+        if (_windowInSeconds  != null && _tokensPerWindow != null)
         {
             var stepId = Guid.NewGuid().ToString();
-            genericSteps[stepId] = new TokenBasedRateLimitingProvider(new TokenBasedRateLimiterOptions()
+            genericSteps[stepId] = new FixedWindowRateLimitingProvider(new FixedWindowRateLimiterOptions()
             {
                 LimitType = _tokenLimitType,
-                PermitLimit = _tokensPerWindow,
-                Window = _tokenWindowSize
+                MetricType = RateLimitingMetricType.Tokens,
+                Options = new System.Threading.RateLimiting.FixedWindowRateLimiterOptions()
+                {
+                    Window = TimeSpan.FromSeconds(_windowInSeconds.Value),
+                    PermitLimit = _tokensPerWindow!.Value
+                }
             });
             steps.Add(stepId);
         }
@@ -209,7 +213,7 @@ public class TestAICentralPipelineBuilder
 
         return new AICentralPipelineAssembler(
             HeaderMatchRouter.WithHostHeader,
-            new Dictionary<string, IAICentralClientAuthFactory>()
+            new Dictionary<string, IConsumerAuthFactory>()
             {
                 [id] = _auth ?? new AllowAnonymousClientAuthFactory(),
             },
@@ -245,7 +249,7 @@ public class TestAICentralPipelineBuilder
     public TestAICentralPipelineBuilder WithTokenRateLimiting(int windowSize, int completionTokensPerWindow,
         RateLimitingLimitType? limitType = RateLimitingLimitType.PerAICentralEndpoint)
     {
-        _tokenWindowSize = windowSize;
+        _windowInSeconds = windowSize;
         _tokensPerWindow = completionTokensPerWindow;
         _tokenLimitType = limitType;
         return this;
@@ -254,7 +258,7 @@ public class TestAICentralPipelineBuilder
     public TestAICentralPipelineBuilder WithHierarchicalEndpointSelector(string endpoint200, string model,
         string mappedModel)
     {
-        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointDispatcherFactory(
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointRequestResponseHandlerFactory(
             endpoint200,
             $"https://{endpoint200}",
             new Dictionary<string, string>()
@@ -264,9 +268,9 @@ public class TestAICentralPipelineBuilder
             "ApiKey",
             Guid.NewGuid().ToString());
 
-        var endpointFactory = new SingleEndpointSelectorFactory(openAiEndpointDispatcherBuilder);
+        var endpointFactory = new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
         _endpointFactory = new SingleEndpointSelectorFactory(new EndpointSelectorAdapterFactory(endpointFactory));
-        _openAiEndpointDispatcherBuilders = new[] { openAiEndpointDispatcherBuilder };
+        _openAiEndpointDispatcherBuilders = new[] { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
 
         return this;
     }

@@ -1,11 +1,11 @@
 ﻿using System.Text;
 using AICentral;
 using AICentral.Configuration;
-using AICentral.Endpoints.OpenAILike.AzureOpenAI;
+using AICentral.Core;
 using AICentral.Logging.AzureMonitor;
+using AICentral.OpenAI.AzureOpenAI;
 using ApprovalTests;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -28,7 +28,7 @@ public class the_pipeline_config
                         {
                             Type = "AzureOpenAIEndpoint",
                             Name = "test-endpoint",
-                            Properties = new AICentralPipelineAzureOpenAIEndpointPropertiesConfig()
+                            Properties = new AzureOpenAIEndpointPropertiesConfig()
                             {
                                 ApiKey = "1234",
                                 AuthenticationType = "ApiKey",
@@ -77,7 +77,7 @@ public class the_pipeline_config
             additionalComponentAssemblies: typeof(AzureMonitorLogger).Assembly);
         var app = host.Build();
 
-        var pipelines = app.Services.GetRequiredService<AICentralPipelines>();
+        var pipelines = app.Services.GetRequiredService<ConfiguredPipelines>();
         Approvals.VerifyJson(JsonConvert.SerializeObject(pipelines.WriteDebug(), Formatting.Indented));
     }
 }

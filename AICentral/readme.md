@@ -118,12 +118,15 @@ This pipeline will:
     ],
     "GenericSteps": [
       {
-        "Type": "TokenBasedRateLimiting",
+        "Type": "AspNetCoreFixedWindowRateLimiting",
         "Name": "token-rate-limiter",
         "Properties": {
           "LimitType": "PerConsumer|PerAICentralEndpoint",
-          "Window": 60,
-          "PermitLimit": 1000
+          ~~"MetricType": "Tokens",
+          "Options": {~~
+            "Window": 60,
+            "PermitLimit": 1000
+          }
         }
       },
       {
@@ -131,6 +134,7 @@ This pipeline will:
         "Name": "window-rate-limiter",
         "Properties": {
           "LimitType": "PerConsumer|PerAICentralEndpoint",
+          "MetricType": "Requests",
           "Options": {
             "Window": 10,
             "PermitLimit": 100

@@ -2,7 +2,7 @@
 @using AICentral
 @using Newtonsoft.Json
 @model AICentralWeb.Pages.Index
-@inject AICentralPipelines AiCentral
+@inject ConfiguredPipelines Configured
 
 @{
     Layout = null;
@@ -20,7 +20,7 @@
     <h2>Configured Pipelines</h2>
     <p>
         <pre>
-@JsonConvert.SerializeObject(AiCentral.WriteDebug(), Formatting.Indented)
+@JsonConvert.SerializeObject(Configured.WriteDebug(), Formatting.Indented)
         </pre>
     </p>
 </div>

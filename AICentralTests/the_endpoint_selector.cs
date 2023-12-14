@@ -2,12 +2,11 @@
 using System.Text;
 using AICentral;
 using AICentral.Configuration;
-using AICentral.Endpoints.OpenAILike.AzureOpenAI;
+using AICentral.Core;
+using AICentral.OpenAI.AzureOpenAI;
 using AICentralTests.TestHelpers;
+using AICentralWeb;
 using ApprovalTests;
-using Azure;
-using Azure.AI.OpenAI;
-using Azure.Core.Pipeline;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,7 +42,7 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
                         {
                             Type = "AzureOpenAIEndpoint",
                             Name = "test-endpoint",
-                            Properties = new AICentralPipelineAzureOpenAIEndpointPropertiesConfig()
+                            Properties = new AzureOpenAIEndpointPropertiesConfig()
                             {
                                 ApiKey = "1234",
                                 LanguageEndpoint = "https://somehere.com",
@@ -100,7 +99,7 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
         host.Services.AddAICentral(host.Configuration);
         var app = host.Build();
 
-        var pipelines = app.Services.GetRequiredService<AICentralPipelines>();
+        var pipelines = app.Services.GetRequiredService<ConfiguredPipelines>();
         var pipeline = JsonConvert.SerializeObject(pipelines.WriteDebug(), Formatting.Indented);
         Approvals.VerifyJson(pipeline);
     }
@@ -119,7 +118,7 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
                         {
                             Type = "AzureOpenAIEndpoint",
                             Name = "test-endpoint",
-                            Properties = new AICentralPipelineAzureOpenAIEndpointPropertiesConfig()
+                            Properties = new AzureOpenAIEndpointPropertiesConfig()
                             {
                                 ApiKey = "1234",
                                 LanguageEndpoint = "https://somehere.com",

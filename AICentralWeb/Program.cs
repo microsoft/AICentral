@@ -1,8 +1,8 @@
-using AICentral;
 using AICentral.Configuration;
+using AICentral.Core;
 using AICentral.Logging.AzureMonitor;
+using AICentral.OpenAI.AzureOpenAI;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
-using Azure.Monitor.OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -30,7 +30,6 @@ if (builder.Environment.IsDevelopment())
 
             tracing.AddAspNetCoreInstrumentation()
                 .AddSource(AICentralActivitySource.AICentralTelemetryName);
-
         })
         .UseAzureMonitor();
 }
@@ -47,7 +46,9 @@ builder.Host.UseSerilog(logger);
 builder.Services.AddAICentral(
     builder.Configuration,
     startupLogger: new SerilogLoggerProvider(logger).CreateLogger("AICentralStartup"),
-    additionalComponentAssemblies: typeof(AzureMonitorLoggerFactory).Assembly);
+    additionalComponentAssemblies: new[]
+        { typeof(AzureMonitorLoggerFactory).Assembly, 
+            typeof(AzureOpenAIEndpointRequestResponseHandlerFactory).Assembly });
 
 builder.Services.AddRazorPages();
 
@@ -59,6 +60,9 @@ app.UseAICentral();
 
 app.Run();
 
-public partial class Program
+namespace AICentralWeb
 {
+    public partial class Program
+    {
+    }
 }

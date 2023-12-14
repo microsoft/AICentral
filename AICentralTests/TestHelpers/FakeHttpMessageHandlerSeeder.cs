@@ -1,3 +1,4 @@
+using AICentralWeb;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AICentralTests.TestHelpers;

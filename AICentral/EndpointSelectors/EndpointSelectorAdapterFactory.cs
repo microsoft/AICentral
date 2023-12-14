@@ -29,8 +29,4 @@ public class EndpointSelectorAdapterFactory : IAICentralEndpointDispatcherFactor
 
     public static string ConfigName => "__internal_use_only";
 
-    public static IAICentralEndpointDispatcherFactory BuildFromConfig(ILogger logger, IConfigurationSection configurationSection)
-    {
-        throw new NotImplementedException();
-    }
 }

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using AICentralTests.TestHelpers;
+using AICentralWeb;
 using ApprovalTests;
 using Azure;
 using Azure.AI.OpenAI;
@@ -106,22 +107,15 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     }
 
     [Fact]
-    public void cannot_proxy_an_image_request_from_azure_openai_endpoint_to_openai_downstream()
+    public async Task cannot_proxy_an_image_request_from_azure_openai_endpoint_to_openai_downstream()
     {
-        var client = new OpenAIClient(
-            new Uri("http://azure-openai-to-openai.localtest.me"),
-            new AzureKeyCredential("ignore"),
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
-            {
-                Transport = new HttpClientTransport(_httpClient)
-            });
+        //DALLE-2 is no longer reachable with the latest SDK!
+        var response = await _httpClient.PostAsync(
+            new Uri(
+                "http://azure-openai-to-openai.localtest.me/openai/images/generations:submit?api-version=2023-09-01-preview"),
+            new StringContent("", Encoding.UTF8, "application/json"));
 
-        Should.Throw<RequestFailedException>(async () =>
-            await client.GetImageGenerationsAsync(
-                new ImageGenerationOptions()
-                {
-                    Prompt = "Me building an Open AI Reverse Proxy"
-                }));
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact]
@@ -135,20 +129,11 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             $"https://{AICentralFakeResponses.Endpoint200}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview",
             () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIImageStatusResponse()));
 
-        var client = new OpenAIClient(
-            new Uri("http://azure-openai-to-azure.localtest.me"),
-            new AzureKeyCredential("ignore"),
-            // ReSharper disable once RedundantArgumentDefaultValue
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_09_01_Preview)
-            {
-                Transport = new HttpClientTransport(_httpClient),
-            });
-
-        var result = await client.GetImageGenerationsAsync(
-            new ImageGenerationOptions()
-            {
-                Prompt = "Me building an Open AI Reverse Proxy",
-            });
+        //DALLE-2 is no longer reachable with the latest SDK!
+        var result = await _httpClient.PostAsync(
+            new Uri(
+                "http://azure-openai-to-openai.localtest.me/openai/images/generations:submit?api-version=2023-05-15"),
+            new StringContent("", Encoding.UTF8, "application/json"));
     }
 
     [Fact]
@@ -168,7 +153,8 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
 
         using var ms = new MemoryStream();
         await using var stream =
-            typeof(the_openai_pipeline).Assembly.GetManifestResourceStream("AICentralTests.Assets.Recording.m4a")!;
+            typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
+                "AICentralTests.Assets.Recording.m4a")!;
         await stream.CopyToAsync(ms);
 
         var response = await client.GetAudioTranscriptionAsync(new AudioTranscriptionOptions()
@@ -204,22 +190,13 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview",
             () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIImageStatusResponse()));
 
-        var client = new OpenAIClient(
-            new Uri("http://azure-to-azure-openai.localtest.me"),
-            new AzureKeyCredential("ignore"),
-            // ReSharper disable once RedundantArgumentDefaultValue
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_09_01_Preview)
-            {
-                Transport = new HttpClientTransport(_httpClient),
-            });
+        //DALLE-2 is no longer reachable with the latest SDK!
+        var response = await _httpClient.PostAsync(
+            new Uri(
+                "http://azure-to-azure-openai.localtest.me/openai/images/generations:submit?api-version=2023-09-01-preview"),
+            new StringContent("", Encoding.UTF8, "application/json"));
 
-        var response = await client.GetImageGenerationsAsync(
-            new ImageGenerationOptions()
-            {
-                Prompt = "Me building an Open AI Reverse Proxy",
-            });
-
-        response.HasValue.ShouldBeTrue();
+        response.StatusCode.ShouldBe(HttpStatusCode.Accepted);
     }
 
     [Fact]
@@ -240,7 +217,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         var completions = await client.GetChatCompletionsStreamingAsync(
             new ChatCompletionsOptions("ModelStream", new[]
             {
-                new ChatMessage(ChatRole.System, "You are a helpful assistant.")
+                new ChatRequestSystemMessage("You are a helpful assistant.")
             }));
 
         var output = new StringBuilder();
@@ -248,6 +225,59 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         {
             output.Append(completion.ContentUpdate);
         }
+
         Approvals.Verify(output);
+    }
+
+    [Fact]
+    public async Task can_model_map_dalle3_requests()
+    {
+        _factory.Seed(
+            $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/Model1/images/generations?api-version=2023-12-01-preview",
+            () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIDALLE3ImageResponse()));
+
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-azure.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            // ReSharper disable once RedundantArgumentDefaultValue
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            {
+                Transport = new HttpClientTransport(_httpClient),
+            });
+
+        var result = await client.GetImageGenerationsAsync(
+            new ImageGenerationOptions()
+            {
+                Prompt = "Me building an Open AI Reverse Proxy",
+                DeploymentName = "gpt-3.5-turbo"
+            });
+
+        result.Value.Data.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task will_forward_dalle3_requests_to_openai()
+    {
+        _factory.Seed($"https://api.openai.com/v1/images/generations",
+            () => Task.FromResult(AICentralFakeResponses.FakeOpenAIDALLE3ImageResponse()));
+
+
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-openai.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            // ReSharper disable once RedundantArgumentDefaultValue
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            {
+                Transport = new HttpClientTransport(_httpClient),
+            });
+
+        var result = await client.GetImageGenerationsAsync(
+            new ImageGenerationOptions()
+            {
+                Prompt = "Me building an Open AI Reverse Proxy",
+                DeploymentName = "openaimodel"
+            });
+        
+        result.Value.Data.Count.ShouldBe(1);
     }
 }
