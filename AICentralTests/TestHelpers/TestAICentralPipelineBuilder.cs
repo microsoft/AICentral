@@ -5,6 +5,7 @@ using AICentral.Auth.ApiKey;
 using AICentral.BulkHead;
 using AICentral.Configuration;
 using AICentral.Core;
+using AICentral.Endpoints;
 using AICentral.EndpointSelectors;
 using AICentral.EndpointSelectors.LowestLatency;
 using AICentral.EndpointSelectors.Priority;
@@ -21,7 +22,7 @@ public class TestAICentralPipelineBuilder
 {
     private IAICentralClientAuthFactory? _auth;
     private IAICentralEndpointSelectorFactory? _endpointFactory;
-    private IEndpointRequestResponseHandlerFactory[]? _openAiEndpointDispatcherBuilders;
+    private IAICentralEndpointDispatcherFactory[]? _openAiEndpointDispatcherBuilders;
     private int? _windowInSeconds;
     private int? _requestsPerWindow;
     private int? _allowedConcurrency;
@@ -65,8 +66,8 @@ public class TestAICentralPipelineBuilder
             "ApiKey",
             Guid.NewGuid().ToString());
 
-        _endpointFactory = new SingleEndpointSelectorFactory(openAiEndpointDispatcherBuilder);
-        _openAiEndpointDispatcherBuilders = new[] { openAiEndpointDispatcherBuilder };
+        _endpointFactory = new SingleEndpointSelectorFactory(new AICentralEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
+        _openAiEndpointDispatcherBuilders = new[] { new AICentralEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
 
         return this;
     }
@@ -83,8 +84,8 @@ public class TestAICentralPipelineBuilder
             Guid.NewGuid().ToString(),
             Guid.NewGuid().ToString());
 
-        _endpointFactory = new SingleEndpointSelectorFactory(openAiEndpointDispatcherBuilder);
-        _openAiEndpointDispatcherBuilders = new[] { openAiEndpointDispatcherBuilder };
+        _endpointFactory = new SingleEndpointSelectorFactory(new AICentralEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
+        _openAiEndpointDispatcherBuilders = new[] { new AICentralEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
 
         return this;
     }
@@ -94,30 +95,31 @@ public class TestAICentralPipelineBuilder
         (string hostname, string model, string mappedModel)[] fallbackEndpoints
     )
     {
-        IEndpointRequestResponseHandlerFactory[] priorityOpenAIEndpointDispatcherBuilder = priorityEndpoints.Select(x =>
-            new AzureOpenAIEndpointRequestResponseHandlerFactory(
+        IAICentralEndpointDispatcherFactory[] priorityOpenAIEndpointDispatcherBuilder = priorityEndpoints.Select(x =>
+            new AICentralEndpointDispatcherFactory(new AzureOpenAIEndpointRequestResponseHandlerFactory(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
                 "ApiKey",
-                Guid.NewGuid().ToString())).ToArray();
+                Guid.NewGuid().ToString()))).ToArray();
 
-        IEndpointRequestResponseHandlerFactory[] fallbackOpenAIEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
-            new AzureOpenAIEndpointRequestResponseHandlerFactory(
+        IAICentralEndpointDispatcherFactory[] fallbackOpenAIEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
+            new AICentralEndpointDispatcherFactory(new AzureOpenAIEndpointRequestResponseHandlerFactory(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
                 "ApiKey",
-                Guid.NewGuid().ToString())).ToArray();
+                Guid.NewGuid().ToString()))).ToArray();
 
         _openAiEndpointDispatcherBuilders = priorityOpenAIEndpointDispatcherBuilder
             .Union(fallbackOpenAIEndpointDispatcherBuilder).ToArray();
 
-        _endpointFactory = new PriorityEndpointSelectorFactory(priorityOpenAIEndpointDispatcherBuilder,
+        _endpointFactory = new PriorityEndpointSelectorFactory(
+            priorityOpenAIEndpointDispatcherBuilder,
             fallbackOpenAIEndpointDispatcherBuilder);
 
         return this;
@@ -128,14 +130,14 @@ public class TestAICentralPipelineBuilder
         params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new AzureOpenAIEndpointRequestResponseHandlerFactory(
+            new AICentralEndpointDispatcherFactory(new AzureOpenAIEndpointRequestResponseHandlerFactory(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
                 "ApiKey",
-                Guid.NewGuid().ToString())).ToArray();
+                Guid.NewGuid().ToString()))).ToArray();
 
         _endpointFactory = new RandomEndpointSelectorFactory(_openAiEndpointDispatcherBuilders!);
 
@@ -146,14 +148,14 @@ public class TestAICentralPipelineBuilder
         params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new AzureOpenAIEndpointRequestResponseHandlerFactory(
+            new AICentralEndpointDispatcherFactory(new AzureOpenAIEndpointRequestResponseHandlerFactory(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
                     [x.model] = x.mappedModel
                 },
                 "ApiKey",
-                Guid.NewGuid().ToString())).ToArray();
+                Guid.NewGuid().ToString()))).ToArray();
 
         _endpointFactory = new LowestLatencyEndpointSelectorFactory(_openAiEndpointDispatcherBuilders!);
         return this;
@@ -263,9 +265,9 @@ public class TestAICentralPipelineBuilder
             "ApiKey",
             Guid.NewGuid().ToString());
 
-        var endpointFactory = new SingleEndpointSelectorFactory(openAiEndpointDispatcherBuilder);
+        var endpointFactory = new SingleEndpointSelectorFactory(new AICentralEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
         _endpointFactory = new SingleEndpointSelectorFactory(new EndpointSelectorAdapterFactory(endpointFactory));
-        _openAiEndpointDispatcherBuilders = new[] { openAiEndpointDispatcherBuilder };
+        _openAiEndpointDispatcherBuilders = new[] { new AICentralEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
 
         return this;
     }

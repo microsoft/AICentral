@@ -1,12 +1,14 @@
 ﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
+using AICentral.Core;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace AICentral.Core;
+namespace AICentral.Endpoints;
 
 public class AICentralEndpointDispatcher : IAICentralEndpointDispatcher
 {
@@ -15,8 +17,7 @@ public class AICentralEndpointDispatcher : IAICentralEndpointDispatcher
     private readonly IEndpointRequestResponseHandler _endpointDispatcher;
     private static readonly HttpResponseMessage RateLimitedFakeResponse = new(HttpStatusCode.TooManyRequests);
 
-    public AICentralEndpointDispatcher(
-        IEndpointRequestResponseHandler endpointDispatcher)
+    public AICentralEndpointDispatcher(IEndpointRequestResponseHandler endpointDispatcher)
     {
         EndpointName = endpointDispatcher.EndpointName;
         _id = endpointDispatcher.Id;
@@ -126,4 +127,5 @@ public class AICentralEndpointDispatcher : IAICentralEndpointDispatcher
     {
         return EndpointName == affinityHeaderValue;
     }
+
 }

@@ -7,7 +7,7 @@ public interface IAICentralEndpointSelectorFactory
     static virtual IAICentralEndpointSelectorFactory BuildFromConfig(
         ILogger logger, 
         AICentralTypeAndNameConfig config,
-        Dictionary<string, IEndpointRequestResponseHandlerFactory> aiCentralEndpoints
+        Dictionary<string, IAICentralEndpointDispatcherFactory> aiCentralEndpoints
         ) => throw new NotImplementedException();
 
     IAICentralEndpointSelector Build();

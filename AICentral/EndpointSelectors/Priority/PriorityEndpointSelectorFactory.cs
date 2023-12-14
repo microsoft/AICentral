@@ -4,13 +4,13 @@ namespace AICentral.EndpointSelectors.Priority;
 
 public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 {
-    private readonly IEndpointRequestResponseHandlerFactory[] _prioritisedOpenAIEndpoints;
-    private readonly IEndpointRequestResponseHandlerFactory[] _fallbackOpenAIEndpoints;
+    private readonly IAICentralEndpointDispatcherFactory[] _prioritisedOpenAIEndpoints;
+    private readonly IAICentralEndpointDispatcherFactory[] _fallbackOpenAIEndpoints;
     private readonly Lazy<PriorityEndpointSelector> _endpointSelector;
 
     public PriorityEndpointSelectorFactory(
-        IEndpointRequestResponseHandlerFactory[] prioritisedOpenAIEndpoints,
-        IEndpointRequestResponseHandlerFactory[] fallbackOpenAIEndpoints)
+        IAICentralEndpointDispatcherFactory[] prioritisedOpenAIEndpoints,
+        IAICentralEndpointDispatcherFactory[] fallbackOpenAIEndpoints)
     {
         _prioritisedOpenAIEndpoints = prioritisedOpenAIEndpoints;
         _fallbackOpenAIEndpoints = fallbackOpenAIEndpoints;
@@ -28,7 +28,7 @@ public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
     public static IAICentralEndpointSelectorFactory BuildFromConfig(
         ILogger logger,
         AICentralTypeAndNameConfig config,
-        Dictionary<string, IEndpointRequestResponseHandlerFactory> endpoints)
+        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints)
     {
         var properties = config.TypedProperties<PriorityEndpointConfig>();
 

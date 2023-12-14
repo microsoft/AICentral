@@ -50,9 +50,9 @@ public class OpenAIEndpointRequestResponseHandlerFactory : IEndpointRequestRespo
         );
     }
 
-    public IAICentralEndpointDispatcher Build()
+    public IEndpointRequestResponseHandler Build()
     {
-        return new AICentralEndpointDispatcher(_endpointDispatcher.Value);
+        return _endpointDispatcher.Value;
     }
 
     public object WriteDebug()

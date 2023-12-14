@@ -13,7 +13,7 @@ public interface IEndpointRequestResponseHandlerFactory
         throw new NotImplementedException();
     }
 
-    IAICentralEndpointDispatcher Build();
+    IEndpointRequestResponseHandler Build();
 
     object WriteDebug();
 }

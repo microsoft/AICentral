@@ -86,9 +86,9 @@ public class AzureOpenAIEndpointRequestResponseHandlerFactory : IEndpointRequest
             properties.MaxConcurrency);
     }
 
-    public IAICentralEndpointDispatcher Build()
+    public IEndpointRequestResponseHandler Build()
     {
-        return new AICentralEndpointDispatcher(_endpointDispatcher.Value);
+        return _endpointDispatcher.Value;
     }
 
     public object WriteDebug()

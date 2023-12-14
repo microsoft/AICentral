@@ -2,6 +2,13 @@
 
 namespace AICentral.Core;
 
+public interface IAICentralEndpointDispatcherFactory
+{
+    IAICentralEndpointDispatcher Build();
+    object WriteDebug();
+    void RegisterServices(HttpMessageHandler? optionalHandler, IServiceCollection services);
+}
+
 public interface IAICentralEndpointDispatcher
 {
     Task<AICentralResponse> Handle(
@@ -12,6 +19,7 @@ public interface IAICentralEndpointDispatcher
         CancellationToken cancellationToken);
 
     bool IsAffinityRequestToMe(string affinityHeaderValue);
+
 }
 
 public interface IEndpointRequestResponseHandler

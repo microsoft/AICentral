@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using AICentral.Auth;
 using AICentral.Core;
+using AICentral.Endpoints;
 using AICentral.EndpointSelectors;
 using AICentral.Routes;
 
@@ -14,12 +15,13 @@ namespace AICentral.Configuration;
 /// </remarks>
 public class ConfigurationBasedPipelineBuilder
 {
-    private readonly Dictionary<string, Func<ILogger, AICentralTypeAndNameConfig, IEndpointRequestResponseHandlerFactory>>
+    private readonly Dictionary<string,
+            Func<ILogger, AICentralTypeAndNameConfig, IEndpointRequestResponseHandlerFactory>>
         _endpointConfigurationBuilders = new();
 
     private readonly
         Dictionary<string, Func<ILogger, AICentralTypeAndNameConfig,
-            Dictionary<string, IEndpointRequestResponseHandlerFactory>,
+            Dictionary<string, IAICentralEndpointDispatcherFactory>,
             IAICentralEndpointSelectorFactory>> _endpointSelectorConfigurations = new();
 
     private readonly Dictionary<string,
@@ -63,11 +65,12 @@ public class ConfigurationBasedPipelineBuilder
                     x =>
                     {
                         startupLogger.LogInformation("Configuring Endpoint {Name}", x.Name);
-                        return _endpointConfigurationBuilders[
-                            Guard.NotNull(x.Type, "Type") ??
-                            throw new ArgumentException("No Type specified for Endpoint")](
-                            startupLogger,
-                            x);
+                        return (IAICentralEndpointDispatcherFactory)new AICentralEndpointDispatcherFactory(
+                            _endpointConfigurationBuilders[
+                                Guard.NotNull(x.Type, "Type") ??
+                                throw new ArgumentException("No Type specified for Endpoint")](
+                                startupLogger,
+                                x));
                     });
 
         var endpointSelectors = new Dictionary<string, IAICentralEndpointSelectorFactory>();
