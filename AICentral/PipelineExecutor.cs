@@ -49,7 +49,8 @@ public class PipelineExecutor : IAICentralPipelineExecutor, IAICentralResponseGe
     /// <returns></returns>
     async Task<AICentralResponse> IAICentralResponseGenerator.BuildResponse(
         DownstreamRequestInformation requestInformation, HttpContext context,
-        HttpResponseMessage rawResponse, Dictionary<string, StringValues> sanitisedResponseHeaders,
+        HttpResponseMessage rawResponse, 
+        Dictionary<string, StringValues> sanitisedResponseHeaders,
         CancellationToken cancellationToken)
     {
         await _iaiCentralEndpointSelector.BuildResponseHeaders(context, rawResponse, sanitisedResponseHeaders);

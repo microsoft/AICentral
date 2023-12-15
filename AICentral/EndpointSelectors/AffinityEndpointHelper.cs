@@ -1,4 +1,5 @@
 ﻿using AICentral.Core;
+using AICentral.Endpoints;
 using AICentral.EndpointSelectors.Single;
 
 namespace AICentral.EndpointSelectors;
@@ -43,7 +44,7 @@ public class AffinityEndpointHelper
     {
         foreach (var endpoint in iaiCentralEndpointSelector.ContainedEndpoints())
         {
-            if (endpoint is EndpointSelectorAdapter endpointSelectorAdapter)
+            if (endpoint is EndpointSelectorAdapterDispatcher endpointSelectorAdapter)
             {
                 foreach (var wrappedEndpoint in endpointSelectorAdapter.ContainedEndpoints())
                 {

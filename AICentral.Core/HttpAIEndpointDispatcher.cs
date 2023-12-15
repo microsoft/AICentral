@@ -3,7 +3,7 @@
 namespace AICentral.Core;
 
 /// <summary>
-/// Registered as a Typed Http Client to leverage HttpClientFactory. Created with an IAIEndpointDispatcher to allow a fake for testing purposes
+/// Registered as a Typed Http Client to leverage HttpClientFactory.
 /// </summary>
 public class HttpAIEndpointDispatcher
 {
@@ -22,25 +22,24 @@ public class HttpAIEndpointDispatcher
         _logger = logger;
     }
 
-    public async Task<HttpResponseMessage> Dispatch(HttpRequestMessage request, CancellationToken cancellationToken)
+    public async Task<HttpResponseMessage> Dispatch(HttpRequest incomingRequest, HttpRequestMessage outgoingRequest, CancellationToken cancellationToken)
     {
         if (_retryAt != null && _dateTimeProvider.Now < _retryAt)
         {
             _logger.LogDebug("Avoiding endpoint {Endpoint} as it rate limited us until {RetryAt}",
-                request.RequestUri!.AbsoluteUri, _retryAt);
+                outgoingRequest.RequestUri!.AbsoluteUri, _retryAt);
             return new HttpResponseMessage(HttpStatusCode.TooManyRequests);
         }
 
         _retryAt = null;
-        _logger.LogDebug("Making call to {Endpoint}", request.RequestUri!.AbsoluteUri);
+        _logger.LogDebug("Making call to {Endpoint}", outgoingRequest.RequestUri!.AbsoluteUri);
 
         //HttpCompletionOption.ResponseHeadersRead ensures we can get to streaming results much quicker.
-        var response =
-            await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        var response = await _httpClient.SendAsync(outgoingRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
         _logger.LogDebug(
             "Called {Endpoint}. Response Code: {ResponseCode}",
-            request.RequestUri!.AbsoluteUri,
+            outgoingRequest.RequestUri!.AbsoluteUri,
             response.StatusCode);
 
         return response;

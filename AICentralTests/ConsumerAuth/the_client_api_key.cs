@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using Shouldly;
 using Xunit.Abstractions;
 
-namespace AICentralTests;
+namespace AICentralTests.ConsumerAuth;
 
 public class the_client_api_key : IClassFixture<TestWebApplicationFactory<Program>>
 

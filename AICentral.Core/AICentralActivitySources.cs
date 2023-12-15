@@ -11,9 +11,6 @@ public static class AICentralActivitySources
     private static readonly ConcurrentDictionary<(string metric, string host, string model), ObservableGauge<long>>
         LongGauges = new();
 
-    private static readonly ConcurrentDictionary<(string pipeline, string metric), UpDownCounter<long>>
-        LongUpDowns = new();
-
     private static readonly ConcurrentDictionary<(string pipeline, string metric), Counter<long>> LongCounters = new();
 
     private static readonly ConcurrentDictionary<(string pipeline, string metric), Histogram<double>> HistogramCounters =

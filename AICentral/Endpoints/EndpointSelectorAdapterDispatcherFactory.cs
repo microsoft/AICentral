@@ -1,16 +1,16 @@
 ﻿using AICentral.Core;
 
-namespace AICentral.EndpointSelectors;
+namespace AICentral.Endpoints;
 
-public class EndpointSelectorAdapterFactory : IAICentralEndpointDispatcherFactory
+public class EndpointSelectorAdapterDispatcherFactory : IAICentralEndpointDispatcherFactory
 {
-    private readonly Lazy<EndpointSelectorAdapter> _instance;
+    private readonly Lazy<EndpointSelectorAdapterDispatcher> _instance;
     private readonly IAICentralEndpointSelectorFactory _centralEndpointSelectorFactory;
 
-    public EndpointSelectorAdapterFactory(IAICentralEndpointSelectorFactory centralEndpointSelectorFactory)
+    public EndpointSelectorAdapterDispatcherFactory(IAICentralEndpointSelectorFactory centralEndpointSelectorFactory)
     {
         _centralEndpointSelectorFactory = centralEndpointSelectorFactory;
-        _instance = new Lazy<EndpointSelectorAdapter>(() => new EndpointSelectorAdapter(centralEndpointSelectorFactory));
+        _instance = new Lazy<EndpointSelectorAdapterDispatcher>(() => new EndpointSelectorAdapterDispatcher(centralEndpointSelectorFactory));
     }
 
     public void RegisterServices(HttpMessageHandler? httpMessageHandler, IServiceCollection services)

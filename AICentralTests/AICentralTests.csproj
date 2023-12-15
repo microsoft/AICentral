@@ -35,6 +35,30 @@
 
     <ItemGroup>
       <None Remove="xunit.runner.json" />
+      <None Update="EndpointSelectors\the_endpoint_selector.can_contain_an_endpoint_selector.approved.json">
+        <ParentExtension>.cs</ParentExtension>
+        <ParentFile>the_endpoint_selector</ParentFile>
+        <DependentUpon>the_endpoint_selector.cs</DependentUpon>
+      </None>
+      <None Update="Downstreams\the_azure_openai_pipeline.can_handle_streaming_calls.approved.txt">
+        <ParentExtension>.cs</ParentExtension>
+        <ParentFile>the_azure_openai_pipeline</ParentFile>
+        <DependentUpon>the_azure_openai_pipeline.cs</DependentUpon>
+      </None>
+      <None Update="Downstreams\the_azure_openai_pipeline.handles_chats.approved.json">
+        <ParentExtension>.cs</ParentExtension>
+        <ParentFile>the_azure_openai_pipeline</ParentFile>
+        <DependentUpon>the_azure_openai_pipeline.cs</DependentUpon>
+      </None>
+      <None Update="Downstreams\the_openai_dispatcher.can_dispatch_chat_completions_to_an_openai_pipeline.approved.json">
+        <ParentExtension>.cs</ParentExtension>
+        <ParentFile>the_openai_dispatcher</ParentFile>
+      </None>
+      <None Update="Configuration\the_pipeline_config.supports_minimal_setup.approved.json">
+        <ParentExtension>.cs</ParentExtension>
+        <ParentFile>the_pipeline_config</ParentFile>
+        <DependentUpon>the_pipeline_config.cs</DependentUpon>
+      </None>
     </ItemGroup>
 
     <ItemGroup>

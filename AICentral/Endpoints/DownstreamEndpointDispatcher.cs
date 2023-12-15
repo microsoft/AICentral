@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Http.Headers;
 using AICentral.Core;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Quic;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -39,12 +38,12 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         var outboundRequest = await _endpointDispatcher.BuildRequest(callInformation, context);
         if (outboundRequest.Right(out var result))
             return new AICentralResponse(
-                AICentralUsageInformation.Empty(context, callInformation.IncomingCallDetails,
+                DownstreamUsageInformation.Empty(context, callInformation.IncomingCallDetails,
                     _endpointDispatcher.BaseUrl), result!);
 
         outboundRequest.Left(out var newRequest);
 
-        if (rateLimitingTracker.IsRateLimiting(newRequest!.RequestUri!.Host, out var until))
+        if (rateLimitingTracker.IsRateLimiting(newRequest!.HttpRequestMessage.RequestUri!.Host, out var until))
         {
             var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
             response.Headers.RetryAfter = new RetryConditionHeaderValue(until!.Value);
@@ -54,7 +53,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         logger.LogDebug(
             "Rewritten URL from {OriginalUrl} to {NewUrl}.",
             context.Request.GetEncodedUrl(),
-            newRequest.RequestUri!.AbsoluteUri
+            newRequest.HttpRequestMessage.RequestUri!.AbsoluteUri
         );
 
         using var source = AICentralActivitySource.AICentralRequestActivitySource.CreateActivity(
@@ -74,7 +73,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 
         sw.Start();
 
-        var openAiResponse = await typedDispatcher.Dispatch(newRequest, cancellationToken);
+        var openAiResponse = await typedDispatcher.Dispatch(context.Request, newRequest.HttpRequestMessage, cancellationToken);
 
         //this will retry the operation for retryable status codes. When we reach here we might not want
         //to stream the response if it wasn't a 200.
@@ -82,7 +81,8 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 
         if (openAiResponse.StatusCode == HttpStatusCode.TooManyRequests)
         {
-            rateLimitingTracker.RateLimiting(newRequest.RequestUri.Host, openAiResponse.Headers.RetryAfter);
+            rateLimitingTracker.RateLimiting(newRequest.HttpRequestMessage.RequestUri.Host,
+                openAiResponse.Headers.RetryAfter);
         }
 
         if (config.Value.EnableDiagnosticsHeaders)
@@ -109,7 +109,13 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             openAiResponse.EnsureSuccessStatusCode();
         }
 
-        await _endpointDispatcher.PreProcessResponse(callInformation.IncomingCallDetails, context, newRequest, openAiResponse);
+        var preProcessResult = await _endpointDispatcher.ExtractResponseMetadata(
+            callInformation.IncomingCallDetails,
+            context,
+            newRequest,
+            openAiResponse);
+
+        EmitTelemetry(newRequest, preProcessResult);
 
         return await responseGenerator.BuildResponse(
             new DownstreamRequestInformation(
@@ -120,12 +126,33 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
                 sw.Elapsed),
             context,
             openAiResponse,
-            _endpointDispatcher.SanitiseHeaders(context, openAiResponse), cancellationToken);
+            preProcessResult.SanitisedHeaders,
+            cancellationToken);
+    }
+
+    private void EmitTelemetry(AIRequest request, ResponseMetadata responseMetadata)
+    {
+        if (responseMetadata.RemainingRequests != null)
+        {
+            AICentralActivitySources.RecordGaugeMetric(
+                "remaining-requests",
+                request.HttpRequestMessage.RequestUri!.Host, 
+                request.ModelName ?? "<no-model>",
+                responseMetadata.RemainingRequests.Value);
+        }
+
+        if (responseMetadata.RemainingTokens != null)
+        {
+            AICentralActivitySources.RecordGaugeMetric(
+                "remaining-tokens", 
+                request.HttpRequestMessage.RequestUri!.Host,
+                request.ModelName ?? "<no-model>", 
+                responseMetadata.RemainingTokens.Value);
+        }
     }
 
     public bool IsAffinityRequestToMe(string affinityHeaderValue)
     {
         return EndpointName == affinityHeaderValue;
     }
-
 }

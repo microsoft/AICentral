@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿namespace AICentral.Core;
 
-namespace AICentral.Core;
-
+/// <summary>
+/// Central configuration class. Allows a typed configuration system
+/// </summary>
 public class AICentralTypeAndNameConfig
 {
     public string? Type { get; init; }

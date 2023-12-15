@@ -9,7 +9,7 @@ using Azure.Core.Pipeline;
 using Shouldly;
 using Xunit.Abstractions;
 
-namespace AICentralTests;
+namespace AICentralTests.Downstreams;
 
 public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Program>>
 {
@@ -58,13 +58,65 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
 
         Approvals.VerifyJson(response.Value.Choices[0].Message.Content);
     }
+
+    [Fact]
+    public async Task will_forward_whisper_transcription_requests_to_openai()
+    {
+        _factory.Seed($"https://api.openai.com/v1/audio/transcriptions",
+            () => Task.FromResult(AICentralFakeResponses.FakeOpenAIAudioTranscriptionResponse()));
+        
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-openai.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            // ReSharper disable once RedundantArgumentDefaultValue
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            {
+                Transport = new HttpClientTransport(_httpClient),
+            });
+
+        var result = await client.GetAudioTranscriptionAsync(
+            new AudioTranscriptionOptions
+            {
+                ResponseFormat = AudioTranscriptionFormat.Simple,
+                DeploymentName = "test",
+                AudioData = new BinaryData(new byte[1024])
+            });
+        
+        result.Value.Text.ShouldNotBe(null);
+    }
+
+    [Fact]
+    public async Task will_forward_whisper_translation_requests_to_openai()
+    {
+        _factory.Seed($"https://api.openai.com/v1/audio/translations",
+            () => Task.FromResult(AICentralFakeResponses.FakeOpenAIAudioTranslationResponse()));
+        
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-openai.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            // ReSharper disable once RedundantArgumentDefaultValue
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            {
+                Transport = new HttpClientTransport(_httpClient),
+            });
+
+        var result = await client.GetAudioTranslationAsync(
+            new AudioTranslationOptions()
+            {
+                ResponseFormat = AudioTranslationFormat.Simple,
+                DeploymentName = "test",
+                AudioData = new BinaryData(new byte[1024])
+            });
+        
+        result.Value.Text.ShouldNotBe(null);
+    }
+
     
     [Fact]
     public async Task will_forward_dalle3_requests_to_openai()
     {
         _factory.Seed($"https://api.openai.com/v1/images/generations",
             () => Task.FromResult(AICentralFakeResponses.FakeOpenAIDALLE3ImageResponse()));
-
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-openai.localtest.me"),

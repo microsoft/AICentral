@@ -1,12 +1,11 @@
-﻿using System.Diagnostics;
-using System.Net;
+﻿using System.Net;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit.Abstractions;
 
-namespace AICentralTests;
+namespace AICentralTests.Downstreams;
 
 public class the_downstream_polly_policy : IClassFixture<TestWebApplicationFactory<Program>>
 {

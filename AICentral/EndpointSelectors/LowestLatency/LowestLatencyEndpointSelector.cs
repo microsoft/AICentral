@@ -41,7 +41,7 @@ public class LowestLatencyEndpointSelector : IAICentralEndpointSelector
                     responseGenerator,
                     cancellationToken); //awaiting to unwrap any Aggregate Exceptions
 
-                UpdateLatencies(logger, chosen, response.AICentralUsageInformation);
+                UpdateLatencies(logger, chosen, response.DownstreamUsageInformation);
 
                 return response;
             }
@@ -77,7 +77,7 @@ public class LowestLatencyEndpointSelector : IAICentralEndpointSelector
     }
 
     private void UpdateLatencies(ILogger<LowestLatencyEndpointSelector> logger, IAICentralEndpointDispatcher endpoint,
-        AICentralUsageInformation requestInformation)
+        DownstreamUsageInformation requestInformation)
     {
         if (!_recentLatencies.ContainsKey(endpoint))
         {

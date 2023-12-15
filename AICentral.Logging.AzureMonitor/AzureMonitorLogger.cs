@@ -27,18 +27,18 @@ public class AzureMonitorLogger : IAICentralPipelineStep
 
         _serilogAzureLogAnalyticsLogger.Information(
             "AzureOpenAI call. ClientIP:{ClientIP} Host:{OpenAIHost}. Type:{CallType}. Model:{Model}. Prompt:{Prompt}. Response:{Response}. Estimated Prompt Tokens:{EstimatedPromptTokens}. Estimated Completion Tokens:{EstimatedCompletionTokens}. Prompt Tokens:{PromptTokens}. Completion Tokens:{CompletionTokens}. Total Tokens:{TotalTokens}. Duration:{Duration}",
-            result.AICentralUsageInformation.RemoteIpAddress,
-            result.AICentralUsageInformation.OpenAIHost,
-            result.AICentralUsageInformation.CallType.ToString(),
-            result.AICentralUsageInformation.ModelName,
-            _logPrompt ? result.AICentralUsageInformation.Prompt : "**redacted**",
-            _logResponse ? result.AICentralUsageInformation.Response : "**redacted**",
-            result.AICentralUsageInformation.EstimatedPromptTokens,
-            result.AICentralUsageInformation.EstimatedCompletionTokens,
-            result.AICentralUsageInformation.PromptTokens,
-            result.AICentralUsageInformation.CompletionTokens,
-            result.AICentralUsageInformation.TotalTokens,
-            result.AICentralUsageInformation.Duration);
+            result.DownstreamUsageInformation.RemoteIpAddress,
+            result.DownstreamUsageInformation.OpenAIHost,
+            result.DownstreamUsageInformation.CallType.ToString(),
+            result.DownstreamUsageInformation.ModelName,
+            _logPrompt ? result.DownstreamUsageInformation.Prompt : "**redacted**",
+            _logResponse ? result.DownstreamUsageInformation.Response : "**redacted**",
+            result.DownstreamUsageInformation.EstimatedPromptTokens,
+            result.DownstreamUsageInformation.EstimatedCompletionTokens,
+            result.DownstreamUsageInformation.PromptTokens,
+            result.DownstreamUsageInformation.CompletionTokens,
+            result.DownstreamUsageInformation.TotalTokens,
+            result.DownstreamUsageInformation.Duration);
 
         return result;
     }

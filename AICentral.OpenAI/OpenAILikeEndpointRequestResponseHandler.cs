@@ -1,6 +1,11 @@
-﻿using AICentral.Core;
+﻿using System.Net.Http.Headers;
+using System.Net.Mime;
+using System.Text;
+using AICentral.Core;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.WebUtilities;
+using Newtonsoft.Json.Linq;
 
 namespace AICentral.OpenAI;
 
@@ -8,7 +13,6 @@ public abstract class OpenAILikeEndpointRequestResponseHandler : IEndpointReques
 {
     private readonly Dictionary<string, string> _modelMappings;
     private static readonly HashSet<string> HeadersToIgnore = new(new[] { "host", "authorization", "api-key" });
-    protected const string HttpItemBagMappedModelName = "openailikeendpointdispatcher_mappedmodelname";
 
     protected OpenAILikeEndpointRequestResponseHandler(
         string id,
@@ -29,9 +33,9 @@ public abstract class OpenAILikeEndpointRequestResponseHandler : IEndpointReques
     /// <param name="downstreamRequest"></param>
     /// <param name="openAiResponse"></param>
     /// <returns></returns>
-    protected abstract Task ExtractDiagnostics(
+    protected abstract Task<ResponseMetadata> PreProcess(
         HttpContext context,
-        HttpRequestMessage downstreamRequest,
+        AIRequest downstreamRequest,
         HttpResponseMessage openAiResponse);
 
     private static bool MappedModelFoundAsEmptyString(AICallInformation callInformation, string mappedModelName)
@@ -42,8 +46,9 @@ public abstract class OpenAILikeEndpointRequestResponseHandler : IEndpointReques
     private async Task<HttpRequestMessage> BuildNewRequest(HttpContext context, AICallInformation callInformation,
         string? mappedModelName)
     {
-        var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method), BuildUri(context, callInformation, mappedModelName));
-        
+        var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method),
+            BuildUri(context, callInformation, mappedModelName));
+
         foreach (var header in context.Request.Headers)
         {
             if (HeadersToIgnore.Contains(header.Key.ToLowerInvariant())) continue;
@@ -70,7 +75,7 @@ public abstract class OpenAILikeEndpointRequestResponseHandler : IEndpointReques
     public string BaseUrl { get; }
     public string EndpointName { get; }
 
-    public async Task<Either<HttpRequestMessage, IResult>> BuildRequest(AICallInformation callInformation, HttpContext context)
+    public async Task<Either<AIRequest, IResult>> BuildRequest(AICallInformation callInformation, HttpContext context)
     {
         var incomingModelName = callInformation.IncomingCallDetails.IncomingModelName ?? string.Empty;
 
@@ -78,34 +83,87 @@ public abstract class OpenAILikeEndpointRequestResponseHandler : IEndpointReques
 
         if (MappedModelFoundAsEmptyString(callInformation, mappedModelName))
         {
-            return new Either<HttpRequestMessage, IResult>(Results.NotFound(new { message = "Unknown model" }));
+            return new Either<AIRequest, IResult>(Results.NotFound(new { message = "Unknown model" }));
         }
 
         try
         {
-            //If we are retrying an endpoint then we might already have the mapped model name in
-            if (context.Items.ContainsKey(HttpItemBagMappedModelName)) context.Items.Remove(HttpItemBagMappedModelName);
-            context.Items.Add(HttpItemBagMappedModelName, mappedModelName);
-            return new Either<HttpRequestMessage, IResult>(await BuildNewRequest(context, callInformation, mappedModelName));
+            return new Either<AIRequest, IResult>(
+                new AIRequest(await BuildNewRequest(context, callInformation, mappedModelName), mappedModelName));
         }
         catch (InvalidOperationException ie)
         {
-            return new Either<HttpRequestMessage, IResult>(Results.BadRequest(new { message = ie.Message }));
+            return new Either<AIRequest, IResult>(Results.BadRequest(new { message = ie.Message }));
         }
     }
 
-    public Task PreProcessResponse(IncomingCallDetails callInformationIncomingCallDetails,
+    public Task<ResponseMetadata> ExtractResponseMetadata(
+        IncomingCallDetails callInformationIncomingCallDetails,
         HttpContext context,
-        HttpRequestMessage newRequest,
+        AIRequest newRequest,
         HttpResponseMessage openAiResponse)
     {
-        return ExtractDiagnostics(context, newRequest, openAiResponse);
+        return PreProcess(context, newRequest, openAiResponse);
     }
 
-    public Dictionary<string, StringValues> SanitiseHeaders(HttpContext context, HttpResponseMessage openAiResponse)
+
+    protected static async Task<HttpContent> CreateDownstreamResponseWithMappedModelName(
+        AICallInformation aiCallInformation,
+        HttpRequest incomingRequest,
+        string? mappedModelName)
     {
-        return CustomSanitiseHeaders(context, openAiResponse);
+        if (aiCallInformation.IncomingCallDetails.AICallType == AICallType.DALLE3)
+        {
+            //no model name for this
+            var content = aiCallInformation.IncomingCallDetails.RequestContent!.DeepClone();
+            content["model"] = mappedModelName;
+            return new StringContent(content.ToString(), Encoding.UTF8, "application/json");
+        }
+
+        if (aiCallInformation.IncomingCallDetails.AICallType == AICallType.Transcription ||
+            aiCallInformation.IncomingCallDetails.AICallType == AICallType.Translation)
+        {
+            incomingRequest.Body.Position = 0;
+            var newContent = new MultipartFormDataContent(incomingRequest.GetMultipartBoundary());
+            var incomingRequestMultipart = new MultipartReader(incomingRequest.GetMultipartBoundary(), incomingRequest.Body);
+
+            while (await incomingRequestMultipart.ReadNextSectionAsync() is { } nextSection)
+            {
+                var fileSection = nextSection.AsFileSection();
+                if (fileSection != null)
+                {
+                    var ms = new MemoryStream();
+                    await fileSection.FileStream!.CopyToAsync(ms);
+                    ms.Position = 0;
+                    var fileContent = new StreamContent(ms);
+                    newContent.Add(fileContent, fileSection.Name, fileSection.FileName);
+                }
+                var formSection = nextSection.AsFormDataSection();
+                if (formSection != null)
+                {
+                    var contentType = new ContentType(nextSection.ContentType ?? "text/plain; charset=utf-8");
+                    newContent.Add(
+                        new StringContent(formSection.Name == "model" ? mappedModelName! : await formSection.GetValueAsync(), Encoding.GetEncoding(contentType.CharSet ?? "utf-8"), contentType.MediaType),
+                        formSection.Name);
+                }
+
+            }
+            return newContent;
+        }
+        
+        return aiCallInformation.IncomingCallDetails.IncomingModelName == mappedModelName
+            ? new StringContent(aiCallInformation.IncomingCallDetails.RequestContent!.ToString(), Encoding.UTF8,
+                "application/json")
+            : new StringContent(
+                AddModelName(aiCallInformation.IncomingCallDetails.RequestContent!.DeepClone(), mappedModelName!)
+                    .ToString(),
+                Encoding.UTF8, "application/json");
+
     }
-    
-    protected abstract Dictionary<string, StringValues> CustomSanitiseHeaders(HttpContext context, HttpResponseMessage openAiResponse);
+
+    private static JToken AddModelName(JToken deepClone, string mappedModelName)
+    {
+        deepClone["model"] = mappedModelName;
+        return deepClone;
+    }
 }

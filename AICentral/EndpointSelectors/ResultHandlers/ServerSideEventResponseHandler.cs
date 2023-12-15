@@ -70,7 +70,7 @@ public static class ServerSideEventResponseHandler
             //not much we can do if we failed to create a Tokeniser (I think they are pulled from the internet)
         }
 
-        var chatRequestInformation = new AICentralUsageInformation(
+        var chatRequestInformation = new DownstreamUsageInformation(
             requestInformation.LanguageUrl,
             model,
             context.User.Identity?.Name ?? "unknown",

@@ -1,10 +1,7 @@
-﻿using System.Text;
-using AICentral.Core;
+﻿using AICentral.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace AICentral.OpenAI.AzureOpenAI;
 
@@ -25,81 +22,42 @@ public class AzureOpenAIEndpointRequestResponseHandler : OpenAILikeEndpointReque
         _authHandler = authHandler;
     }
 
-    protected override Task ExtractDiagnostics(
+    protected override Task<ResponseMetadata> PreProcess(
         HttpContext context,
-        HttpRequestMessage downstreamRequest,
+        AIRequest downstreamRequest,
         HttpResponseMessage openAiResponse)
     {
-        var hasRemainingRequests =
-            openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-requests", out var remainingRequests);
-        var hasRemainingTokens =
-            openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-tokens", out var remainingTokens);
+        openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-requests", out var remainingRequestHeaderValues);
+        openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-tokens", out var remainingTokensHeaderValues);
+        var didHaveRequestLimitHeader =
+            long.TryParse(remainingRequestHeaderValues?.FirstOrDefault(), out var remainingRequests);
+        var didHaveTokenLimitHeader =
+            long.TryParse(remainingTokensHeaderValues?.FirstOrDefault(), out var remainingTokens);
 
-        var hostName = downstreamRequest.RequestUri!.Host.ToLowerInvariant();
-        var modelName = context.Items.TryGetValue(HttpItemBagMappedModelName, out var stored)
-            ? (string)stored!
-            : string.Empty;
-
-        if (hasRemainingRequests)
-        {
-            if (long.TryParse(remainingRequests?.FirstOrDefault(), out var val))
-            {
-                AICentralActivitySources.RecordGaugeMetric("remaining-requests", hostName, modelName, val);
-            }
-        }
-
-        if (hasRemainingTokens)
-        {
-            if (long.TryParse(remainingTokens?.FirstOrDefault(), out var val))
-            {
-                AICentralActivitySources.RecordGaugeMetric("remaining-tokens", hostName, modelName, val);
-            }
-        }
-
-        return Task.CompletedTask;
+        return Task.FromResult(new ResponseMetadata(
+            SanitiseHeaders(context, openAiResponse),
+            openAiResponse.Headers.Contains("operation-location"),
+            didHaveTokenLimitHeader ? remainingTokens : null,
+            didHaveRequestLimitHeader ? remainingRequests : null));
     }
-
-
-    protected override Task CustomiseRequest(HttpContext context, AICallInformation aiCallInformation,
+    
+    protected override async Task CustomiseRequest(HttpContext context, AICallInformation aiCallInformation,
         HttpRequestMessage newRequest,
         string? newModelName)
     {
-        if (aiCallInformation.IncomingCallDetails.RequestContent != null)
+        
+        //if there is a model change then set the model on a new outbound JSON request. Else copy the content with no changes
+        if (aiCallInformation.IncomingCallDetails.AICallType != AICallType.Other)
         {
-            if (aiCallInformation.IncomingCallDetails.AICallType == AICallType.DALLE3 &&
-                aiCallInformation.IncomingCallDetails.IncomingModelName != newModelName)
-            {
-                newRequest.Content = new StringContent(
-                    AdjustDalle3ModelName(newModelName, aiCallInformation.IncomingCallDetails.RequestContent.DeepClone())
-                        .ToString(Formatting.None),
-                    Encoding.UTF8, "application/json");
-            }
-            else
-            {
-                newRequest.Content = new StringContent(
-                    aiCallInformation.IncomingCallDetails.RequestContent.ToString(Formatting.None),
-                    Encoding.UTF8, "application/json");
-            }
+            newRequest.Content = await CreateDownstreamResponseWithMappedModelName(aiCallInformation, context.Request, newModelName);
         }
         else
         {
             newRequest.Content = new StreamContent(context.Request.Body);
+            newRequest.Content.Headers.Add("Content-Type", context.Request.Headers.ContentType.ToString());
         }
 
-        _authHandler.ApplyAuthorisationToRequest(context.Request, newRequest);
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// DALL-E 3 puts the model name in the URL as-well as the body. So to map models, we need to adjust the body.
-    /// </summary>
-    /// <param name="newModelName"></param>
-    /// <param name="deepClone"></param>
-    /// <returns></returns>
-    private JToken AdjustDalle3ModelName(string? newModelName, JToken deepClone)
-    {
-        deepClone["model"] = newModelName;
-        return deepClone;
+        await _authHandler.ApplyAuthorisationToRequest(context.Request, newRequest);
     }
 
     /// <summary>
@@ -109,7 +67,7 @@ public class AzureOpenAIEndpointRequestResponseHandler : OpenAILikeEndpointReque
     /// <param name="context"></param>
     /// <param name="openAiResponse"></param>
     /// <returns></returns>
-    protected override Dictionary<string, StringValues> CustomSanitiseHeaders(HttpContext context,
+    private Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,
         HttpResponseMessage openAiResponse)
     {
         var proxiedHeaders = new Dictionary<string, StringValues>();
@@ -162,11 +120,10 @@ public class AzureOpenAIEndpointRequestResponseHandler : OpenAILikeEndpointReque
             AICallType.Completions => "completions",
             AICallType.Embeddings => "embeddings",
             AICallType.DALLE3 => "images/generations",
+            AICallType.Transcription => "audio/transcriptions",
+            AICallType.Translation => "audio/translations",
             _ => string.Empty
         };
-
-        var incomingQuery = aiCallInformation.QueryString;
-        incomingQuery.Remove(AICentralHeaders.AzureOpenAIHostAffinityHeader);
 
         return aiCallInformation.IncomingCallDetails.AICallType == AICallType.Other
             ? QueryHelpers.AddQueryString($"{_languageUrl}{context.Request.Path}", aiCallInformation.QueryString)

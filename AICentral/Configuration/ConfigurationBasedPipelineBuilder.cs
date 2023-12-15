@@ -3,7 +3,7 @@ using AICentral.ConsumerAuth;
 using AICentral.Core;
 using AICentral.Endpoints;
 using AICentral.EndpointSelectors;
-using AICentral.Routes;
+using AICentral.Routers;
 
 namespace AICentral.Configuration;
 
@@ -94,7 +94,7 @@ public class ConfigurationBasedPipelineBuilder
             }
             else
             {
-                endpoints.Add(x.Name!, new EndpointSelectorAdapterFactory(aiCentralEndpointSelectorFactory));
+                endpoints.Add(x.Name!, new EndpointSelectorAdapterDispatcherFactory(aiCentralEndpointSelectorFactory));
             }
         }
 

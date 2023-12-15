@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Shouldly;
 using Xunit.Abstractions;
 
-namespace AICentralTests;
+namespace AICentralTests.EndpointSelectors;
 
 public class the_lowest_latency_endpoint_selector : IClassFixture<TestWebApplicationFactory<Program>>
 {

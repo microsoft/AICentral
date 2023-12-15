@@ -1,11 +1,10 @@
-﻿using AICentral;
-using AICentral.Configuration;
+﻿using AICentral.Configuration;
 using AICentral.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Shouldly;
 
-namespace AICentralTests;
+namespace AICentralTests.Configuration;
 
 public class the_config_system
 {

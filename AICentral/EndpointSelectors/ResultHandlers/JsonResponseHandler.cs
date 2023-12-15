@@ -25,7 +25,7 @@ public static class JsonResponseHandler
             var completionTokens = usage?.Value<int>("completion_tokens") ?? 0;
             var responseContent = response?["choices"]?.FirstOrDefault()?["message"]?.Value<string>("content") ?? string.Empty;
 
-            var chatRequestInformation = new AICentralUsageInformation(
+            var chatRequestInformation = new DownstreamUsageInformation(
                 requestInformation.LanguageUrl,
                 model,
                 context.User.Identity?.Name ?? "unknown",
@@ -47,7 +47,7 @@ public static class JsonResponseHandler
         }
         else
         {
-            var chatRequestInformation = new AICentralUsageInformation(
+            var chatRequestInformation = new DownstreamUsageInformation(
                 requestInformation.LanguageUrl,
                 null,
                 context.User.Identity?.Name ?? "unknown",
