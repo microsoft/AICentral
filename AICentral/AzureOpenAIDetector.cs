@@ -43,7 +43,6 @@ public class AzureOpenAIDetector
 
         if (request.HasFormContentType)
         {
-            request.EnableBuffering();
             var model = request.Form.TryGetValue("model", out var modelValues);
             return new IncomingCallDetails(aICallType, null, model ? modelValues.Single()  : null, null);
         }

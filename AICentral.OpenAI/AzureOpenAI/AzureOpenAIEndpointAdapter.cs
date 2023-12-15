@@ -49,7 +49,7 @@ public class AzureOpenAIEndpointAdapter : OpenAILikeEndpointAdapter
         //if there is a model change then set the model on a new outbound JSON request. Else copy the content with no changes
         if (aiCallInformation.IncomingCallDetails.AICallType != AICallType.Other)
         {
-            newRequest.Content = await CreateDownstreamResponseWithMappedModelName(aiCallInformation, context.Request, newModelName);
+            newRequest.Content = await CopyResponseWithMappedModelName(aiCallInformation, context.Request, newModelName);
         }
         else
         {

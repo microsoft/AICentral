@@ -5,12 +5,14 @@ using AICentral.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
 
 namespace AICentral.OpenAI;
 
 public abstract class OpenAILikeEndpointAdapter : IEndpointAdapter
 {
+    private const string OpenAIWellKnownModelNameField = "model";
     private readonly Dictionary<string, string> _modelMappings;
     private static readonly HashSet<string> HeadersToIgnore = new(new[] { "host", "authorization", "api-key" });
 
@@ -106,8 +108,7 @@ public abstract class OpenAILikeEndpointAdapter : IEndpointAdapter
         return PreProcess(context, newRequest, openAiResponse);
     }
 
-
-    protected static async Task<HttpContent> CreateDownstreamResponseWithMappedModelName(
+    protected static async Task<HttpContent> CopyResponseWithMappedModelName(
         AICallInformation aiCallInformation,
         HttpRequest incomingRequest,
         string? mappedModelName)
@@ -123,32 +124,7 @@ public abstract class OpenAILikeEndpointAdapter : IEndpointAdapter
         if (aiCallInformation.IncomingCallDetails.AICallType == AICallType.Transcription ||
             aiCallInformation.IncomingCallDetails.AICallType == AICallType.Translation)
         {
-            incomingRequest.Body.Position = 0;
-            var newContent = new MultipartFormDataContent(incomingRequest.GetMultipartBoundary());
-            var incomingRequestMultipart = new MultipartReader(incomingRequest.GetMultipartBoundary(), incomingRequest.Body);
-
-            while (await incomingRequestMultipart.ReadNextSectionAsync() is { } nextSection)
-            {
-                var fileSection = nextSection.AsFileSection();
-                if (fileSection != null)
-                {
-                    var ms = new MemoryStream();
-                    await fileSection.FileStream!.CopyToAsync(ms);
-                    ms.Position = 0;
-                    var fileContent = new StreamContent(ms);
-                    newContent.Add(fileContent, fileSection.Name, fileSection.FileName);
-                }
-                var formSection = nextSection.AsFormDataSection();
-                if (formSection != null)
-                {
-                    var contentType = new ContentType(nextSection.ContentType ?? "text/plain; charset=utf-8");
-                    newContent.Add(
-                        new StringContent(formSection.Name == "model" ? mappedModelName! : await formSection.GetValueAsync(), Encoding.GetEncoding(contentType.CharSet ?? "utf-8"), contentType.MediaType),
-                        formSection.Name);
-                }
-
-            }
-            return newContent;
+            return await CopyMultipartContent(incomingRequest, mappedModelName);
         }
         
         return aiCallInformation.IncomingCallDetails.IncomingModelName == mappedModelName
@@ -159,6 +135,42 @@ public abstract class OpenAILikeEndpointAdapter : IEndpointAdapter
                     .ToString(),
                 Encoding.UTF8, "application/json");
 
+    }
+
+    private static Task<MultipartFormDataContent> CopyMultipartContent(HttpRequest incomingRequest, string? mappedModelName)
+    {
+        var newContent = new MultipartFormDataContent(incomingRequest.GetMultipartBoundary());
+
+        foreach (var item in incomingRequest.Form.Files)
+        {
+            var fileContent = new StreamContent(item.OpenReadStream());
+            if (!string.IsNullOrWhiteSpace(item.ContentType))
+            {
+                fileContent.Headers.ContentType = new MediaTypeHeaderValue(item.ContentType);
+            }
+
+            newContent.Add(fileContent, item.Name, item.FileName);
+        }
+
+        foreach (var item in incomingRequest.Form)
+        {
+            if (item.Key == OpenAIWellKnownModelNameField)
+            {
+                if (mappedModelName != null || item.Value.Count > 0)
+                {
+                    newContent.Add(new StringContent(mappedModelName ?? item.Value.First()!, Encoding.GetEncoding("utf-8"), "text/plain"), item.Key);
+                }
+            }
+            else
+            {
+                if (item.Value.Count > 0)
+                {
+                    newContent.Add(new StringContent(item.Value.First()!, Encoding.GetEncoding("utf-8"), "text/plain"), item.Key);
+                }
+            }
+        }
+        
+        return Task.FromResult(newContent);
     }
 
     private static JToken AddModelName(JToken deepClone, string mappedModelName)
