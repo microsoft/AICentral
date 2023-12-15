@@ -55,7 +55,7 @@ public class TestAICentralPipelineBuilder
 
     public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel)
     {
-        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointRequestResponseHandlerFactory(
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapter(
             hostname,
             $"https://{hostname}",
             new Dictionary<string, string>()
@@ -74,7 +74,7 @@ public class TestAICentralPipelineBuilder
 
     public TestAICentralPipelineBuilder WithSingleOpenAIEndpoint(string name, string model, string mappedModel)
     {
-        var openAiEndpointDispatcherBuilder = new OpenAIEndpointRequestResponseHandlerFactory(
+        var openAiEndpointDispatcherBuilder = new OpenAIDownstreamEndpointAdapter(
             name,
             new Dictionary<string, string>()
             {
@@ -95,7 +95,7 @@ public class TestAICentralPipelineBuilder
     )
     {
         IAICentralEndpointDispatcherFactory[] priorityOpenAIEndpointDispatcherBuilder = priorityEndpoints.Select(x =>
-            new DownstreamEndpointDispatcherFactory(new AzureOpenAIEndpointRequestResponseHandlerFactory(
+            new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapter(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
@@ -105,7 +105,7 @@ public class TestAICentralPipelineBuilder
                 Guid.NewGuid().ToString()))).ToArray();
 
         IAICentralEndpointDispatcherFactory[] fallbackOpenAIEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
-            new DownstreamEndpointDispatcherFactory(new AzureOpenAIEndpointRequestResponseHandlerFactory(
+            new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapter(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
@@ -129,7 +129,7 @@ public class TestAICentralPipelineBuilder
         params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new DownstreamEndpointDispatcherFactory(new AzureOpenAIEndpointRequestResponseHandlerFactory(
+            new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapter(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
@@ -147,7 +147,7 @@ public class TestAICentralPipelineBuilder
         params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new DownstreamEndpointDispatcherFactory(new AzureOpenAIEndpointRequestResponseHandlerFactory(
+            new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapter(
                 x.hostname,
                 $"https://{x.hostname}", new Dictionary<string, string>()
                 {
@@ -258,7 +258,7 @@ public class TestAICentralPipelineBuilder
     public TestAICentralPipelineBuilder WithHierarchicalEndpointSelector(string endpoint200, string model,
         string mappedModel)
     {
-        var openAiEndpointDispatcherBuilder = new AzureOpenAIEndpointRequestResponseHandlerFactory(
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapter(
             endpoint200,
             $"https://{endpoint200}",
             new Dictionary<string, string>()
