@@ -1,6 +1,6 @@
 ﻿namespace AICentral.Core;
 
-public record AICentralUsageInformation(
+public record DownstreamUsageInformation(
     string OpenAIHost,
     string? ModelName,
     string Client,
@@ -16,12 +16,12 @@ public record AICentralUsageInformation(
     DateTimeOffset StartDate,
     TimeSpan Duration)
 {
-    public static AICentralUsageInformation Empty(
+    public static DownstreamUsageInformation Empty(
         HttpContext context, 
         IncomingCallDetails incomingCallDetails,
         string hostUriBase)
         =>
-            new AICentralUsageInformation(
+            new DownstreamUsageInformation(
                 hostUriBase,
                 string.Empty,
                 context.User.Identity?.Name ?? "unknown",

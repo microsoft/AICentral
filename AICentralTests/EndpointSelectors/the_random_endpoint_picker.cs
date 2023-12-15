@@ -6,33 +6,30 @@ using Newtonsoft.Json;
 using Shouldly;
 using Xunit.Abstractions;
 
-namespace AICentralTests;
+namespace AICentralTests.EndpointSelectors;
 
-public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationFactory<Program>>
+public class the_random_endpoint_picker : IClassFixture<TestWebApplicationFactory<Program>>
 
 {
     private readonly TestWebApplicationFactory<Program> _factory;
     private readonly HttpClient _httpClient;
 
-    public the_prioritised_endpoint_picker(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
+    public the_random_endpoint_picker(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
     {
         _factory = factory;
-        _factory.OutputHelper = testOutputHelper;
+        factory.OutputHelper = testOutputHelper;
         _httpClient = factory.CreateClient();
     }
 
     [Fact]
-    public async Task fails_over_to_a_successful_endpoint()
+    public async Task works_with_a_single_endpoint()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint500, "Model1",
-            () => Task.FromResult(AICentralFakeResponses.InternalServerErrorResponse()));
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint404, "Model1",
-            () => Task.FromResult(AICentralFakeResponses.NotFoundResponse()));
         _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200Number2, "Model1",
+            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
 
-        var result = await _httpClient
-            .PostAsync("http://azure-noauth-priority.localtest.me/openai/deployments/priority/chat/completions?api-version=2023-05-15",
+        var result = await _httpClient.PostAsync("http://azure-to-azure-openai.localtest.me/openai/deployments/random/chat/completions?api-version=2023-05-15",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -46,10 +43,5 @@ public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationF
             }), Encoding.UTF8, "application/json"));
         
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
-        
-        result.Headers.GetValues("x-aicentral-failed-servers").ShouldContain($"https://{AICentralFakeResponses.Endpoint404}");
-        result.Headers.GetValues("x-aicentral-failed-servers").ShouldContain($"https://{AICentralFakeResponses.Endpoint500}");
-
-        result.Headers.GetValues("x-aicentral-server").Single().ShouldBe($"https://{AICentralFakeResponses.Endpoint200}");
     }
 }

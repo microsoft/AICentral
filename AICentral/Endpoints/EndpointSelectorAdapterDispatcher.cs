@@ -1,12 +1,12 @@
 ﻿using AICentral.Core;
 
-namespace AICentral.EndpointSelectors;
+namespace AICentral.Endpoints;
 
-public class EndpointSelectorAdapter : IAICentralEndpointDispatcher
+public class EndpointSelectorAdapterDispatcher : IAICentralEndpointDispatcher
 {
     private readonly IAICentralEndpointSelectorFactory _endpointSelectorFactory;
 
-    public EndpointSelectorAdapter(IAICentralEndpointSelectorFactory endpointSelectorFactory)
+    public EndpointSelectorAdapterDispatcher(IAICentralEndpointSelectorFactory endpointSelectorFactory)
     {
         _endpointSelectorFactory = endpointSelectorFactory;
     }
@@ -39,7 +39,7 @@ public class EndpointSelectorAdapter : IAICentralEndpointDispatcher
     {
         foreach (var endpoint in _endpointSelectorFactory.Build().ContainedEndpoints())
         {
-            if (endpoint is EndpointSelectorAdapter endpointSelectorAdapter)
+            if (endpoint is EndpointSelectorAdapterDispatcher endpointSelectorAdapter)
             {
                 foreach (var wrappedEndpoint in endpointSelectorAdapter.ContainedEndpoints())
                 {

@@ -18,7 +18,7 @@ public class StreamResponseHandler
         await openAiResponse.Content.CopyToAsync(context.Response.Body, cancellationToken);
         await context.Response.Body.FlushAsync(cancellationToken);
 
-        var chatRequestInformation = new AICentralUsageInformation(
+        var chatRequestInformation = new DownstreamUsageInformation(
             requestInformation.LanguageUrl,
             null,
             context.User.Identity?.Name ?? "unknown",

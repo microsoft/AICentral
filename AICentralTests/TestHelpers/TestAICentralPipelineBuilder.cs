@@ -14,7 +14,7 @@ using AICentral.EndpointSelectors.Single;
 using AICentral.OpenAI.AzureOpenAI;
 using AICentral.OpenAI.OpenAI;
 using AICentral.RateLimiting;
-using AICentral.Routes;
+using AICentral.Routers;
 using FixedWindowRateLimiterOptions = AICentral.RateLimiting.FixedWindowRateLimiterOptions;
 
 namespace AICentralTests.TestHelpers;
@@ -269,7 +269,7 @@ public class TestAICentralPipelineBuilder
             Guid.NewGuid().ToString());
 
         var endpointFactory = new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
-        _endpointFactory = new SingleEndpointSelectorFactory(new EndpointSelectorAdapterFactory(endpointFactory));
+        _endpointFactory = new SingleEndpointSelectorFactory(new EndpointSelectorAdapterDispatcherFactory(endpointFactory));
         _openAiEndpointDispatcherBuilders = new[] { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
 
         return this;

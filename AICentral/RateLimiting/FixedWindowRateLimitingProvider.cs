@@ -29,7 +29,7 @@ public class FixedWindowRateLimitingProvider : IAICentralPipelineStep, IAICentra
 
         var result = await pipeline.Next(context, aiCallInformation, cancellationToken);
 
-        var tokensConsumed = UsedTokens(result.AICentralUsageInformation);
+        var tokensConsumed = UsedTokens(result.DownstreamUsageInformation);
 
         if (tokensConsumed.HasValue)
         {
@@ -97,7 +97,7 @@ public class FixedWindowRateLimitingProvider : IAICentralPipelineStep, IAICentra
         }
 
         return new AICentralResponse(
-            AICentralUsageInformation.Empty(context, aiCallInformation.IncomingCallDetails, string.Empty),
+            DownstreamUsageInformation.Empty(context, aiCallInformation.IncomingCallDetails, string.Empty),
             resultHandler);
     }
 
@@ -133,11 +133,11 @@ public class FixedWindowRateLimitingProvider : IAICentralPipelineStep, IAICentra
         return Task.CompletedTask;
     }
 
-    private int? UsedTokens(AICentralUsageInformation aiCentralUsageInformation)
+    private int? UsedTokens(DownstreamUsageInformation downstreamUsageInformation)
     {
         return _rateLimiterOptions.MetricType == RateLimitingMetricType.Requests
             ? 1
-            : aiCentralUsageInformation.TotalTokens;
+            : downstreamUsageInformation.TotalTokens;
     }
 
     public object WriteDebug()

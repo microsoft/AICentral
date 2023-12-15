@@ -3,7 +3,7 @@ using System.Diagnostics.Metrics;
 using AICentral.ConsumerAuth;
 using AICentral.Core;
 using AICentral.EndpointSelectors;
-using AICentral.Routes;
+using AICentral.Routers;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace AICentral;
@@ -82,23 +82,23 @@ public class Pipeline
 
             var tagList = new TagList
             {
-                { "Model", result.AICentralUsageInformation.ModelName },
-                { "Endpoint", result.AICentralUsageInformation.OpenAIHost }
+                { "Model", result.DownstreamUsageInformation.ModelName },
+                { "Endpoint", result.DownstreamUsageInformation.OpenAIHost }
             };
 
             AICentralActivitySources.RecordHistogram(_name, "duration", "ms",
-                result.AICentralUsageInformation.Duration.TotalMilliseconds);
+                result.DownstreamUsageInformation.Duration.TotalMilliseconds);
 
-            if (result.AICentralUsageInformation.TotalTokens != null)
+            if (result.DownstreamUsageInformation.TotalTokens != null)
             {
-                TokenMeter.Record(result.AICentralUsageInformation.TotalTokens.Value, tagList);
+                TokenMeter.Record(result.DownstreamUsageInformation.TotalTokens.Value, tagList);
             }
 
-            activity?.AddTag("AICentral.Duration", result.AICentralUsageInformation.Duration);
-            activity?.AddTag("AICentral.Model", result.AICentralUsageInformation.ModelName);
-            activity?.AddTag("AICentral.CallType", result.AICentralUsageInformation.CallType);
-            activity?.AddTag("AICentral.TotalTokens", result.AICentralUsageInformation.TotalTokens);
-            activity?.AddTag("AICentral.OpenAIHost", result.AICentralUsageInformation.OpenAIHost);
+            activity?.AddTag("AICentral.Duration", result.DownstreamUsageInformation.Duration);
+            activity?.AddTag("AICentral.Model", result.DownstreamUsageInformation.ModelName);
+            activity?.AddTag("AICentral.CallType", result.DownstreamUsageInformation.CallType);
+            activity?.AddTag("AICentral.TotalTokens", result.DownstreamUsageInformation.TotalTokens);
+            activity?.AddTag("AICentral.OpenAIHost", result.DownstreamUsageInformation.OpenAIHost);
 
             return result;
         }
@@ -127,8 +127,8 @@ public class Pipeline
     private IAICentralEndpointSelector? FindAffinityServer(AICallInformation requestDetails)
     {
         var availableEndpointSelectors = AffinityEndpointHelper.FlattenedEndpoints(_endpointSelector.Build());
-        AffinityEndpointHelper.IsAffinityRequest(requestDetails, availableEndpointSelectors,
-            out var affinityEndpointSelector);
+        AffinityEndpointHelper.IsAffinityRequest(requestDetails, availableEndpointSelectors, out var affinityEndpointSelector);
+        requestDetails.QueryString.Remove(AICentralHeaders.AzureOpenAIHostAffinityHeader);
         return affinityEndpointSelector;
     }
 

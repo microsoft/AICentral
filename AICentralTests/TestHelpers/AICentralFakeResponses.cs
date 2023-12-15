@@ -203,6 +203,23 @@ public class AICentralFakeResponses
         return response;
     }
 
+    public static HttpResponseMessage FakeOpenAIAudioTranslationResponse()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK);
+        response.Content = new StringContent("""
+                                             {
+                                               "text": "I wonder what the translation will be for this"
+                                             }
+                                             """, Encoding.UTF8, "text/plain");
+
+        response.Headers.Add("openai-processing-ms", "744");
+        response.Headers.Add("openai-version", "2020-10-01");
+        response.Headers.Add("x-ratelimit-limit-requests", "50");
+        response.Headers.Add("x-ratelimit-remaining-requests", "49");
+        response.Headers.Add("x-ratelimit-reset-requests", "1.2s");
+        return response;
+    }
+
     public static HttpResponseMessage NotFoundResponse()
     {
         var response = new HttpResponseMessage();

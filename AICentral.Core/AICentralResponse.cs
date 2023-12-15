@@ -1,3 +1,3 @@
 ﻿namespace AICentral.Core;
 
-public record AICentralResponse(AICentralUsageInformation AICentralUsageInformation, IResult ResultHandler);
+public record AICentralResponse(DownstreamUsageInformation DownstreamUsageInformation, IResult ResultHandler);

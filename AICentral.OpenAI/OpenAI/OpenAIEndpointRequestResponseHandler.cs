@@ -1,9 +1,7 @@
 ﻿using System.Net.Http.Headers;
-using System.Text;
 using AICentral.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json.Linq;
 
 namespace AICentral.OpenAI.OpenAI;
 
@@ -23,15 +21,25 @@ public class OpenAIEndpointRequestResponseHandler : OpenAILikeEndpointRequestRes
         _apiKey = apiKey;
     }
 
-    protected override Task ExtractDiagnostics(
-        HttpContext context,
-        HttpRequestMessage downstreamRequest, 
+    protected override Task<ResponseMetadata> PreProcess(HttpContext context,
+        AIRequest downstreamRequest,
         HttpResponseMessage openAiResponse)
     {
-        return Task.CompletedTask;
+        openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-requests", out var remainingRequestHeaderValues);
+        openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-tokens", out var remainingTokensHeaderValues);
+        var didHaveRequestLimitHeader =
+            long.TryParse(remainingRequestHeaderValues?.FirstOrDefault(), out var remainingRequests);
+        var didHaveTokenLimitHeader =
+            long.TryParse(remainingTokensHeaderValues?.FirstOrDefault(), out var remainingTokens);
+
+        return Task.FromResult(new ResponseMetadata(
+            SanitiseHeaders(context, openAiResponse),
+            false,
+            didHaveTokenLimitHeader ? remainingTokens : null,
+            didHaveRequestLimitHeader ? remainingRequests : null));
     }
 
-    protected override Task CustomiseRequest(
+    protected override async Task CustomiseRequest(
         HttpContext context,
         AICallInformation aiCallInformation,
         HttpRequestMessage newRequest,
@@ -40,7 +48,7 @@ public class OpenAIEndpointRequestResponseHandler : OpenAILikeEndpointRequestRes
         //if there is a model change then set the model on a new outbound JSON request. Else copy the content with no changes
         if (aiCallInformation.IncomingCallDetails.AICallType != AICallType.Other)
         {
-            newRequest.Content = HandleMappedModelName(aiCallInformation, mappedModelName);
+            newRequest.Content = await CreateDownstreamResponseWithMappedModelName(aiCallInformation, context.Request, mappedModelName);
         }
         else
         {
@@ -53,27 +61,6 @@ public class OpenAIEndpointRequestResponseHandler : OpenAILikeEndpointRequestRes
         {
             newRequest.Headers.Add("OpenAI-Organization", _organization);
         }
-
-        return Task.CompletedTask;
-    }
-
-    private static StringContent HandleMappedModelName(AICallInformation aiCallInformation,
-        string? mappedModelName)
-    {
-        if (aiCallInformation.IncomingCallDetails.AICallType == AICallType.DALLE3)
-        {
-            //no model name for this
-            var content = aiCallInformation.IncomingCallDetails.RequestContent!.DeepClone();
-            content["model"]!.Parent!.Remove();
-            return new StringContent(content.ToString(), Encoding.UTF8, "application/json");
-        }
-        return aiCallInformation.IncomingCallDetails.IncomingModelName == mappedModelName
-            ? new StringContent(aiCallInformation.IncomingCallDetails.RequestContent!.ToString(), Encoding.UTF8,
-                "application/json")
-            : new StringContent(
-                AddModelName(aiCallInformation.IncomingCallDetails.RequestContent!.DeepClone(), mappedModelName!)
-                    .ToString(),
-                Encoding.UTF8, "application/json");
     }
 
     protected override string BuildUri(HttpContext context, AICallInformation aiCallInformation, string? _)
@@ -84,6 +71,8 @@ public class OpenAIEndpointRequestResponseHandler : OpenAILikeEndpointRequestRes
             AICallType.Completions => "completions",
             AICallType.Embeddings => "embeddings",
             AICallType.DALLE3 => "images/generations",
+            AICallType.Transcription => "audio/transcriptions",
+            AICallType.Translation => "audio/translations",
             _ => string.Empty
         };
 
@@ -95,13 +84,8 @@ public class OpenAIEndpointRequestResponseHandler : OpenAILikeEndpointRequestRes
         return requestUri;
     }
 
-    private static JToken AddModelName(JToken deepClone, string mappedModelName)
-    {
-        deepClone["model"] = mappedModelName;
-        return deepClone;
-    }
-
-    protected override Dictionary<string, StringValues> CustomSanitiseHeaders(HttpContext context,
+    private Dictionary<string, StringValues> SanitiseHeaders(
+        HttpContext context,
         HttpResponseMessage openAiResponse)
     {
         return openAiResponse.Headers.ToDictionary(x => x.Key, x => new StringValues(x.Value.ToArray()));

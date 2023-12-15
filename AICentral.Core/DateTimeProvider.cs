@@ -1,7 +1,8 @@
-﻿using AICentral.Core;
+﻿namespace AICentral.Core;
 
-namespace AICentral;
-
+/// <summary>
+/// Implementation of IDateTimeProvider using DateTimeOffset.Now
+/// </summary>
 public class DateTimeProvider: IDateTimeProvider
 {
     public DateTimeOffset Now => DateTimeOffset.Now;

@@ -2,14 +2,13 @@ using System.Net;
 using System.Text;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
-using Microsoft.AspNetCore.Server.HttpSys;
 using Newtonsoft.Json;
 using Shouldly;
 using Xunit.Abstractions;
 
-namespace AICentralTests;
+namespace AICentralTests.GeneralSteps;
 
-public class the_endpoint_dispatchers : IClassFixture<TestWebApplicationFactory<Program>>
+public class the_bulkhead : IClassFixture<TestWebApplicationFactory<Program>>
 
 {
     private readonly TestWebApplicationFactory<Program> _factory;
@@ -29,7 +28,7 @@ public class the_endpoint_dispatchers : IClassFixture<TestWebApplicationFactory<
         return AICentralFakeResponses.FakeCompletionsResponse();
     }
 
-    public the_endpoint_dispatchers(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
+    public the_bulkhead(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
     {
         _factory = factory;
         factory.OutputHelper = testOutputHelper;

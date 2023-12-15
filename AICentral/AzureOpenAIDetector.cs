@@ -22,21 +22,30 @@ public class AzureOpenAIDetector
         if (remaining[1] == "deployments")
         {
             incomingModelName = remaining[2];
-            callType = remaining[3];
+            callType = string.Join('/', remaining[3..]);
         }
 
         var aICallType = callType switch
         {
-            "chat" => AICallType.Chat,
+            "chat/completions" => AICallType.Chat,
             "completions" => AICallType.Completions,
             "embeddings" => AICallType.Embeddings,
-            "images" => remaining[1] == "deployments" ? AICallType.DALLE3 : AICallType.Other,
+            "images/generations" => remaining[1] == "deployments" ? AICallType.DALLE3 : AICallType.Other,
+            "audio/transcriptions" => AICallType.Transcription,
+            "audio/translations" => AICallType.Translation,
             _ => AICallType.Other
         };
 
         if (aICallType == AICallType.Other)
         {
             return new IncomingCallDetails(aICallType, null, null, null);
+        }
+
+        if (request.HasFormContentType)
+        {
+            request.EnableBuffering();
+            var model = request.Form.TryGetValue("model", out var modelValues);
+            return new IncomingCallDetails(aICallType, null, model ? modelValues.Single()  : null, null);
         }
 
         //Pull out the text
