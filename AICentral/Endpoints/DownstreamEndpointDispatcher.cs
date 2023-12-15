@@ -73,7 +73,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 
         sw.Start();
 
-        var openAiResponse = await typedDispatcher.Dispatch(context.Request, newRequest.HttpRequestMessage, cancellationToken);
+        var openAiResponse = await typedDispatcher.Dispatch(newRequest.HttpRequestMessage, cancellationToken);
 
         //this will retry the operation for retryable status codes. When we reach here we might not want
         //to stream the response if it wasn't a 200.

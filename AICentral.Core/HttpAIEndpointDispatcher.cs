@@ -22,7 +22,7 @@ public class HttpAIEndpointDispatcher
         _logger = logger;
     }
 
-    public async Task<HttpResponseMessage> Dispatch(HttpRequest incomingRequest, HttpRequestMessage outgoingRequest, CancellationToken cancellationToken)
+    public async Task<HttpResponseMessage> Dispatch(HttpRequestMessage outgoingRequest, CancellationToken cancellationToken)
     {
         if (_retryAt != null && _dateTimeProvider.Now < _retryAt)
         {
