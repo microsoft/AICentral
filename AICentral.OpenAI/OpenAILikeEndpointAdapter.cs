@@ -9,12 +9,12 @@ using Newtonsoft.Json.Linq;
 
 namespace AICentral.OpenAI;
 
-public abstract class OpenAILikeEndpointRequestResponseHandler : IEndpointRequestResponseHandler
+public abstract class OpenAILikeEndpointAdapter : IEndpointAdapter
 {
     private readonly Dictionary<string, string> _modelMappings;
     private static readonly HashSet<string> HeadersToIgnore = new(new[] { "host", "authorization", "api-key" });
 
-    protected OpenAILikeEndpointRequestResponseHandler(
+    protected OpenAILikeEndpointAdapter(
         string id,
         string baseUrl,
         string endpointName,

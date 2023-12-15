@@ -4,25 +4,25 @@ namespace AICentral.Endpoints;
 
 public class DownstreamEndpointDispatcherFactory : IAICentralEndpointDispatcherFactory
 {
-    private readonly IEndpointRequestResponseHandlerFactory _endpointDispatcherFactory;
+    private readonly IDownstreamEndpointAdapter _downstreamEndpointDispatcher;
 
-    public DownstreamEndpointDispatcherFactory(IEndpointRequestResponseHandlerFactory endpointDispatcherFactory)
+    public DownstreamEndpointDispatcherFactory(IDownstreamEndpointAdapter downstreamEndpointDispatcher)
     {
-        _endpointDispatcherFactory = endpointDispatcherFactory;
+        _downstreamEndpointDispatcher = downstreamEndpointDispatcher;
     }
     
     public IAICentralEndpointDispatcher Build()
     {
-        return new DownstreamEndpointDispatcher(_endpointDispatcherFactory.Build());
+        return new DownstreamEndpointDispatcher(_downstreamEndpointDispatcher.Build());
     }
 
     public object WriteDebug()
     {
-        return _endpointDispatcherFactory.WriteDebug();
+        return _downstreamEndpointDispatcher.WriteDebug();
     }
 
     public void RegisterServices(HttpMessageHandler? optionalHandler, IServiceCollection services)
     {
-        _endpointDispatcherFactory.RegisterServices(optionalHandler, services);
+        _downstreamEndpointDispatcher.RegisterServices(optionalHandler, services);
     }
 }

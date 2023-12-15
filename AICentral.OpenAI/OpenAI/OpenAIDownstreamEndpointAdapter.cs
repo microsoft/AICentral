@@ -4,15 +4,15 @@ using Microsoft.Extensions.Logging;
 
 namespace AICentral.OpenAI.OpenAI;
 
-public class OpenAIEndpointRequestResponseHandlerFactory : IEndpointRequestResponseHandlerFactory
+public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 {
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string? _organization;
     private readonly int? _maxConcurrency;
-    private readonly Lazy<IEndpointRequestResponseHandler> _endpointDispatcher;
+    private readonly Lazy<IEndpointAdapter> _endpointDispatcher;
     private readonly string _id;
 
-    public OpenAIEndpointRequestResponseHandlerFactory(string endpointName, Dictionary<string, string> modelMappings,
+    public OpenAIDownstreamEndpointAdapter(string endpointName, Dictionary<string, string> modelMappings,
         string apiKey,
         string? organization,
         int? maxConcurrency = null)
@@ -22,8 +22,8 @@ public class OpenAIEndpointRequestResponseHandlerFactory : IEndpointRequestRespo
         _organization = organization;
         _maxConcurrency = maxConcurrency;
 
-        _endpointDispatcher = new Lazy<IEndpointRequestResponseHandler>(() =>
-            new OpenAIEndpointRequestResponseHandler(_id, endpointName, _modelMappings, apiKey, _organization));
+        _endpointDispatcher = new Lazy<IEndpointAdapter>(() =>
+            new OpenAIEndpointAdapter(_id, endpointName, _modelMappings, apiKey, _organization));
     }
 
     public void RegisterServices(HttpMessageHandler? httpMessageHandler, IServiceCollection services)
@@ -35,13 +35,13 @@ public class OpenAIEndpointRequestResponseHandlerFactory : IEndpointRequestRespo
 
     public static string ConfigName => "OpenAIEndpoint";
 
-    public static IEndpointRequestResponseHandlerFactory BuildFromConfig(ILogger logger,
+    public static IDownstreamEndpointAdapter BuildFromConfig(ILogger logger,
         AICentralTypeAndNameConfig config)
     {
         var properties = config.TypedProperties<OpenAIEndpointPropertiesConfig>();
         Guard.NotNull(properties, "Properties");
 
-        return new OpenAIEndpointRequestResponseHandlerFactory(
+        return new OpenAIDownstreamEndpointAdapter(
             config.Name!,
             Guard.NotNull(properties.ModelMappings, nameof(properties.ModelMappings)),
             Guard.NotNull(properties.ApiKey, nameof(properties.ApiKey)),
@@ -50,7 +50,7 @@ public class OpenAIEndpointRequestResponseHandlerFactory : IEndpointRequestRespo
         );
     }
 
-    public IEndpointRequestResponseHandler Build()
+    public IEndpointAdapter Build()
     {
         return _endpointDispatcher.Value;
     }
@@ -60,7 +60,7 @@ public class OpenAIEndpointRequestResponseHandlerFactory : IEndpointRequestRespo
         return new
         {
             Type = "OpenAI",
-            Url = OpenAIEndpointRequestResponseHandler.OpenAIV1,
+            Url = OpenAIEndpointAdapter.OpenAIV1,
             Mappings = _modelMappings,
             Organization = _organization
         };

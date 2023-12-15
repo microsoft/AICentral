@@ -5,13 +5,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.OpenAI.OpenAI;
 
-public class OpenAIEndpointRequestResponseHandler : OpenAILikeEndpointRequestResponseHandler
+public class OpenAIEndpointAdapter : OpenAILikeEndpointAdapter
 {
     internal const string OpenAIV1 = "https://api.openai.com";
     private readonly string? _organization;
     private readonly string _apiKey;
 
-    public OpenAIEndpointRequestResponseHandler(string id,
+    public OpenAIEndpointAdapter(string id,
         string endpointName,
         Dictionary<string, string> modelMappings,
         string apiKey,

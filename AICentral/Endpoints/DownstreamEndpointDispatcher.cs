@@ -13,10 +13,10 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 {
     private string EndpointName { get; }
     private readonly string _id;
-    private readonly IEndpointRequestResponseHandler _endpointDispatcher;
+    private readonly IEndpointAdapter _endpointDispatcher;
     private static readonly HttpResponseMessage RateLimitedFakeResponse = new(HttpStatusCode.TooManyRequests);
 
-    public DownstreamEndpointDispatcher(IEndpointRequestResponseHandler endpointDispatcher)
+    public DownstreamEndpointDispatcher(IEndpointAdapter endpointDispatcher)
     {
         EndpointName = endpointDispatcher.EndpointName;
         _id = endpointDispatcher.Id;

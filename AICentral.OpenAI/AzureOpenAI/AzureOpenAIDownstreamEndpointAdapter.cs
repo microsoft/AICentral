@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace AICentral.OpenAI.AzureOpenAI;
 
-public class AzureOpenAIEndpointRequestResponseHandlerFactory : IEndpointRequestResponseHandlerFactory
+public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 {
     private readonly IEndpointAuthorisationHandler _authHandler;
     private readonly string _endpointName;
@@ -13,7 +13,7 @@ public class AzureOpenAIEndpointRequestResponseHandlerFactory : IEndpointRequest
     private readonly string _id;
     private readonly int? _maxConcurrency;
     
-    public AzureOpenAIEndpointRequestResponseHandlerFactory(
+    public AzureOpenAIDownstreamEndpointAdapter(
         string endpointName,
         string languageUrl,
         Dictionary<string, string> modelMappings,
@@ -49,7 +49,7 @@ public class AzureOpenAIEndpointRequestResponseHandlerFactory : IEndpointRequest
 
     public static string ConfigName => "AzureOpenAIEndpoint";
 
-    public static IEndpointRequestResponseHandlerFactory BuildFromConfig(
+    public static IDownstreamEndpointAdapter BuildFromConfig(
         ILogger logger,
         AICentralTypeAndNameConfig config)
     {
@@ -76,7 +76,7 @@ public class AzureOpenAIEndpointRequestResponseHandlerFactory : IEndpointRequest
             authenticationType = "EntraPassThrough";
         }
 
-        return new AzureOpenAIEndpointRequestResponseHandlerFactory(
+        return new AzureOpenAIDownstreamEndpointAdapter(
             config.Name!,
             Guard.NotNull(properties.LanguageEndpoint, nameof(properties.LanguageEndpoint)),
             modelMappings,
@@ -85,9 +85,9 @@ public class AzureOpenAIEndpointRequestResponseHandlerFactory : IEndpointRequest
             properties.MaxConcurrency);
     }
 
-    public IEndpointRequestResponseHandler Build()
+    public IEndpointAdapter Build()
     {
-        return new AzureOpenAIEndpointRequestResponseHandler(_id, _languageUrl, _endpointName, _modelMappings, _authHandler);
+        return new AzureOpenAIEndpointAdapter(_id, _languageUrl, _endpointName, _modelMappings, _authHandler);
     }
 
     public object WriteDebug()

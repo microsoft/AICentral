@@ -48,7 +48,7 @@ builder.Services.AddAICentral(
     startupLogger: new SerilogLoggerProvider(logger).CreateLogger("AICentralStartup"),
     additionalComponentAssemblies: new[]
         { typeof(AzureMonitorLoggerFactory).Assembly, 
-            typeof(AzureOpenAIEndpointRequestResponseHandlerFactory).Assembly });
+            typeof(AzureOpenAIDownstreamEndpointAdapter).Assembly });
 
 builder.Services.AddRazorPages();
 

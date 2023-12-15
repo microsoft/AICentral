@@ -5,13 +5,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.OpenAI.AzureOpenAI;
 
-public class AzureOpenAIEndpointRequestResponseHandler : OpenAILikeEndpointRequestResponseHandler
+public class AzureOpenAIEndpointAdapter : OpenAILikeEndpointAdapter
 {
     private static readonly string[] HeaderPrefixesToCopy = { "x-", "apim", "operation-location" };
     private readonly string _languageUrl;
     private readonly IEndpointAuthorisationHandler _authHandler;
 
-    public AzureOpenAIEndpointRequestResponseHandler(
+    public AzureOpenAIEndpointAdapter(
         string id,
         string languageUrl,
         string endpointName,

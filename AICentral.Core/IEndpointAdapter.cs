@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a downstream AI service that can have requests routed to it.
 /// </summary>
-public interface IEndpointRequestResponseHandler
+public interface IEndpointAdapter
 {
     string Id { get; }
     string BaseUrl { get; }
