@@ -1,7 +1,7 @@
 using AICentral.Configuration;
 using AICentral.Core;
 using AICentral.Endpoints.OpenAI;
-using AICentral.Extensions.AzureMonitorLogging;
+using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;

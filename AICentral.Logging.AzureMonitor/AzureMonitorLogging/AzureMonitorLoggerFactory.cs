@@ -1,10 +1,8 @@
 ﻿using AICentral.Core;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
-namespace AICentral.Extensions.AzureMonitorLogging;
+namespace AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 
 /// <summary>
 /// Logs out usage information to Azure Monitor

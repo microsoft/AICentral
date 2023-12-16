@@ -3,7 +3,7 @@ using AICentral;
 using AICentral.Configuration;
 using AICentral.Core;
 using AICentral.Endpoints.AzureOpenAI;
-using AICentral.Extensions.AzureMonitorLogging;
+using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,9 +1,8 @@
 ﻿using AICentral.Core;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using ILogger = Serilog.ILogger;
 
-namespace AICentral.Extensions.AzureMonitorLogging;
+namespace AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 
 public class AzureMonitorLogger : IAICentralPipelineStep
 {

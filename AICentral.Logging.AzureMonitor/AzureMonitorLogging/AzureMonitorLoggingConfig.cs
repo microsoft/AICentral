@@ -1,4 +1,4 @@
-﻿namespace AICentral.Extensions.AzureMonitorLogging;
+﻿namespace AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 
 public class AzureMonitorLoggingConfig
 {
