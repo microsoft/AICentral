@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 using Shouldly;
 using Xunit.Abstractions;
 
-namespace AICentralTests.Downstreams;
+namespace AICentralTests.Endpoints;
 
 [UsesVerify]
 public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory<Program>>, IDisposable

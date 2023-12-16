@@ -8,7 +8,7 @@ using Azure.Core.Pipeline;
 using Shouldly;
 using Xunit.Abstractions;
 
-namespace AICentralTests.Downstreams;
+namespace AICentralTests.Endpoints;
 
 [UsesVerify]
 public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Program>>, IDisposable

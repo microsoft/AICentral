@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Xunit.Abstractions;
 
-namespace AICentralTests.Downstreams;
+namespace AICentralTests.Endpoints;
 
 public class the_downstream_polly_policy : IClassFixture<TestWebApplicationFactory<Program>>
 {
