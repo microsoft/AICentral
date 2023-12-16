@@ -75,7 +75,7 @@ public static class TestWebApplicationFactoryEx
             ["Requests"] = JsonConvert.SerializeObject(webApplicationFactory.EndpointRequests(), Formatting.Indented),
             ["Response"] = new
             {
-                Headers = response.Headers,
+                Headers = response.Headers.Where(x => !x.Key.StartsWith("x-ai")),
                 Content = JsonConvert.SerializeObject(JObject.Parse(response.Content.ReadAsStringAsync().Result),
                     Formatting.Indented)
             }

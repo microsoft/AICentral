@@ -37,42 +37,35 @@ public class AzureOpenAIDetector
             _ => AICallType.Other
         };
 
-        if (aICallType == AICallType.Other)
+        if (request.ContentType == "application/json")
         {
-            return new IncomingCallDetails(aICallType, null, null, null,
+            //Pull out the text
+            using var requestReader = new StreamReader(request.Body);
+            var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
+            var requestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
+
+            var promptText = aICallType switch
+            {
+                AICallType.Chat => string.Join(
+                    Environment.NewLine,
+                    requestContent["messages"]?.Select(x => x.Value<string>("content")) ??
+                    Array.Empty<string>()),
+                AICallType.Embeddings => requestContent.Value<string>("input") ?? string.Empty,
+                AICallType.DALLE3 => requestContent.Value<string>("prompt") ?? string.Empty,
+                AICallType.Completions => string.Join(Environment.NewLine,
+                    requestContent["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            return new IncomingCallDetails(
+                aICallType,
+                promptText,
+                incomingModelName,
+                requestContent,
                 QueryHelpers.ParseQuery(request.QueryString.Value));
         }
 
-        if (request.HasFormContentType)
-        {
-            var model = request.Form.TryGetValue("model", out var modelValues);
-            return new IncomingCallDetails(aICallType, null, model ? modelValues.Single() : null, null,
-                QueryHelpers.ParseQuery(request.QueryString.Value));
-        }
+        return new IncomingCallDetails(aICallType, null, null, null, QueryHelpers.ParseQuery(request.QueryString.Value));
 
-        //Pull out the text
-        using var requestReader = new StreamReader(request.Body);
-        var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
-        var requestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
-
-        var promptText = aICallType switch
-        {
-            AICallType.Chat => string.Join(
-                Environment.NewLine,
-                requestContent["messages"]?.Select(x => x.Value<string>("content")) ??
-                Array.Empty<string>()),
-            AICallType.Embeddings => requestContent.Value<string>("input") ?? string.Empty,
-            AICallType.DALLE3 => requestContent.Value<string>("prompt") ?? string.Empty,
-            AICallType.Completions => string.Join(Environment.NewLine,
-                requestContent["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
-            _ => throw new ArgumentOutOfRangeException()
-        };
-
-        return new IncomingCallDetails(
-            aICallType,
-            promptText,
-            incomingModelName,
-            requestContent,
-            QueryHelpers.ParseQuery(request.QueryString.Value));
     }
 }

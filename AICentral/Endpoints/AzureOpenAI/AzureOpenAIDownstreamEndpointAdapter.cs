@@ -97,12 +97,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
             new HttpMethod(context.Request.Method),
             $"{BaseUrl}{context.Request.GetEncodedPathAndQuery()}");
 
-        if (incomingCall.AICallType == AICallType.Transcription ||
-            incomingCall.AICallType == AICallType.Translation)
-        {
-            newRequest.Content = MultipartContentHelper.CopyMultipartContent(context.Request, null, null);
-        }
-        else if (incomingCall.RequestContent != null)
+        if (incomingCall.RequestContent != null)
         {
             newRequest.Content = new StringContent(incomingCall.RequestContent!.ToString());
         }

@@ -203,7 +203,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         var response = await _httpClient.PostAsync(
             new Uri(
                 "http://azure-openai-to-azure.localtest.me/openai/images/generations:submit?api-version=2023-09-01-preview"),
-            new StringContent("", Encoding.UTF8, "application/json"));
+            new StringContent(JsonConvert.SerializeObject(new { test = "test"}), Encoding.UTF8, "application/json"));
 
         await Verify(_factory.VerifyRequestsAndResponses(response));
     }
