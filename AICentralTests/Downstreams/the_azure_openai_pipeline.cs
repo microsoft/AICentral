@@ -209,7 +209,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     }
 
     [Fact]
-    public async Task can_model_map_dalle3_requests()
+    public async Task can_proxy_dalle3_requests()
     {
         _factory.Seed(
             $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/gpt-3.5-turbo/images/generations?api-version=2023-12-01-preview",
@@ -232,6 +232,8 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             });
 
         result.Value.Data.Count.ShouldBe(1);
+
+        await Verify(_factory.VerifyRequestsAndResponses(result));
     }
 
     public void Dispose()
