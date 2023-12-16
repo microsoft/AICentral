@@ -4,9 +4,9 @@ namespace AICentral.Endpoints;
 
 public class DownstreamEndpointDispatcherFactory : IAICentralEndpointDispatcherFactory
 {
-    private readonly IDownstreamEndpointAdapter _downstreamEndpointDispatcher;
+    private readonly IDownstreamEndpointAdapterFactory _downstreamEndpointDispatcher;
 
-    public DownstreamEndpointDispatcherFactory(IDownstreamEndpointAdapter downstreamEndpointDispatcher)
+    public DownstreamEndpointDispatcherFactory(IDownstreamEndpointAdapterFactory downstreamEndpointDispatcher)
     {
         _downstreamEndpointDispatcher = downstreamEndpointDispatcher;
     }

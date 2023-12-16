@@ -1,21 +1,19 @@
-﻿{
-    "id": "chatcmpl-6v7mkQj980V1yBec6ETrKPRqFjNw9",
-    "object": "chat.completion",
-    "created": 1679072642,
-    "model": "gpt-35-turbo",
-    "usage": {
-        "prompt_tokens": 58,
-        "completion_tokens": 68,
-        "total_tokens": 126
-    },
-    "choices": [
-        {
-            "message": {
-                "role": "assistant",
-                "content": "Yes, other Azure AI services also support customer managed keys. Azure AI services offer multiple options for customers to manage keys, such as using Azure Key Vault, customer-managed keys in Azure Key Vault or customer-managed keys through Azure Storage service. This helps customers ensure that their data is secure and access to their services is controlled."
-            },
-            "finish_reason": "stop",
-            "index": 0
-        }
-    ]
-}
+﻿[
+    
+  {
+        
+    "Uri":  "https://47bae1ca-d2f0-4584-b2ac-9897e7088919/openai/deployments/Model1/chat/completions?api-version=2023-05-15",
+        
+    "Method":  "POST",
+        
+    "Headers":  {
+            
+      "api-key":  "17f9b7db-f6b7-4b15-a868-38e19bbd88d1"
+    
+        },
+        
+    "Content":  "{\r\n  \"messages\": [\r\n    {\r\n      \"role\": \"system\",\r\n      \"content\": \"You are a helpful assistant.\"\r\n    },\r\n    {\r\n      \"role\": \"user\",\r\n      \"content\": \"Does Azure OpenAI support customer managed keys?\"\r\n    },\r\n    {\r\n      \"role\": \"assistant\",\r\n      \"content\": \"Yes, customer managed keys are supported by Azure OpenAI.\"\r\n    },\r\n    {\r\n      \"role\": \"user\",\r\n      \"content\": \"Do other Azure AI services support this too?\"\r\n    }\r\n  ],\r\n  \"max_tokens\": 5\r\n}"
+  
+    }
+
+]

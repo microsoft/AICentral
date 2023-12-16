@@ -1,4 +1,4 @@
-﻿namespace AICentral.OpenAI.OpenAI;
+﻿namespace AICentral.Endpoints.OpenAI;
 
 public class OpenAIEndpointPropertiesConfig
 {

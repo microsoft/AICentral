@@ -5,7 +5,7 @@ namespace AICentral.ConsumerAuth.AllowAnonymous;
 
 public class AllowAnonymousClientAuthProvider : IConsumerAuthStep
 {
-    public Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
+    public Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
         IAICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
     {
         return pipeline.Next(context, aiCallInformation, cancellationToken);

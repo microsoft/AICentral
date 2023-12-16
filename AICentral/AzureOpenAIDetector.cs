@@ -1,4 +1,5 @@
 ﻿using AICentral.Core;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -38,13 +39,15 @@ public class AzureOpenAIDetector
 
         if (aICallType == AICallType.Other)
         {
-            return new IncomingCallDetails(aICallType, null, null, null);
+            return new IncomingCallDetails(aICallType, null, null, null,
+                QueryHelpers.ParseQuery(request.QueryString.Value));
         }
 
         if (request.HasFormContentType)
         {
             var model = request.Form.TryGetValue("model", out var modelValues);
-            return new IncomingCallDetails(aICallType, null, model ? modelValues.Single()  : null, null);
+            return new IncomingCallDetails(aICallType, null, model ? modelValues.Single() : null, null,
+                QueryHelpers.ParseQuery(request.QueryString.Value));
         }
 
         //Pull out the text
@@ -69,6 +72,7 @@ public class AzureOpenAIDetector
             aICallType,
             promptText,
             incomingModelName,
-            requestContent);
+            requestContent,
+            QueryHelpers.ParseQuery(request.QueryString.Value));
     }
 }

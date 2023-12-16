@@ -4,7 +4,7 @@ public interface IAICentralEndpointDispatcher
 {
     Task<AICentralResponse> Handle(
         HttpContext context,
-        AICallInformation callInformation,
+        IncomingCallDetails callInformation,
         bool isLastChance,
         IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken);

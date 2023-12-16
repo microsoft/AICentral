@@ -44,7 +44,7 @@ public class the_client_api_key : IClassFixture<TestWebApplicationFactory<Progra
     [InlineData("789", false)]
     public async Task succeeds_with_correct_api_key(string apiKey, bool isValidKey)
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "api-key-auth",
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
 
         var request = new HttpRequestMessage(

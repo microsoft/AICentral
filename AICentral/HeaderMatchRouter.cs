@@ -1,6 +1,6 @@
 ﻿using AICentral.Core;
 
-namespace AICentral.Routers;
+namespace AICentral;
 
 public class HeaderMatchRouter
 {

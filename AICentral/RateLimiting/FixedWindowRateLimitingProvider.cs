@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Net.Http.Headers;
 using System.Threading.RateLimiting;
 using AICentral.Core;
 using Microsoft.Extensions.Primitives;
@@ -17,7 +16,7 @@ public class FixedWindowRateLimitingProvider : IAICentralPipelineStep, IAICentra
         _rateLimiter = BuildRateLimiter();
     }
 
-    public async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
+    public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
         IAICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
@@ -82,7 +81,7 @@ public class FixedWindowRateLimitingProvider : IAICentralPipelineStep, IAICentra
 
     private static AICentralResponse ExceededRateLimitResponse(
         HttpContext context,
-        AICallInformation aiCallInformation,
+        IncomingCallDetails aiCallInformation,
         ILogger<FixedWindowRateLimitingProvider> logger,
         TimeSpan? retryAt)
     {
@@ -97,7 +96,7 @@ public class FixedWindowRateLimitingProvider : IAICentralPipelineStep, IAICentra
         }
 
         return new AICentralResponse(
-            DownstreamUsageInformation.Empty(context, aiCallInformation.IncomingCallDetails, string.Empty),
+            DownstreamUsageInformation.Empty(context, aiCallInformation, string.Empty),
             resultHandler);
     }
 

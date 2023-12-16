@@ -1,1 +1,0 @@
-﻿Status: 200, Value: Azure.AI.OpenAI.ChatCompletions

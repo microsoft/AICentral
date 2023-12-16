@@ -2,7 +2,6 @@
 using System.Text;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
-using ApprovalTests;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
@@ -11,7 +10,8 @@ using Xunit.Abstractions;
 
 namespace AICentralTests.Downstreams;
 
-public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Program>>
+[UsesVerify]
+public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Program>>, IDisposable
 {
     private readonly TestWebApplicationFactory<Program> _factory;
     private readonly ITestOutputHelper _testOutputHelper;
@@ -56,7 +56,7 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
             new ChatRequestAssistantMessage("")
         }));
 
-        Approvals.VerifyJson(response.Value.Choices[0].Message.Content);
+        await Verify(_factory.VerifyRequestsAndResponses(response.Value));
     }
 
     [Fact]
@@ -74,15 +74,16 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
                 Transport = new HttpClientTransport(_httpClient),
             });
 
+        await using var stream = typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream("AICentralTests.Assets.Recording.m4a")!;
         var result = await client.GetAudioTranscriptionAsync(
             new AudioTranscriptionOptions
             {
                 ResponseFormat = AudioTranscriptionFormat.Simple,
                 DeploymentName = "test",
-                AudioData = new BinaryData(new byte[1024])
+                AudioData = await BinaryData.FromStreamAsync(stream)
             });
         
-        result.Value.Text.ShouldNotBe(null);
+        await Verify(_factory.VerifyRequestsAndResponses(result));
     }
 
     [Fact]
@@ -100,12 +101,13 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
                 Transport = new HttpClientTransport(_httpClient),
             });
 
+        await using var stream = typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream("AICentralTests.Assets.Recording.m4a")!;
         var result = await client.GetAudioTranslationAsync(
             new AudioTranslationOptions()
             {
                 ResponseFormat = AudioTranslationFormat.Simple,
                 DeploymentName = "test",
-                AudioData = new BinaryData(new byte[1024])
+                AudioData = await BinaryData.FromStreamAsync(stream)
             });
         
         result.Value.Text.ShouldNotBe(null);
@@ -133,8 +135,12 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
                 Prompt = "Me building an Open AI Reverse Proxy",
                 DeploymentName = "openaimodel"
             });
-        
-        result.Value.Data.Count.ShouldBe(1);
+
+        await Verify(_factory.VerifyRequestsAndResponses(result));
     }
-    
+
+    public void Dispose()
+    {
+        _factory.Clear();
+    }
 }

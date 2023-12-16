@@ -1,8 +1,9 @@
 ﻿using AICentral.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using ILogger = Serilog.ILogger;
 
-namespace AICentral.Logging.AzureMonitor;
+namespace AICentral.Extensions.AzureMonitorLogging;
 
 public class AzureMonitorLogger : IAICentralPipelineStep
 {
@@ -19,7 +20,7 @@ public class AzureMonitorLogger : IAICentralPipelineStep
         _logResponse = logResponse;
     }
     
-    public async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
+    public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
         IAICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {

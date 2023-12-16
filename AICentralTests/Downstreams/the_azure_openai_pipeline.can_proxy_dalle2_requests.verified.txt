@@ -1,0 +1,32 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/openai/images/generations:submit?api-version=2023-09-01-preview",
+    "Method": "POST",
+    "Headers": {
+      "api-key": "80a59060-63f8-4a19-a5ce-ad1a44157897"
+    },
+    "Content": ""
+  }
+],
+  Response: {
+    Headers: [
+      {
+        x-aicentral-failed-servers: [
+          https://47bae1ca-d2f0-4584-b2ac-9897e7088919
+        ]
+      },
+      {
+        operation-location: [
+          http://azure-openai-to-azure.localtest.me:443/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview&ai-central-host-affinity=47bae1ca-d2f0-4584-b2ac-9897e7088919
+        ]
+      }
+    ],
+    Content:
+{
+  "id": "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
+  "status": "notRunning"
+}
+  }
+}

@@ -1,8 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using AICentral.Core;
-using Microsoft.AspNetCore.Http;
 
-namespace AICentral.OpenAI;
+namespace AICentral.Endpoints.AzureOpenAI;
 
 public class BearerTokenPassThroughAuth : IEndpointAuthorisationHandler
 {

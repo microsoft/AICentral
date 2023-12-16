@@ -3,7 +3,6 @@ using System.Diagnostics.Metrics;
 using AICentral.ConsumerAuth;
 using AICentral.Core;
 using AICentral.EndpointSelectors;
-using AICentral.Routers;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace AICentral;
@@ -62,13 +61,10 @@ public class Pipeline
 
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
 
-        var requestDetails = new AICallInformation(
-            await new AzureOpenAIDetector().Detect(context.Request, cancellationToken),
-            QueryHelpers.ParseQuery(context.Request.QueryString.Value ?? string.Empty)
-        );
+        var requestDetails = await new AzureOpenAIDetector().Detect(context.Request, cancellationToken);
 
         logger.LogDebug("Detected {CallType} from incoming request",
-            requestDetails.IncomingCallDetails.AICallType);
+            requestDetails.AICallType);
 
         var endpointSelector = FindEndpointSelectorOrAffinityServer(requestDetails);
 
@@ -109,10 +105,10 @@ public class Pipeline
         }
     }
 
-    private IAICentralEndpointSelector FindEndpointSelectorOrAffinityServer(AICallInformation requestDetails)
+    private IAICentralEndpointSelector FindEndpointSelectorOrAffinityServer(IncomingCallDetails requestDetails)
     {
         IAICentralEndpointSelector? endpointSelector;
-        if (requestDetails.IncomingCallDetails.AICallType == AICallType.Other)
+        if (requestDetails.AICallType == AICallType.Other)
         {
             endpointSelector = FindAffinityServer(requestDetails) ?? _endpointSelector.Build();
         }
@@ -124,11 +120,11 @@ public class Pipeline
         return endpointSelector;
     }
 
-    private IAICentralEndpointSelector? FindAffinityServer(AICallInformation requestDetails)
+    private IAICentralEndpointSelector? FindAffinityServer(IncomingCallDetails requestDetails)
     {
         var availableEndpointSelectors = AffinityEndpointHelper.FlattenedEndpoints(_endpointSelector.Build());
         AffinityEndpointHelper.IsAffinityRequest(requestDetails, availableEndpointSelectors, out var affinityEndpointSelector);
-        requestDetails.QueryString.Remove(AICentralHeaders.AzureOpenAIHostAffinityHeader);
+        requestDetails.QueryString?.Remove(AICentralHeaders.AzureOpenAIHostAffinityHeader);
         return affinityEndpointSelector;
     }
 

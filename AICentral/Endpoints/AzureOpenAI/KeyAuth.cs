@@ -1,7 +1,6 @@
 ﻿using AICentral.Core;
-using Microsoft.AspNetCore.Http;
 
-namespace AICentral.OpenAI;
+namespace AICentral.Endpoints.AzureOpenAI;
 
 public class KeyAuth : IEndpointAuthorisationHandler
 {

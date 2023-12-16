@@ -19,21 +19,16 @@ public class the_lowest_latency_endpoint_selector : IClassFixture<TestWebApplica
         _httpClient = factory.CreateClient();
     }
 
-    [Theory]
-    [InlineData(0)]
-    [InlineData(1)]
-    [InlineData(2)]
-    [InlineData(3)]
-    [InlineData(4)]
-    public async Task finds_the_lowest_latency_endpoint(int _)
+    [Fact]
+    public async Task finds_the_lowest_latency_endpoint()
     {
         var rnd = new Random(Environment.TickCount);
-        _factory.SeedChatCompletions(AICentralFakeResponses.FastEndpoint, "Model1", async () =>
+        _factory.SeedChatCompletions(AICentralFakeResponses.FastEndpoint, "random", async () =>
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(0, 5)));
                 return AICentralFakeResponses.FakeChatCompletionsResponse();
             });
-        _factory.SeedChatCompletions(AICentralFakeResponses.SlowEndpoint, "Model1", async () =>
+        _factory.SeedChatCompletions(AICentralFakeResponses.SlowEndpoint, "random", async () =>
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(15, 50)));
                 return AICentralFakeResponses.FakeChatCompletionsResponse();

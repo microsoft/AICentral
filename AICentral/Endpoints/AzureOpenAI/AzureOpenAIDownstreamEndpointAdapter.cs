@@ -1,30 +1,32 @@
 ﻿using AICentral.Core;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 
-namespace AICentral.OpenAI.AzureOpenAI;
+namespace AICentral.Endpoints.AzureOpenAI;
 
-public class AzureOpenAIEndpointAdapter : OpenAILikeEndpointAdapter
+public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 {
+    private static readonly string[] HeadersToIgnore = { "host", "authorization", "api-key" };
     private static readonly string[] HeaderPrefixesToCopy = { "x-", "apim", "operation-location" };
-    private readonly string _languageUrl;
     private readonly IEndpointAuthorisationHandler _authHandler;
 
-    public AzureOpenAIEndpointAdapter(
+    public AzureOpenAIDownstreamEndpointAdapter(
         string id,
         string languageUrl,
         string endpointName,
-        Dictionary<string, string> modelMappings,
-        IEndpointAuthorisationHandler authHandler) : base(id, languageUrl, endpointName, modelMappings)
+        IEndpointAuthorisationHandler authHandler)
     {
-        _languageUrl = languageUrl.EndsWith('/') ? languageUrl[..^1] : languageUrl;
+        Id = id;
+        EndpointName = endpointName;
+        BaseUrl = languageUrl.EndsWith('/') ? languageUrl[..^1] : languageUrl;
         _authHandler = authHandler;
     }
 
-    protected override Task<ResponseMetadata> PreProcess(
+    public Task<ResponseMetadata> ExtractResponseMetadata(
+        IncomingCallDetails callInformationIncomingCallDetails,
         HttpContext context,
-        AIRequest downstreamRequest,
+        AIRequest newRequest,
         HttpResponseMessage openAiResponse)
     {
         openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-requests", out var remainingRequestHeaderValues);
@@ -40,28 +42,10 @@ public class AzureOpenAIEndpointAdapter : OpenAILikeEndpointAdapter
             didHaveTokenLimitHeader ? remainingTokens : null,
             didHaveRequestLimitHeader ? remainingRequests : null));
     }
-    
-    protected override async Task CustomiseRequest(HttpContext context, AICallInformation aiCallInformation,
-        HttpRequestMessage newRequest,
-        string? newModelName)
-    {
-        
-        //if there is a model change then set the model on a new outbound JSON request. Else copy the content with no changes
-        if (aiCallInformation.IncomingCallDetails.AICallType != AICallType.Other)
-        {
-            newRequest.Content = await CopyResponseWithMappedModelName(aiCallInformation, context.Request, newModelName);
-        }
-        else
-        {
-            newRequest.Content = new StreamContent(context.Request.Body);
-            newRequest.Content.Headers.Add("Content-Type", context.Request.Headers.ContentType.ToString());
-        }
 
-        await _authHandler.ApplyAuthorisationToRequest(context.Request, newRequest);
-    }
 
     /// <summary>
-    /// Azure Open AI uses an async pattern for actions like image generation. We need to tweak the operation-location
+    /// Azure Open AI uses an async pattern for some actions like DALL-E 2 image generation. We need to tweak the operation-location
     /// header else the request to look for the status won't work. 
     /// </summary>
     /// <param name="context"></param>
@@ -107,27 +91,40 @@ public class AzureOpenAIEndpointAdapter : OpenAILikeEndpointAdapter
         return QueryHelpers.AddQueryString(builder.ToString(), queryParts);
     }
 
-    protected override string BuildUri(
-        HttpContext context,
-        AICallInformation aiCallInformation,
-        string? mappedModelName)
+    public async Task<Either<AIRequest, IResult>> BuildRequest(IncomingCallDetails incomingCall, HttpContext context)
     {
-        aiCallInformation.QueryString.TryAdd("api-version", "2023-05-15");
+        var newRequest = new HttpRequestMessage(
+            new HttpMethod(context.Request.Method),
+            $"{BaseUrl}{context.Request.GetEncodedPathAndQuery()}");
 
-        var pathPiece = aiCallInformation.IncomingCallDetails.AICallType switch
+        if (incomingCall.AICallType == AICallType.Transcription ||
+            incomingCall.AICallType == AICallType.Translation)
         {
-            AICallType.Chat => "chat/completions",
-            AICallType.Completions => "completions",
-            AICallType.Embeddings => "embeddings",
-            AICallType.DALLE3 => "images/generations",
-            AICallType.Transcription => "audio/transcriptions",
-            AICallType.Translation => "audio/translations",
-            _ => string.Empty
-        };
+            newRequest.Content = MultipartContentHelper.CopyMultipartContent(context.Request, null, null);
+        }
+        else if (incomingCall.RequestContent != null)
+        {
+            newRequest.Content = new StringContent(incomingCall.RequestContent!.ToString());
+        }
+        else
+        {
+            newRequest.Content = new StreamContent(context.Request.Body);
+            newRequest.Content.Headers.Add("Content-Type", context.Request.Headers.ContentType.ToString());
+        }
 
-        return aiCallInformation.IncomingCallDetails.AICallType == AICallType.Other
-            ? QueryHelpers.AddQueryString($"{_languageUrl}{context.Request.Path}", aiCallInformation.QueryString)
-            : QueryHelpers.AddQueryString($"{_languageUrl}/openai/deployments/{mappedModelName}/{pathPiece}",
-                aiCallInformation.QueryString);
+        await _authHandler.ApplyAuthorisationToRequest(context.Request, newRequest);
+
+        foreach (var header in context.Request.Headers)
+        {
+            if (HeadersToIgnore.Contains(header.Key.ToLowerInvariant())) continue;
+            newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
+        }
+
+        return new Either<AIRequest, IResult>(
+            new AIRequest(newRequest, incomingCall.IncomingModelName));
     }
+
+    public string Id { get; }
+    public string BaseUrl { get; }
+    public string EndpointName { get; }
 }

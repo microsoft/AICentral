@@ -14,7 +14,7 @@ public class SingleEndpointSelector : IAICentralEndpointSelector
 
     public Task<AICentralResponse> Handle(
         HttpContext context,
-        AICallInformation aiCallInformation,
+        IncomingCallDetails aiCallInformation,
         bool isLastChance,
         IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken)

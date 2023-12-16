@@ -64,4 +64,5 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
     }
 
     public ITestOutputHelper? OutputHelper { get; set; }
+
 }

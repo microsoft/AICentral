@@ -2,20 +2,20 @@
 using AICentral;
 using AICentral.Configuration;
 using AICentral.Core;
-using AICentral.Logging.AzureMonitor;
-using AICentral.OpenAI.AzureOpenAI;
-using ApprovalTests;
+using AICentral.Endpoints.AzureOpenAI;
+using AICentral.Extensions.AzureMonitorLogging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
-namespace AICentralTests;
+namespace AICentralTests.Configuration;
 
+[UsesVerify]
 public class the_pipeline_config
 {
     [Fact]
-    public void supports_minimal_setup()
+    public Task supports_minimal_setup()
     {
         using var stream = new MemoryStream(
             Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new
@@ -33,7 +33,6 @@ public class the_pipeline_config
                                 ApiKey = "1234",
                                 AuthenticationType = "ApiKey",
                                 LanguageEndpoint = "https://somehere.com",
-                                ModelMappings = new Dictionary<string, string>()
                             }
                         }
                     },
@@ -78,6 +77,6 @@ public class the_pipeline_config
         var app = host.Build();
 
         var pipelines = app.Services.GetRequiredService<ConfiguredPipelines>();
-        Approvals.VerifyJson(JsonConvert.SerializeObject(pipelines.WriteDebug(), Formatting.Indented));
+        return Verify(pipelines.WriteDebug());
     }
 }

@@ -2,9 +2,8 @@
 using AICentral.Core;
 using Azure.Core;
 using Azure.Identity;
-using Microsoft.AspNetCore.Http;
 
-namespace AICentral.OpenAI.AzureOpenAI;
+namespace AICentral.Endpoints.AzureOpenAI;
 
 public class EntraAuth : IEndpointAuthorisationHandler
 {

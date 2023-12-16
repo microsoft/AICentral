@@ -1,22 +1,18 @@
 ﻿using AICentral.Core;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
-namespace AICentral.OpenAI.AzureOpenAI;
+namespace AICentral.Endpoints.AzureOpenAI;
 
-public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
+public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAdapterFactory
 {
     private readonly IEndpointAuthorisationHandler _authHandler;
     private readonly string _endpointName;
     private readonly string _languageUrl;
-    private readonly Dictionary<string, string> _modelMappings;
     private readonly string _id;
     private readonly int? _maxConcurrency;
     
-    public AzureOpenAIDownstreamEndpointAdapter(
+    public AzureOpenAIDownstreamEndpointAdapterFactory(
         string endpointName,
         string languageUrl,
-        Dictionary<string, string> modelMappings,
         string authenticationType,
         string? authenticationKey,
         int? maxConcurrency = null)
@@ -25,7 +21,6 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 
         _endpointName = endpointName;
         _languageUrl = languageUrl;
-        _modelMappings = modelMappings;
         _maxConcurrency = maxConcurrency;
 
         _authHandler = authenticationType.ToLowerInvariant() switch
@@ -49,7 +44,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 
     public static string ConfigName => "AzureOpenAIEndpoint";
 
-    public static IDownstreamEndpointAdapter BuildFromConfig(
+    public static IDownstreamEndpointAdapterFactory BuildFromConfig(
         ILogger logger,
         AICentralTypeAndNameConfig config)
     {
@@ -57,16 +52,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         
         Guard.NotNull(properties, "Properties");
 
-        var modelMappings = properties!.ModelMappings;
         var authenticationType = properties.AuthenticationType;
-        if (modelMappings == null)
-        {
-            logger.LogWarning(
-                "Endpoint {Name} has no model mappings configured. All requests will use default behaviour of passing model name straight through",
-                config.Name);
-
-            modelMappings = new Dictionary<string, string>();
-        }
 
         if (authenticationType == null)
         {
@@ -76,18 +62,17 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
             authenticationType = "EntraPassThrough";
         }
 
-        return new AzureOpenAIDownstreamEndpointAdapter(
+        return new AzureOpenAIDownstreamEndpointAdapterFactory(
             config.Name!,
             Guard.NotNull(properties.LanguageEndpoint, nameof(properties.LanguageEndpoint)),
-            modelMappings,
             authenticationType,
             properties.ApiKey,
             properties.MaxConcurrency);
     }
 
-    public IEndpointAdapter Build()
+    public IDownstreamEndpointAdapter Build()
     {
-        return new AzureOpenAIEndpointAdapter(_id, _languageUrl, _endpointName, _modelMappings, _authHandler);
+        return new AzureOpenAIDownstreamEndpointAdapter(_id, _languageUrl, _endpointName, _authHandler);
     }
 
     public object WriteDebug()
@@ -96,7 +81,6 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         {
             Type = "AzureOpenAI",
             Url = _languageUrl,
-            Mappings = _modelMappings,
             Auth = _authHandler.WriteDebug()
         };
     }

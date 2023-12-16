@@ -24,7 +24,7 @@ public class the_token_rate_limiter : IClassFixture<TestWebApplicationFactory<Pr
     [Fact]
     public async Task rate_limits()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "random",
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse(50)));
 
         Task<HttpResponseMessage> Call() => _httpClient.PostAsync(
@@ -49,7 +49,7 @@ public class the_token_rate_limiter : IClassFixture<TestWebApplicationFactory<Pr
     [Fact]
     public async Task rate_limits_by_consumer()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "random",
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
 
         Task<HttpResponseMessage> Call(string apiKey) => _httpClient.SendAsync(

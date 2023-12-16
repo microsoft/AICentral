@@ -3,7 +3,6 @@ using AICentral.ConsumerAuth;
 using AICentral.Core;
 using AICentral.Endpoints;
 using AICentral.EndpointSelectors;
-using AICentral.Routers;
 
 namespace AICentral.Configuration;
 
@@ -16,7 +15,7 @@ namespace AICentral.Configuration;
 public class ConfigurationBasedPipelineBuilder
 {
     private readonly Dictionary<string,
-            Func<ILogger, AICentralTypeAndNameConfig, IDownstreamEndpointAdapter>>
+            Func<ILogger, AICentralTypeAndNameConfig, IDownstreamEndpointAdapterFactory>>
         _endpointConfigurationBuilders = new();
 
     private readonly
@@ -35,7 +34,7 @@ public class ConfigurationBasedPipelineBuilder
     private void RegisterAuthProvider<T>() where T : IConsumerAuthFactory =>
         _authProviderBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
-    private void RegisterEndpoint<T>() where T : IDownstreamEndpointAdapter =>
+    private void RegisterEndpoint<T>() where T : IDownstreamEndpointAdapterFactory =>
         _endpointConfigurationBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
     // ReSharper disable once UnusedMember.Local
@@ -52,7 +51,7 @@ public class ConfigurationBasedPipelineBuilder
     {
         RegisterBuilders<IAICentralEndpointSelectorFactory>(additionalAssembliesToScan,
             nameof(RegisterEndpointSelector));
-        RegisterBuilders<IDownstreamEndpointAdapter>(additionalAssembliesToScan, nameof(RegisterEndpoint));
+        RegisterBuilders<IDownstreamEndpointAdapterFactory>(additionalAssembliesToScan, nameof(RegisterEndpoint));
         RegisterBuilders<IAICentralGenericStepFactory>(additionalAssembliesToScan,
             nameof(RegisterGenericStep));
         RegisterBuilders<IConsumerAuthFactory>(additionalAssembliesToScan, nameof(RegisterAuthProvider));

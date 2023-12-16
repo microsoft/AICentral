@@ -2,7 +2,7 @@
 using Polly.CircuitBreaker;
 using Polly.Retry;
 
-namespace AICentral.OpenAI;
+namespace AICentral.Endpoints.AzureOpenAI;
 
 public static class ResiliencyStrategy
 {

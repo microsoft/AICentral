@@ -11,8 +11,8 @@ public class AICentralFakeResponses
 {
     public static readonly string Endpoint500 = Guid.NewGuid().ToString();
     public static readonly string Endpoint404 = Guid.NewGuid().ToString();
-    public static readonly string Endpoint200 = Guid.NewGuid().ToString();
-    public static readonly string Endpoint200Number2 = Guid.NewGuid().ToString();
+    public static readonly string Endpoint200 = Guid.Parse("47bae1ca-d2f0-4584-b2ac-9897e7088919").ToString();
+    public static readonly string Endpoint200Number2 = Guid.Parse("84bae1ca-d2f0-4584-b2ac-9897e708891a").ToString();
     public static readonly string FastEndpoint = Guid.NewGuid().ToString();
     public static readonly string SlowEndpoint = Guid.NewGuid().ToString();
     public static readonly string FakeResponseId = "chatcmpl-6v7mkQj980V1yBec6ETrKPRqFjNw9";
