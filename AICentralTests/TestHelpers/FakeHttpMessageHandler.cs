@@ -13,9 +13,9 @@ public class FakeHttpMessageHandler : HttpMessageHandler
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        if (_seeder.SeededResponses.TryGetValue(request.RequestUri!.AbsoluteUri, out var response))
+        if (_seeder.TryGet(request, out var response))
         {
-            return response();
+            return Task.FromResult(response!);
         }
 
         throw new NotSupportedException($"No fake response registered for {request.RequestUri.AbsoluteUri}");

@@ -1,58 +1,53 @@
-using AICentralWeb;
-using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Concurrent;
 
 namespace AICentralTests.TestHelpers;
 
 public class FakeHttpMessageHandlerSeeder
 {
-    public Dictionary<string, Func<Task<HttpResponseMessage>>> SeededResponses { get; } = new();
+    private ConcurrentDictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> SeededResponses { get; } = new();
+    public List<(HttpRequestMessage, byte[])> IncomingRequests { get; } = new();
 
-    public void Seed(string url, Func<Task<HttpResponseMessage>> response)
+    public bool TryGet(HttpRequestMessage request, out HttpResponseMessage? response)
     {
-        if (SeededResponses.ContainsKey(url)) SeededResponses.Remove(url);
-        SeededResponses.Add(url, response);
+        if (SeededResponses.TryGetValue(request.RequestUri!.AbsoluteUri, out var responseFunction))
+        {
+            response = responseFunction(request).Result;
+            if (response.IsSuccessStatusCode)
+            {
+                IncomingRequests.Add((request, request.Content?.ReadAsByteArrayAsync().Result ?? Array.Empty<byte>()));
+            }
+
+            return true;
+        }
+
+        response = null;
+        return false;
     }
 
-    public void SeedChatCompletions(string endpoint, string modelName, Func<Task<HttpResponseMessage>> response, string apiVersion="2023-05-15")
+    public void Seed(string url, Func<HttpRequestMessage, Task<HttpResponseMessage>> response)
+    {
+        if (SeededResponses.ContainsKey(url)) SeededResponses.Remove(url, out _);
+        SeededResponses.TryAdd(url, response);
+    }
+
+    public void SeedChatCompletions(string endpoint, string modelName, Func<Task<HttpResponseMessage>> response,
+        string apiVersion = "2023-05-15")
     {
         var url = $"https://{endpoint}/openai/deployments/{modelName}/chat/completions?api-version={apiVersion}";
-        if (SeededResponses.ContainsKey(url)) SeededResponses.Remove(url);
-        SeededResponses.Add(url, response);
+        if (SeededResponses.ContainsKey(url)) SeededResponses.Remove(url, out _);
+        SeededResponses.TryAdd(url, _ => response());
     }
 
     public void SeedCompletions(string endpoint, string modelName, Func<Task<HttpResponseMessage>> response)
     {
         var url = $"https://{endpoint}/openai/deployments/{modelName}/completions?api-version=2023-05-15";
-        if (SeededResponses.ContainsKey(url)) SeededResponses.Remove(url);
-        SeededResponses.Add(url, response);
+        if (SeededResponses.ContainsKey(url)) SeededResponses.Remove(url, out _);
+        SeededResponses.TryAdd(url, _ => response());
     }
-}
 
-public static class TestWebApplicationFactoryEx
-{
-    public static void SeedChatCompletions(this TestWebApplicationFactory<Program> webApplicationFactory, string endpoint,
-        string modelName,
-        Func<Task<HttpResponseMessage>> response, 
-        string apiVersion="2023-05-15")
+    public void Clear()
     {
-        webApplicationFactory.Services.GetRequiredService<FakeHttpMessageHandlerSeeder>()
-            .SeedChatCompletions(endpoint, modelName, response, apiVersion);
+        SeededResponses.Clear();
+        IncomingRequests.Clear();
     }
-
-    public static void SeedCompletions(
-        this TestWebApplicationFactory<Program> webApplicationFactory, 
-        string endpoint,
-        string modelName,
-        Func<Task<HttpResponseMessage>> response)
-    {
-        webApplicationFactory.Services.GetRequiredService<FakeHttpMessageHandlerSeeder>()
-            .SeedCompletions(endpoint, modelName, response);
-    }
-
-    public static void Seed(this TestWebApplicationFactory<Program> webApplicationFactory, string url, Func<Task<HttpResponseMessage>> response)
-    {
-        webApplicationFactory.Services.GetRequiredService<FakeHttpMessageHandlerSeeder>()
-            .Seed(url, response);
-    }
-
 }

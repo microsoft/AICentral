@@ -4,7 +4,7 @@ namespace AICentral.Core;
 
 public interface IAICentralPipelineStep
 {
-    Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
+    Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
         IAICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken);
 

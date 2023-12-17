@@ -3,10 +3,10 @@ using System.Text;
 using AICentral;
 using AICentral.Configuration;
 using AICentral.Core;
-using AICentral.OpenAI.AzureOpenAI;
+using AICentral.Endpoints.AzureOpenAI;
+using AICentral.EndpointSelectors.LowestLatency;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
-using ApprovalTests;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,8 +14,9 @@ using Newtonsoft.Json;
 using Shouldly;
 using Xunit.Abstractions;
 
-namespace AICentralTests;
+namespace AICentralTests.EndpointSelectors;
 
+[UsesVerify]
 public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Program>>
 {
     private readonly TestWebApplicationFactory<Program> _factory;
@@ -29,7 +30,7 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
     }
 
     [Fact]
-    public void can_contain_an_endpoint_selector()
+    public async Task can_contain_an_endpoint_selector()
     {
         using var stream = new MemoryStream(
             Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new
@@ -46,7 +47,6 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
                             {
                                 ApiKey = "1234",
                                 LanguageEndpoint = "https://somehere.com",
-                                ModelMappings = new Dictionary<string, string>(),
                                 AuthenticationType = "ApiKey"
                             }
                         }
@@ -96,12 +96,12 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
 
         var host = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = "tests" });
         host.Configuration.AddJsonStream(stream);
-        host.Services.AddAICentral(host.Configuration);
+        host.Services.AddAICentral(host.Configuration, additionalComponentAssemblies: new [] {typeof(LowestLatencyEndpointSelector).Assembly});
         var app = host.Build();
 
         var pipelines = app.Services.GetRequiredService<ConfiguredPipelines>();
         var pipeline = JsonConvert.SerializeObject(pipelines.WriteDebug(), Formatting.Indented);
-        Approvals.VerifyJson(pipeline);
+        await VerifyJson(pipeline);
     }
 
     [Fact]
@@ -122,7 +122,6 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
                             {
                                 ApiKey = "1234",
                                 LanguageEndpoint = "https://somehere.com",
-                                ModelMappings = new Dictionary<string, string>()
                             }
                         }
                     },
@@ -177,7 +176,7 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
     [Fact]
     public async Task can_use_hierarchical_selectors()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "random",
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
 
         var result = await _httpClient.PostAsync(

@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace AICentralTests.EndpointSelectors;
 
-public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationFactory<Program>>
+public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationFactory<Program>>, IDisposable
 
 {
     private readonly TestWebApplicationFactory<Program> _factory;
@@ -32,7 +32,7 @@ public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationF
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
 
         var result = await _httpClient
-            .PostAsync("http://azure-noauth-priority.localtest.me/openai/deployments/priority/chat/completions?api-version=2023-05-15",
+            .PostAsync("http://azure-noauth-priority.localtest.me/openai/deployments/Model1/chat/completions?api-version=2023-05-15",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -51,5 +51,10 @@ public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationF
         result.Headers.GetValues("x-aicentral-failed-servers").ShouldContain($"https://{AICentralFakeResponses.Endpoint500}");
 
         result.Headers.GetValues("x-aicentral-server").Single().ShouldBe($"https://{AICentralFakeResponses.Endpoint200}");
+    }
+
+    public void Dispose()
+    {
+        _factory.Clear();
     }
 }

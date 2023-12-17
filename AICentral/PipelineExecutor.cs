@@ -19,7 +19,7 @@ public class PipelineExecutor : IAICentralPipelineExecutor, IAICentralResponseGe
         _pipelineEnumerator = steps.GetEnumerator();
     }
 
-    public Task<AICentralResponse> Next(HttpContext context, AICallInformation requestDetails,
+    public Task<AICentralResponse> Next(HttpContext context, IncomingCallDetails requestDetails,
         CancellationToken cancellationToken)
     {
 

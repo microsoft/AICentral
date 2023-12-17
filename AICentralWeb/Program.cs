@@ -1,7 +1,7 @@
 using AICentral.Configuration;
 using AICentral.Core;
-using AICentral.Logging.AzureMonitor;
-using AICentral.OpenAI.AzureOpenAI;
+using AICentral.Endpoints.OpenAI;
+using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -48,7 +48,7 @@ builder.Services.AddAICentral(
     startupLogger: new SerilogLoggerProvider(logger).CreateLogger("AICentralStartup"),
     additionalComponentAssemblies: new[]
         { typeof(AzureMonitorLoggerFactory).Assembly, 
-            typeof(AzureOpenAIDownstreamEndpointAdapter).Assembly });
+            typeof(OpenAIDownstreamEndpointAdapter).Assembly });
 
 builder.Services.AddRazorPages();
 

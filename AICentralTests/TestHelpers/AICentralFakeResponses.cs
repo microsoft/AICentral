@@ -1,7 +1,9 @@
 ﻿using System.CodeDom;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
+using AICentralTests.Endpoints;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
@@ -11,8 +13,8 @@ public class AICentralFakeResponses
 {
     public static readonly string Endpoint500 = Guid.NewGuid().ToString();
     public static readonly string Endpoint404 = Guid.NewGuid().ToString();
-    public static readonly string Endpoint200 = Guid.NewGuid().ToString();
-    public static readonly string Endpoint200Number2 = Guid.NewGuid().ToString();
+    public static readonly string Endpoint200 = Guid.Parse("47bae1ca-d2f0-4584-b2ac-9897e7088919").ToString();
+    public static readonly string Endpoint200Number2 = Guid.Parse("84bae1ca-d2f0-4584-b2ac-9897e708891a").ToString();
     public static readonly string FastEndpoint = Guid.NewGuid().ToString();
     public static readonly string SlowEndpoint = Guid.NewGuid().ToString();
     public static readonly string FakeResponseId = "chatcmpl-6v7mkQj980V1yBec6ETrKPRqFjNw9";
@@ -47,7 +49,7 @@ public class AICentralFakeResponses
                         index = 0
                     }
                 },
-            })
+            }, Formatting.None)
             , Encoding.UTF8, "application/json");
 
         response.Headers.Add("x-ratelimit-remaining-requests", "12");
@@ -82,18 +84,37 @@ public class AICentralFakeResponses
                         index = 0
                     }
                 },
-            })
+            }, Formatting.None)
             , Encoding.UTF8, "application/json");
 
         return response;
     }
 
 
-    public static HttpResponseMessage FakeStreamingCompletionsResponse()
+    public static async Task<HttpResponseMessage> FakeStreamingCompletionsResponse()
     {
-        var responseContent = FakeStreamingResponseContent.Response;
+        using var stream =
+            new StreamReader(
+                typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
+                    "AICentralTests.Assets.FakeStreamingResponseContent.txt")!);
+
+        var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
-        response.Content = new SSEResponse(responseContent);
+        response.Content = new SSEResponse(content);
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
+        return response;
+    }
+
+    public static async Task<HttpResponseMessage> FakeOpenAIStreamingCompletionsResponse()
+    {
+        using var stream =
+            new StreamReader(
+                typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
+                    "AICentralTests.Assets.FakeOpenAIStreamingResponseContent.txt")!);
+
+        var content = await stream.ReadToEndAsync();
+        var response = new HttpResponseMessage();
+        response.Content = new SSEResponse(content);
         response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
         return response;
     }
@@ -108,7 +129,7 @@ public class AICentralFakeResponses
             {
                 id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
                 status = "notRunning",
-            })
+            }, Formatting.None)
             , Encoding.UTF8, "application/json");
 
         return response;
@@ -132,7 +153,7 @@ public class AICentralFakeResponses
                 },
                 id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
                 status = "notRunning",
-            })
+            }, Formatting.None)
             , Encoding.UTF8, "application/json");
 
         return response;
@@ -153,7 +174,7 @@ public class AICentralFakeResponses
                         url = "https://somewhere-else.com"
                     }
                 }
-            })
+            }, Formatting.None)
             , Encoding.UTF8, "application/json");
 
         return response;
@@ -162,7 +183,7 @@ public class AICentralFakeResponses
     public static HttpResponseMessage FakeAzureOpenAIImageStatusResponse()
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK);
-        var created = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var created = 1702525391;
         response.Content = new StringContent(
             JsonConvert.SerializeObject(new
             {
@@ -180,7 +201,7 @@ public class AICentralFakeResponses
                         }
                     }
                 }
-            })
+            }, Formatting.None)
             , Encoding.UTF8, "application/json");
 
         return response;
@@ -193,7 +214,7 @@ public class AICentralFakeResponses
                                              1
                                              00:00:00,000 --> 00:00:07,000
                                              I wonder what the translation will be for this
-                                             """, Encoding.UTF8, "text/plain");
+                                             """.ReplaceLineEndings("\n"), Encoding.UTF8, "text/plain");
 
         response.Headers.Add("openai-processing-ms", "744");
         response.Headers.Add("openai-version", "2020-10-01");
@@ -210,7 +231,7 @@ public class AICentralFakeResponses
                                              {
                                                "text": "I wonder what the translation will be for this"
                                              }
-                                             """, Encoding.UTF8, "text/plain");
+                                             """.ReplaceLineEndings("\n"), Encoding.UTF8, "text/plain");
 
         response.Headers.Add("openai-processing-ms", "744");
         response.Headers.Add("openai-version", "2020-10-01");
@@ -259,7 +280,6 @@ public class AICentralFakeResponses
             {
                 var lineBytes = Encoding.UTF8.GetBytes(line);
                 await stream.WriteAsync(lineBytes);
-                await stream.WriteAsync(newLine);
                 await stream.WriteAsync(newLine);
                 await Task.Delay(TimeSpan.FromMilliseconds(25));
             }

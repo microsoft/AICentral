@@ -1,4 +1,5 @@
 ﻿using AICentral.Core;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -16,59 +17,70 @@ public class AzureOpenAIDetector
         request.Path.StartsWithSegments("/openai", out var remainingUrlSegments);
 
         var remaining = remainingUrlSegments.ToString().Split('/');
-        var callType = remaining[1];
+        var callTypeFromUrl = remaining[1];
         string? incomingModelName = default;
 
         if (remaining[1] == "deployments")
         {
             incomingModelName = remaining[2];
-            callType = string.Join('/', remaining[3..]);
+            callTypeFromUrl = string.Join('/', remaining[3..]);
         }
 
-        var aICallType = callType switch
+        var callType = callTypeFromUrl switch
         {
             "chat/completions" => AICallType.Chat,
             "completions" => AICallType.Completions,
             "embeddings" => AICallType.Embeddings,
-            "images/generations" => remaining[1] == "deployments" ? AICallType.DALLE3 : AICallType.Other,
+            "images" => AICallType.DALLE2,
+            "operations" => AICallType.Other,
+            "images/generations" => AICallType.DALLE3,
             "audio/transcriptions" => AICallType.Transcription,
             "audio/translations" => AICallType.Translation,
             _ => AICallType.Other
         };
 
-        if (aICallType == AICallType.Other)
+        if (request.ContentType?.Contains("json", StringComparison.InvariantCultureIgnoreCase) ?? false)
         {
-            return new IncomingCallDetails(aICallType, null, null, null);
+            //Pull out the text
+            using var requestReader = new StreamReader(request.Body);
+            var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
+            var requestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
+
+            var promptText = callType switch
+            {
+                AICallType.Chat => string.Join(
+                    '\n',
+                    requestContent["messages"]?.Select(x => x.Value<string>("content")) ??
+                    Array.Empty<string>()),
+                AICallType.Embeddings => requestContent.Value<string>("input") ?? string.Empty,
+                AICallType.DALLE2 => requestContent.Value<string>("prompt") ?? string.Empty,
+                AICallType.DALLE3 => requestContent.Value<string>("prompt") ?? string.Empty,
+                AICallType.Completions => string.Join('\n',
+                    requestContent["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            return new IncomingCallDetails(
+                callType,
+                promptText,
+                incomingModelName,
+                requestContent,
+                QueryHelpers.ParseQuery(request.QueryString.Value));
         }
 
-        if (request.HasFormContentType)
+        if (callType == AICallType.Transcription || callType == AICallType.Translation)
         {
-            var model = request.Form.TryGetValue("model", out var modelValues);
-            return new IncomingCallDetails(aICallType, null, model ? modelValues.Single()  : null, null);
+            var model = request.Form["model"];
+            return new IncomingCallDetails(callType, null, model, null,
+                QueryHelpers.ParseQuery(request.QueryString.Value));
         }
 
-        //Pull out the text
-        using var requestReader = new StreamReader(request.Body);
-        var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
-        var requestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
-
-        var promptText = aICallType switch
+        if (request.Method == "GET")
         {
-            AICallType.Chat => string.Join(
-                Environment.NewLine,
-                requestContent["messages"]?.Select(x => x.Value<string>("content")) ??
-                Array.Empty<string>()),
-            AICallType.Embeddings => requestContent.Value<string>("input") ?? string.Empty,
-            AICallType.DALLE3 => requestContent.Value<string>("prompt") ?? string.Empty,
-            AICallType.Completions => string.Join(Environment.NewLine,
-                requestContent["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
-            _ => throw new ArgumentOutOfRangeException()
-        };
+            return new IncomingCallDetails(callType, null, null, null,
+                QueryHelpers.ParseQuery(request.QueryString.Value));
+        }
 
-        return new IncomingCallDetails(
-            aICallType,
-            promptText,
-            incomingModelName,
-            requestContent);
+        throw new NotSupportedException("Call Type not supported by AI Central");
     }
 }

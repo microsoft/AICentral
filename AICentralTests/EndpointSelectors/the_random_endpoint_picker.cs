@@ -24,9 +24,9 @@ public class the_random_endpoint_picker : IClassFixture<TestWebApplicationFactor
     [Fact]
     public async Task works_with_a_single_endpoint()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "random",
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200Number2, "Model1",
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200Number2, "random",
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
 
         var result = await _httpClient.PostAsync("http://azure-to-azure-openai.localtest.me/openai/deployments/random/chat/completions?api-version=2023-05-15",

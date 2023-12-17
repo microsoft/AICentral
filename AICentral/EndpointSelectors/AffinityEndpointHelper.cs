@@ -14,11 +14,11 @@ public class AffinityEndpointHelper
     /// <param name="singleEndpointSelector"></param>
     /// <returns></returns>
     public static bool IsAffinityRequest(
-        AICallInformation callInformation,
+        IncomingCallDetails callInformation,
         IEnumerable<IAICentralEndpointDispatcher> availableDispatchers,
         out IAICentralEndpointSelector? singleEndpointSelector)
     {
-        if (callInformation.IncomingCallDetails.AICallType == AICallType.Other)
+        if (callInformation.AICallType == AICallType.Other && callInformation.QueryString != null)
         {
             if (callInformation.QueryString.TryGetValue(AICentralHeaders.AzureOpenAIHostAffinityHeader,
                     out var affinityHeader))
@@ -40,7 +40,8 @@ public class AffinityEndpointHelper
         return false;
     }
 
-    public static IEnumerable<IAICentralEndpointDispatcher> FlattenedEndpoints(IAICentralEndpointSelector iaiCentralEndpointSelector)
+    public static IEnumerable<IAICentralEndpointDispatcher> FlattenedEndpoints(
+        IAICentralEndpointSelector iaiCentralEndpointSelector)
     {
         foreach (var endpoint in iaiCentralEndpointSelector.ContainedEndpoints())
         {

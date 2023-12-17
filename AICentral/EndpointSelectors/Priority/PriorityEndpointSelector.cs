@@ -1,5 +1,4 @@
 ﻿using AICentral.Core;
-using AICentral.EndpointSelectors.Random;
 using Microsoft.Extensions.Primitives;
 
 namespace AICentral.EndpointSelectors.Priority;
@@ -20,7 +19,7 @@ public class PriorityEndpointSelector : IAICentralEndpointSelector
 
     public async Task<AICentralResponse> Handle(
         HttpContext context,
-        AICallInformation aiCallInformation,
+        IncomingCallDetails aiCallInformation,
         bool isLastChance,
         IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
@@ -53,14 +52,14 @@ public class PriorityEndpointSelector : IAICentralEndpointSelector
 
     private async Task<AICentralResponse> Handle(
         HttpContext context,
-        AICallInformation aiCallInformation,
+        IncomingCallDetails aiCallInformation,
         CancellationToken cancellationToken,
         IAICentralEndpointDispatcher[] endpoints,
         bool isLastChance,
         IAICentralResponseGenerator responseGenerator
         )
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelectorFactory>>();
+        var logger = context.RequestServices.GetRequiredService<ILogger<PriorityEndpointSelector>>();
         var toTry = endpoints.ToList();
         do
         {

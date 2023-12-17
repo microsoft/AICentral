@@ -21,7 +21,7 @@ public class LowestLatencyEndpointSelector : IAICentralEndpointSelector
 
     public async Task<AICentralResponse> Handle(
         HttpContext context,
-        AICallInformation aiCallInformation,
+        IncomingCallDetails aiCallInformation,
         bool isLastChance,
         IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken)

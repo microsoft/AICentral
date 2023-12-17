@@ -5,6 +5,7 @@ public enum AICallType
     Chat,
     Completions,
     Embeddings,
+    DALLE2,
     DALLE3,
     Transcription,
     Translation,

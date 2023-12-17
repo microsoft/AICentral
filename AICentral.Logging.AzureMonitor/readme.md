@@ -1,6 +1,8 @@
-﻿# Azure Monitor Logger for use in AICentral
+﻿# Extensions for use in AI Central
 
-## To use, add a config section like below:
+## Azure Monitor advanced usage and quota Logging
+
+To use, add a config section like below:
 
 ```json
 {

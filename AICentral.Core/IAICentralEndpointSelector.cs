@@ -6,7 +6,7 @@ public interface IAICentralEndpointSelector
 {
     Task<AICentralResponse> Handle(
         HttpContext context,
-        AICallInformation aiCallInformation,
+        IncomingCallDetails aiCallInformation,
         bool isLastChance,
         IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken);

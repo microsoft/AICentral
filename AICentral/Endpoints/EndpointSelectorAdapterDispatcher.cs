@@ -22,7 +22,7 @@ public class EndpointSelectorAdapterDispatcher : IAICentralEndpointDispatcher
     /// <returns></returns>
     public Task<AICentralResponse> Handle(
         HttpContext context,
-        AICallInformation callInformation,
+        IncomingCallDetails callInformation,
         bool isLastChance,
         IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken)

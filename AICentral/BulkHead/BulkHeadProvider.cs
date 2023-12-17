@@ -12,7 +12,7 @@ public class BulkHeadProvider : IAICentralPipelineStep
         _semaphore = new SemaphoreSlim(properties.MaxConcurrency!.Value);
     }
 
-    public async Task<AICentralResponse> Handle(HttpContext context, AICallInformation aiCallInformation,
+    public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
         IAICentralPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {

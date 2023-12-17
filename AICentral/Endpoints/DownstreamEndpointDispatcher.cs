@@ -13,19 +13,19 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 {
     private string EndpointName { get; }
     private readonly string _id;
-    private readonly IEndpointAdapter _endpointDispatcher;
+    private readonly IDownstreamEndpointAdapter _downstreamEndpointDispatcher;
     private static readonly HttpResponseMessage RateLimitedFakeResponse = new(HttpStatusCode.TooManyRequests);
 
-    public DownstreamEndpointDispatcher(IEndpointAdapter endpointDispatcher)
+    public DownstreamEndpointDispatcher(IDownstreamEndpointAdapter downstreamEndpointDispatcher)
     {
-        EndpointName = endpointDispatcher.EndpointName;
-        _id = endpointDispatcher.Id;
-        _endpointDispatcher = endpointDispatcher;
+        EndpointName = downstreamEndpointDispatcher.EndpointName;
+        _id = downstreamEndpointDispatcher.Id;
+        _downstreamEndpointDispatcher = downstreamEndpointDispatcher;
     }
 
     public async Task<AICentralResponse> Handle(
         HttpContext context,
-        AICallInformation callInformation,
+        IncomingCallDetails callInformation,
         bool isLastChance,
         IAICentralResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
@@ -35,11 +35,11 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         var dateTimeProvider = context.RequestServices.GetRequiredService<IDateTimeProvider>();
         var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
 
-        var outboundRequest = await _endpointDispatcher.BuildRequest(callInformation, context);
+        var outboundRequest = await _downstreamEndpointDispatcher.BuildRequest(callInformation, context);
         if (outboundRequest.Right(out var result))
-            return new AICentralResponse(
-                DownstreamUsageInformation.Empty(context, callInformation.IncomingCallDetails,
-                    _endpointDispatcher.BaseUrl), result!);
+        {
+            return new AICentralResponse(DownstreamUsageInformation.Empty(context, callInformation, _downstreamEndpointDispatcher.BaseUrl), result!);
+        }
 
         outboundRequest.Left(out var newRequest);
 
@@ -89,7 +89,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         {
             if (openAiResponse.StatusCode == HttpStatusCode.OK)
             {
-                context.Response.Headers.TryAdd("x-aicentral-server", new StringValues(_endpointDispatcher.BaseUrl));
+                context.Response.Headers.TryAdd("x-aicentral-server", new StringValues(_downstreamEndpointDispatcher.BaseUrl));
             }
             else
             {
@@ -99,7 +99,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
                 }
 
                 context.Response.Headers.TryAdd("x-aicentral-failed-servers",
-                    StringValues.Concat(header, _endpointDispatcher.BaseUrl));
+                    StringValues.Concat(header, _downstreamEndpointDispatcher.BaseUrl));
             }
         }
 
@@ -109,8 +109,8 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             openAiResponse.EnsureSuccessStatusCode();
         }
 
-        var preProcessResult = await _endpointDispatcher.ExtractResponseMetadata(
-            callInformation.IncomingCallDetails,
+        var preProcessResult = await _downstreamEndpointDispatcher.ExtractResponseMetadata(
+            callInformation,
             context,
             newRequest,
             openAiResponse);
@@ -119,9 +119,9 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 
         return await responseGenerator.BuildResponse(
             new DownstreamRequestInformation(
-                _endpointDispatcher.BaseUrl,
-                callInformation.IncomingCallDetails.AICallType,
-                callInformation.IncomingCallDetails.PromptText,
+                _downstreamEndpointDispatcher.BaseUrl,
+                callInformation.AICallType,
+                callInformation.PromptText,
                 now,
                 sw.Elapsed),
             context,
@@ -156,3 +156,4 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         return EndpointName == affinityHeaderValue;
     }
 }
+

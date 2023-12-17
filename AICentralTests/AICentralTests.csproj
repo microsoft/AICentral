@@ -10,14 +10,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="ApprovalTests" Version="5.9.0" />
         <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.11" />
         <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.3.0" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="7.0.13" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1"/>
         <PackageReference Include="Shouldly" Version="4.2.1" />
-        <PackageReference Include="xunit" Version="2.4.2"/>
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+        <PackageReference Include="Verify.Xunit" Version="22.8.0" />
+        <PackageReference Include="xunit" Version="2.6.3" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.5">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
@@ -28,18 +28,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AICentral.OpenAI\AICentral.OpenAI.csproj" />
+      <ProjectReference Include="..\AICentral.Logging.AzureMonitor\AICentral.Logging.AzureMonitor.csproj" />
       <ProjectReference Include="..\AICentralWeb\AICentralWeb.csproj" />
       <ProjectReference Include="..\AICentral\AICentral.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <None Remove="xunit.runner.json" />
-      <None Update="EndpointSelectors\the_endpoint_selector.can_contain_an_endpoint_selector.approved.json">
-        <ParentExtension>.cs</ParentExtension>
-        <ParentFile>the_endpoint_selector</ParentFile>
-        <DependentUpon>the_endpoint_selector.cs</DependentUpon>
-      </None>
       <None Update="Downstreams\the_azure_openai_pipeline.can_handle_streaming_calls.approved.txt">
         <ParentExtension>.cs</ParentExtension>
         <ParentFile>the_azure_openai_pipeline</ParentFile>
@@ -50,20 +45,18 @@
         <ParentFile>the_azure_openai_pipeline</ParentFile>
         <DependentUpon>the_azure_openai_pipeline.cs</DependentUpon>
       </None>
-      <None Update="Downstreams\the_openai_dispatcher.can_dispatch_chat_completions_to_an_openai_pipeline.approved.json">
-        <ParentExtension>.cs</ParentExtension>
-        <ParentFile>the_openai_dispatcher</ParentFile>
-      </None>
-      <None Update="Configuration\the_pipeline_config.supports_minimal_setup.approved.json">
-        <ParentExtension>.cs</ParentExtension>
-        <ParentFile>the_pipeline_config</ParentFile>
-        <DependentUpon>the_pipeline_config.cs</DependentUpon>
-      </None>
     </ItemGroup>
 
     <ItemGroup>
       <None Remove="Assets\Recording.m4a" />
+      <EmbeddedResource Include="Assets\FakeOpenAIStreamingResponseContent.txt" />
       <EmbeddedResource Include="Assets\Recording.m4a" />
+      <None Remove="Assets\FakeStreamingResponseContent.txt" />
+      <EmbeddedResource Include="Assets\FakeStreamingResponseContent.txt" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Properties\" />
     </ItemGroup>
 
 </Project>

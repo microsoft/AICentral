@@ -1,0 +1,31 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/v1/images/generations",
+    "Method": "POST",
+    "Headers": {
+      "Accept": "application/json",
+      "x-ms-return-client-request-id": "true",
+      "Authorization": "Bearer API-1234",
+      "OpenAI-Organization": "98892683-5712-4db4-ab5e-727275f88250"
+    },
+    "ContentType": "application/json",
+    "Content": "{\"model\":\"gpt-3.5-turbo\",\"prompt\":\"Me building an Open AI Reverse Proxy\"}"
+  }
+],
+  Response:
+{
+  "Value": {
+    "Created": "2023-12-14T03:41:41+00:00",
+    "Data": [
+      {
+        "Url": "https://somewhere-else.com",
+        "Base64Data": null,
+        "RevisedPrompt": null
+      }
+    ]
+  },
+  "HasValue": true
+}
+}

@@ -1,4 +1,5 @@
 ﻿using System.Threading.RateLimiting;
+using AICentral;
 using AICentral.BulkHead;
 using AICentral.Configuration;
 using AICentral.ConsumerAuth;
@@ -6,15 +7,14 @@ using AICentral.ConsumerAuth.AllowAnonymous;
 using AICentral.ConsumerAuth.ApiKey;
 using AICentral.Core;
 using AICentral.Endpoints;
+using AICentral.Endpoints.AzureOpenAI;
+using AICentral.Endpoints.OpenAI;
 using AICentral.EndpointSelectors;
 using AICentral.EndpointSelectors.LowestLatency;
 using AICentral.EndpointSelectors.Priority;
 using AICentral.EndpointSelectors.Random;
 using AICentral.EndpointSelectors.Single;
-using AICentral.OpenAI.AzureOpenAI;
-using AICentral.OpenAI.OpenAI;
 using AICentral.RateLimiting;
-using AICentral.Routers;
 using FixedWindowRateLimiterOptions = AICentral.RateLimiting.FixedWindowRateLimiterOptions;
 
 namespace AICentralTests.TestHelpers;
@@ -55,36 +55,35 @@ public class TestAICentralPipelineBuilder
 
     public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel)
     {
-        var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapter(
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
             hostname,
             $"https://{hostname}",
-            new Dictionary<string, string>()
-            {
-                [model] = mappedModel
-            },
             "ApiKey",
-            Guid.NewGuid().ToString());
+            "80a59060-63f8-4a19-a5ce-ad1a44157897");
 
-        _endpointFactory = new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
-        _openAiEndpointDispatcherBuilders = new[] { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
+        _endpointFactory =
+            new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
+        _openAiEndpointDispatcherBuilders = new[]
+            { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
 
         return this;
     }
-
-
-    public TestAICentralPipelineBuilder WithSingleOpenAIEndpoint(string name, string model, string mappedModel)
+    
+    public TestAICentralPipelineBuilder WithRandomOpenAIEndpoints(
+        (string name, string apiKey, string model, string mappedModel)[] endpoints)
     {
-        var openAiEndpointDispatcherBuilder = new OpenAIDownstreamEndpointAdapter(
-            name,
-            new Dictionary<string, string>()
-            {
-                [model] = mappedModel
-            },
-            Guid.NewGuid().ToString(),
-            Guid.NewGuid().ToString());
+        _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
+            new DownstreamEndpointDispatcherFactory(
+                new OpenAIDownstreamEndpointAdapterFactory(
+                    x.name,
+                    new Dictionary<string, string>()
+                    {
+                        [x.model] = x.mappedModel
+                    },
+                    x.apiKey,
+                    "98892683-5712-4db4-ab5e-727275f88250", null))).Cast<IAICentralEndpointDispatcherFactory>().ToArray();
 
-        _endpointFactory = new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
-        _openAiEndpointDispatcherBuilders = new[] { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
+        _endpointFactory = new RandomEndpointSelectorFactory(_openAiEndpointDispatcherBuilders);
 
         return this;
     }
@@ -95,22 +94,16 @@ public class TestAICentralPipelineBuilder
     )
     {
         IAICentralEndpointDispatcherFactory[] priorityOpenAIEndpointDispatcherBuilder = priorityEndpoints.Select(x =>
-            new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapter(
+            new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
-                $"https://{x.hostname}", new Dictionary<string, string>()
-                {
-                    [x.model] = x.mappedModel
-                },
+                $"https://{x.hostname}",
                 "ApiKey",
                 Guid.NewGuid().ToString()))).ToArray();
 
         IAICentralEndpointDispatcherFactory[] fallbackOpenAIEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
-            new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapter(
+            new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
-                $"https://{x.hostname}", new Dictionary<string, string>()
-                {
-                    [x.model] = x.mappedModel
-                },
+                $"https://{x.hostname}",
                 "ApiKey",
                 Guid.NewGuid().ToString()))).ToArray();
 
@@ -129,14 +122,11 @@ public class TestAICentralPipelineBuilder
         params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapter(
+            new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
-                $"https://{x.hostname}", new Dictionary<string, string>()
-                {
-                    [x.model] = x.mappedModel
-                },
+                $"https://{x.hostname}",
                 "ApiKey",
-                Guid.NewGuid().ToString()))).ToArray();
+                "17f9b7db-f6b7-4b15-a868-38e19bbd88d1"))).ToArray();
 
         _endpointFactory = new RandomEndpointSelectorFactory(_openAiEndpointDispatcherBuilders!);
 
@@ -147,12 +137,9 @@ public class TestAICentralPipelineBuilder
         params (string hostname, string model, string mappedModel)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
-            new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapter(
+            new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
-                $"https://{x.hostname}", new Dictionary<string, string>()
-                {
-                    [x.model] = x.mappedModel
-                },
+                $"https://{x.hostname}",
                 "ApiKey",
                 Guid.NewGuid().ToString()))).ToArray();
 
@@ -172,7 +159,7 @@ public class TestAICentralPipelineBuilder
         var genericSteps = new Dictionary<string, IAICentralGenericStepFactory>();
         var steps = new List<string>();
 
-        if (_windowInSeconds  != null && _requestsPerWindow != null)
+        if (_windowInSeconds != null && _requestsPerWindow != null)
         {
             var stepId = Guid.NewGuid().ToString();
             genericSteps[stepId] = new FixedWindowRateLimitingProvider(new FixedWindowRateLimiterOptions()
@@ -187,7 +174,7 @@ public class TestAICentralPipelineBuilder
             steps.Add(stepId);
         }
 
-        if (_windowInSeconds  != null && _tokensPerWindow != null)
+        if (_windowInSeconds != null && _tokensPerWindow != null)
         {
             var stepId = Guid.NewGuid().ToString();
             genericSteps[stepId] = new FixedWindowRateLimitingProvider(new FixedWindowRateLimiterOptions()
@@ -258,19 +245,18 @@ public class TestAICentralPipelineBuilder
     public TestAICentralPipelineBuilder WithHierarchicalEndpointSelector(string endpoint200, string model,
         string mappedModel)
     {
-        var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapter(
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
             endpoint200,
             $"https://{endpoint200}",
-            new Dictionary<string, string>()
-            {
-                [model] = mappedModel
-            },
             "ApiKey",
-            Guid.NewGuid().ToString());
+            "bacca18e-f471-4eca-9ea3-c8ee7155dacb");
 
-        var endpointFactory = new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
-        _endpointFactory = new SingleEndpointSelectorFactory(new EndpointSelectorAdapterDispatcherFactory(endpointFactory));
-        _openAiEndpointDispatcherBuilders = new[] { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
+        var endpointFactory =
+            new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
+        _endpointFactory =
+            new SingleEndpointSelectorFactory(new EndpointSelectorAdapterDispatcherFactory(endpointFactory));
+        _openAiEndpointDispatcherBuilders = new[]
+            { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
 
         return this;
     }

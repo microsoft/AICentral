@@ -1,0 +1,28 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/openai/deployments/whisper/audio/transcriptions?api-version=2023-05-15",
+    "Method": "POST",
+    "Headers": {
+      "api-key": "17f9b7db-f6b7-4b15-a868-38e19bbd88d1",
+      "x-ms-return-client-request-id": "true"
+    },
+    "ContentType": "multipart/form-data",
+    "Content": {
+      "Type": "multipart/form-data",
+      "Length": 34374
+    }
+  }
+],
+  Response:
+{
+  "Value": {
+    "Text": "1\n00:00:00,000 --> 00:00:07,000\nI wonder what the translation will be for this",
+    "Language": null,
+    "Duration": null,
+    "Segments": null
+  },
+  "HasValue": true
+}
+}

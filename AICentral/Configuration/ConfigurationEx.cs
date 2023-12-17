@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using AICentral.Core;
-using AICentral.OpenAI.AzureOpenAI;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace AICentral.Configuration;
@@ -30,7 +29,7 @@ public static class ConfigurationEx
                 typedConfig,
                 logger,
                 additionalComponentAssemblies.Concat(new[]
-                        { typeof(AzureOpenAIEndpointAdapter).Assembly, typeof(AICentralPipelineAssembler).Assembly })
+                        { typeof(AICentralPipelineAssembler).Assembly })
                     .ToArray());
 
         configurationPipelineBuilder.AddServices(services, typedConfig.HttpMessageHandler, logger);

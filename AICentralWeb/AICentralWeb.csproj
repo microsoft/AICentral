@@ -19,7 +19,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\AICentral.Logging.AzureMonitor\AICentral.Logging.AzureMonitor.csproj" />
-      <ProjectReference Include="..\AICentral.OpenAI\AICentral.OpenAI.csproj" />
       <ProjectReference Include="..\AICentral\AICentral.csproj" />
     </ItemGroup>
 
