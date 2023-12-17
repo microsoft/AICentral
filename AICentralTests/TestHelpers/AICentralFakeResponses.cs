@@ -49,7 +49,7 @@ public class AICentralFakeResponses
                         index = 0
                     }
                 },
-            })
+            }, Formatting.None)
             , Encoding.UTF8, "application/json");
 
         response.Headers.Add("x-ratelimit-remaining-requests", "12");
@@ -84,7 +84,7 @@ public class AICentralFakeResponses
                         index = 0
                     }
                 },
-            })
+            }, Formatting.None)
             , Encoding.UTF8, "application/json");
 
         return response;
@@ -129,7 +129,7 @@ public class AICentralFakeResponses
             {
                 id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
                 status = "notRunning",
-            })
+            }, Formatting.None)
             , Encoding.UTF8, "application/json");
 
         return response;
@@ -153,7 +153,7 @@ public class AICentralFakeResponses
                 },
                 id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
                 status = "notRunning",
-            })
+            }, Formatting.None)
             , Encoding.UTF8, "application/json");
 
         return response;
@@ -174,7 +174,7 @@ public class AICentralFakeResponses
                         url = "https://somewhere-else.com"
                     }
                 }
-            })
+            }, Formatting.None)
             , Encoding.UTF8, "application/json");
 
         return response;
@@ -201,7 +201,7 @@ public class AICentralFakeResponses
                         }
                     }
                 }
-            })
+            }, Formatting.None)
             , Encoding.UTF8, "application/json");
 
         return response;
@@ -214,7 +214,7 @@ public class AICentralFakeResponses
                                              1
                                              00:00:00,000 --> 00:00:07,000
                                              I wonder what the translation will be for this
-                                             """, Encoding.UTF8, "text/plain");
+                                             """.ReplaceLineEndings("\n"), Encoding.UTF8, "text/plain");
 
         response.Headers.Add("openai-processing-ms", "744");
         response.Headers.Add("openai-version", "2020-10-01");
@@ -231,7 +231,7 @@ public class AICentralFakeResponses
                                              {
                                                "text": "I wonder what the translation will be for this"
                                              }
-                                             """, Encoding.UTF8, "text/plain");
+                                             """.ReplaceLineEndings("\n"), Encoding.UTF8, "text/plain");
 
         response.Headers.Add("openai-processing-ms", "744");
         response.Headers.Add("openai-version", "2020-10-01");
