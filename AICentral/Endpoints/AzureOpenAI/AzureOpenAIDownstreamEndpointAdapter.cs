@@ -103,6 +103,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         }
         else
         {
+            context.Request.Body.Position = 0;
             newRequest.Content = new StreamContent(context.Request.Body);
             newRequest.Content.Headers.Add("Content-Type", context.Request.Headers.ContentType.ToString());
         }

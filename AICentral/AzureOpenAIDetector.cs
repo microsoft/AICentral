@@ -57,6 +57,7 @@ public class AzureOpenAIDetector
                 _ => throw new ArgumentOutOfRangeException()
             };
 
+            
             return new IncomingCallDetails(
                 aICallType,
                 promptText,
@@ -65,6 +66,7 @@ public class AzureOpenAIDetector
                 QueryHelpers.ParseQuery(request.QueryString.Value));
         }
 
+        request.EnableBuffering(); //We are going to read the stream - might need to re-read it later
         return new IncomingCallDetails(aICallType, null, null, null, QueryHelpers.ParseQuery(request.QueryString.Value));
 
     }
