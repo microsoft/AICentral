@@ -21,12 +21,8 @@ public static class MultipartContentHelper
         foreach (var item in incomingRequest.Form.Files)
         {
             var fileContent = new StreamContent(item.OpenReadStream());
-            if (!string.IsNullOrWhiteSpace(item.ContentType))
-            {
-                fileContent.Headers.ContentType = new MediaTypeHeaderValue(item.ContentType);
-            }
-
-            newContent.Add(fileContent, item.Name, item.FileName);
+            fileContent.Headers.Add("Content-Disposition", item.ContentDisposition);
+            newContent.Add(fileContent);
         }
 
         foreach (var item in incomingRequest.Form)
