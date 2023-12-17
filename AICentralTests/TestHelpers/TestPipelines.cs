@@ -58,11 +58,6 @@ public static class TestPipelines
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "gpt-3.5-turbo", "Model1")
             .Assemble("azure-openai-to-azure.localtest.me");
 
-    public static AICentralPipelineAssembler OpenAIServiceWithSingleAzureOpenAIEndpoint() =>
-        new TestAICentralPipelineBuilder()
-            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, "gpt-3.5-turbo", "Model1")
-            .Assemble("openai-to-azure.localtest.me");
-
     public static AICentralPipelineAssembler AzureOpenAIServiceWithRandomAzureOpenAIEndpoints() =>
         new TestAICentralPipelineBuilder()
             .WithRandomEndpoints(
@@ -70,15 +65,20 @@ public static class TestPipelines
                 (AICentralFakeResponses.Endpoint200Number2, "random", "Model1"))
             .Assemble("azure-to-azure-openai.localtest.me");
 
-    public static AICentralPipelineAssembler OpenAIServiceWithSingleOpenAIEndpoint() =>
-        new TestAICentralPipelineBuilder()
-            .WithSingleOpenAIEndpoint("openai-single", "openaimodel", "gpt-3.5-turbo")
-            .Assemble("openai-to-openai.localtest.me");
-
     public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleOpenAIEndpoint() =>
         new TestAICentralPipelineBuilder()
-            .WithSingleOpenAIEndpoint("openai-single", "openaimodel", "gpt-3.5-turbo")
+            .WithRandomOpenAIEndpoints(new [] {("openai-single", "API-1234", "openaimodel", "gpt-3.5-turbo")})
             .Assemble("azure-openai-to-openai.localtest.me");
+
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithRandomOpenAIEndpoints() =>
+        new TestAICentralPipelineBuilder()
+            .WithRandomOpenAIEndpoints(
+                new []
+                {
+                    ("openai-rnd1", "API-1000", "openaimodel", "gpt-3.5-turbo"),
+                    ("openai-rnd2", "API-1001", "openaimodel", "gpt-3.5-turbo")
+                })
+            .Assemble("azure-openai-to-multiple-openai.localtest.me");
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithAuth() =>
         new TestAICentralPipelineBuilder()

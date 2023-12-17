@@ -38,12 +38,17 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
     public async Task<Either<AIRequest, IResult>> BuildRequest(IncomingCallDetails callInformation, HttpContext context)
     {
         var incomingModelName = callInformation.IncomingModelName ?? string.Empty;
+        _modelMappings.TryGetValue(incomingModelName, out var mappedModelName);
 
-        var mappedModelName = _modelMappings.GetValueOrDefault(incomingModelName, incomingModelName);
+        mappedModelName ??= callInformation.AICallType switch
+        {
+            AICallType.DALLE2 => "dall-e-2", //Azure Open AI doesn't use a deployment for dall-e-2 requests
+            _ => incomingModelName
+        };
 
         if (MappedModelFoundAsEmptyString(callInformation, mappedModelName))
         {
-            return new Either<AIRequest, IResult>(Results.NotFound(new { message = "Unknown model" }));
+            return new Either<AIRequest, IResult>(Results.NotFound(new { message = "Unknown model mapping" }));
         }
 
         try
@@ -65,7 +70,6 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
     {
         return callInformation.AICallType != AICallType.Other && mappedModelName == string.Empty;
     }
-
 
     private async Task<HttpRequestMessage> BuildNewRequest(HttpContext context, IncomingCallDetails callInformation,
         string? mappedModelName)
@@ -175,6 +179,7 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
             AICallType.Chat => "chat/completions",
             AICallType.Completions => "completions",
             AICallType.Embeddings => "embeddings",
+            AICallType.DALLE2 => "images/generations",
             AICallType.DALLE3 => "images/generations",
             AICallType.Transcription => "audio/transcriptions",
             AICallType.Translation => "audio/translations",

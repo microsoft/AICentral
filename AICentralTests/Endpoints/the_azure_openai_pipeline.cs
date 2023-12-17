@@ -81,26 +81,6 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     }
 
     [Fact]
-    public async Task will_proxy_other_requests_to_a_single_endpoint()
-    {
-        _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200}/openai/images/generations:submit?api-version=2023-09-01-preview",
-            () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIImageResponse()));
-
-        var progressUrl = $"https://{AICentralFakeResponses.Endpoint200}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview";
-        _factory.Seed(progressUrl, () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIImageStatusResponse()));
-
-        //DALLE-2 is no longer reachable with the latest SDK!
-        var result = await _httpClient.PostAsync(
-            new Uri(
-                "https://azure-openai-to-azure.localtest.me/openai/images/generations:submit?api-version=2023-09-01-preview"),
-            new StringContent("", Encoding.UTF8, "application/json"));
-        
-        result.StatusCode.ShouldBe(HttpStatusCode.Accepted);
-        result.Headers.GetValues("operation-location").Single().ShouldStartWith(progressUrl.Replace(AICentralFakeResponses.Endpoint200, "azure-openai-to-azure.localtest.me:443"));
-    }
-
-    [Fact]
     public async Task can_proxy_a_whisper_audio_request()
     {
         _factory.Seed(
@@ -115,7 +95,9 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
                 Transport = new HttpClientTransport(_httpClient)
             });
 
-        await using var stream = typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream("AICentralTests.Assets.Recording.m4a")!;
+        await using var stream =
+            typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
+                "AICentralTests.Assets.Recording.m4a")!;
         var response = await client.GetAudioTranscriptionAsync(new AudioTranscriptionOptions()
         {
             Prompt = "I think it's something to do with programming",
@@ -154,13 +136,14 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         var response = await _httpClient.PostAsync(
             new Uri(
                 "http://azure-to-azure-openai.localtest.me/openai/images/generations:submit?api-version=2023-09-01-preview"),
-            new StringContent("", Encoding.UTF8, "application/json"));
+            new StringContent(JsonConvert.SerializeObject(new
+                { prompt = "Draw me an image" }), Encoding.UTF8, "application/json"));
 
         response.StatusCode.ShouldBe(HttpStatusCode.Accepted);
 
-        var possibleResponse1 = $"http://azure-to-azure-openai.localtest.me:443/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview&ai-central-host-affinity={AICentralFakeResponses.Endpoint200}";
-        var possibleResponse2 = $"http://azure-to-azure-openai.localtest.me:443/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview&ai-central-host-affinity={AICentralFakeResponses.Endpoint200Number2}";
-        new [] {possibleResponse1, possibleResponse2}.ShouldContain(response.Headers.GetValues("operation-location").Single());
+        response = await _httpClient.GetAsync(response.Headers.GetValues("operation-location").Single());
+
+        await Verify(_factory.VerifyRequestsAndResponses(response));
     }
 
     [Fact]
@@ -203,7 +186,8 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         var response = await _httpClient.PostAsync(
             new Uri(
                 "http://azure-openai-to-azure.localtest.me/openai/images/generations:submit?api-version=2023-09-01-preview"),
-            new StringContent(JsonConvert.SerializeObject(new { test = "test"}), Encoding.UTF8, "application/json"));
+            new StringContent(JsonConvert.SerializeObject(new { prompt = "draw me an image" }), Encoding.UTF8,
+                "application/json"));
 
         await Verify(_factory.VerifyRequestsAndResponses(response));
     }

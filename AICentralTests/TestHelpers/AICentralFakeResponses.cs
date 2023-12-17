@@ -162,7 +162,7 @@ public class AICentralFakeResponses
     public static HttpResponseMessage FakeAzureOpenAIImageStatusResponse()
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK);
-        var created = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var created = 1702525391;
         response.Content = new StringContent(
             JsonConvert.SerializeObject(new
             {

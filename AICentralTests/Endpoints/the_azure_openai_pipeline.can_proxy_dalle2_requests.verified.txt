@@ -7,7 +7,7 @@
     "Headers": {
       "api-key": "80a59060-63f8-4a19-a5ce-ad1a44157897"
     },
-    "Content": "{\"test\":\"test\"}"
+    "Content": "{\r\n  \"prompt\": \"draw me an image\"\r\n}"
   }
 ],
   Response: {

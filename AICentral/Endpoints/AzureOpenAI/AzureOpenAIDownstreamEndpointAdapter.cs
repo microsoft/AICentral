@@ -93,9 +93,9 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 
     public async Task<Either<AIRequest, IResult>> BuildRequest(IncomingCallDetails incomingCall, HttpContext context)
     {
-        var newRequest = new HttpRequestMessage(
-            new HttpMethod(context.Request.Method),
-            $"{BaseUrl}{context.Request.GetEncodedPathAndQuery()}");
+        var newRequestString = $"{BaseUrl}{context.Request.Path}";
+        newRequestString = QueryHelpers.AddQueryString(newRequestString, incomingCall.QueryString ?? new Dictionary<string, StringValues>());
+        var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method), newRequestString);
 
         if (incomingCall.RequestContent != null)
         {
@@ -103,9 +103,11 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         }
         else
         {
-            context.Request.Body.Position = 0;
-            newRequest.Content = new StreamContent(context.Request.Body);
-            newRequest.Content.Headers.Add("Content-Type", context.Request.Headers.ContentType.ToString());
+            if (context.Request.Method == "POST")
+            {
+                newRequest.Content =
+                    MultipartContentHelper.CopyMultipartContent(context.Request, incomingCall.IncomingModelName);
+            }
         }
 
         await _authHandler.ApplyAuthorisationToRequest(context.Request, newRequest);

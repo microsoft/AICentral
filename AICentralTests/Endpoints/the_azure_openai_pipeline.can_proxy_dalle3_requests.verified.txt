@@ -7,8 +7,7 @@
     "Headers": {
       "api-key": "80a59060-63f8-4a19-a5ce-ad1a44157897",
       "Accept": "application/json",
-      "x-ms-return-client-request-id": "true",
-      "User-Agent": "azsdk-net-AI.OpenAI/1.0.0-beta.11;(.NET 7.0.14; Microsoft Windows 10.0.22631)"
+      "x-ms-return-client-request-id": "true"
     },
     "Content": "{\r\n  \"model\": \"gpt-3.5-turbo\",\r\n  \"prompt\": \"Me building an Open AI Reverse Proxy\"\r\n}"
   }

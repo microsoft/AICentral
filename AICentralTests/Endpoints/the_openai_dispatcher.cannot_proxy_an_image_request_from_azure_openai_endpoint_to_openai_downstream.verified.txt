@@ -1,0 +1,26 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/v1/images/generations",
+    "Method": "POST",
+    "Headers": {
+      "Authorization": "Bearer API-1234",
+      "OpenAI-Organization": "98892683-5712-4db4-ab5e-727275f88250"
+    },
+    "Content": "{\r\n  \"prompt\": \"draw me something blue\",\r\n  \"model\": \"dall-e-2\"\r\n}"
+  }
+],
+  Response: {
+    Headers: [],
+    Content:
+{
+  "created": 1702525301,
+  "data": [
+    {
+      "url": "https://somewhere-else.com"
+    }
+  ]
+}
+  }
+}

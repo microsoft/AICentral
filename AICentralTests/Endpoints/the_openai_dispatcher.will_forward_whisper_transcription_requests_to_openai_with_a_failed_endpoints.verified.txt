@@ -2,15 +2,16 @@
   Requests:
 [
   {
-    "Uri": "/openai/deployments/whisper-1/audio/transcriptions?api-version=2023-05-15",
+    "Uri": "/v1/audio/transcriptions",
     "Method": "POST",
     "Headers": {
-      "api-key": "80a59060-63f8-4a19-a5ce-ad1a44157897",
-      "x-ms-return-client-request-id": "true"
+      "x-ms-return-client-request-id": "true",
+      "Authorization": "Bearer API-1000",
+      "OpenAI-Organization": "98892683-5712-4db4-ab5e-727275f88250"
     },
     "Content": {
       "Type": "multipart/form-data",
-      "Length": 34399
+      "Length": 34091
     }
   }
 ],

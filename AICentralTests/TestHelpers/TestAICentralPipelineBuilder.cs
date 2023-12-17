@@ -68,23 +68,22 @@ public class TestAICentralPipelineBuilder
 
         return this;
     }
-
-
-    public TestAICentralPipelineBuilder WithSingleOpenAIEndpoint(string name, string model, string mappedModel)
+    
+    public TestAICentralPipelineBuilder WithRandomOpenAIEndpoints(
+        (string name, string apiKey, string model, string mappedModel)[] endpoints)
     {
-        var openAiEndpointDispatcherBuilder = new OpenAIDownstreamEndpointAdapterFactory(
-            name,
-            new Dictionary<string, string>()
-            {
-                [model] = mappedModel
-            },
-            "137b95da-118d-4e75-a739-8a3d3a4341d4",
-            "98892683-5712-4db4-ab5e-727275f88250", null);
+        _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
+            new DownstreamEndpointDispatcherFactory(
+                new OpenAIDownstreamEndpointAdapterFactory(
+                    x.name,
+                    new Dictionary<string, string>()
+                    {
+                        [x.model] = x.mappedModel
+                    },
+                    x.apiKey,
+                    "98892683-5712-4db4-ab5e-727275f88250", null))).Cast<IAICentralEndpointDispatcherFactory>().ToArray();
 
-        _endpointFactory =
-            new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
-        _openAiEndpointDispatcherBuilders = new[]
-            { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
+        _endpointFactory = new RandomEndpointSelectorFactory(_openAiEndpointDispatcherBuilders);
 
         return this;
     }

@@ -15,7 +15,7 @@ public class FakeHttpMessageHandler : HttpMessageHandler
     {
         if (_seeder.TryGet(request, out var response))
         {
-            return response!();
+            return Task.FromResult(response!);
         }
 
         throw new NotSupportedException($"No fake response registered for {request.RequestUri.AbsoluteUri}");

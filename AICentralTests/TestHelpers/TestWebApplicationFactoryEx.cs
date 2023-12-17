@@ -33,6 +33,13 @@ public static class TestWebApplicationFactoryEx
         Func<Task<HttpResponseMessage>> response)
     {
         webApplicationFactory.Services.GetRequiredService<FakeHttpMessageHandlerSeeder>()
+            .Seed(url, req => response());
+    }
+
+    public static void Seed(this TestWebApplicationFactory<Program> webApplicationFactory, string url,
+        Func<HttpRequestMessage, Task<HttpResponseMessage>> response)
+    {
+        webApplicationFactory.Services.GetRequiredService<FakeHttpMessageHandlerSeeder>()
             .Seed(url, response);
     }
 
@@ -44,22 +51,22 @@ public static class TestWebApplicationFactoryEx
             .IncomingRequests
             .Select(x =>
             {
-                var streamBytes = x.Value;
+                var streamBytes = x.Item2;
 
-                var contentInformation = x.Key.Content?.Headers.ContentType?.MediaType == "application/json" ||
-                                         x.Key.Content?.Headers.ContentType?.MediaType == "text/plain"
+                var contentInformation = x.Item1.Content?.Headers.ContentType?.MediaType == "application/json" ||
+                                         x.Item1.Content?.Headers.ContentType?.MediaType == "text/plain"
                     ? (object)Encoding.UTF8.GetString(streamBytes)
                     : new
                     {
-                        Type = x.Key.Content?.Headers.ContentType?.MediaType,
+                        Type = x.Item1.Content?.Headers.ContentType?.MediaType,
                         Length = streamBytes.Length
                     };
 
                 return JObject.FromObject(new
                 {
-                    Uri = x.Key.RequestUri!.PathAndQuery,
-                    Method = x.Key.Method.ToString(),
-                    Headers = x.Key.Headers.Where(x => x.Key != "x-ms-client-request-id")
+                    Uri = x.Item1.RequestUri!.PathAndQuery,
+                    Method = x.Item1.Method.ToString(),
+                    Headers = x.Item1.Headers.Where(x => x.Key != "x-ms-client-request-id" && x.Key != "User-Agent")
                         .ToDictionary(h => h.Key, h => string.Join(';', h.Value)),
                     Content = contentInformation,
                 });

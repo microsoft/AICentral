@@ -1,5 +1,4 @@
 ﻿using AICentral;
-using AICentral.Configuration;
 using AICentral.Core;
 using MartinCostello.Logging.XUnit;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -39,8 +38,6 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.AzureOpenAIServiceWithSingleOpenAIEndpoint(),
                 TestPipelines.AzureOpenAIServiceWithRandomAzureOpenAIEndpoints(),
                 TestPipelines.AzureOpenAIServiceWithSingleAzureOpenAIEndpoint(),
-                TestPipelines.OpenAIServiceWithSingleAzureOpenAIEndpoint(),
-                TestPipelines.OpenAIServiceWithSingleOpenAIEndpoint(),
                 TestPipelines.AzureOpenAIServiceWithRateLimitingAndSingleEndpoint(),
                 TestPipelines.AzureOpenAIServiceWithBulkHeadOnPipelineAndSingleEndpoint(),
                 TestPipelines.AzureOpenAIServiceWithBulkHeadOnSingleEndpoint(),
@@ -48,7 +45,8 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.AzureOpenAIServiceWithSingleEndpointSelectorHierarchy(),
                 TestPipelines.AzureOpenAIServiceWithClientPartitionedRateLimiter(),
                 TestPipelines.AzureOpenAIServiceWithTokenRateLimitingAndSingleEndpoint(),
-                TestPipelines.AzureOpenAIServiceWithClientPartitionedTokenRateLimiter()
+                TestPipelines.AzureOpenAIServiceWithClientPartitionedTokenRateLimiter(),
+                TestPipelines.AzureOpenAIServiceWithRandomOpenAIEndpoints()
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));

@@ -6,8 +6,7 @@
     "Method": "POST",
     "Headers": {
       "x-ms-return-client-request-id": "true",
-      "User-Agent": "azsdk-net-AI.OpenAI/1.0.0-beta.11;(.NET 7.0.14; Microsoft Windows 10.0.22631)",
-      "Authorization": "Bearer 137b95da-118d-4e75-a739-8a3d3a4341d4",
+      "Authorization": "Bearer API-1234",
       "OpenAI-Organization": "98892683-5712-4db4-ab5e-727275f88250"
     },
     "Content": {
