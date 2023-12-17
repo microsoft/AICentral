@@ -10,6 +10,7 @@ namespace AICentral.Endpoints.OpenAI;
 public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 {
     private static readonly string[] HeadersToIgnore = { "host", "authorization", "api-key" };
+    private static readonly string[] HeaderPrefixesToCopy = { "x-", "openai" };
     internal const string OpenAIV1 = "https://api.openai.com";
     private const string OpenAIWellKnownModelNameField = "model";
 
@@ -133,7 +134,7 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
             : new StringContent(
                 AddModelName(
                     aiCallInformation.RequestContent!.DeepClone(),
-                    mappedModelName!).ToString(),
+                    mappedModelName!).ToString(Formatting.None),
                 Encoding.UTF8, "application/json"));
     }
     
@@ -199,6 +200,15 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         HttpContext context,
         HttpResponseMessage openAiResponse)
     {
-        return openAiResponse.Headers.ToDictionary(x => x.Key, x => new StringValues(x.Value.ToArray()));
+        var proxiedHeaders = new Dictionary<string, StringValues>();
+        foreach (var header in openAiResponse.Headers)
+        {
+            if (HeaderPrefixesToCopy.Any(x => header.Key.StartsWith(x, StringComparison.InvariantCultureIgnoreCase)))
+            {
+                proxiedHeaders.Add(header.Key, new StringValues(header.Value.ToArray()));
+            }
+        }
+
+        return proxiedHeaders;
     }
 }

@@ -1,5 +1,6 @@
 using System.Text;
 using AICentral.Core;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SharpToken;
@@ -24,7 +25,7 @@ public static class ServerSideEventResponseHandler
         //squirt the response as it comes in:
         using var openAiResponseReader =
             new StreamReader(await openAiResponse.Content.ReadAsStreamAsync(cancellationToken));
-        await using var responseWriter = new StreamWriter(context.Response.Body);
+        context.Response.Headers.CacheControl = new StringValues("no-cache");
         context.Response.ContentType = "text/event-stream";
 
         var content = new StringBuilder();
@@ -36,9 +37,7 @@ public static class ServerSideEventResponseHandler
             if (line != null)
             {
                 //Write this out as we read it so we get the fastest response back to the consumer possible. 
-                await responseWriter.WriteAsync(line);
-                await responseWriter.WriteAsync("\n");
-                await responseWriter.FlushAsync();
+                await context.Response.WriteAsync($"{line}\n", cancellationToken);
 
                 if (line.StartsWith("data:", StringComparison.InvariantCultureIgnoreCase) &&
                     !line.EndsWith("[done]", StringComparison.InvariantCultureIgnoreCase))
