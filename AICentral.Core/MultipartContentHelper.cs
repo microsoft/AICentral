@@ -22,6 +22,7 @@ public static class MultipartContentHelper
         {
             var fileContent = new StreamContent(item.OpenReadStream());
             fileContent.Headers.Add("Content-Disposition", item.ContentDisposition);
+            fileContent.Headers.Add("Content-Type", item.ContentType);
             newContent.Add(fileContent);
         }
 

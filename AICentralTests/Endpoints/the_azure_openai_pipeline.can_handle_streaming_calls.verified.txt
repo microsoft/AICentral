@@ -1,9 +1,23 @@
-﻿There once was a man with a plan
-To write a test for OpenAI's chatbot clan
-He typed and he typed, but alas
-His brain was scrambled like eggs in a glass
-
-He tried to ask for help from a friend
-But they were busy with a task that never ends
-So he sat there alone, in despair
-Wondering if his chatbot test would ever be fair.
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/openai/deployments/ModelStream/chat/completions?api-version=2023-09-01-preview",
+    "Method": "POST",
+    "Headers": {
+      "api-key": "80a59060-63f8-4a19-a5ce-ad1a44157897",
+      "Accept": "application/json",
+      "x-ms-return-client-request-id": "true"
+    },
+    "ContentType": "application/json",
+    "Content": "{\"messages\":[{\"content\":\"You are a helpful assistant.\",\"role\":\"system\"}],\"stream\":true,\"model\":\"ModelStream\"}"
+  }
+],
+  Response:
+{
+  "m_MaxCapacity": 2147483647,
+  "Capacity": 512,
+  "m_StringValue": "There once was a chap with a plan\nTo write a test for OpenAI, man\nHe sat down with his pen and his pad\nAnd thought this wouldn't be so bad\n\nBut as he tried to write with might\nHis mind went blank, try as he might\nThe chat completion responses seemed so complex\nHe gave up and decided to just text",
+  "m_currentThread": 0
+}
+}

@@ -9,9 +9,10 @@
       "Authorization": "Bearer API-1234",
       "OpenAI-Organization": "98892683-5712-4db4-ab5e-727275f88250"
     },
+    "ContentType": "multipart/form-data",
     "Content": {
       "Type": "multipart/form-data",
-      "Length": 34033
+      "Length": 34059
     }
   }
 ],

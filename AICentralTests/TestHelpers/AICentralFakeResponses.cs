@@ -1,7 +1,9 @@
 ﻿using System.CodeDom;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
+using AICentralTests.Endpoints;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
@@ -89,11 +91,30 @@ public class AICentralFakeResponses
     }
 
 
-    public static HttpResponseMessage FakeStreamingCompletionsResponse()
+    public static async Task<HttpResponseMessage> FakeStreamingCompletionsResponse()
     {
-        var responseContent = FakeStreamingResponseContent.Response;
+        using var stream =
+            new StreamReader(
+                typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
+                    "AICentralTests.Assets.FakeStreamingResponseContent.txt")!);
+
+        var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
-        response.Content = new SSEResponse(responseContent);
+        response.Content = new SSEResponse(content);
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
+        return response;
+    }
+
+    public static async Task<HttpResponseMessage> FakeOpenAIStreamingCompletionsResponse()
+    {
+        using var stream =
+            new StreamReader(
+                typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
+                    "AICentralTests.Assets.FakeOpenAIStreamingResponseContent.txt")!);
+
+        var content = await stream.ReadToEndAsync();
+        var response = new HttpResponseMessage();
+        response.Content = new SSEResponse(content);
         response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
         return response;
     }
@@ -259,7 +280,6 @@ public class AICentralFakeResponses
             {
                 var lineBytes = Encoding.UTF8.GetBytes(line);
                 await stream.WriteAsync(lineBytes);
-                await stream.WriteAsync(newLine);
                 await stream.WriteAsync(newLine);
                 await Task.Delay(TimeSpan.FromMilliseconds(25));
             }

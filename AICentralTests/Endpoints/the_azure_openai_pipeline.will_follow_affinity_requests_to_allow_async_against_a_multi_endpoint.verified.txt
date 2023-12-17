@@ -7,7 +7,8 @@
     "Headers": {
       "api-key": "17f9b7db-f6b7-4b15-a868-38e19bbd88d1"
     },
-    "Content": "{\r\n  \"prompt\": \"Draw me an image\"\r\n}"
+    "ContentType": "application/json",
+    "Content": "{\"prompt\":\"Draw me an image\"}"
   },
   {
     "Uri": "/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview",
@@ -15,6 +16,7 @@
     "Headers": {
       "api-key": "17f9b7db-f6b7-4b15-a868-38e19bbd88d1"
     },
+    "ContentType": null,
     "Content": {
       "Type": null,
       "Length": 0

@@ -8,9 +8,10 @@
       "api-key": "17f9b7db-f6b7-4b15-a868-38e19bbd88d1",
       "x-ms-return-client-request-id": "true"
     },
+    "ContentType": "multipart/form-data",
     "Content": {
       "Type": "multipart/form-data",
-      "Length": 34348
+      "Length": 34374
     }
   }
 ],

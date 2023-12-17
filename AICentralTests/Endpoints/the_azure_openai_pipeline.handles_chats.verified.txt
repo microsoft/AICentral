@@ -7,7 +7,8 @@
     "Headers": {
       "api-key": "17f9b7db-f6b7-4b15-a868-38e19bbd88d1"
     },
-    "Content": "{\r\n  \"messages\": [\r\n    {\r\n      \"role\": \"system\",\r\n      \"content\": \"You are a helpful assistant.\"\r\n    },\r\n    {\r\n      \"role\": \"user\",\r\n      \"content\": \"Does Azure OpenAI support customer managed keys?\"\r\n    },\r\n    {\r\n      \"role\": \"assistant\",\r\n      \"content\": \"Yes, customer managed keys are supported by Azure OpenAI.\"\r\n    },\r\n    {\r\n      \"role\": \"user\",\r\n      \"content\": \"Do other Azure AI services support this too?\"\r\n    }\r\n  ],\r\n  \"max_tokens\": 5\r\n}"
+    "ContentType": "application/json",
+    "Content": "{\"messages\":[{\"role\":\"system\",\"content\":\"You are a helpful assistant.\"},{\"role\":\"user\",\"content\":\"Does Azure OpenAI support customer managed keys?\"},{\"role\":\"assistant\",\"content\":\"Yes, customer managed keys are supported by Azure OpenAI.\"},{\"role\":\"user\",\"content\":\"Do other Azure AI services support this too?\"}],\"max_tokens\":5}"
   }
 ],
   Response: {

@@ -2,6 +2,7 @@
 using System.Text;
 using AICentral.Core;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace AICentral.Endpoints.OpenAI;
@@ -113,7 +114,7 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
             didHaveRequestLimitHeader ? remainingRequests : null));
     }
 
-    private static async Task<HttpContent> CopyResponseWithMappedModelName(
+    private static Task<HttpContent> CopyResponseWithMappedModelName(
         IncomingCallDetails aiCallInformation,
         HttpRequest incomingRequest,
         string? mappedModelName)
@@ -121,19 +122,19 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         if (aiCallInformation.AICallType == AICallType.Transcription ||
             aiCallInformation.AICallType == AICallType.Translation)
         {
-            return MultipartContentHelper.CopyMultipartContent(incomingRequest, mappedModelName, OpenAIWellKnownModelNameField);
+            return Task.FromResult<HttpContent>(MultipartContentHelper.CopyMultipartContent(incomingRequest, mappedModelName, OpenAIWellKnownModelNameField));
         }
 
-        return aiCallInformation.IncomingModelName == mappedModelName
+        return Task.FromResult<HttpContent>(aiCallInformation.IncomingModelName == mappedModelName
             ? new StringContent(
-                aiCallInformation.RequestContent!.ToString(),
+                aiCallInformation.RequestContent!.ToString(Formatting.None),
                 Encoding.UTF8,
                 "application/json")
             : new StringContent(
                 AddModelName(
                     aiCallInformation.RequestContent!.DeepClone(),
                     mappedModelName!).ToString(),
-                Encoding.UTF8, "application/json");
+                Encoding.UTF8, "application/json"));
     }
     
     /// <summary>

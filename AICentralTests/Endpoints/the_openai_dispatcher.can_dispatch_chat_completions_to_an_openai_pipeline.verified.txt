@@ -10,7 +10,8 @@
       "Authorization": "Bearer API-1234",
       "OpenAI-Organization": "98892683-5712-4db4-ab5e-727275f88250"
     },
-    "Content": "{\r\n  \"messages\": [\r\n    {\r\n      \"content\": \"\",\r\n      \"role\": \"assistant\"\r\n    }\r\n  ],\r\n  \"model\": \"openaiendpoint\"\r\n}"
+    "ContentType": "application/json",
+    "Content": "{\"messages\":[{\"content\":\"\",\"role\":\"assistant\"}],\"model\":\"openaiendpoint\"}"
   }
 ],
   Response:

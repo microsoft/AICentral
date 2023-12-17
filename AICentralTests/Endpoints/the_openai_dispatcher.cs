@@ -179,6 +179,36 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
 
         await Verify(_factory.VerifyRequestsAndResponses(result));
     }
+    
+    [Fact]
+    public async Task can_handle_streaming_calls()
+    {
+        _factory.Seed("https://api.openai.com/v1/chat/completions", AICentralFakeResponses.FakeOpenAIStreamingCompletionsResponse);
+
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-openai.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            // ReSharper disable once RedundantArgumentDefaultValue
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_09_01_Preview)
+            {
+                Transport = new HttpClientTransport(_httpClient),
+            });
+
+        var completions = await client.GetChatCompletionsStreamingAsync(
+            new ChatCompletionsOptions("openaimodel", new[]
+            {
+                new ChatRequestSystemMessage("You are a helpful assistant.")
+            }));
+
+        var output = new StringBuilder();
+        await foreach (var completion in completions)
+        {
+            output.Append(completion.ContentUpdate);
+        }
+
+        await Verify(_factory.VerifyRequestsAndResponses(output));
+    }
+
 
     public void Dispose()
     {

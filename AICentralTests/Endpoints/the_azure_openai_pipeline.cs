@@ -150,7 +150,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public async Task can_handle_streaming_calls()
     {
         _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "ModelStream",
-            () => Task.FromResult(AICentralFakeResponses.FakeStreamingCompletionsResponse()), "2023-09-01-preview");
+            AICentralFakeResponses.FakeStreamingCompletionsResponse, "2023-09-01-preview");
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-azure.localtest.me"),
@@ -173,7 +173,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             output.Append(completion.ContentUpdate);
         }
 
-        await Verify(output);
+        await Verify(_factory.VerifyRequestsAndResponses(output));
     }
 
     [Fact]

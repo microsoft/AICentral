@@ -10,6 +10,7 @@
       "Authorization": "Bearer API-1234",
       "OpenAI-Organization": "98892683-5712-4db4-ab5e-727275f88250"
     },
+    "ContentType": "application/json",
     "Content": "{\r\n  \"model\": \"gpt-3.5-turbo\",\r\n  \"prompt\": \"Me building an Open AI Reverse Proxy\"\r\n}"
   }
 ],

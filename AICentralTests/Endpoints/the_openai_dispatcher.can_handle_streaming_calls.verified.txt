@@ -1,0 +1,24 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/v1/chat/completions",
+    "Method": "POST",
+    "Headers": {
+      "Accept": "application/json",
+      "x-ms-return-client-request-id": "true",
+      "Authorization": "Bearer API-1234",
+      "OpenAI-Organization": "98892683-5712-4db4-ab5e-727275f88250"
+    },
+    "ContentType": "application/json",
+    "Content": "{\r\n  \"messages\": [\r\n    {\r\n      \"content\": \"You are a helpful assistant.\",\r\n      \"role\": \"system\"\r\n    }\r\n  ],\r\n  \"stream\": true,\r\n  \"model\": \"gpt-3.5-turbo\"\r\n}"
+  }
+],
+  Response:
+{
+  "m_MaxCapacity": 2147483647,
+  "Capacity": 512,
+  "m_StringValue": "There once was a chap with a quill,\nWho tried to write a test with great skill,\nFor OpenAI's server side,\nOh, the challenge, he couldn't hide!\n\nHe typed and typed, words galore,\nBut the AI's responses left him wanting more,\nIt chatted and chattered, never quite complete,\nOh, this test was proving hard to beat.\n\nBut with determination, he sat all night,\nHoping his questions would ignite,\nThe perfect response from OpenAI's brain,\nOh, what a silly, testing, writing game!",
+  "m_currentThread": 0
+}
+}

@@ -9,7 +9,8 @@
       "Accept": "application/json",
       "x-ms-return-client-request-id": "true"
     },
-    "Content": "{\r\n  \"model\": \"gpt-3.5-turbo\",\r\n  \"prompt\": \"Me building an Open AI Reverse Proxy\"\r\n}"
+    "ContentType": "application/json",
+    "Content": "{\"model\":\"gpt-3.5-turbo\",\"prompt\":\"Me building an Open AI Reverse Proxy\"}"
   }
 ],
   Response:

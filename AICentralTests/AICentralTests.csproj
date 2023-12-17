@@ -49,7 +49,10 @@
 
     <ItemGroup>
       <None Remove="Assets\Recording.m4a" />
+      <EmbeddedResource Include="Assets\FakeOpenAIStreamingResponseContent.txt" />
       <EmbeddedResource Include="Assets\Recording.m4a" />
+      <None Remove="Assets\FakeStreamingResponseContent.txt" />
+      <EmbeddedResource Include="Assets\FakeStreamingResponseContent.txt" />
     </ItemGroup>
 
     <ItemGroup>

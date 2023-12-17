@@ -1,7 +1,9 @@
-﻿using AICentral.Core;
+﻿using System.Text;
+using AICentral.Core;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 
 namespace AICentral.Endpoints.AzureOpenAI;
 
@@ -99,14 +101,13 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 
         if (incomingCall.RequestContent != null)
         {
-            newRequest.Content = new StringContent(incomingCall.RequestContent!.ToString());
+            newRequest.Content = new StringContent(incomingCall.RequestContent!.ToString(Formatting.None), Encoding.UTF8, "application/json");
         }
         else
         {
             if (context.Request.Method == "POST")
             {
-                newRequest.Content =
-                    MultipartContentHelper.CopyMultipartContent(context.Request, incomingCall.IncomingModelName);
+                newRequest.Content = MultipartContentHelper.CopyMultipartContent(context.Request, incomingCall.IncomingModelName);
             }
         }
 

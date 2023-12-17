@@ -68,6 +68,7 @@ public static class TestWebApplicationFactoryEx
                     Method = x.Item1.Method.ToString(),
                     Headers = x.Item1.Headers.Where(x => x.Key != "x-ms-client-request-id" && x.Key != "User-Agent")
                         .ToDictionary(h => h.Key, h => string.Join(';', h.Value)),
+                    ContentType = x.Item1.Content?.Headers.ContentType?.MediaType,
                     Content = contentInformation,
                 });
             }).ToArray();
