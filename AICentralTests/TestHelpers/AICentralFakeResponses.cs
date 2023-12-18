@@ -102,6 +102,7 @@ public class AICentralFakeResponses
         var response = new HttpResponseMessage();
         response.Content = new SSEResponse(content);
         response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
+        response.Headers.TransferEncodingChunked = true;
         return response;
     }
 
@@ -275,12 +276,11 @@ public class AICentralFakeResponses
 
         protected override async Task SerializeToStreamAsync(Stream stream, TransportContext? context)
         {
-            var newLine = Encoding.UTF8.GetBytes("\n");
+            using var writer = new StreamWriter(stream);
             foreach (var line in _knownContentLines)
             {
-                var lineBytes = Encoding.UTF8.GetBytes(line);
-                await stream.WriteAsync(lineBytes);
-                await stream.WriteAsync(newLine);
+                await writer.WriteAsync($"{line}\n");
+                await writer.FlushAsync();
                 await Task.Delay(TimeSpan.FromMilliseconds(25));
             }
         }
