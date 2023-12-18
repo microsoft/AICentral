@@ -161,19 +161,33 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
                 Transport = new HttpClientTransport(_httpClient),
             });
 
-        var completions = await client.GetChatCompletionsStreamingAsync(
-            new ChatCompletionsOptions("ModelStream", new[]
-            {
-                new ChatRequestSystemMessage("You are a helpful assistant.")
-            }));
-
-        var output = new StringBuilder();
-        await foreach (var completion in completions)
+        try
         {
-            output.Append(completion.ContentUpdate);
-        }
+            var completions = await client.GetChatCompletionsStreamingAsync(
+                new ChatCompletionsOptions("ModelStream", new[]
+                {
+                    new ChatRequestSystemMessage("You are a helpful assistant.")
+                }));
+            
+            Console.WriteLine("Called SDK");
 
-        await Verify(_factory.VerifyRequestsAndResponses(output));
+            var output = new StringBuilder();
+
+            Console.WriteLine("Fetching completions");
+            await foreach (var completion in completions)
+            {
+                Console.WriteLine($"Fetched completions: {completion.ContentUpdate}");
+                output.Append(completion.ContentUpdate);
+            }
+
+            Console.WriteLine($"Verifying completions");
+            await Verify(_factory.VerifyRequestsAndResponses(output));
+            Console.WriteLine($"Verified completions");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.ToString());
+        }
     }
 
     [Fact]
