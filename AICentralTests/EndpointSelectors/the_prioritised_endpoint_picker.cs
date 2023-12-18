@@ -16,7 +16,7 @@ public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationF
 
     public the_prioritised_endpoint_picker(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
     {
-        Console.WriteLine("TEST");
+        Console.WriteLine("TEST:" + GetType().Name);
         _factory = factory;
         _factory.OutputHelper = testOutputHelper;
         _httpClient = factory.CreateClient();
