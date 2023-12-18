@@ -15,7 +15,6 @@ public static class ConfigurationEx
         params Assembly[] additionalComponentAssemblies)
     {
         var logger = startupLogger ?? NullLogger.Instance;
-        logger.LogInformation("AICentral - Initialising pipelines");
 
         var configFromSection = configuration.GetSection(configSectionName);
         var typedConfig = configFromSection.Exists()
