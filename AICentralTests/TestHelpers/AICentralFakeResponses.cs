@@ -276,7 +276,7 @@ public class AICentralFakeResponses
 
         protected override async Task SerializeToStreamAsync(Stream stream, TransportContext? context)
         {
-            using var writer = new StreamWriter(stream);
+            await using var writer = new StreamWriter(stream, leaveOpen:true);
             foreach (var line in _knownContentLines)
             {
                 await writer.WriteAsync($"{line}\n");
