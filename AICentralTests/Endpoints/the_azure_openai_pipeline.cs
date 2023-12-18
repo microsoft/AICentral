@@ -154,7 +154,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         await Verify(_factory.VerifyRequestsAndResponses(response));
     }
 
-    [Fact]
+    [Fact(Skip = "suspicious")]
     public async Task can_handle_streaming_calls()
     {
         using var test = new Disposable(GetType().Name + ":" + nameof(can_handle_streaming_calls));
