@@ -98,7 +98,7 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
     public async Task will_forward_whisper_transcription_requests_to_openai_with_a_failed_endpoints()
     {
         _factory.Seed($"https://api.openai.com/v1/audio/transcriptions",
-            req => req.Headers.Authorization.Parameter == "API-1000"
+            req => req.Headers.Authorization?.Parameter == "API-1000"
                 ? Task.FromResult(AICentralFakeResponses.FakeOpenAIAudioTranscriptionResponse())
                 : Task.FromResult(AICentralFakeResponses.NotFoundResponse()));
 
