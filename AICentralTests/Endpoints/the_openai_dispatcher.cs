@@ -20,6 +20,7 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
 
     public the_openai_dispatcher(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
     {
+        Console.WriteLine("TEST");
         _factory = factory;
         _testOutputHelper = testOutputHelper;
         factory.OutputHelper = testOutputHelper;
@@ -212,6 +213,7 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
 
     public void Dispose()
     {
+        Console.WriteLine("DISPOSE");
         _factory.Clear();
     }
 }

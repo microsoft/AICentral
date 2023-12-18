@@ -20,6 +20,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
 
     public the_azure_openai_pipeline(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
     {
+        Console.WriteLine("TEST");
         _factory = factory;
         _testOutputHelper = testOutputHelper;
         factory.OutputHelper = testOutputHelper;
@@ -222,6 +223,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
 
     public void Dispose()
     {
+        Console.WriteLine("DISPOSE");
         _factory.Clear();
     }
 }

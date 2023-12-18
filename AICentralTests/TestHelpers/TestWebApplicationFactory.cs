@@ -15,6 +15,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
 {
     protected override IHost CreateHost(IHostBuilder builder)
     {
+        Console.WriteLine("CREATEHOST");
         builder.UseEnvironment("tests");
         builder.ConfigureServices(services =>
         {
@@ -58,6 +59,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
             services.AddSingleton<IDateTimeProvider>(fakeDateTimeProvider);
             services.AddSingleton(fakeDateTimeProvider);
         });
+        Console.WriteLine("CREATEDHOST");
         return base.CreateHost(builder);
     }
 

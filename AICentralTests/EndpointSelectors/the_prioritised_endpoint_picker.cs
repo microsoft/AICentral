@@ -16,6 +16,7 @@ public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationF
 
     public the_prioritised_endpoint_picker(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
     {
+        Console.WriteLine("TEST");
         _factory = factory;
         _factory.OutputHelper = testOutputHelper;
         _httpClient = factory.CreateClient();
@@ -55,6 +56,7 @@ public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationF
 
     public void Dispose()
     {
+        Console.WriteLine("DISPOSE");
         _factory.Clear();
     }
 }
