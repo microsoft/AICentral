@@ -20,7 +20,6 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
 
     public the_azure_openai_pipeline(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
     {
-        Console.WriteLine("TEST:" + GetType().Name);
         _factory = factory;
         _testOutputHelper = testOutputHelper;
         factory.OutputHelper = testOutputHelper;
@@ -30,6 +29,8 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     [Fact]
     public async Task handles_chats()
     {
+        using var test = new Disposable(GetType().Name + ":" + nameof(handles_chats));
+
         _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
         _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200Number2, "Model1",
@@ -58,6 +59,8 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     [Fact]
     public async Task works_with_the_azure_sdk_completions()
     {
+        using var test = new Disposable(GetType().Name + ":" + nameof(works_with_the_azure_sdk_completions));
+
         _factory.SeedCompletions(AICentralFakeResponses.Endpoint200, "random",
             () => Task.FromResult(AICentralFakeResponses.FakeCompletionsResponse()));
         _factory.SeedCompletions(AICentralFakeResponses.Endpoint200Number2, "random",
@@ -84,6 +87,8 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     [Fact]
     public async Task can_proxy_a_whisper_audio_request()
     {
+        using var test = new Disposable(GetType().Name + ":" + nameof(can_proxy_a_whisper_audio_request));
+
         _factory.Seed(
             $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/whisper-1/audio/transcriptions?api-version=2023-05-15",
             () => Task.FromResult(AICentralFakeResponses.FakeOpenAIAudioTranscriptionResponse()));
@@ -115,6 +120,8 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     [Fact]
     public async Task will_follow_affinity_requests_to_allow_async_against_a_multi_endpoint()
     {
+        using var test = new Disposable(GetType().Name + ":" + nameof(will_follow_affinity_requests_to_allow_async_against_a_multi_endpoint));
+
         //test will fail on the first endpoint, so has to pick the second. This test should always pass, as the 2nd call to check the image completion status
         //will always have an affinity header to the working endpoint.
         _factory.Seed(
@@ -150,6 +157,8 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     [Fact]
     public async Task can_handle_streaming_calls()
     {
+        using var test = new Disposable(GetType().Name + ":" + nameof(can_handle_streaming_calls));
+
         _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "ModelStream",
             AICentralFakeResponses.FakeStreamingCompletionsResponse, "2023-09-01-preview");
 
@@ -180,6 +189,8 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     [Fact]
     public async Task can_proxy_dalle2_requests()
     {
+        using var test = new Disposable(GetType().Name + ":" + nameof(can_proxy_dalle2_requests));
+
         _factory.Seed(
             $"https://{AICentralFakeResponses.Endpoint200}/openai/images/generations:submit?api-version=2023-09-01-preview",
             () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIImageResponse()));
@@ -196,6 +207,8 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     [Fact]
     public async Task can_proxy_dalle3_requests()
     {
+        using var test = new Disposable(GetType().Name + ":" + nameof(can_proxy_dalle3_requests));
+
         _factory.Seed(
             $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/gpt-3.5-turbo/images/generations?api-version=2023-12-01-preview",
             () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIDALLE3ImageResponse()));
@@ -225,5 +238,21 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     {
         Console.WriteLine("DISPOSE");
         _factory.Clear();
+    }
+}
+
+public class Disposable : IDisposable
+{
+    private readonly string _text;
+
+    public Disposable(string text)
+    {
+        _text = text;
+        Console.WriteLine("STARTING:: " + _text);
+    }
+
+    public void Dispose()
+    {
+        Console.WriteLine("FINISHED:: " + _text);
     }
 }
