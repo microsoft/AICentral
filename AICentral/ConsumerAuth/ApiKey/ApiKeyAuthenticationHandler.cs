@@ -7,12 +7,8 @@ namespace AICentral.ConsumerAuth.ApiKey;
 
 internal class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyOptions>
 {
-    private readonly IOptionsMonitor<ApiKeyOptions> _options;
-
-    public ApiKeyAuthenticationHandler(IOptionsMonitor<ApiKeyOptions> options, ILoggerFactory logger, UrlEncoder encoder,
-        ISystemClock clock) : base(options, logger, encoder, clock)
+    public ApiKeyAuthenticationHandler(IOptionsMonitor<ApiKeyOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder)
     {
-        _options = options;
     }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()

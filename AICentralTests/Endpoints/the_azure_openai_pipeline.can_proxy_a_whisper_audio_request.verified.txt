@@ -21,7 +21,7 @@
     "Text": "1\n00:00:00,000 --> 00:00:07,000\nI wonder what the translation will be for this",
     "Language": null,
     "Duration": null,
-    "Segments": null
+    "Segments": []
   },
   "HasValue": true
 }

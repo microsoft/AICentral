@@ -7,21 +7,19 @@ public class FakeHttpMessageHandlerSeeder
     private ConcurrentDictionary<string, Func<HttpRequestMessage, Task<HttpResponseMessage>>> SeededResponses { get; } = new();
     public List<(HttpRequestMessage, byte[])> IncomingRequests { get; } = new();
 
-    public bool TryGet(HttpRequestMessage request, out HttpResponseMessage? response)
+    public async Task<HttpResponseMessage?> TryGet(HttpRequestMessage request)
     {
         if (SeededResponses.TryGetValue(request.RequestUri!.AbsoluteUri, out var responseFunction))
         {
-            response = responseFunction(request).Result;
+            var response = await responseFunction(request);
             if (response.IsSuccessStatusCode)
             {
                 IncomingRequests.Add((request, request.Content?.ReadAsByteArrayAsync().Result ?? Array.Empty<byte>()));
             }
 
-            return true;
+            return response;
         }
-
-        response = null;
-        return false;
+        return null;
     }
 
     public void Seed(string url, Func<HttpRequestMessage, Task<HttpResponseMessage>> response)

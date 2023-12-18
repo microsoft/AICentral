@@ -9,15 +9,13 @@ public class FakeHttpMessageHandler : HttpMessageHandler
         _seeder = seeder;
     }
 
-    protected override Task<HttpResponseMessage> SendAsync(
+    protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        if (_seeder.TryGet(request, out var response))
-        {
-            return Task.FromResult(response!);
-        }
+        var response = await _seeder.TryGet(request);
+        if (response != null) return response;
 
-        throw new NotSupportedException($"No fake response registered for {request.RequestUri.AbsoluteUri}");
+        throw new NotSupportedException($"No fake response registered for {(request.RequestUri?.AbsoluteUri ?? "unknown url")}");
     }
 }
