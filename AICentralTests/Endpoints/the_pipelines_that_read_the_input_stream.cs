@@ -13,7 +13,6 @@ public class the_pipelines_that_read_the_input_stream : IClassFixture<TestWebApp
 {
     public void Dispose()
     {
-        Console.WriteLine("DISPOSE");
         _factory.Clear();
     }
 
@@ -24,7 +23,6 @@ public class the_pipelines_that_read_the_input_stream : IClassFixture<TestWebApp
     public the_pipelines_that_read_the_input_stream(TestWebApplicationFactory<Program> factory,
         ITestOutputHelper testOutputHelper)
     {
-        Console.WriteLine("TEST:" + GetType().Name);
         _factory = factory;
         _testOutputHelper = testOutputHelper;
         factory.OutputHelper = testOutputHelper;
