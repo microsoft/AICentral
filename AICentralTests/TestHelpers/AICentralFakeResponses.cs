@@ -96,7 +96,7 @@ public class AICentralFakeResponses
         using var stream =
             new StreamReader(
                 typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
-                    "AICentralTests.Assets.FakeStreamingResponseContent.txt")!);
+                    "AICentralTests.Assets.FakeStreamingResponse.testcontent.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
@@ -110,7 +110,7 @@ public class AICentralFakeResponses
         using var stream =
             new StreamReader(
                 typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
-                    "AICentralTests.Assets.FakeOpenAIStreamingResponseContent.txt")!);
+                    "AICentralTests.Assets.FakeOpenAIStreamingResponse.testcontent.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
