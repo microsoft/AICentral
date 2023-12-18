@@ -55,8 +55,4 @@
       <EmbeddedResource Include="Assets\FakeStreamingResponseContent.txt" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Properties\" />
-    </ItemGroup>
-
 </Project>
