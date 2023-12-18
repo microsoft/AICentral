@@ -146,7 +146,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         await Verify(_factory.VerifyRequestsAndResponses(response));
     }
 
-    [Fact(Skip = "Hangs Github Actions...")]
+    [Fact]
     public async Task can_handle_streaming_calls()
     {
         _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "ModelStream",
@@ -166,8 +166,9 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             {
                 new ChatRequestSystemMessage("You are a helpful assistant.")
             }));
-
+        
         var output = new StringBuilder();
+
         await foreach (var completion in completions)
         {
             output.Append(completion.ContentUpdate);
