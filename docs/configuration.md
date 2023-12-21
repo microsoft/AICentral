@@ -327,7 +327,7 @@ A pipeline can run multiple steps. We currently provide steps for:
           "LimitType": "PerConsumer|PerAICentralEndpoint",
           "MetricType": "Tokens",
           "Options": {
-            "Window": 10,
+            "Window": "00:00:10",
             "PermitLimit": 100
           }
         }
@@ -339,7 +339,7 @@ A pipeline can run multiple steps. We currently provide steps for:
           "LimitType": "PerConsumer|PerAICentralEndpoint",
           "MetricType": "Requests",
           "Options": {
-            "Window": 10,
+            "Window": "00:00:10",
             "PermitLimit": 100
           }
         }
