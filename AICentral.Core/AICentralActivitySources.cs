@@ -25,7 +25,7 @@ public static class AICentralActivitySources
         if (!LongGauges.TryGetValue(key, out _))
         {
             var gauge = AICentralActivitySource.AICentralMeter.CreateObservableGauge(
-                $"aicentral.{metric}.{host.Replace(".", "_")}.{model}", () => LongObservedValues.GetValueOrDefault(key, 0));
+                $"aicentral.{host.Replace(".", "_")}.{model}.{metric}", () => LongObservedValues.GetValueOrDefault(key, 0));
             LongGauges.TryAdd(key, gauge);
         }
     }
@@ -37,35 +37,30 @@ public static class AICentralActivitySources
         if (!LongCounters.TryGetValue(key, out _))
         {
             var guage = AICentralActivitySource.AICentralMeter.CreateCounter<long>(
-                $"aicentral.{pipeline}", unit);
+                $"aicentral.{pipeline}.{metric}.count", unit);
             LongCounters.TryAdd(key, guage);
         }
 
         if (LongCounters.TryGetValue(key, out var counter))
         {
-            counter.Add(count,
-                new KeyValuePair<string, object?>("aic.metric", metric),
-                new KeyValuePair<string, object?>("aic.pipeline", pipeline)
-            );
+            counter.Add(count);
         }
     }
 
-    public static void RecordHistogram(string pipeline, string metric, string unit, double value)
+    public static void RecordHistogram(string pipeline, string metric, string aggregation, string unit, double value)
     {
         var key = (pipeline, string.Empty);
 
         if (!HistogramCounters.TryGetValue(key, out _))
         {
             var guage = AICentralActivitySource.AICentralMeter.CreateHistogram<double>(
-                $"aicentral.{pipeline}", unit);
+                $"aicentral.{pipeline}.{metric}", unit);
             HistogramCounters.TryAdd(key, guage);
         }
 
         if (HistogramCounters.TryGetValue(key, out var counter))
         {
-            counter.Record(value,
-                new KeyValuePair<string, object?>("aic.metric", metric),
-                new KeyValuePair<string, object?>("aic.pipeline", pipeline));
+            counter.Record(value);
         }
     }
 }

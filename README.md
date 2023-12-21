@@ -176,7 +176,7 @@ This pipeline will:
           "LimitType": "PerConsumer|PerAICentralEndpoint",
           "MetricType": "Requests",
           "Options": {
-            "Window": 10,
+            "Window": "00:00:10",
             "PermitLimit": 100
           }
         }

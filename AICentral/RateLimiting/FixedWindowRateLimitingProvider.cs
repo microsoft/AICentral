@@ -69,6 +69,7 @@ public class FixedWindowRateLimitingProvider : IAICentralPipelineStep, IAICentra
         Guard.NotNull(properties.LimitType, nameof(properties.LimitType));
         Guard.NotNull(properties.Options, nameof(properties.Options));
 
+        properties.Options!.AutoReplenishment = false;
         return new FixedWindowRateLimitingProvider(properties);
     }
 

@@ -3,7 +3,6 @@ using System.Diagnostics.Metrics;
 using AICentral.ConsumerAuth;
 using AICentral.Core;
 using AICentral.EndpointSelectors;
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace AICentral;
 
@@ -20,8 +19,7 @@ public class Pipeline
     private readonly IList<IAICentralGenericStepFactory> _pipelineSteps;
     private readonly IAICentralEndpointSelectorFactory _endpointSelector;
 
-    private static readonly Histogram<int> TokenMeter =
-        AICentralActivitySource.AICentralMeter.CreateHistogram<int>("aicentral.tokens.sum", "tokens");
+    private readonly Histogram<int> TokenMeter;
 
     public Pipeline(
         string name,
@@ -35,6 +33,7 @@ public class Pipeline
         _clientAuthStep = clientAuthStep;
         _pipelineSteps = pipelineSteps.Select(x => x).ToArray();
         _endpointSelector = endpointSelector;
+        TokenMeter = AICentralActivitySource.AICentralMeter.CreateHistogram<int>($"aicentral.{_name}.tokens.sum", "{tokens}");
     }
 
     /// <summary>
@@ -82,7 +81,7 @@ public class Pipeline
                 { "Endpoint", result.DownstreamUsageInformation.OpenAIHost }
             };
 
-            AICentralActivitySources.RecordHistogram(_name, "duration", "ms",
+            AICentralActivitySources.RecordHistogram(_name, "requests", "duration", "ms",
                 result.DownstreamUsageInformation.Duration.TotalMilliseconds);
 
             if (result.DownstreamUsageInformation.TotalTokens != null)

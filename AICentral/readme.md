@@ -122,9 +122,9 @@ This pipeline will:
         "Name": "token-rate-limiter",
         "Properties": {
           "LimitType": "PerConsumer|PerAICentralEndpoint",
-          ~~"MetricType": "Tokens",
-          "Options": {~~
-            "Window": 60,
+          "MetricType": "Tokens",
+          "Options": {
+            "Window": "00:01:00",
             "PermitLimit": 1000
           }
         }
@@ -136,7 +136,7 @@ This pipeline will:
           "LimitType": "PerConsumer|PerAICentralEndpoint",
           "MetricType": "Requests",
           "Options": {
-            "Window": 10,
+            "Window": "00:00:10",
             "PermitLimit": 100
           }
         }
