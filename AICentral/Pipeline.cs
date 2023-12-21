@@ -81,7 +81,7 @@ public class Pipeline
                 { "Endpoint", result.DownstreamUsageInformation.OpenAIHost }
             };
 
-            AICentralActivitySources.RecordHistogram(_name, "duration", "ms",
+            AICentralActivitySources.RecordHistogram(_name, "requests", "duration", "ms",
                 result.DownstreamUsageInformation.Duration.TotalMilliseconds);
 
             if (result.DownstreamUsageInformation.TotalTokens != null)

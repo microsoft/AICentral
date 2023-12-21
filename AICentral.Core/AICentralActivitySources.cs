@@ -47,7 +47,7 @@ public static class AICentralActivitySources
         }
     }
 
-    public static void RecordHistogram(string pipeline, string metric, string unit, double value)
+    public static void RecordHistogram(string pipeline, string metric, string aggregation, string unit, double value)
     {
         var key = (pipeline, string.Empty);
 
