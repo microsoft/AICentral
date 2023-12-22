@@ -54,7 +54,7 @@ public static class AICentralActivitySources
         if (!HistogramCounters.TryGetValue(key, out _))
         {
             var guage = AICentralActivitySource.AICentralMeter.CreateHistogram<double>(
-                $"aicentral.{pipeline}.{metric}", unit);
+                $"aicentral.{pipeline}.{metric}.{aggregation}", unit);
             HistogramCounters.TryAdd(key, guage);
         }
 
