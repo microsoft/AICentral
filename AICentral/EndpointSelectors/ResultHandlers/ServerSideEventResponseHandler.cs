@@ -1,8 +1,7 @@
 using System.Text;
+using System.Text.Json;
 using AICentral.Core;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using SharpToken;
 
 namespace AICentral.EndpointSelectors.ResultHandlers;
@@ -42,10 +41,22 @@ public static class ServerSideEventResponseHandler
                 if (line.StartsWith("data:", StringComparison.InvariantCultureIgnoreCase) &&
                     !line.EndsWith("[done]", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    var lineObject = (JObject)JsonConvert.DeserializeObject(line.Substring(StreamingLinePrefixLength))!;
-                    model = lineObject.Value<string>("model")!;
-                    var completions = lineObject["choices"]?.FirstOrDefault()?["delta"]?.Value<string>("content") ?? "";
-                    content.Append(completions);
+                    var lineObject = JsonDocument.Parse(line.Substring(StreamingLinePrefixLength));
+                    model = lineObject.RootElement.GetProperty("model").GetString();
+
+                    if (lineObject.RootElement.TryGetProperty("choices", out var choicesProp))
+                    {
+                        if (choicesProp.GetArrayLength() > 0)
+                        {
+                            if (choicesProp[0].TryGetProperty("delta", out var deltaProp))
+                            {
+                                if (deltaProp.TryGetProperty("content", out var contentProp))
+                                {
+                                    content.Append(contentProp.GetString());
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -62,7 +73,8 @@ public static class ServerSideEventResponseHandler
                 ? 0
                 : tokeniser?.Encode(requestInformation.Prompt, new HashSet<string>(), new HashSet<string>()).Count ?? 0;
 
-            estimatedCompletionTokens = tokeniser?.Encode(responseText, new HashSet<string>(), new HashSet<string>()).Count ?? 0;
+            estimatedCompletionTokens =
+                tokeniser?.Encode(responseText, new HashSet<string>(), new HashSet<string>()).Count ?? 0;
         }
         catch
         {

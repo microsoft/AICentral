@@ -1,7 +1,6 @@
-﻿using AICentral.Core;
+﻿using System.Text.Json;
+using AICentral.Core;
 using Microsoft.AspNetCore.WebUtilities;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace AICentral;
 
@@ -42,21 +41,18 @@ public class AzureOpenAIDetector
         if (request.ContentType?.Contains("json", StringComparison.InvariantCultureIgnoreCase) ?? false)
         {
             //Pull out the text
-            using var requestReader = new StreamReader(request.Body);
-            var requestRawContent = await requestReader.ReadToEndAsync(cancellationToken);
-            var requestContent = (JObject)JsonConvert.DeserializeObject(requestRawContent)!;
+            var requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
 
             var promptText = callType switch
             {
                 AICallType.Chat => string.Join(
                     '\n',
-                    requestContent["messages"]?.Select(x => x.Value<string>("content")) ??
+                    requestContent.RootElement.GetProperty("messages").EnumerateArray().Select(x => x.GetProperty("content").GetString()) ??
                     Array.Empty<string>()),
-                AICallType.Embeddings => requestContent.Value<string>("input") ?? string.Empty,
-                AICallType.DALLE2 => requestContent.Value<string>("prompt") ?? string.Empty,
-                AICallType.DALLE3 => requestContent.Value<string>("prompt") ?? string.Empty,
-                AICallType.Completions => string.Join('\n',
-                    requestContent["prompt"]?.Select(x => x.Value<string>()) ?? Array.Empty<string>()),
+                AICallType.Embeddings => requestContent.RootElement.GetProperty("input").GetString() ?? string.Empty,
+                AICallType.DALLE2 => requestContent.RootElement.GetProperty("prompt").GetString() ?? string.Empty,
+                AICallType.DALLE3 => requestContent.RootElement.GetProperty("prompt").GetString() ?? string.Empty,
+                AICallType.Completions => string.Join('\n', requestContent.RootElement.GetProperty("prompt").EnumerateArray().Select(x => x.GetString())),
                 _ => throw new ArgumentOutOfRangeException()
             };
 
