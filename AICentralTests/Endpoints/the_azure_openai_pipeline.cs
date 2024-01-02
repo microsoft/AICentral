@@ -166,7 +166,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             {
                 new ChatRequestSystemMessage("You are a helpful assistant.")
             }));
-        
+
         var output = new StringBuilder();
 
         await foreach (var completion in completions)
@@ -219,6 +219,29 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         result.Value.Data.Count.ShouldBe(1);
 
         await Verify(_factory.VerifyRequestsAndResponses(result));
+    }
+
+    [Fact]
+    public async Task handles_404s()
+    {
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint404, "Model1",
+            () => Task.FromResult(AICentralFakeResponses.NotFoundResponse()));
+
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-404.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            // ReSharper disable once RedundantArgumentDefaultValue
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
+            {
+                Transport = new HttpClientTransport(_httpClient),
+            });
+
+        await Should.ThrowAsync<RequestFailedException>(async () =>
+            await client.GetChatCompletionsStreamingAsync(
+                new ChatCompletionsOptions("Model1", new[]
+                {
+                    new ChatRequestSystemMessage("You are a helpful assistant.")
+                })));
     }
 
     public void Dispose()

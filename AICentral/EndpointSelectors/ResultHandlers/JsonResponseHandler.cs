@@ -51,7 +51,7 @@ public static class JsonResponseHandler
 
             return new AICentralResponse(
                 chatRequestInformation,
-                new JsonResultHandler(openAiResponse));
+                new JsonResultHandler(openAiResponse, response));
         }
         else
         {
@@ -72,7 +72,7 @@ public static class JsonResponseHandler
                 requestInformation.Duration);
 
             return new AICentralResponse(chatRequestInformation,
-                new JsonResultHandler(openAiResponse));
+                new JsonResultHandler(openAiResponse, response));
         }
     }
 }

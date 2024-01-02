@@ -53,7 +53,7 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
-    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, string model, string mappedModel)
+    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname)
     {
         var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
             hostname,
