@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
 using AICentral.Core;
@@ -9,6 +11,9 @@ namespace AICentral.EndpointSelectors.ResultHandlers;
 public static class ServerSideEventResponseHandler
 {
     private static readonly int StreamingLinePrefixLength = "data:".Length;
+    private static readonly HashSet<string> EmptySet = new();
+    private static readonly ConcurrentDictionary<string, GptEncoding> Encoders = new();
+
 
     public static async Task<AICentralResponse> Handle(
         HttpContext context,
@@ -16,18 +21,18 @@ public static class ServerSideEventResponseHandler
         HttpResponseMessage openAiResponse,
         DownstreamRequestInformation requestInformation)
     {
-        using var activity = AICentralActivitySource.AICentralRequestActivitySource.StartActivity("StreamingResponse");
+        const string activityName = "StreamingResponse";
+        using var activity = AICentralActivitySource.AICentralRequestActivitySource.StartActivity(activityName);
 
         //send the headers down to the client
         context.Response.StatusCode = (int)openAiResponse.StatusCode;
 
         //squirt the response as it comes in:
-        using var openAiResponseReader =
-            new StreamReader(await openAiResponse.Content.ReadAsStreamAsync(cancellationToken));
+        using var openAiResponseReader = new StreamReader(await openAiResponse.Content.ReadAsStreamAsync(cancellationToken));
         context.Response.Headers.CacheControl = new StringValues("no-cache");
         context.Response.ContentType = "text/event-stream";
 
-        var content = new StringBuilder();
+        var content = new List<string>();
         var model = string.Empty;
         while (!openAiResponseReader.EndOfStream)
         {
@@ -52,7 +57,7 @@ public static class ServerSideEventResponseHandler
                             {
                                 if (deltaProp.TryGetProperty("content", out var contentProp))
                                 {
-                                    content.Append(contentProp.GetString());
+                                    content.Add(contentProp.GetString() ?? string.Empty);
                                 }
                             }
                         }
@@ -62,23 +67,23 @@ public static class ServerSideEventResponseHandler
         }
 
         //calculate prompt tokens
-        var tokeniser = GptEncoding.GetEncodingForModel(model);
         int? estimatedPromptTokens = null;
         int? estimatedCompletionTokens = null;
-        var responseText = content.ToString();
-
-        try
+        if (!string.IsNullOrWhiteSpace(model))
         {
-            estimatedPromptTokens = requestInformation.Prompt == null
-                ? 0
-                : tokeniser?.Encode(requestInformation.Prompt, new HashSet<string>(), new HashSet<string>()).Count ?? 0;
+            var tokeniser = Encoders.GetOrAdd(model, GptEncoding.GetEncodingForModel);
+            try
+            {
+                estimatedPromptTokens = requestInformation.Prompt == null
+                    ? 0
+                    : tokeniser?.Encode(requestInformation.Prompt, EmptySet, EmptySet).Count ?? 0;
 
-            estimatedCompletionTokens =
-                tokeniser?.Encode(responseText, new HashSet<string>(), new HashSet<string>()).Count ?? 0;
-        }
-        catch
-        {
-            //not much we can do if we failed to create a Tokeniser (I think they are pulled from the internet)
+                estimatedCompletionTokens = content.Sum(x => tokeniser?.Encode(x, EmptySet, EmptySet).Count);
+            }
+            catch
+            {
+                //not much we can do if we failed to create a Tokeniser (I think they are pulled from the internet)
+            }
         }
 
         var chatRequestInformation = new DownstreamUsageInformation(
@@ -87,7 +92,7 @@ public static class ServerSideEventResponseHandler
             context.User.Identity?.Name ?? "unknown",
             requestInformation.CallType,
             requestInformation.Prompt,
-            responseText,
+            string.Join("", content),
             estimatedPromptTokens,
             estimatedCompletionTokens,
             0,
