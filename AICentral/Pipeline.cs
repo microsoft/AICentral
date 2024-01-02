@@ -19,7 +19,7 @@ public class Pipeline
     private readonly IList<IAICentralGenericStepFactory> _pipelineSteps;
     private readonly IAICentralEndpointSelectorFactory _endpointSelector;
 
-    private readonly Histogram<int> TokenMeter;
+    private readonly Histogram<int> _tokenMeter;
 
     public Pipeline(
         string name,
@@ -33,7 +33,7 @@ public class Pipeline
         _clientAuthStep = clientAuthStep;
         _pipelineSteps = pipelineSteps.Select(x => x).ToArray();
         _endpointSelector = endpointSelector;
-        TokenMeter = AICentralActivitySource.AICentralMeter.CreateHistogram<int>($"aicentral.{_name}.tokens.sum", "{tokens}");
+        _tokenMeter = AICentralActivitySource.AICentralMeter.CreateHistogram<int>($"aicentral.{_name}.tokens.consumed", "{tokens}");
     }
 
     /// <summary>
@@ -86,7 +86,7 @@ public class Pipeline
 
             if (result.DownstreamUsageInformation.TotalTokens != null)
             {
-                TokenMeter.Record(result.DownstreamUsageInformation.TotalTokens.Value, tagList);
+                _tokenMeter.Record(result.DownstreamUsageInformation.TotalTokens.Value, tagList);
             }
 
             activity?.AddTag("AICentral.Duration", result.DownstreamUsageInformation.Duration);

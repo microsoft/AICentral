@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json.Linq;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Core;
 
-public record IncomingCallDetails(AICallType AICallType, string? PromptText, string? IncomingModelName, JObject? RequestContent, Dictionary<string, StringValues>? QueryString);
+public record IncomingCallDetails(AICallType AICallType, string? PromptText, string? IncomingModelName, JsonDocument? RequestContent, Dictionary<string, StringValues>? QueryString);

@@ -1,10 +1,7 @@
-﻿using System.CodeDom;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text;
 using AICentralTests.Endpoints;
-using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
 namespace AICentralTests.TestHelpers;
@@ -22,35 +19,33 @@ public class AICentralFakeResponses
     public static HttpResponseMessage FakeChatCompletionsResponse(int? totalTokens = 126)
     {
         var response = new HttpResponseMessage();
-        response.Content = new StringContent(
-            JsonConvert.SerializeObject(new
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            id = FakeResponseId,
+            @object = "chat.completion",
+            created = 1679072642,
+            model = "gpt-35-turbo",
+            usage = new
             {
-                id = FakeResponseId,
-                @object = "chat.completion",
-                created = 1679072642,
-                model = "gpt-35-turbo",
-                usage = new
+                prompt_tokens = 58,
+                completion_tokens = 68,
+                total_tokens = totalTokens
+            },
+            choices = new[]
+            {
+                new
                 {
-                    prompt_tokens = 58,
-                    completion_tokens = 68,
-                    total_tokens = totalTokens
-                },
-                choices = new[]
-                {
-                    new
+                    message = new
                     {
-                        message = new
-                        {
-                            role = "assistant",
-                            content =
-                                "Yes, other Azure AI services also support customer managed keys. Azure AI services offer multiple options for customers to manage keys, such as using Azure Key Vault, customer-managed keys in Azure Key Vault or customer-managed keys through Azure Storage service. This helps customers ensure that their data is secure and access to their services is controlled."
-                        },
-                        finish_reason = "stop",
-                        index = 0
-                    }
-                },
-            }, Formatting.None)
-            , Encoding.UTF8, "application/json");
+                        role = "assistant",
+                        content =
+                            "Yes, other Azure AI services also support customer managed keys. Azure AI services offer multiple options for customers to manage keys, such as using Azure Key Vault, customer-managed keys in Azure Key Vault or customer-managed keys through Azure Storage service. This helps customers ensure that their data is secure and access to their services is controlled."
+                    },
+                    finish_reason = "stop",
+                    index = 0
+                }
+            },
+        });
 
         response.Headers.Add("x-ratelimit-remaining-requests", "12");
         response.Headers.Add("x-ratelimit-remaining-tokens", "234");
@@ -61,31 +56,29 @@ public class AICentralFakeResponses
     public static HttpResponseMessage FakeCompletionsResponse()
     {
         var response = new HttpResponseMessage();
-        response.Content = new StringContent(
-            JsonConvert.SerializeObject(new
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            id = FakeResponseId,
+            @object = "chat.completion",
+            created = 1679072642,
+            model = "gpt-35-turbo",
+            usage = new
             {
-                id = FakeResponseId,
-                @object = "chat.completion",
-                created = 1679072642,
-                model = "gpt-35-turbo",
-                usage = new
+                prompt_tokens = 58,
+                completion_tokens = 68,
+                total_tokens = 126
+            },
+            choices = new[]
+            {
+                new
                 {
-                    prompt_tokens = 58,
-                    completion_tokens = 68,
-                    total_tokens = 126
-                },
-                choices = new[]
-                {
-                    new
-                    {
-                        text =
-                            "Yes, other Azure AI services also support customer managed keys. Azure AI services offer multiple options for customers to manage keys, such as using Azure Key Vault, customer-managed keys in Azure Key Vault or customer-managed keys through Azure Storage service. This helps customers ensure that their data is secure and access to their services is controlled.",
-                        finish_reason = "stop",
-                        index = 0
-                    }
-                },
-            }, Formatting.None)
-            , Encoding.UTF8, "application/json");
+                    text =
+                        "Yes, other Azure AI services also support customer managed keys. Azure AI services offer multiple options for customers to manage keys, such as using Azure Key Vault, customer-managed keys in Azure Key Vault or customer-managed keys through Azure Storage service. This helps customers ensure that their data is secure and access to their services is controlled.",
+                    finish_reason = "stop",
+                    index = 0
+                }
+            },
+        });
 
         return response;
     }
@@ -125,13 +118,11 @@ public class AICentralFakeResponses
         var response = new HttpResponseMessage(HttpStatusCode.Accepted);
         response.Headers.Add("operation-location",
             $"https://{Endpoint200}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview");
-        response.Content = new StringContent(
-            JsonConvert.SerializeObject(new
-            {
-                id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
-                status = "notRunning",
-            }, Formatting.None)
-            , Encoding.UTF8, "application/json");
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
+            status = "notRunning"
+        });
 
         return response;
     }
@@ -139,23 +130,21 @@ public class AICentralFakeResponses
     public static HttpResponseMessage FakeAzureOpenAIDALLE3ImageResponse()
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK);
-        response.Content = new StringContent(
-            JsonConvert.SerializeObject(new
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            created = 1702525301,
+            data = new[]
             {
-                created = 1702525301,
-                data = new[]
+                new
                 {
-                    new
-                    {
-                        revised_prompt =
-                            "A middle-aged computer programmer of ambiguous descent, typing code into a laptop in a spacious, brightly lit living room. Regardless of gender, they bear a somewhat weary look reflecting their extensive experience in their profession. Their room is illuminated by the warm sunbeams filtering through the window.",
-                        url = "https://somewhere-else.com"
-                    }
-                },
-                id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
-                status = "notRunning",
-            }, Formatting.None)
-            , Encoding.UTF8, "application/json");
+                    revised_prompt =
+                        "A middle-aged computer programmer of ambiguous descent, typing code into a laptop in a spacious, brightly lit living room. Regardless of gender, they bear a somewhat weary look reflecting their extensive experience in their profession. Their room is illuminated by the warm sunbeams filtering through the window.",
+                    url = "https://somewhere-else.com"
+                }
+            },
+            id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
+            status = "notRunning",
+        });
 
         return response;
     }
@@ -164,19 +153,17 @@ public class AICentralFakeResponses
     public static HttpResponseMessage FakeOpenAIDALLE3ImageResponse()
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK);
-        response.Content = new StringContent(
-            JsonConvert.SerializeObject(new
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            created = 1702525301,
+            data = new[]
             {
-                created = 1702525301,
-                data = new[]
+                new
                 {
-                    new
-                    {
-                        url = "https://somewhere-else.com"
-                    }
+                    url = "https://somewhere-else.com"
                 }
-            }, Formatting.None)
-            , Encoding.UTF8, "application/json");
+            }
+        });
 
         return response;
     }
@@ -185,25 +172,23 @@ public class AICentralFakeResponses
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK);
         var created = 1702525391;
-        response.Content = new StringContent(
-            JsonConvert.SerializeObject(new
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
+            created = created,
+            status = "succeeded",
+            result = new
             {
-                id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
                 created = created,
-                status = "succeeded",
-                result = new
+                data = new[]
                 {
-                    created = created,
-                    data = new[]
+                    new
                     {
-                        new
-                        {
-                            url = "https://images.localtest.me/some-image-somehere"
-                        }
+                        url = "https://images.localtest.me/some-image-somehere"
                     }
                 }
-            }, Formatting.None)
-            , Encoding.UTF8, "application/json");
+            }
+        });
 
         return response;
     }
@@ -211,11 +196,11 @@ public class AICentralFakeResponses
     public static HttpResponseMessage FakeOpenAIAudioTranscriptionResponse()
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK);
-        response.Content = new StringContent("""
-                                             1
-                                             00:00:00,000 --> 00:00:07,000
-                                             I wonder what the translation will be for this
-                                             """.ReplaceLineEndings("\n"), Encoding.UTF8, "text/plain");
+        response.Content = new OneTimeStreamReadHttpContent("""
+                                                            1
+                                                            00:00:00,000 --> 00:00:07,000
+                                                            I wonder what the translation will be for this
+                                                            """.ReplaceLineEndings("\n"));
 
         response.Headers.Add("openai-processing-ms", "744");
         response.Headers.Add("openai-version", "2020-10-01");
@@ -228,11 +213,11 @@ public class AICentralFakeResponses
     public static HttpResponseMessage FakeOpenAIAudioTranslationResponse()
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK);
-        response.Content = new StringContent("""
-                                             {
-                                               "text": "I wonder what the translation will be for this"
-                                             }
-                                             """.ReplaceLineEndings("\n"), Encoding.UTF8, "text/plain");
+        response.Content = new OneTimeStreamReadHttpContent("""
+                                                            {
+                                                              "text": "I wonder what the translation will be for this"
+                                                            }
+                                                            """.ReplaceLineEndings("\n"));
 
         response.Headers.Add("openai-processing-ms", "744");
         response.Headers.Add("openai-version", "2020-10-01");
@@ -246,6 +231,15 @@ public class AICentralFakeResponses
     {
         var response = new HttpResponseMessage();
         response.StatusCode = HttpStatusCode.NotFound;
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            error = new
+            {
+                code = "DeploymentNotFound",
+                message =
+                    "The API deployment for this resource does not exist. If you created the deployment within the last 5 minutes, please wait a moment and try again."
+            }
+        });
         return response;
     }
 
@@ -276,7 +270,7 @@ public class AICentralFakeResponses
 
         protected override async Task SerializeToStreamAsync(Stream stream, TransportContext? context)
         {
-            await using var writer = new StreamWriter(stream, leaveOpen:true);
+            await using var writer = new StreamWriter(stream, leaveOpen: true);
             foreach (var line in _knownContentLines)
             {
                 await writer.WriteAsync($"{line}\n");
@@ -289,6 +283,69 @@ public class AICentralFakeResponses
         {
             length = 0;
             return false;
+        }
+    }
+
+    private class OneTimeStreamReadHttpContent : HttpContent
+    {
+        private readonly Stream _backingStream;
+        private bool _read;
+
+        public OneTimeStreamReadHttpContent(object jsonResponse)
+        {
+            _backingStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(jsonResponse)));
+            Headers.ContentType = new MediaTypeHeaderValue("application/json", "utf-8");
+        }
+
+        public OneTimeStreamReadHttpContent(string textResponse)
+        {
+            _backingStream = new MemoryStream(Encoding.UTF8.GetBytes(textResponse));
+            Headers.ContentType = new MediaTypeHeaderValue("text/plain", "utf-8");
+        }
+
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+        {
+            if (_read)
+            {
+                throw new InvalidOperationException("Already read");
+            }
+
+            _read = true;
+            return _backingStream.CopyToAsync(stream);
+        }
+
+        protected override bool TryComputeLength(out long length)
+        {
+            length = 0;
+            return false;
+        }
+
+        protected override Stream CreateContentReadStream(CancellationToken cancellationToken)
+        {
+            if (_read)
+            {
+                throw new InvalidOperationException("Already read");
+            }
+
+            _read = true;
+            return _backingStream;
+        }
+
+        protected override Task<Stream> CreateContentReadStreamAsync()
+        {
+            if (_read)
+            {
+                throw new InvalidOperationException("Already read");
+            }
+
+            _read = true;
+            return Task.FromResult(_backingStream);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            _backingStream.Dispose();
+            base.Dispose(disposing);
         }
     }
 }

@@ -1,7 +1,6 @@
 using System.Net;
+using System.Text.Json;
 using AICentral.Core;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace AICentral.EndpointSelectors.ResultHandlers;
 
@@ -13,17 +12,26 @@ public static class JsonResponseHandler
         HttpResponseMessage openAiResponse,
         DownstreamRequestInformation requestInformation)
     {
-        var rawResponse = await openAiResponse.Content.ReadAsStringAsync(cancellationToken);
-        var response = (JObject)JsonConvert.DeserializeObject(rawResponse)!;
+        var response = await JsonDocument.ParseAsync(
+            await openAiResponse.Content.ReadAsStreamAsync(cancellationToken),
+            cancellationToken: cancellationToken);
 
         if (openAiResponse.StatusCode == HttpStatusCode.OK)
         {
-            var model = response.Value<string>("model") ?? string.Empty;
-            var usage = response["usage"];
-            var promptTokens = usage?.Value<int>("prompt_tokens") ?? 0;
-            var totalTokens = usage?.Value<int>("total_tokens") ?? 0;
-            var completionTokens = usage?.Value<int>("completion_tokens") ?? 0;
-            var responseContent = response?["choices"]?.FirstOrDefault()?["message"]?.Value<string>("content") ?? string.Empty;
+            var model = response.RootElement.TryGetProperty("model", out var prop) ? prop.GetString() : string.Empty;
+            
+            var hasUsage = response.RootElement.TryGetProperty("usage", out var usage);
+            var promptTokens = hasUsage ? usage.TryGetProperty("prompt_tokens", out var promptTokensProp) ? promptTokensProp.GetInt32() : 0 : 0;
+            var totalTokens = hasUsage ? usage.TryGetProperty("total_tokens", out var totalTokensProp) ? totalTokensProp.GetInt32() : 0 : 0;
+            var completionTokens = hasUsage ? usage.TryGetProperty("completion_tokens", out var completionTokensProp) ? completionTokensProp.GetInt32() : 0 : 0;
+            
+            var responseContent = response.RootElement.TryGetProperty("choices", out var choicesProp)
+                ? choicesProp.EnumerateArray().FirstOrDefault().TryGetProperty("message", out var messageProp)
+                    ? messageProp.TryGetProperty("content", out var contentProp)
+                        ? contentProp.GetString()
+                        : string.Empty
+                    : string.Empty
+                : string.Empty;
 
             var chatRequestInformation = new DownstreamUsageInformation(
                 requestInformation.LanguageUrl,
@@ -43,7 +51,7 @@ public static class JsonResponseHandler
 
             return new AICentralResponse(
                 chatRequestInformation,
-                new JsonResultHandler(openAiResponse));
+                new JsonResultHandler(openAiResponse, response));
         }
         else
         {
@@ -64,8 +72,7 @@ public static class JsonResponseHandler
                 requestInformation.Duration);
 
             return new AICentralResponse(chatRequestInformation,
-                new JsonResultHandler(openAiResponse));
+                new JsonResultHandler(openAiResponse, response));
         }
-        
     }
 }

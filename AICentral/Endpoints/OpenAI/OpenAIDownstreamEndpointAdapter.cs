@@ -1,9 +1,9 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using AICentral.Core;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace AICentral.Endpoints.OpenAI;
 
@@ -123,28 +123,29 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         if (aiCallInformation.AICallType == AICallType.Transcription ||
             aiCallInformation.AICallType == AICallType.Translation)
         {
-            return Task.FromResult<HttpContent>(MultipartContentHelper.CopyMultipartContent(incomingRequest, mappedModelName, OpenAIWellKnownModelNameField));
+            return Task.FromResult<HttpContent>(MultipartContentHelper.CopyMultipartContent(incomingRequest,
+                mappedModelName, OpenAIWellKnownModelNameField));
         }
 
         return Task.FromResult<HttpContent>(aiCallInformation.IncomingModelName == mappedModelName
-            ? new StringContent(
-                aiCallInformation.RequestContent!.ToString(Formatting.None),
+            ? new StringContent(JsonSerializer.Serialize(aiCallInformation.RequestContent),
                 Encoding.UTF8,
                 "application/json")
             : new StringContent(
-                AddModelName(
-                    aiCallInformation.RequestContent!.DeepClone(),
-                    mappedModelName!).ToString(Formatting.None),
+                JsonSerializer.Serialize(
+                    AddModelName(
+                        aiCallInformation.RequestContent!.Deserialize<JsonNode>()!,
+                        mappedModelName!)),
                 Encoding.UTF8, "application/json"));
     }
-    
+
     /// <summary>
     /// Adjust the model name to the one used by Open AI
     /// </summary>
     /// <param name="deepClone"></param>
     /// <param name="mappedModelName"></param>
     /// <returns></returns>
-    private static JToken AddModelName(JToken deepClone, string mappedModelName)
+    private static JsonNode AddModelName(JsonNode deepClone, string mappedModelName)
     {
         deepClone["model"] = mappedModelName;
         return deepClone;
@@ -159,7 +160,8 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         //if there is a model change then set the model on a new outbound JSON request. Else copy the content with no changes
         if (aiCallInformation.AICallType != AICallType.Other)
         {
-            newRequest.Content = await CopyResponseWithMappedModelName(aiCallInformation, context.Request, mappedModelName);
+            newRequest.Content =
+                await CopyResponseWithMappedModelName(aiCallInformation, context.Request, mappedModelName);
         }
         else
         {
