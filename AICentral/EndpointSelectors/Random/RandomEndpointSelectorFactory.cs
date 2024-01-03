@@ -43,7 +43,7 @@ public class RandomEndpointSelectorFactory : IAICentralEndpointSelectorFactory
         return new
         {
             Type = "Random Router",
-            Endpoints = _openAiServers.Select(x => WriteDebug())
+            Endpoints = _openAiServers.Select(x => x.WriteDebug())
         };
     }
 }
