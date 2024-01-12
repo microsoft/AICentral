@@ -1,2 +1,2 @@
-mode: ContinuousDeployment
+mode: Mainline
 commit-message-incrementing: MergeMessageOnly 
