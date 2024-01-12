@@ -99,10 +99,12 @@ This pipeline will:
         "Type": "Entra",
         "Name": "simple-aad",
         "Properties": {
-          "ClientId": "<my-client-id>",
-          "TenantId": "<my-tenant-id>",
-          "Instance": "https://login.microsoftonline.com/",
-          "Audience": "<custom-audience>"
+          "Entra": {
+            "ClientId": "<my-client-id>",
+            "TenantId": "<my-tenant-id>",
+            "Instance": "https://login.microsoftonline.com/",
+            "Audience": "<custom-audience>"
+          }
         }
       }
     ],

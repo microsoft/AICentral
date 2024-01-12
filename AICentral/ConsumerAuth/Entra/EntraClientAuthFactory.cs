@@ -1,5 +1,6 @@
 ﻿using AICentral.Core;
 using Microsoft.Identity.Web;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AICentral.ConsumerAuth.Entra;
 
@@ -21,8 +22,20 @@ public class EntraClientAuthFactory : IConsumerAuthFactory
     /// </summary>
     public void RegisterServices(IServiceCollection services)
     {
-        services.AddAuthentication().AddMicrosoftIdentityWebApi(_configSection.ConfigurationSection!, "Properties", _id);
-        services.AddAuthorizationBuilder().AddPolicy(_id, policyBuilder => policyBuilder.RequireAuthenticatedUser().AddAuthenticationSchemes(_id));
+        var section = _configSection.ConfigurationSection!.GetSection("Properties");
+        var customSection = _configSection.TypedProperties<EntraClientAuthConfig>();
+
+        services.AddAuthentication().AddMicrosoftIdentityWebApi(section, "Entra", _id);
+        services.AddAuthorizationBuilder().AddPolicy(_id, policyBuilder =>
+        {
+            var builder=  policyBuilder.RequireAuthenticatedUser();
+            if (customSection.Requirements?.Roles != null)
+            {
+                builder.RequireRole(customSection.Requirements.Roles);
+            }
+
+            builder.AddAuthenticationSchemes(_id);
+        });
     }
 
     public static string ConfigName => "Entra";
@@ -36,6 +49,13 @@ public class EntraClientAuthFactory : IConsumerAuthFactory
         ILogger logger, 
         AICentralTypeAndNameConfig config)
     {
+
+        var customSection = config.TypedProperties<EntraClientAuthConfig>();
+        if (customSection.Requirements == null || customSection.Requirements.Roles.IsNullOrEmpty())
+        {
+            logger.LogWarning("Entra auth is configured but no roles are specified. Unless the Application is configured for specific user-assignment, this will allow all users and applications to access the endpoint.");
+        }
+
         return new EntraClientAuthFactory(config);
     }
     
