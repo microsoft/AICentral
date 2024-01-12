@@ -238,7 +238,8 @@ No auth is applied to incoming requests. This is useful if we use EntraPassThrou
 ### Entra
 
 Uses standard Azure Active Directory Authentication to assert a valid JWT.
-> We don't perform any role checks, so make sure you only allow issuance of tokens to clients you want.
+
+> Currently we support authorisation using AAD Roles.
 
 ```json
 {
@@ -248,10 +249,15 @@ Uses standard Azure Active Directory Authentication to assert a valid JWT.
         "Type": "Entra",
         "Name": "simple-aad",
         "Properties": {
-          "ClientId": "<my-client-id>",
-          "TenantId": "<my-tenant-id>",
-          "Instance": "https://login.microsoftonline.com/",
-          "Audience": "<custom-audience>"
+          "Entra": {
+            "ClientId": "<my-client-id>",
+            "TenantId": "<my-tenant-id>",
+            "Instance": "https://login.microsoftonline.com/",
+            "Audience": "<custom-audience>"
+          },
+          "Requirements" : {
+            "Roles": ["required-roles", "can-be-many"]
+          }
         }
       }
     ],

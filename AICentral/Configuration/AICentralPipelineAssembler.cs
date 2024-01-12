@@ -64,46 +64,55 @@ public class AICentralPipelineAssembler
             throw new InvalidOperationException(
                 "You must call AddServices on the Assembler before calling BuildPipelines.");
 
-        return new ConfiguredPipelines(
-            _pipelines
-                .Select(pipelineConfig =>
+        var dupeCheck = new HashSet<string>();
+
+        var pipelines = _pipelines
+            .Select(pipelineConfig =>
+            {
+                var pipelineName =
+                    Guard.NotNullOrEmptyOrWhitespace(pipelineConfig.Name, nameof(pipelineConfig.Name));
+
+                var pipelineSteps = pipelineConfig.Steps ?? Array.Empty<string>();
+
+                var routeBuilder =
+                    _routeBuilder(
+                        Guard.NotNullOrEmptyOrWhitespace(pipelineConfig.Host, nameof(pipelineConfig.Host)));
+
+                startupLogger.LogInformation("Configuring Pipeline {Name} on Host {Host}", pipelineConfig.Name,
+                    pipelineConfig.Host);
+
+                if (!dupeCheck.Add(pipelineConfig.Host))
                 {
-                    var pipelineName =
-                        Guard.NotNullOrEmptyOrWhitespace(pipelineConfig.Name, nameof(pipelineConfig.Name));
+                    startupLogger.LogWarning($"Duplicate Host {pipelineConfig.Host}. Ignoring pipeline {pipelineConfig.Name}");
+                    return null;
+                }
 
-                    var pipelineSteps = pipelineConfig.Steps ?? Array.Empty<string>();
+                var pipeline = new Pipeline(
+                    pipelineName,
+                    routeBuilder,
+                    _authProviders.ContainsKey(pipelineConfig.AuthProvider ??
+                                               throw new ArgumentException(
+                                                   $"No AuthProvider for pipeline {pipelineConfig.Name}"))
+                        ? _authProviders[pipelineConfig.AuthProvider ?? string.Empty]
+                        : throw new ArgumentException($"Cannot find Auth Provider {pipelineConfig.AuthProvider}"),
+                    pipelineSteps.Select(step =>
+                        _genericSteps.ContainsKey(step)
+                            ? _genericSteps[step ?? string.Empty]
+                            : throw new ArgumentException($"Cannot find Step {step}")).ToArray(),
+                    _endpointSelectors.ContainsKey(
+                        pipelineConfig.EndpointSelector ??
+                        throw new ArgumentException($"No EndpointSelector for pipeline {pipelineConfig.Name}"))
+                        ? _endpointSelectors[pipelineConfig.EndpointSelector ?? string.Empty]
+                        : throw new ArgumentException(
+                            $"Cannot find EndpointSelector {pipelineConfig.EndpointSelector}"));
 
-                    var routeBuilder =
-                        _routeBuilder(
-                            Guard.NotNullOrEmptyOrWhitespace(pipelineConfig.Host, nameof(pipelineConfig.Host)));
+                startupLogger.LogInformation("Configured Pipeline {Name} on Host {Host}", pipelineConfig.Name,
+                    pipelineConfig.Host);
 
-                    startupLogger.LogInformation("Configuring Pipeline {Name} on Host {Host}", pipelineConfig.Name,
-                        pipelineConfig.Host);
-
-                    var pipeline = new Pipeline(
-                        pipelineName,
-                        routeBuilder,
-                        _authProviders.ContainsKey(pipelineConfig.AuthProvider ??
-                                                   throw new ArgumentException(
-                                                       $"No AuthProvider for pipeline {pipelineConfig.Name}"))
-                            ? _authProviders[pipelineConfig.AuthProvider ?? string.Empty]
-                            : throw new ArgumentException($"Cannot find Auth Provider {pipelineConfig.AuthProvider}"),
-                        pipelineSteps.Select(step =>
-                            _genericSteps.ContainsKey(step)
-                                ? _genericSteps[step ?? string.Empty]
-                                : throw new ArgumentException($"Cannot find Step {step}")).ToArray(),
-                        _endpointSelectors.ContainsKey(
-                            pipelineConfig.EndpointSelector ??
-                            throw new ArgumentException($"No EndpointSelector for pipeline {pipelineConfig.Name}"))
-                            ? _endpointSelectors[pipelineConfig.EndpointSelector ?? string.Empty]
-                            : throw new ArgumentException(
-                                $"Cannot find EndpointSelector {pipelineConfig.EndpointSelector}"));
-
-                    startupLogger.LogInformation("Configured Pipeline {Name} on Host {Host}", pipelineConfig.Name,
-                        pipelineConfig.Host);
-
-                    return pipeline;
-                }).ToArray());
+                return pipeline;
+            }).Where(x => x != null).Select(x => x!).ToArray();
+        
+        return new ConfiguredPipelines(pipelines);
     }
 
     /// <summary>
