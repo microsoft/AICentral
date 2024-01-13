@@ -5,10 +5,10 @@ namespace AICentral.Core;
 
 public static class AICentralActivitySources
 {
-    private static readonly ConcurrentDictionary<(string metric, string host, string model), long> LongObservedValues =
+    private static readonly ConcurrentDictionary<(string metric, string host, string model, string deployment), long> LongObservedValues =
         new();
 
-    private static readonly ConcurrentDictionary<(string metric, string host, string model), ObservableGauge<long>>
+    private static readonly ConcurrentDictionary<(string metric, string host, string model, string deployment), ObservableGauge<long>>
         LongGauges = new();
 
     private static readonly ConcurrentDictionary<(string pipeline, string metric), Counter<long>> LongCounters = new();
@@ -16,16 +16,16 @@ public static class AICentralActivitySources
     private static readonly ConcurrentDictionary<(string pipeline, string metric), Histogram<double>> HistogramCounters =
         new();
 
-    public static void RecordGaugeMetric(string metric, string host, string model, long value)
+    public static void RecordGaugeMetric(string metric, string host, string deployment, string model, long value)
     {
-        var key = (metric, host, model);
+        var key = (metric, host, model, deployment);
 
         LongObservedValues.AddOrUpdate(key, value, (_, _) => value);
 
         if (!LongGauges.TryGetValue(key, out _))
         {
             var gauge = AICentralActivitySource.AICentralMeter.CreateObservableGauge(
-                $"aicentral.{host.Replace(".", "_")}.{model}.{metric}", () => LongObservedValues.GetValueOrDefault(key, 0));
+                $"aicentral.{host.Replace(".", "_")}.{metric}", () => LongObservedValues.GetValueOrDefault(key, 0));
             LongGauges.TryAdd(key, gauge);
         }
     }

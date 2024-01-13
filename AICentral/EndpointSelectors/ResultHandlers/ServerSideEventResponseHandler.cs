@@ -28,7 +28,8 @@ public static class ServerSideEventResponseHandler
         context.Response.StatusCode = (int)openAiResponse.StatusCode;
 
         //squirt the response as it comes in:
-        using var openAiResponseReader = new StreamReader(await openAiResponse.Content.ReadAsStreamAsync(cancellationToken));
+        using var openAiResponseReader =
+            new StreamReader(await openAiResponse.Content.ReadAsStreamAsync(cancellationToken));
         context.Response.Headers.CacheControl = new StringValues("no-cache");
         context.Response.ContentType = "text/event-stream";
 
@@ -67,37 +68,41 @@ public static class ServerSideEventResponseHandler
         }
 
         //calculate prompt tokens
-        int? estimatedPromptTokens = null;
-        int? estimatedCompletionTokens = null;
-        if (!string.IsNullOrWhiteSpace(model))
+        var estimatedTokens = new Lazy<(int? EstimatedPromptTokens, int? EstimatedCompletionTokens)>(() =>
         {
-            var tokeniser = Encoders.GetOrAdd(model, GptEncoding.GetEncodingForModel);
-            try
+            if (!string.IsNullOrWhiteSpace(model))
             {
-                estimatedPromptTokens = requestInformation.Prompt == null
-                    ? 0
-                    : tokeniser?.Encode(requestInformation.Prompt, EmptySet, EmptySet).Count ?? 0;
+                var tokeniser = Encoders.GetOrAdd(model, GptEncoding.GetEncodingForModel);
+                try
+                {
+                    int? estimatedPromptTokens = requestInformation.Prompt == null
+                        ? 0
+                        : tokeniser?.Encode(requestInformation.Prompt, EmptySet, EmptySet).Count ?? 0;
 
-                estimatedCompletionTokens = content.Sum(x => tokeniser?.Encode(x, EmptySet, EmptySet).Count);
+                    var estimatedCompletionTokens = content.Sum(x => tokeniser?.Encode(x, EmptySet, EmptySet).Count);
+
+                    return (estimatedPromptTokens, estimatedCompletionTokens);
+                }
+                catch
+                {
+                    //not much we can do if we failed to create a Tokeniser
+                }
             }
-            catch
-            {
-                //not much we can do if we failed to create a Tokeniser (I think they are pulled from the internet)
-            }
-        }
+
+            return (null, null);
+        });
 
         var chatRequestInformation = new DownstreamUsageInformation(
             requestInformation.LanguageUrl,
             model,
+            requestInformation.DeploymentName,
             context.User.Identity?.Name ?? "unknown",
             requestInformation.CallType,
+            true,
             requestInformation.Prompt,
             string.Join("", content),
-            estimatedPromptTokens,
-            estimatedCompletionTokens,
-            0,
-            0,
-            estimatedPromptTokens + estimatedCompletionTokens,
+            estimatedTokens,
+            null,
             context.Connection.RemoteIpAddress?.ToString() ?? "",
             requestInformation.StartDate,
             requestInformation.Duration);

@@ -19,12 +19,20 @@ public static class JsonResponseHandler
         if (openAiResponse.StatusCode == HttpStatusCode.OK)
         {
             var model = response.RootElement.TryGetProperty("model", out var prop) ? prop.GetString() : string.Empty;
-            
+
             var hasUsage = response.RootElement.TryGetProperty("usage", out var usage);
-            var promptTokens = hasUsage ? usage.TryGetProperty("prompt_tokens", out var promptTokensProp) ? promptTokensProp.GetInt32() : 0 : 0;
-            var totalTokens = hasUsage ? usage.TryGetProperty("total_tokens", out var totalTokensProp) ? totalTokensProp.GetInt32() : 0 : 0;
-            var completionTokens = hasUsage ? usage.TryGetProperty("completion_tokens", out var completionTokensProp) ? completionTokensProp.GetInt32() : 0 : 0;
-            
+            var promptTokens = hasUsage
+                ? usage.TryGetProperty("prompt_tokens", out var promptTokensProp) ? promptTokensProp.GetInt32() : 0
+                : 0;
+            var totalTokens = hasUsage
+                ? usage.TryGetProperty("total_tokens", out var totalTokensProp) ? totalTokensProp.GetInt32() : 0
+                : 0;
+            var completionTokens = hasUsage
+                ? usage.TryGetProperty("completion_tokens", out var completionTokensProp)
+                    ? completionTokensProp.GetInt32()
+                    : 0
+                : 0;
+
             var responseContent = response.RootElement.TryGetProperty("choices", out var choicesProp)
                 ? choicesProp.EnumerateArray().FirstOrDefault().TryGetProperty("message", out var messageProp)
                     ? messageProp.TryGetProperty("content", out var contentProp)
@@ -36,15 +44,14 @@ public static class JsonResponseHandler
             var chatRequestInformation = new DownstreamUsageInformation(
                 requestInformation.LanguageUrl,
                 model,
-                context.User.Identity?.Name ?? "unknown",
+                requestInformation.DeploymentName,
+                context.User.Identity?.Name ?? string.Empty,
                 requestInformation.CallType,
+                false,
                 requestInformation.Prompt,
                 responseContent,
                 null,
-                null,
-                promptTokens,
-                completionTokens,
-                totalTokens,
+                (promptTokens, completionTokens, totalTokens),
                 context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
                 requestInformation.StartDate,
                 requestInformation.Duration);
@@ -58,12 +65,11 @@ public static class JsonResponseHandler
             var chatRequestInformation = new DownstreamUsageInformation(
                 requestInformation.LanguageUrl,
                 null,
-                context.User.Identity?.Name ?? "unknown",
+                requestInformation.DeploymentName,
+                context.User.Identity?.Name ?? string.Empty,
                 requestInformation.CallType,
+                false,
                 requestInformation.Prompt,
-                null,
-                null,
-                null,
                 null,
                 null,
                 null,

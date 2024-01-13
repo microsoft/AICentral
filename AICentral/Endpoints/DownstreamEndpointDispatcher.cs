@@ -38,7 +38,9 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         var outboundRequest = await _downstreamEndpointDispatcher.BuildRequest(callInformation, context);
         if (outboundRequest.Right(out var result))
         {
-            return new AICentralResponse(DownstreamUsageInformation.Empty(context, callInformation, _downstreamEndpointDispatcher.BaseUrl), result!);
+            return new AICentralResponse(
+                DownstreamUsageInformation.Empty(context, callInformation, _downstreamEndpointDispatcher.BaseUrl),
+                result!);
         }
 
         outboundRequest.Left(out var newRequest);
@@ -89,7 +91,8 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         {
             if (openAiResponse.StatusCode == HttpStatusCode.OK)
             {
-                context.Response.Headers.TryAdd("x-aicentral-server", new StringValues(_downstreamEndpointDispatcher.BaseUrl));
+                context.Response.Headers.TryAdd("x-aicentral-server",
+                    new StringValues(_downstreamEndpointDispatcher.BaseUrl));
             }
             else
             {
@@ -115,12 +118,13 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             newRequest,
             openAiResponse);
 
-        EmitTelemetry(newRequest, preProcessResult);
+        EmitTelemetry(newRequest, preProcessResult, callInformation);
 
         return await responseGenerator.BuildResponse(
             new DownstreamRequestInformation(
                 _downstreamEndpointDispatcher.BaseUrl,
                 callInformation.AICallType,
+                callInformation.IncomingModelName,
                 callInformation.PromptText,
                 now,
                 sw.Elapsed),
@@ -130,13 +134,15 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             cancellationToken);
     }
 
-    private void EmitTelemetry(AIRequest request, ResponseMetadata responseMetadata)
+    private void EmitTelemetry(AIRequest request, ResponseMetadata responseMetadata,
+        IncomingCallDetails callInformation)
     {
         if (responseMetadata.RemainingRequests != null)
         {
             AICentralActivitySources.RecordGaugeMetric(
                 "remaining-requests",
-                request.HttpRequestMessage.RequestUri!.Host, 
+                request.HttpRequestMessage.RequestUri!.Host,
+                callInformation.IncomingModelName ?? "<no-deployment>",
                 request.ModelName ?? "<no-model>",
                 responseMetadata.RemainingRequests.Value);
         }
@@ -144,9 +150,10 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         if (responseMetadata.RemainingTokens != null)
         {
             AICentralActivitySources.RecordGaugeMetric(
-                "remaining-tokens", 
+                "remaining-tokens",
                 request.HttpRequestMessage.RequestUri!.Host,
-                request.ModelName ?? "<no-model>", 
+                callInformation.IncomingModelName ?? "<no-deployment>",
+                request.ModelName ?? "<no-model>",
                 responseMetadata.RemainingTokens.Value);
         }
     }
@@ -156,4 +163,3 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         return EndpointName == affinityHeaderValue;
     }
 }
-
