@@ -81,7 +81,7 @@ public class AICentralPipelineAssembler
                 startupLogger.LogInformation("Configuring Pipeline {Name} on Host {Host}", pipelineConfig.Name,
                     pipelineConfig.Host);
 
-                if (!dupeCheck.Add(pipelineConfig.Host))
+                if (!dupeCheck.Add(pipelineConfig.Host ?? string.Empty))
                 {
                     startupLogger.LogWarning($"Duplicate Host {pipelineConfig.Host}. Ignoring pipeline {pipelineConfig.Name}");
                     return null;
