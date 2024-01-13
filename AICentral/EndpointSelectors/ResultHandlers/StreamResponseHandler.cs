@@ -21,6 +21,7 @@ public class StreamResponseHandler
         var chatRequestInformation = new DownstreamUsageInformation(
             requestInformation.LanguageUrl,
             null,
+            requestInformation.DeploymentName,
             context.User.Identity?.Name ?? "unknown",
             requestInformation.CallType,
             null,

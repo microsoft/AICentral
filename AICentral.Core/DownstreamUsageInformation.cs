@@ -3,6 +3,7 @@
 public record DownstreamUsageInformation(
     string OpenAIHost,
     string? ModelName,
+    string? DeploymentName,
     string Client,
     AICallType CallType,
     bool? StreamingResponse,
@@ -22,6 +23,7 @@ public record DownstreamUsageInformation(
         =>
             new DownstreamUsageInformation(
                 hostUriBase,
+                string.Empty,
                 string.Empty,
                 context.User.Identity?.Name ?? string.Empty,
                 incomingCallDetails.AICallType,

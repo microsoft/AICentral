@@ -77,7 +77,7 @@ public class Pipeline
 
             var tagList = new TagList
             {
-                { "Model", result.DownstreamUsageInformation.ModelName },
+                { "Model", result.DownstreamUsageInformation.DeploymentName },
                 { "Endpoint", result.DownstreamUsageInformation.OpenAIHost }
             };
 
@@ -90,6 +90,7 @@ public class Pipeline
             }
 
             activity?.AddTag("AICentral.Duration", result.DownstreamUsageInformation.Duration);
+            activity?.AddTag("AICentral.Deployment", result.DownstreamUsageInformation.DeploymentName);
             activity?.AddTag("AICentral.Model", result.DownstreamUsageInformation.ModelName);
             activity?.AddTag("AICentral.CallType", result.DownstreamUsageInformation.CallType);
             activity?.AddTag("AICentral.TotalTokens", result.DownstreamUsageInformation.TotalTokens);
