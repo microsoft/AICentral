@@ -26,10 +26,11 @@ public class AzureMonitorLogger : IAICentralPipelineStep
         var result = await pipeline.Next(context, aiCallInformation, cancellationToken);
 
         _serilogAzureLogAnalyticsLogger.Information(
-            "AzureOpenAI call. ClientIP:{ClientIP} Host:{OpenAIHost}. Type:{CallType}. Model:{Model}. Prompt:{Prompt}. Response:{Response}. Estimated Prompt Tokens:{EstimatedPromptTokens}. Estimated Completion Tokens:{EstimatedCompletionTokens}. Prompt Tokens:{PromptTokens}. Completion Tokens:{CompletionTokens}. Total Tokens:{TotalTokens}. Duration:{Duration}",
+            "AzureOpenAI call. ClientIP:{ClientIP} Host:{OpenAIHost}. Type:{CallType}. StreamedResponse:{Streamed} Model:{Model}. Prompt:{Prompt}. Response:{Response}. Estimated Prompt Tokens:{EstimatedPromptTokens}. Estimated Completion Tokens:{EstimatedCompletionTokens}. Prompt Tokens:{PromptTokens}. Completion Tokens:{CompletionTokens}. Total Tokens:{TotalTokens}. Duration:{Duration}",
             result.DownstreamUsageInformation.RemoteIpAddress,
             result.DownstreamUsageInformation.OpenAIHost,
             result.DownstreamUsageInformation.CallType.ToString(),
+            result.DownstreamUsageInformation.StreamingResponse.HasValue ? result.DownstreamUsageInformation.StreamingResponse : string.Empty,
             result.DownstreamUsageInformation.ModelName,
             _logPrompt ? result.DownstreamUsageInformation.Prompt : "**redacted**",
             _logResponse ? result.DownstreamUsageInformation.Response : "**redacted**",

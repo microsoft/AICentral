@@ -23,6 +23,7 @@ public class StreamResponseHandler
             null,
             context.User.Identity?.Name ?? "unknown",
             requestInformation.CallType,
+            null,
             requestInformation.Prompt,
             null,
             null,

@@ -97,6 +97,7 @@ public static class ServerSideEventResponseHandler
             model,
             context.User.Identity?.Name ?? "unknown",
             requestInformation.CallType,
+            true,
             requestInformation.Prompt,
             string.Join("", content),
             estimatedTokens,
