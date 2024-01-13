@@ -7,15 +7,13 @@ public record DownstreamUsageInformation(
     AICallType CallType,
     string? Prompt,
     string? Response,
-    int? EstimatedPromptTokens,
-    int? EstimatedCompletionTokens,
-    int? PromptTokens,
-    int? CompletionTokens,
-    int? TotalTokens,
+    Lazy<(int? EstimatedPromptTokens, int? EstimatedCompletionTokens)>? EstimatedTokens,
+    (int PromptTokens, int CompletionTokens, int TotalTokens)? KnownTokens,
     string RemoteIpAddress,
     DateTimeOffset StartDate,
     TimeSpan Duration)
 {
+    
     public static DownstreamUsageInformation Empty(
         HttpContext context, 
         IncomingCallDetails incomingCallDetails,
@@ -24,15 +22,25 @@ public record DownstreamUsageInformation(
             new DownstreamUsageInformation(
                 hostUriBase,
                 string.Empty,
-                context.User.Identity?.Name ?? "unknown",
+                context.User.Identity?.Name ?? string.Empty,
                 incomingCallDetails.AICallType,
                 incomingCallDetails.PromptText,
                 null,
                 null,
                 null,
-                null,
-                null,
-                null,
                 context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
                 context.RequestServices.GetRequiredService<IDateTimeProvider>().Now, TimeSpan.Zero);
+    
+    public int? TotalTokens
+    {
+        get
+        {
+            if (KnownTokens != null) return KnownTokens.Value.TotalTokens;
+            
+            if (EstimatedTokens != null)
+                return EstimatedTokens.Value.EstimatedPromptTokens + EstimatedTokens.Value.EstimatedCompletionTokens;
+
+            return null;
+        }
+    }
 }

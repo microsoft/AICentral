@@ -27,9 +27,6 @@ public class StreamResponseHandler
             null,
             null,
             null,
-            null,
-            null,
-            null,
             context.Connection.RemoteIpAddress?.ToString() ?? "",
             requestInformation.StartDate,
             requestInformation.Duration);

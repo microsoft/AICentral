@@ -33,10 +33,10 @@ public class AzureMonitorLogger : IAICentralPipelineStep
             result.DownstreamUsageInformation.ModelName,
             _logPrompt ? result.DownstreamUsageInformation.Prompt : "**redacted**",
             _logResponse ? result.DownstreamUsageInformation.Response : "**redacted**",
-            result.DownstreamUsageInformation.EstimatedPromptTokens,
-            result.DownstreamUsageInformation.EstimatedCompletionTokens,
-            result.DownstreamUsageInformation.PromptTokens,
-            result.DownstreamUsageInformation.CompletionTokens,
+            result.DownstreamUsageInformation.EstimatedTokens?.Value.EstimatedPromptTokens,
+            result.DownstreamUsageInformation.EstimatedTokens?.Value.EstimatedCompletionTokens,
+            result.DownstreamUsageInformation.KnownTokens?.PromptTokens,
+            result.DownstreamUsageInformation.KnownTokens?.CompletionTokens,
             result.DownstreamUsageInformation.TotalTokens,
             result.DownstreamUsageInformation.Duration);
 
