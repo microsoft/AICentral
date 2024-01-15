@@ -47,6 +47,9 @@ public class Pipeline
     /// <returns></returns>
     private async Task<AICentralResponse> Execute(HttpContext context, CancellationToken cancellationToken)
     {
+        var sw = new Stopwatch();
+        sw.Start();
+
         // Create a new Activity scoped to the method
         using var activity = AICentralActivitySource.AICentralRequestActivitySource.StartActivity("AICentalRequest");
 
@@ -70,6 +73,7 @@ public class Pipeline
         try
         {
             var result = await executor.Next(context, requestDetails, cancellationToken);
+            sw.Stop();
 
             logger.LogInformation("Executed Pipeline {PipelineName}", _name);
 
@@ -77,19 +81,24 @@ public class Pipeline
             {
                 { "Deployment", result.DownstreamUsageInformation.DeploymentName },
                 { "Model", result.DownstreamUsageInformation.ModelName },
-                { "Endpoint", result.DownstreamUsageInformation.OpenAIHost }
+                { "Endpoint", result.DownstreamUsageInformation.OpenAIHost },
+                { "Success", result.DownstreamUsageInformation.Success },
             };
 
-            AICentralActivitySources.RecordHistogram($"{_name.ToLowerInvariant()}.request.duration", "ms",
-                result.DownstreamUsageInformation.Duration.TotalMilliseconds, tagList);
+            AICentralActivitySources.RecordHistogram(
+                $"{_name.ToLowerInvariant()}.request.duration",
+                "ms",
+                sw.ElapsedMilliseconds, tagList);
 
             if (result.DownstreamUsageInformation.TotalTokens != null)
             {
-                AICentralActivitySources.RecordHistogram($"{_name.ToLowerInvariant()}.request.tokensconsumed", "tokens",
+                AICentralActivitySources.RecordHistogram(
+                    $"{_name.ToLowerInvariant()}.request.tokensconsumed", "tokens",
                     result.DownstreamUsageInformation.TotalTokens.Value, tagList);
             }
 
-            activity?.AddTag("AICentral.Duration", result.DownstreamUsageInformation.Duration);
+            activity?.AddTag("AICentral.Duration", sw.ElapsedMilliseconds);
+            activity?.AddTag("AICentral.Downstream.Duration", result.DownstreamUsageInformation.Duration.TotalMilliseconds);
             activity?.AddTag("AICentral.Deployment", result.DownstreamUsageInformation.DeploymentName);
             activity?.AddTag("AICentral.Model", result.DownstreamUsageInformation.ModelName);
             activity?.AddTag("AICentral.CallType", result.DownstreamUsageInformation.CallType);

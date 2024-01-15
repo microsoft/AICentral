@@ -54,7 +54,8 @@ public static class JsonResponseHandler
                 (promptTokens, completionTokens, totalTokens),
                 context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
                 requestInformation.StartDate,
-                requestInformation.Duration);
+                requestInformation.Duration,
+                true);
 
             return new AICentralResponse(
                 chatRequestInformation,
@@ -75,7 +76,8 @@ public static class JsonResponseHandler
                 null,
                 context.Connection.RemoteIpAddress?.ToString() ?? "",
                 requestInformation.StartDate,
-                requestInformation.Duration);
+                requestInformation.Duration,
+                false);
 
             return new AICentralResponse(chatRequestInformation,
                 new JsonResultHandler(openAiResponse, response));

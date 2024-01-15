@@ -118,9 +118,8 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             newRequest,
             openAiResponse);
 
-        EmitTelemetry(newRequest, preProcessResult, callInformation);
 
-        return await responseGenerator.BuildResponse(
+        var pipelineResponse = await responseGenerator.BuildResponse(
             new DownstreamRequestInformation(
                 _downstreamEndpointDispatcher.BaseUrl,
                 callInformation.AICallType,
@@ -132,22 +131,36 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             openAiResponse,
             preProcessResult.SanitisedHeaders,
             cancellationToken);
+
+        EmitTelemetry(newRequest, preProcessResult, pipelineResponse);
+
+        return pipelineResponse;
     }
 
     private void EmitTelemetry(
-        AIRequest request, 
+        AIRequest newRequest,
         ResponseMetadata responseMetadata,
-        IncomingCallDetails callInformation)
+        AICentralResponse pipelineResponse)
     {
         var tagList = new TagList
         {
-            { "Model", request.ModelName },
+            { "Deployment", pipelineResponse.DownstreamUsageInformation.DeploymentName },
+            { "Model", pipelineResponse.DownstreamUsageInformation.ModelName },
+            { "Success", pipelineResponse.DownstreamUsageInformation.Success }
         };
+
+        var sanitisedHostName =
+            new Uri(pipelineResponse.DownstreamUsageInformation.OpenAIHost).Host.ToLowerInvariant().Replace(".", "_");
+
+        AICentralActivitySources.RecordHistogram(
+            $"{sanitisedHostName}.remaining_requests",
+            "ms", pipelineResponse.DownstreamUsageInformation.Duration.TotalMilliseconds,
+            tagList);
 
         if (responseMetadata.RemainingRequests != null)
         {
             AICentralActivitySources.RecordGaugeMetric(
-                $"{request.HttpRequestMessage.RequestUri!.Host.ToLowerInvariant().Replace("-", "_")}.remaining_requests",
+                $"{sanitisedHostName}.remaining_requests",
                 "requests",
                 responseMetadata.RemainingRequests.Value,
                 tagList);
@@ -156,7 +169,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         if (responseMetadata.RemainingTokens != null)
         {
             AICentralActivitySources.RecordGaugeMetric(
-                $"{request.HttpRequestMessage.RequestUri!.Host.ToLowerInvariant().Replace("-", "_")}.remaining_tokens",
+                $"{sanitisedHostName}.remaining_tokens",
                 "tokens",
                 responseMetadata.RemainingTokens.Value,
                 tagList);

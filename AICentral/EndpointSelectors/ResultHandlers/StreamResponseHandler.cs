@@ -31,7 +31,8 @@ public class StreamResponseHandler
             null,
             context.Connection.RemoteIpAddress?.ToString() ?? "",
             requestInformation.StartDate,
-            requestInformation.Duration);
+            requestInformation.Duration,
+            openAiResponse.IsSuccessStatusCode);
 
         return new AICentralResponse(chatRequestInformation, new StreamAlreadySentResultHandler());
     }
