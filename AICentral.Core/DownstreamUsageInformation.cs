@@ -13,7 +13,8 @@ public record DownstreamUsageInformation(
     (int PromptTokens, int CompletionTokens, int TotalTokens)? KnownTokens,
     string RemoteIpAddress,
     DateTimeOffset StartDate,
-    TimeSpan Duration)
+    TimeSpan Duration,
+    bool? Success)
 {
     
     public static DownstreamUsageInformation Empty(
@@ -33,7 +34,9 @@ public record DownstreamUsageInformation(
                 null,
                 null,
                 context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
-                context.RequestServices.GetRequiredService<IDateTimeProvider>().Now, TimeSpan.Zero);
+                context.RequestServices.GetRequiredService<IDateTimeProvider>().Now, 
+                TimeSpan.Zero, 
+                null);
     
     public int? TotalTokens
     {

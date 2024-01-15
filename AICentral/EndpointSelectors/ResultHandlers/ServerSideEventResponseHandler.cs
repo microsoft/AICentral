@@ -105,7 +105,8 @@ public static class ServerSideEventResponseHandler
             null,
             context.Connection.RemoteIpAddress?.ToString() ?? "",
             requestInformation.StartDate,
-            requestInformation.Duration);
+            requestInformation.Duration,
+            openAiResponse.IsSuccessStatusCode);
 
         return new AICentralResponse(chatRequestInformation, new StreamAlreadySentResultHandler());
     }
