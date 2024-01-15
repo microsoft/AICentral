@@ -320,7 +320,7 @@ A pipeline can run multiple steps. We currently provide steps for:
 - Asp.Net Core Windowed Rate Limiting
 - Token Based Rate Limiting
 
-### Azure Monitor Logger
+### Token and call based rate limiting
 
 ```json
 {
@@ -349,7 +349,45 @@ A pipeline can run multiple steps. We currently provide steps for:
             "PermitLimit": 100
           }
         }
-      },
+      }
+    ],
+    "Endpoints": [
+      {
+        "Name": "MyPipeline",
+        "Host": "<host-name-we-listen-for-requests-on>",
+        "Steps": [
+          "token-rate-limiter",
+          "window-rate-limiter",
+        ]
+      }
+    ]
+  }
+}
+
+
+```
+
+### Azure Monitor logging
+
+> Requires the AICentral.Extensions.AzureMonitor package
+
+``` dotnet package add AICentral.Extensions.AzureMonitor package ```
+
+```csharp
+
+builder.Services.AddAICentral(
+    builder.Configuration,
+    startupLogger: new SerilogLoggerProvider(logger).CreateLogger("AICentralStartup"),
+    additionalComponentAssemblies:
+    [
+        typeof(AzureMonitorLoggerFactory).Assembly //AI Central Azure Monitor extension assembly  
+    ]);
+```
+
+```json
+{
+  "AICentral": {
+    "GenericSteps": [
       {
         "Type": "AzureMonitorLogger",
         "Name": "azure-monitor-logger",
@@ -366,8 +404,6 @@ A pipeline can run multiple steps. We currently provide steps for:
         "Name": "MyPipeline",
         "Host": "<host-name-we-listen-for-requests-on>",
         "Steps": [
-          "token-rate-limiter",
-          "window-rate-limiter",
           "azure-monitor-logger"
         ]
       }
