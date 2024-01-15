@@ -19,8 +19,6 @@ public class Pipeline
     private readonly IList<IAICentralGenericStepFactory> _pipelineSteps;
     private readonly IAICentralEndpointSelectorFactory _endpointSelector;
 
-    private readonly Histogram<int> _tokenMeter;
-
     public Pipeline(
         string name,
         HeaderMatchRouter router,
@@ -33,7 +31,7 @@ public class Pipeline
         _clientAuthStep = clientAuthStep;
         _pipelineSteps = pipelineSteps.Select(x => x).ToArray();
         _endpointSelector = endpointSelector;
-        _tokenMeter = AICentralActivitySource.AICentralMeter.CreateHistogram<int>($"aicentral.{_name}.tokens.consumed", "{tokens}");
+        // _tokenMeter = AICentralActivitySource.AICentralMeter.CreateHistogram<int>($"aicentral.{_name}.tokens.consumed", "{tokens}");
     }
 
     /// <summary>
@@ -68,12 +66,12 @@ public class Pipeline
         var endpointSelector = FindEndpointSelectorOrAffinityServer(requestDetails);
 
         using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build()), endpointSelector);
-        AICentralActivitySources.RecordCounter(_name, "requests", "{requests}", 1);
+        AICentralActivitySources.RecordUpDownCounter($"{_name.ToLowerInvariant()}.activeRequests", "requests", 1);
         try
         {
             var result = await executor.Next(context, requestDetails, cancellationToken);
+
             logger.LogInformation("Executed Pipeline {PipelineName}", _name);
-            AICentralActivitySources.RecordCounter(_name, "success", "{requests}", 1);
 
             var tagList = new TagList
             {
@@ -82,12 +80,13 @@ public class Pipeline
                 { "Endpoint", result.DownstreamUsageInformation.OpenAIHost }
             };
 
-            AICentralActivitySources.RecordHistogram(_name, "requests", "duration", "ms",
-                result.DownstreamUsageInformation.Duration.TotalMilliseconds);
+            AICentralActivitySources.RecordHistogram($"{_name.ToLowerInvariant()}.request.duration", "ms",
+                result.DownstreamUsageInformation.Duration.TotalMilliseconds, tagList);
 
             if (result.DownstreamUsageInformation.TotalTokens != null)
             {
-                _tokenMeter.Record(result.DownstreamUsageInformation.TotalTokens.Value, tagList);
+                AICentralActivitySources.RecordHistogram($"{_name.ToLowerInvariant()}.request.tokensconsumed", "tokens",
+                    result.DownstreamUsageInformation.TotalTokens.Value, tagList);
             }
 
             activity?.AddTag("AICentral.Duration", result.DownstreamUsageInformation.Duration);
@@ -99,10 +98,9 @@ public class Pipeline
 
             return result;
         }
-        catch
+        finally
         {
-            AICentralActivitySources.RecordCounter(_name, "failures", "{requests}", 1);
-            throw;
+            AICentralActivitySources.RecordUpDownCounter($"{_name.ToLowerInvariant()}.activeRequests", "requests", 1);
         }
     }
 
@@ -124,7 +122,8 @@ public class Pipeline
     private IAICentralEndpointSelector? FindAffinityServer(IncomingCallDetails requestDetails)
     {
         var availableEndpointSelectors = AffinityEndpointHelper.FlattenedEndpoints(_endpointSelector.Build());
-        AffinityEndpointHelper.IsAffinityRequest(requestDetails, availableEndpointSelectors, out var affinityEndpointSelector);
+        AffinityEndpointHelper.IsAffinityRequest(requestDetails, availableEndpointSelectors,
+            out var affinityEndpointSelector);
         requestDetails.QueryString?.Remove(AICentralHeaders.AzureOpenAIHostAffinityHeader);
         return affinityEndpointSelector;
     }

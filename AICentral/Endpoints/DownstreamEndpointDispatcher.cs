@@ -134,27 +134,32 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             cancellationToken);
     }
 
-    private void EmitTelemetry(AIRequest request, ResponseMetadata responseMetadata,
+    private void EmitTelemetry(
+        AIRequest request, 
+        ResponseMetadata responseMetadata,
         IncomingCallDetails callInformation)
     {
+        var tagList = new TagList
+        {
+            { "Model", request.ModelName },
+        };
+
         if (responseMetadata.RemainingRequests != null)
         {
             AICentralActivitySources.RecordGaugeMetric(
-                "remaining-requests",
-                request.HttpRequestMessage.RequestUri!.Host,
-                callInformation.IncomingModelName ?? "<no-deployment>",
-                request.ModelName ?? "<no-model>",
-                responseMetadata.RemainingRequests.Value);
+                $"{request.HttpRequestMessage.RequestUri!.Host.ToLowerInvariant().Replace("-", "_")}.remaining_requests",
+                "requests",
+                responseMetadata.RemainingRequests.Value,
+                tagList);
         }
 
         if (responseMetadata.RemainingTokens != null)
         {
             AICentralActivitySources.RecordGaugeMetric(
-                "remaining-tokens",
-                request.HttpRequestMessage.RequestUri!.Host,
-                callInformation.IncomingModelName ?? "<no-deployment>",
-                request.ModelName ?? "<no-model>",
-                responseMetadata.RemainingTokens.Value);
+                $"{request.HttpRequestMessage.RequestUri!.Host.ToLowerInvariant().Replace("-", "_")}.remaining_tokens",
+                "tokens",
+                responseMetadata.RemainingTokens.Value,
+                tagList);
         }
     }
 
