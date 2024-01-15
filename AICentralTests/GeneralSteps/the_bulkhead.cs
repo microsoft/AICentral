@@ -56,7 +56,7 @@ public class the_bulkhead : IClassFixture<TestWebApplicationFactory<Program>>
         allResponses.ShouldAllBe(x => x.StatusCode == HttpStatusCode.OK);
     }
 
-    [Fact(Skip = "Polly operates deep in HttpClientHandler and my tests currently override the Message Handler")]
+    [Fact]
     public async Task can_buffer_requests_at_the_endpoint_layer_to_reduce_endpoint_pressure()
     {
         _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",

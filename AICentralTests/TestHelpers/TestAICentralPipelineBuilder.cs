@@ -53,13 +53,14 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
-    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname)
+    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, int? maxConcurrencyToAllowThrough = null)
     {
         var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
             hostname,
             $"https://{hostname}",
             "ApiKey",
-            "80a59060-63f8-4a19-a5ce-ad1a44157897");
+            "80a59060-63f8-4a19-a5ce-ad1a44157897",
+            maxConcurrencyToAllowThrough);
 
         _endpointFactory =
             new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));

@@ -115,6 +115,6 @@ public static class TestPipelines
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithBulkHeadOnSingleEndpoint() =>
         new TestAICentralPipelineBuilder()
-            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200)
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, 5)
             .Assemble("azure-with-bulkhead-on-endpoint.localtest.me");
 }
