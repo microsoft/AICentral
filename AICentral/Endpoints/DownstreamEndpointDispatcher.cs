@@ -147,7 +147,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         if (responseMetadata.RemainingRequests != null)
         {
             AICentralActivitySources.RecordGaugeMetric(
-                $"{request.HttpRequestMessage.RequestUri!.Host.Replace("-", "_")}.remaining_requests",
+                $"{request.HttpRequestMessage.RequestUri!.Host.ToLowerInvariant().Replace("-", "_")}.remaining_requests",
                 "requests",
                 responseMetadata.RemainingRequests.Value,
                 tagList);
@@ -156,7 +156,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         if (responseMetadata.RemainingTokens != null)
         {
             AICentralActivitySources.RecordGaugeMetric(
-                $"{request.HttpRequestMessage.RequestUri!.Host.Replace("-", "_")}.remaining_tokens",
+                $"{request.HttpRequestMessage.RequestUri!.Host.ToLowerInvariant().Replace("-", "_")}.remaining_tokens",
                 "tokens",
                 responseMetadata.RemainingTokens.Value,
                 tagList);
