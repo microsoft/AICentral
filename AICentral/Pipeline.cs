@@ -100,7 +100,7 @@ public class Pipeline
         }
         finally
         {
-            AICentralActivitySources.RecordUpDownCounter($"{_name.ToLowerInvariant()}.activeRequests", "requests", 1);
+            AICentralActivitySources.RecordUpDownCounter($"{_name.ToLowerInvariant()}.activeRequests", "requests", -1);
         }
     }
 
