@@ -77,7 +77,8 @@ public class Pipeline
 
             var tagList = new TagList
             {
-                { "Model", result.DownstreamUsageInformation.DeploymentName },
+                { "Deployment", result.DownstreamUsageInformation.DeploymentName },
+                { "Model", result.DownstreamUsageInformation.ModelName },
                 { "Endpoint", result.DownstreamUsageInformation.OpenAIHost }
             };
 
