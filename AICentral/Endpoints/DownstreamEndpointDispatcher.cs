@@ -150,7 +150,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         };
 
         var sanitisedHostName =
-            pipelineResponse.DownstreamUsageInformation.OpenAIHost.ToLowerInvariant().Replace("-", "_");
+            new Uri(pipelineResponse.DownstreamUsageInformation.OpenAIHost).Host.ToLowerInvariant().Replace(".", "_");
 
         AICentralActivitySources.RecordHistogram(
             $"{sanitisedHostName}.remaining_requests",
