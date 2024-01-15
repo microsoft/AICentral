@@ -32,7 +32,7 @@ public static class AICentralActivitySources
 
     public static void RecordCounter(string pipeline, string metric, string unit, long count)
     {
-        var key = (pipeline, string.Empty);
+        var key = (pipeline, metric);
 
         if (!LongCounters.TryGetValue(key, out _))
         {
@@ -49,7 +49,7 @@ public static class AICentralActivitySources
 
     public static void RecordHistogram(string pipeline, string metric, string aggregation, string unit, double value)
     {
-        var key = (pipeline, string.Empty);
+        var key = (pipeline, $"{metric}.{aggregation}");
 
         if (!HistogramCounters.TryGetValue(key, out _))
         {
