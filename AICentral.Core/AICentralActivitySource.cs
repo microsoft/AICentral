@@ -16,7 +16,7 @@ public static class AICentralActivitySource
     static AICentralActivitySource()
     {
         AICentralMeter = new Meter(AICentralTelemetryName, AICentralMeterVersion);
-        AICentralRequestActivitySource = new ActivitySource("aicentral");
+        AICentralRequestActivitySource = new ActivitySource(AICentralTelemetryName);
     }
 
     public static Meter AICentralMeter { get; }
