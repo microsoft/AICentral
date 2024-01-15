@@ -4,6 +4,8 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/mit)
 [![NuGet Status](http://img.shields.io/nuget/v/aicentral.svg?style=flat)](https://www.nuget.org/packages/aicentral/)
 
+![Alt text](./docs/AI%20Central.drawio.svg)
+
 AI Central gives you control over your AI services.
 
 - Intelligent Routing
