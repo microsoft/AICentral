@@ -32,7 +32,9 @@ jobs:
       - name: Determine Version
         id: gitversion
         uses: gittools/actions/gitversion/execute@v0.9.15
-
+        with:
+          useConfigFile: true
+          
       - name: Test
         run: dotnet test AICentralTests/AICentralTests.csproj
 
