@@ -42,8 +42,8 @@ This sample produces a AI-Central proxy that
 #### Docker
 
 ```bash
-# Run container in Docker referencing a local configuration file
-docker run -p 8080:80 -v .\appsettings.Development.json:/app/appsettings.Development.json -e ASPNETCORE_ENVIRONMENT=Development graemefoster/aicentral:latest
+# Run container in Docker, referencing a local configuration file
+docker run -p 8080:8080 -v .\appsettings.Development.json:/app/appsettings.Development.json -e ASPNETCORE_ENVIRONMENT=Development graemefoster/aicentral:latest
 ```
 
 #### Asp.Net CORE 
