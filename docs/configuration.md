@@ -142,7 +142,7 @@ To support more complex Endpoint Selectors we support referencing an Endpoint Se
 
 The implementation relies on the order of your Selectors. You can only reference selectors that have been defined earlier. This sample shows a Lowest Latency endpoint used for the priority endpoints in a Prioritised endpoint selector.
 
-```json
+```json5
 {
   "AICentral": {
     "Endpoints": [ "... define endpoints" ],
@@ -357,7 +357,7 @@ A pipeline can run multiple steps. We currently provide steps for:
         "Host": "<host-name-we-listen-for-requests-on>",
         "Steps": [
           "token-rate-limiter",
-          "window-rate-limiter",
+          "window-rate-limiter"
         ]
       }
     ]

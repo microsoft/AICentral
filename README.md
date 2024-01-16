@@ -42,8 +42,8 @@ This sample produces a AI-Central proxy that
 #### Docker
 
 ```bash
-# Run container in Docker referencing a local configuration file
-docker run -p 8080:80 -v .\appsettings.Development.json:/app/appsettings.Development.json -e ASPNETCORE_ENVIRONMENT=Development ghcr.io/graemefoster/aicentral:latest
+# Run container in Docker, referencing a local configuration file
+docker run -p 8080:8080 -v .\appsettings.Development.json:/app/appsettings.Development.json -e ASPNETCORE_ENVIRONMENT=Development graemefoster/aicentral:latest
 ```
 
 #### Asp.Net CORE 
@@ -52,7 +52,8 @@ docker run -p 8080:80 -v .\appsettings.Development.json:/app/appsettings.Develop
 #Create new project and bootstrap the AICentral nuget package
 dotnet new web -o MyAICentral
 cd MyAICentral
-dotnet add package AiCentral
+dotnet add package AICentral
+#dotnet add package AICentral.Logging.AzureMonitor
 ```
 #### Program.cs
 ```csharp
@@ -61,9 +62,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAICentral(builder.Configuration);
 
-var app = builder.Build();
+app.UseAICentral(
+    builder.Configuration,
+    //if using logging extension
+    additionalComponentAssemblies: [ typeof(AzureMonitorLoggerFactory).Assembly ]
+);
 
-app.UseAICentral();
+var app = builder.Build();
 
 app.Run();
 
