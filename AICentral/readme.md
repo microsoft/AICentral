@@ -11,6 +11,7 @@ AI Central gives you control over your AI services.
 - Request based and Token based rate limiting
 - Prompt and usage logging
     - **Works for streaming endpoints as-well as non streaming**
+- Additional Open Telemetry Metrics and Traces
 
 ## Configuration
 
