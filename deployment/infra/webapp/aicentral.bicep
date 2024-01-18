@@ -33,6 +33,7 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
     vnetRouteAllEnabled: true
     virtualNetworkSubnetId: vnetIntegrationSubnetId
     clientAffinityEnabled: false
+    keyVaultReferenceIdentity: managedIdentityId
     siteConfig: {
       minTlsVersion: '1.2'
       alwaysOn: true
@@ -118,7 +119,7 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
           value: monitorWorkspace.id
         }
         {
-          name: 'AICentral__GenericSteps__1__Properties__WorkspaceKey'
+          name: 'AICentral__GenericSteps__1__Properties__Key'
           value: '@Microsoft.KeyVault(VaultName=${kvName};SecretName=${workspaceKeySecretName})'
         }
         {
