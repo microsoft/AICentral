@@ -5,12 +5,12 @@ on:
     branches:
       - main
     paths:
-      - 'AICentral.Core/**'
+      - 'src/AICentral.Core/**'
   pull_request:
     branches:
       - main
     paths:
-      - 'AICentral.Core/**'
+      - 'src/AICentral.Core/**'
   workflow_dispatch:
 
 jobs:
@@ -36,10 +36,10 @@ jobs:
           useConfigFile: true
           
       - name: Test
-        run: dotnet test AICentralTests/AICentralTests.csproj
+        run: dotnet test src/AICentralTests/AICentralTests.csproj
 
       - name: Pack Nuget
-        run: dotnet pack AICentral.Core/AICentral.Core.csproj -p:Version=${{ steps.gitversion.outputs.NuGetVersionV2 }} --output ./publish/
+        run: dotnet pack src/AICentral.Core/AICentral.Core.csproj -p:Version=${{ steps.gitversion.outputs.NuGetVersionV2 }} --output ./publish/
       
       - name: Publish to Nuget ${{ steps.gitversion.outputs.NuGetVersionV2 }}
         run: dotnet nuget push ./publish/AICentral.Core.${{ steps.gitversion.outputs.NuGetVersionV2 }}.nupkg  --api-key ${{ secrets.NUGET_PUBLISH_KEY }} --source https://api.nuget.org/v3/index.json
