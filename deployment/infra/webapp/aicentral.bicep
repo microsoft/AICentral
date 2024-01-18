@@ -6,6 +6,7 @@ param appName string
 param appInsightsConnectionString string
 param logAnalyticsId string
 param location string = resourceGroup().location
+param openAiName string
 param openAiEndpoint string
 param managedIdentityId string
 param kvName string
@@ -22,7 +23,7 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
   name: appName
   location: location
   identity: {
-    type: 'UserAssigned'
+    type: 'SystemAssigned, UserAssigned'
     userAssignedIdentities: {
       '${managedIdentityId}': {}
     }
@@ -120,7 +121,7 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
         }
         {
           name: 'AICentral__GenericSteps__1__Properties__WorkspaceId'
-          value: monitorWorkspace.id
+          value: monitorWorkspace.properties.customerId
         }
         {
           name: 'AICentral__GenericSteps__1__Properties__Key'
@@ -202,6 +203,24 @@ resource diagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' 
         enabled: true
       }
     ]
+  }
+}
+
+resource openAi 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' existing = {
+  name: openAiName
+}
+
+resource openAiRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
+  name: '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
+}
+
+resource cogServicesAiReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid('${app.name}-search-${openAi.id}')
+  scope: openAi
+  properties: {
+    roleDefinitionId: openAiRole.id
+    principalId: app.identity.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 

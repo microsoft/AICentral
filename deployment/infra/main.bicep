@@ -114,7 +114,6 @@ module openAi 'open-ai/main.bicep' = {
     openAiModelName: 'Gpt35Turbo0613'
     openAiEmbeddingModelName: 'Ada002Embedding'
     openAiResourceName: openAiName
-    managedIdentityPrincipalId: managedIdentities.outputs.aspIdentityPrincipalId
     privateDnsZoneId: vnet.outputs.openAiPrivateDnsZoneId
     privateEndpointSubnetId: vnet.outputs.privateEndpointSubnetId
   }
@@ -139,6 +138,7 @@ module aicentral 'webapp/aicentral.bicep' = {
     // privateDnsZoneId: vnet.outputs.privateDnsZoneId
     // privateEndpointSubnetId: vnet.outputs.privateEndpointSubnetId
     managedIdentityId: managedIdentities.outputs.aspIdentityId
+    openAiName: openAiName
   }
 }
 

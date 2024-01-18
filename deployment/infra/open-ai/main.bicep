@@ -2,7 +2,6 @@ targetScope = 'resourceGroup'
 param openAiResourceName string
 param openAiModelName string
 param openAiEmbeddingModelName string
-param managedIdentityPrincipalId string
 param openAiLocation string
 param privateEndpointSubnetId string
 param privateDnsZoneId string
@@ -61,20 +60,6 @@ resource embeddingDeploymentNew 'Microsoft.CognitiveServices/accounts/deployment
   dependsOn: [
     deploymentNew
   ]
-}
-
-resource openAiRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
-  name: '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
-}
-
-resource rbacModelReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid('${managedIdentityPrincipalId}-search-${openAi.id}')
-  scope: openAi
-  properties: {
-    roleDefinitionId: openAiRole.id
-    principalId: managedIdentityPrincipalId
-    principalType: 'ServicePrincipal'
-  }
 }
 
 resource privateEndpoint 'Microsoft.Network/privateEndpoints@2022-11-01' = {
