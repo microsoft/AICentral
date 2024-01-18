@@ -47,6 +47,10 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
           value: appInsightsConnectionString
         }
         {
+          name: 'WEBSITES_PORT'
+          value: '8080'
+        }
+        {
           name: 'AICentral__Endpoints__0__Type'
           value: 'AzureOpenAIEndpoint'
         }
