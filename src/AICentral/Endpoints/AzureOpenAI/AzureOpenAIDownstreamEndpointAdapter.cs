@@ -20,7 +20,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
     {
         Id = id;
         EndpointName = endpointName;
-        BaseUrl = languageUrl.EndsWith('/') ? languageUrl[..^1] : languageUrl;
+        BaseUrl = new Uri(languageUrl);
         _authHandler = authHandler;
     }
 
@@ -94,7 +94,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 
     public async Task<Either<AIRequest, IResult>> BuildRequest(IncomingCallDetails incomingCall, HttpContext context)
     {
-        var newRequestString = $"{BaseUrl}{context.Request.Path}";
+        var newRequestString = new Uri(BaseUrl, context.Request.Path).AbsoluteUri;
         newRequestString = QueryHelpers.AddQueryString(newRequestString, incomingCall.QueryString ?? new Dictionary<string, StringValues>());
         var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method), newRequestString);
 
@@ -123,6 +123,6 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
     }
 
     public string Id { get; }
-    public string BaseUrl { get; }
+    public Uri BaseUrl { get; }
     public string EndpointName { get; }
 }

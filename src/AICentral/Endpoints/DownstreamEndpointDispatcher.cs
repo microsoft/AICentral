@@ -43,7 +43,8 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
                     context, 
                     callInformation, 
                     null,
-                    _downstreamEndpointDispatcher.BaseUrl),
+                    _downstreamEndpointDispatcher.BaseUrl.Host
+                    ),
                 result!);
         }
 
@@ -96,7 +97,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             if (openAiResponse.StatusCode == HttpStatusCode.OK)
             {
                 context.Response.Headers.TryAdd("x-aicentral-server",
-                    new StringValues(_downstreamEndpointDispatcher.BaseUrl));
+                    new StringValues(_downstreamEndpointDispatcher.BaseUrl.Host));
             }
             else
             {
@@ -106,7 +107,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
                 }
 
                 context.Response.Headers.TryAdd("x-aicentral-failed-servers",
-                    StringValues.Concat(header, _downstreamEndpointDispatcher.BaseUrl));
+                    StringValues.Concat(header, _downstreamEndpointDispatcher.BaseUrl.Host));
             }
         }
 
@@ -125,7 +126,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 
         var pipelineResponse = await responseGenerator.BuildResponse(
             new DownstreamRequestInformation(
-                _downstreamEndpointDispatcher.BaseUrl,
+                _downstreamEndpointDispatcher.BaseUrl.Host,
                 callInformation.AICallType,
                 callInformation.IncomingModelName,
                 callInformation.PromptText,

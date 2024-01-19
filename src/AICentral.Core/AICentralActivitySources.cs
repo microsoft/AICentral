@@ -13,6 +13,37 @@ public static class AICentralActivitySources
 
     private static readonly ConcurrentDictionary<string, Histogram<double>> HistogramCounters = new();
 
+    public static void RecordGaugeMetric(string name, string unit, long value, TagList? tags = null)
+    {
+        var otelKey = BuildGaugeKey(name, tags);
+        var otelName = $"aicentral.{name}";
+
+        LongObservedValues.AddOrUpdate(otelKey, value, (_, _) => value);
+
+        if (!LongGauges.TryGetValue(otelKey, out _))
+        {
+            var tagsAsKeyValuePairs = tags.HasValue
+                ? tags.Value.Select(x => new KeyValuePair<string, object?>(x.Key, x.Value))
+                : new Dictionary<string, object?>();
+
+            var gauge = AICentralActivitySource.AICentralMeter.CreateObservableGauge(
+                otelName,
+                () => LongObservedValues.GetValueOrDefault(otelKey, 0),
+                unit: $"{{{unit}}}",
+                description: "",
+                tags: tagsAsKeyValuePairs);
+
+            LongGauges.TryAdd(otelKey, gauge);
+        }
+    }
+
+    public static string BuildGaugeKey(string name, TagList? tags)
+    {
+        var joinedTagValues = string.Join('.', (tags.HasValue ? tags.Value.Select(x => x.Value?.ToString() ?? string.Empty).ToArray() : Array.Empty<string>()));
+        var otelKey = $"aicentral.{name}.{joinedTagValues}";
+        return otelKey;
+    }
+
     public static void RecordUpDownCounter(string name, string unit, int amount, TagList? tags = null)
     {
         var otelName = $"aicentral.{name}";

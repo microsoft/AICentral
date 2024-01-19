@@ -88,6 +88,7 @@ public class Pipeline
                 { "Model", result.DownstreamUsageInformation.ModelName },
                 { "Endpoint", result.DownstreamUsageInformation.OpenAIHost },
                 { "Success", result.DownstreamUsageInformation.Success },
+                { "Streaming", result.DownstreamUsageInformation.StreamingResponse },
                 { "Pipeline", _name },
             };
 
@@ -103,6 +104,32 @@ public class Pipeline
                     result.DownstreamUsageInformation.TotalTokens.Value, tagList);
             }
 
+            var downsteamMetadata = result.DownstreamUsageInformation.ResponseMetadata;
+            if (downsteamMetadata != null)
+            {
+                var modelOrDeployment = result.DownstreamUsageInformation.DeploymentName ??
+                                        result.DownstreamUsageInformation.ModelName ?? 
+                                        "";
+                
+                var normalisedHostName = result.DownstreamUsageInformation.OpenAIHost.Replace(".", "_");
+                
+                if (downsteamMetadata.RemainingTokens != null)
+                {
+                    //Gauges don't transmit custom dimensions so I need a new metric name for each host / deployment pair.
+                    AICentralActivitySources.RecordGaugeMetric(
+                        $"downstream.{normalisedHostName}.{modelOrDeployment}.tokens_remaining", "tokens",
+                        downsteamMetadata.RemainingTokens.Value);
+                }
+
+                if (downsteamMetadata.RemainingRequests != null)
+                {
+                    //Gauges don't transmit custom dimensions so I need a new metric name for each host / deployment pair.
+                    AICentralActivitySources.RecordGaugeMetric(
+                        $"downstream.{normalisedHostName}.{modelOrDeployment}.requests_remaining", "tokens",
+                        downsteamMetadata.RemainingRequests.Value);
+                }
+            }
+
             AICentralActivitySources.RecordHistogram(
                 "downstream.duration",
                 "ms", result.DownstreamUsageInformation.Duration.TotalMilliseconds,
@@ -116,6 +143,7 @@ public class Pipeline
             activity?.AddTag("AICentral.CallType", result.DownstreamUsageInformation.CallType);
             activity?.AddTag("AICentral.TotalTokens", result.DownstreamUsageInformation.TotalTokens);
             activity?.AddTag("AICentral.OpenAIHost", result.DownstreamUsageInformation.OpenAIHost);
+            activity?.AddTag("AICentral.Streaming", result.DownstreamUsageInformation.StreamingResponse);
             activity?.AddTag("AICentral.Pipeline", _name);
 
             return result;

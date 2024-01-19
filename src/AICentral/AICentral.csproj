@@ -15,7 +15,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AICentral.Core" Version="0.8.3-pullrequest0065-0002" />
+        <PackageReference Include="AICentral.Core" Version="0.8.4-pullrequest0066-0008" />
         <PackageReference Include="Azure.Identity" Version="1.10.4" />
         <PackageReference Include="Microsoft.AspNetCore.RateLimiting" Version="7.0.0-rc.2.22476.2"/>
         <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.0" />
