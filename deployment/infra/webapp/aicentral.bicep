@@ -14,6 +14,7 @@ param appInsightsName string
 param key1SecretName string
 param key2SecretName string
 param workspaceKeySecretName string
+param environment string
 
 resource monitorWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
   name: azureMonitorWorkspaceName
@@ -47,6 +48,10 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
       scmIpSecurityRestrictions: []
       linuxFxVersion: 'DOCKER|graemefoster/aicentral:latest'
       appSettings: [
+        {
+          name: 'ASPNETCORE_ENVIRONMENT'
+          value: environment
+        }
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appInsights.properties.ConnectionString
