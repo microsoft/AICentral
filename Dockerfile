@@ -7,7 +7,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY ["src/AICentralWeb/AICentralWeb.csproj", "AICentralWeb/"]
 RUN dotnet restore "AICentralWeb/AICentralWeb.csproj"
-COPY . .
+COPY ./src .
 WORKDIR "/src/AICentralWeb"
 RUN dotnet build "AICentralWeb.csproj" -c Release -o /app/build
 

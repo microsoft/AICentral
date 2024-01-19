@@ -8,12 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
-    </ItemGroup>
-
-    <ItemGroup>
       <AdditionalFiles Include="Pages\Index.cshtml" />
     </ItemGroup>
 
