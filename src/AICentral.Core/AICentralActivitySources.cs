@@ -13,34 +13,18 @@ public static class AICentralActivitySources
 
     private static readonly ConcurrentDictionary<string, Histogram<double>> HistogramCounters = new();
 
-    public static void RecordGaugeMetric(string name, string unit, long value, TagList? tagList = null)
-    {
-        var key = $"aicentral.{name}";
-
-        LongObservedValues.AddOrUpdate(key, value, (_, _) => value);
-
-        if (!LongGauges.TryGetValue(key, out _))
-        {
-            var gauge = AICentralActivitySource.AICentralMeter.CreateObservableGauge(
-                key,
-                () => LongObservedValues.GetValueOrDefault(key, 0),
-                unit: $"{{{unit}}}");
-
-            LongGauges.TryAdd(key, gauge);
-        }
-    }
-
     public static void RecordUpDownCounter(string name, string unit, int amount, TagList? tags = null)
     {
-        var key = $"aicentral.{name}";
+        var otelName = $"aicentral.{name}";
 
-        if (!UpDownCounters.TryGetValue(key, out _))
+        if (!UpDownCounters.TryGetValue(otelName, out _))
         {
-            var upDownCounter = AICentralActivitySource.AICentralMeter.CreateUpDownCounter<int>(key, $"{{{unit}}}");
-            UpDownCounters.TryAdd(key, upDownCounter);
+            var upDownCounter =
+                AICentralActivitySource.AICentralMeter.CreateUpDownCounter<int>(otelName, $"{{{unit}}}");
+            UpDownCounters.TryAdd(otelName, upDownCounter);
         }
 
-        if (UpDownCounters.TryGetValue(key, out var counter))
+        if (UpDownCounters.TryGetValue(otelName, out var counter))
         {
             if (tags != null)
             {
@@ -55,16 +39,19 @@ public static class AICentralActivitySources
 
     public static void RecordHistogram(string name, string unit, double value, TagList? tags = null)
     {
-        var key = $"aicentral.{name}";
+        var otelName = $"aicentral.{name}";
 
-        if (!HistogramCounters.TryGetValue(key, out _))
+        if (!HistogramCounters.TryGetValue(otelName, out _))
         {
-            var guage = AICentralActivitySource.AICentralMeter.CreateHistogram<double>($"aicentral.{key}",
-                $"{{{unit}}}");
-            HistogramCounters.TryAdd(key, guage);
+            var histogram = AICentralActivitySource.AICentralMeter.CreateHistogram<double>(
+                otelName,
+                $"{{{unit}}}",
+                string.Empty);
+
+            HistogramCounters.TryAdd(otelName, histogram);
         }
 
-        if (HistogramCounters.TryGetValue(key, out var counter))
+        if (HistogramCounters.TryGetValue(otelName, out var counter))
         {
             if (tags != null)
             {
