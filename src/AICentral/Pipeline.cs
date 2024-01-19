@@ -104,6 +104,27 @@ public class Pipeline
                     result.DownstreamUsageInformation.TotalTokens.Value, tagList);
             }
 
+            var downsteamMetadata = result.DownstreamUsageInformation.ResponseMetadata;
+            if (downsteamMetadata != null)
+            {
+                if (downsteamMetadata.RemainingTokens != null)
+                {
+                    AICentralActivitySources.RecordHistogram(
+                        $"downsteam.tokens_remaining", "tokens",
+                        downsteamMetadata.RemainingTokens.Value, 
+                        tagList);
+                }
+                
+                if (downsteamMetadata.RemainingRequests != null)
+                {
+                    AICentralActivitySources.RecordHistogram(
+                        $"downsteam.requests_remaining", "tokens",
+                        downsteamMetadata.RemainingRequests.Value, 
+                        tagList);
+                }
+
+            }
+
             AICentralActivitySources.RecordHistogram(
                 "downstream.duration",
                 "ms", result.DownstreamUsageInformation.Duration.TotalMilliseconds,
