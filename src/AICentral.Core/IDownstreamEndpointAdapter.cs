@@ -6,7 +6,7 @@
 public interface IDownstreamEndpointAdapter
 {
     string Id { get; }
-    string BaseUrl { get; }
+    Uri BaseUrl { get; }
     string EndpointName { get; }
 
     /// <summary>

@@ -91,7 +91,7 @@ public class Pipeline
                 { "Streaming", result.DownstreamUsageInformation.StreamingResponse },
                 { "Pipeline", _name },
             };
-            
+
             AICentralActivitySources.RecordHistogram(
                 $"request.duration",
                 "ms",
@@ -107,22 +107,27 @@ public class Pipeline
             var downsteamMetadata = result.DownstreamUsageInformation.ResponseMetadata;
             if (downsteamMetadata != null)
             {
+                var modelOrDeployment = result.DownstreamUsageInformation.DeploymentName ??
+                                        result.DownstreamUsageInformation.ModelName ?? 
+                                        "";
+                
+                var normalisedHostName = result.DownstreamUsageInformation.OpenAIHost.Replace(".", "_");
+                
                 if (downsteamMetadata.RemainingTokens != null)
                 {
                     AICentralActivitySources.RecordHistogram(
                         $"downsteam.tokens_remaining", "tokens",
-                        downsteamMetadata.RemainingTokens.Value, 
+                        downsteamMetadata.RemainingTokens.Value,
                         tagList);
                 }
-                
+
                 if (downsteamMetadata.RemainingRequests != null)
                 {
                     AICentralActivitySources.RecordHistogram(
                         $"downsteam.requests_remaining", "tokens",
-                        downsteamMetadata.RemainingRequests.Value, 
+                        downsteamMetadata.RemainingRequests.Value,
                         tagList);
                 }
-
             }
 
             AICentralActivitySources.RecordHistogram(
@@ -131,7 +136,8 @@ public class Pipeline
                 tagList);
 
             activity?.AddTag("AICentral.Duration", sw.ElapsedMilliseconds);
-            activity?.AddTag("AICentral.Downstream.Duration", result.DownstreamUsageInformation.Duration.TotalMilliseconds);
+            activity?.AddTag("AICentral.Downstream.Duration",
+                result.DownstreamUsageInformation.Duration.TotalMilliseconds);
             activity?.AddTag("AICentral.Deployment", result.DownstreamUsageInformation.DeploymentName);
             activity?.AddTag("AICentral.Model", result.DownstreamUsageInformation.ModelName);
             activity?.AddTag("AICentral.CallType", result.DownstreamUsageInformation.CallType);
