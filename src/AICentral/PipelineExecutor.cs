@@ -60,14 +60,14 @@ public class PipelineExecutor : IAICentralPipelineExecutor, IAICentralResponseGe
             await completedStep.BuildResponseHeaders(context, rawResponse, responseMetadata.SanitisedHeaders);
         }
 
-        return await HandleResponse(requestInformation, context, rawResponse, responseMetadata.SanitisedHeaders, cancellationToken);
+        return await HandleResponse(requestInformation, context, rawResponse, responseMetadata, cancellationToken);
     }
 
     private Task<AICentralResponse> HandleResponse(
         DownstreamRequestInformation requestInformation,
         HttpContext context, 
         HttpResponseMessage openAiResponse,
-        Dictionary<string, StringValues> sanitisedResponseHeaders, 
+        ResponseMetadata responseMetadata, 
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<PipelineExecutor>>();
@@ -75,7 +75,7 @@ public class PipelineExecutor : IAICentralPipelineExecutor, IAICentralResponseGe
         //decision point... If this is a streaming request, then we should start streaming the result now.
         logger.LogDebug("Received Azure Open AI Response. Status Code: {StatusCode}", openAiResponse.StatusCode);
         
-        CopyHeadersToResponse(context.Response, sanitisedResponseHeaders);
+        CopyHeadersToResponse(context.Response, responseMetadata.SanitisedHeaders);
 
         if (openAiResponse.Headers.TransferEncodingChunked == true)
         {
@@ -84,7 +84,8 @@ public class PipelineExecutor : IAICentralPipelineExecutor, IAICentralResponseGe
                 context,
                 cancellationToken,
                 openAiResponse,
-                requestInformation);
+                requestInformation,
+                responseMetadata);
         }
 
         if ((openAiResponse.Content.Headers.ContentType?.MediaType ?? string.Empty).Contains("json", StringComparison.InvariantCultureIgnoreCase))
@@ -94,14 +95,16 @@ public class PipelineExecutor : IAICentralPipelineExecutor, IAICentralResponseGe
                 context,
                 cancellationToken,
                 openAiResponse,
-                requestInformation);
+                requestInformation,
+                responseMetadata);
         }
 
         return StreamResponseHandler.Handle(
             context,
             cancellationToken,
             openAiResponse,
-            requestInformation);
+            requestInformation,
+            responseMetadata);
     }
     
     private static void CopyHeadersToResponse(HttpResponse response, Dictionary<string, StringValues> headersToProxy)

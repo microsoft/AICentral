@@ -10,7 +10,8 @@ public static class JsonResponseHandler
         HttpContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
-        DownstreamRequestInformation requestInformation)
+        DownstreamRequestInformation requestInformation,
+        ResponseMetadata responseMetadata)
     {
         var response = await JsonDocument.ParseAsync(
             await openAiResponse.Content.ReadAsStreamAsync(cancellationToken),
@@ -52,6 +53,7 @@ public static class JsonResponseHandler
                 responseContent,
                 null,
                 (promptTokens, completionTokens, totalTokens),
+                responseMetadata,
                 context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
                 requestInformation.StartDate,
                 requestInformation.Duration,
@@ -74,6 +76,7 @@ public static class JsonResponseHandler
                 null,
                 null,
                 null,
+                responseMetadata,
                 context.Connection.RemoteIpAddress?.ToString() ?? "",
                 requestInformation.StartDate,
                 requestInformation.Duration,

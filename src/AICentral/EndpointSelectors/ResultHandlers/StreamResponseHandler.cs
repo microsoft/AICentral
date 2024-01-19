@@ -8,7 +8,8 @@ public class StreamResponseHandler
         HttpContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
-        DownstreamRequestInformation requestInformation)
+        DownstreamRequestInformation requestInformation,
+        ResponseMetadata responseMetadata)
     {
         //send the headers down to the client
         context.Response.StatusCode = (int)openAiResponse.StatusCode;
@@ -29,6 +30,7 @@ public class StreamResponseHandler
             null,
             null,
             null,
+            responseMetadata,
             context.Connection.RemoteIpAddress?.ToString() ?? "",
             requestInformation.StartDate,
             requestInformation.Duration,

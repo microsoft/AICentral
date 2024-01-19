@@ -39,7 +39,11 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         if (outboundRequest.Right(out var result))
         {
             return new AICentralResponse(
-                DownstreamUsageInformation.Empty(context, callInformation, _downstreamEndpointDispatcher.BaseUrl),
+                DownstreamUsageInformation.Empty(
+                    context, 
+                    callInformation, 
+                    null,
+                    _downstreamEndpointDispatcher.BaseUrl),
                 result!);
         }
 

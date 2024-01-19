@@ -21,7 +21,7 @@ public record DownstreamUsageInformation(
     public static DownstreamUsageInformation Empty(
         HttpContext context, 
         IncomingCallDetails incomingCallDetails,
-        ResponseMetadata? ResponseMetadata,
+        ResponseMetadata? responseMetadata,
         string hostUriBase)
         =>
             new DownstreamUsageInformation(
