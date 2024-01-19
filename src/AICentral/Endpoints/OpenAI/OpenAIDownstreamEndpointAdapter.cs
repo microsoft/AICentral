@@ -193,9 +193,9 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         var requestUri = string.IsNullOrWhiteSpace(pathPiece)
             ? throw new InvalidOperationException(
                 "Unable to forward this request from an Azure Open AI request to Open AI")
-            : $"{OpenAIV1}/v1/{pathPiece}";
+            : new Uri(OpenAIV1, $"/v1/{pathPiece}");
 
-        return requestUri;
+        return requestUri.AbsoluteUri;
     }
 
     private Dictionary<string, StringValues> SanitiseHeaders(

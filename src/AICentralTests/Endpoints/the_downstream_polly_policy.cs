@@ -46,7 +46,7 @@ public class the_downstream_polly_policy : IClassFixture<TestWebApplicationFacto
         var responseWhenLimited = await _httpClient.PostChatCompletions("azure-to-azure-openai");
         responseWhenLimited.StatusCode.ShouldBe(HttpStatusCode.OK); //should always succeed
         responseWhenLimited.Headers.GetValues("x-aicentral-server").Single()
-            .ShouldBe($"https://{AICentralFakeResponses.Endpoint200Number2}");
+            .ShouldBe(AICentralFakeResponses.Endpoint200Number2);
         responseWhenLimited.Headers.Contains("x-aicentral-failed-servers").ShouldBeFalse();
 
         //advance past the rate-limit

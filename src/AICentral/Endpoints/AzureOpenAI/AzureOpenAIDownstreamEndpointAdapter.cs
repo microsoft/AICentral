@@ -94,7 +94,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 
     public async Task<Either<AIRequest, IResult>> BuildRequest(IncomingCallDetails incomingCall, HttpContext context)
     {
-        var newRequestString = $"{BaseUrl}{context.Request.Path}";
+        var newRequestString = new Uri(BaseUrl, context.Request.Path).AbsoluteUri;
         newRequestString = QueryHelpers.AddQueryString(newRequestString, incomingCall.QueryString ?? new Dictionary<string, StringValues>());
         var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method), newRequestString);
 
