@@ -4,7 +4,10 @@ namespace AICentral.Core;
 
 public interface IAICentralResponseGenerator
 {
-    Task<AICentralResponse> BuildResponse(DownstreamRequestInformation downstreamRequestInformation,
-        HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> sanitisedResponseHeaders,
+    Task<AICentralResponse> BuildResponse(
+        DownstreamRequestInformation downstreamRequestInformation,
+        HttpContext context,
+        HttpResponseMessage rawResponse,
+        ResponseMetadata responseMetadata,
         CancellationToken cancellationToken);
 }

@@ -10,7 +10,7 @@ using Serilog.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
-if (builder.Environment.IsDevelopment())
+if (builder.Environment.EnvironmentName != "tests")
 {
     builder.Services
         .AddOpenTelemetry()
@@ -47,7 +47,7 @@ builder.Services.AddAICentral(
     startupLogger: new SerilogLoggerProvider(logger).CreateLogger("AICentralStartup"),
     additionalComponentAssemblies:
     [
-        typeof(AzureMonitorLoggerFactory).Assembly, 
+        typeof(AzureMonitorLoggerFactory).Assembly,
     ]);
 
 builder.Services.AddRazorPages();

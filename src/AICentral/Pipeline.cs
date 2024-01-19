@@ -69,7 +69,13 @@ public class Pipeline
         var endpointSelector = FindEndpointSelectorOrAffinityServer(requestDetails);
 
         using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build()), endpointSelector);
-        AICentralActivitySources.RecordUpDownCounter($"{_name.ToLowerInvariant()}.activeRequests", "requests", 1);
+        var requestTagList = new TagList
+        {
+            { "Deployment", requestDetails.IncomingModelName },
+            { "Pipeline", _name },
+        };
+        AICentralActivitySources.RecordUpDownCounter($"activeRequests", "requests", 1, requestTagList);
+
         try
         {
             var result = await executor.Next(context, requestDetails, cancellationToken);
@@ -83,33 +89,63 @@ public class Pipeline
                 { "Model", result.DownstreamUsageInformation.ModelName },
                 { "Endpoint", result.DownstreamUsageInformation.OpenAIHost },
                 { "Success", result.DownstreamUsageInformation.Success },
+                { "Pipeline", _name },
             };
 
             AICentralActivitySources.RecordHistogram(
-                $"{_name.ToLowerInvariant()}.request.duration",
+                "request.duration",
                 "ms",
                 sw.ElapsedMilliseconds, tagList);
 
             if (result.DownstreamUsageInformation.TotalTokens != null)
             {
                 AICentralActivitySources.RecordHistogram(
-                    $"{_name.ToLowerInvariant()}.request.tokensconsumed", "tokens",
+                    $"request.tokens_consumed", "tokens",
                     result.DownstreamUsageInformation.TotalTokens.Value, tagList);
             }
 
+            AICentralActivitySources.RecordHistogram(
+                "downstream.duration",
+                "ms", result.DownstreamUsageInformation.Duration.TotalMilliseconds,
+                tagList);
+
+            var downstreamResponseMetadata = result.DownstreamUsageInformation.ResponseMetadata;
+            if (downstreamResponseMetadata != null)
+            {
+                if (downstreamResponseMetadata.RemainingRequests != null)
+                {
+                    AICentralActivitySources.RecordGaugeMetric(
+                        "downstream.remaining_requests",
+                        "requests",
+                        downstreamResponseMetadata.RemainingRequests.Value,
+                        tagList);
+                }
+
+                if (downstreamResponseMetadata.RemainingTokens != null)
+                {
+                    AICentralActivitySources.RecordGaugeMetric(
+                        "downstream.remaining_tokens",
+                        "tokens",
+                        downstreamResponseMetadata.RemainingTokens.Value,
+                        tagList);
+                }
+            }
+
             activity?.AddTag("AICentral.Duration", sw.ElapsedMilliseconds);
-            activity?.AddTag("AICentral.Downstream.Duration", result.DownstreamUsageInformation.Duration.TotalMilliseconds);
+            activity?.AddTag("AICentral.Downstream.Duration",
+                result.DownstreamUsageInformation.Duration.TotalMilliseconds);
             activity?.AddTag("AICentral.Deployment", result.DownstreamUsageInformation.DeploymentName);
             activity?.AddTag("AICentral.Model", result.DownstreamUsageInformation.ModelName);
             activity?.AddTag("AICentral.CallType", result.DownstreamUsageInformation.CallType);
             activity?.AddTag("AICentral.TotalTokens", result.DownstreamUsageInformation.TotalTokens);
             activity?.AddTag("AICentral.OpenAIHost", result.DownstreamUsageInformation.OpenAIHost);
+            activity?.AddTag("AICentral.Pipeline", _name);
 
             return result;
         }
         finally
         {
-            AICentralActivitySources.RecordUpDownCounter($"{_name.ToLowerInvariant()}.activeRequests", "requests", -1);
+            AICentralActivitySources.RecordUpDownCounter("activeRequests", "requests", -1, requestTagList);
         }
     }
 

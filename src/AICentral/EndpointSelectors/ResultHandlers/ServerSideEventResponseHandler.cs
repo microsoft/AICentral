@@ -19,7 +19,8 @@ public static class ServerSideEventResponseHandler
         HttpContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
-        DownstreamRequestInformation requestInformation)
+        DownstreamRequestInformation requestInformation,
+        ResponseMetadata responseMetadata)
     {
         const string activityName = "StreamingResponse";
         using var activity = AICentralActivitySource.AICentralRequestActivitySource.StartActivity(activityName);
@@ -103,6 +104,7 @@ public static class ServerSideEventResponseHandler
             string.Join("", content),
             estimatedTokens,
             null,
+            responseMetadata,
             context.Connection.RemoteIpAddress?.ToString() ?? "",
             requestInformation.StartDate,
             requestInformation.Duration,

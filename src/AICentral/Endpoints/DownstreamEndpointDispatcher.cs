@@ -39,7 +39,11 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         if (outboundRequest.Right(out var result))
         {
             return new AICentralResponse(
-                DownstreamUsageInformation.Empty(context, callInformation, _downstreamEndpointDispatcher.BaseUrl),
+                DownstreamUsageInformation.Empty(
+                    context, 
+                    callInformation, 
+                    null,
+                    _downstreamEndpointDispatcher.BaseUrl),
                 result!);
         }
 
@@ -129,7 +133,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
                 sw.Elapsed),
             context,
             openAiResponse,
-            preProcessResult.SanitisedHeaders,
+            preProcessResult,
             cancellationToken);
 
         EmitTelemetry(newRequest, preProcessResult, pipelineResponse);
@@ -146,34 +150,11 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         {
             { "Deployment", pipelineResponse.DownstreamUsageInformation.DeploymentName },
             { "Model", pipelineResponse.DownstreamUsageInformation.ModelName },
-            { "Success", pipelineResponse.DownstreamUsageInformation.Success }
+            { "Success", pipelineResponse.DownstreamUsageInformation.Success },
+            { "AIHost", pipelineResponse.DownstreamUsageInformation.OpenAIHost }
         };
 
-        var sanitisedHostName =
-            new Uri(pipelineResponse.DownstreamUsageInformation.OpenAIHost).Host.ToLowerInvariant().Replace(".", "_");
 
-        AICentralActivitySources.RecordHistogram(
-            $"{sanitisedHostName}.remaining_requests",
-            "ms", pipelineResponse.DownstreamUsageInformation.Duration.TotalMilliseconds,
-            tagList);
-
-        if (responseMetadata.RemainingRequests != null)
-        {
-            AICentralActivitySources.RecordGaugeMetric(
-                $"{sanitisedHostName}.remaining_requests",
-                "requests",
-                responseMetadata.RemainingRequests.Value,
-                tagList);
-        }
-
-        if (responseMetadata.RemainingTokens != null)
-        {
-            AICentralActivitySources.RecordGaugeMetric(
-                $"{sanitisedHostName}.remaining_tokens",
-                "tokens",
-                responseMetadata.RemainingTokens.Value,
-                tagList);
-        }
     }
 
     public bool IsAffinityRequestToMe(string affinityHeaderValue)

@@ -97,7 +97,11 @@ public class FixedWindowRateLimitingProvider : IAICentralPipelineStep, IAICentra
         }
 
         return new AICentralResponse(
-            DownstreamUsageInformation.Empty(context, aiCallInformation, string.Empty),
+            DownstreamUsageInformation.Empty(
+                context, 
+                aiCallInformation, 
+                null, 
+                string.Empty),
             resultHandler);
     }
 

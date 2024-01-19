@@ -11,6 +11,7 @@ public record DownstreamUsageInformation(
     string? Response,
     Lazy<(int? EstimatedPromptTokens, int? EstimatedCompletionTokens)>? EstimatedTokens,
     (int PromptTokens, int CompletionTokens, int TotalTokens)? KnownTokens,
+    ResponseMetadata? ResponseMetadata,
     string RemoteIpAddress,
     DateTimeOffset StartDate,
     TimeSpan Duration,
@@ -20,6 +21,7 @@ public record DownstreamUsageInformation(
     public static DownstreamUsageInformation Empty(
         HttpContext context, 
         IncomingCallDetails incomingCallDetails,
+        ResponseMetadata? responseMetadata,
         string hostUriBase)
         =>
             new DownstreamUsageInformation(
@@ -30,6 +32,7 @@ public record DownstreamUsageInformation(
                 incomingCallDetails.AICallType,
                 null,
                 incomingCallDetails.PromptText,
+                null,
                 null,
                 null,
                 null,
