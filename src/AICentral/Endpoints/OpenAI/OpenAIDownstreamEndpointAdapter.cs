@@ -11,7 +11,7 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 {
     private static readonly string[] HeadersToIgnore = { "host", "authorization", "api-key" };
     private static readonly string[] HeaderPrefixesToCopy = { "x-", "openai" };
-    internal const string OpenAIV1 = "https://api.openai.com";
+    internal static readonly Uri OpenAIV1 = new("https://api.openai.com");
     private const string OpenAIWellKnownModelNameField = "model";
 
     private readonly Dictionary<string, string> _modelMappings;
@@ -19,7 +19,7 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
     private readonly string _apiKey;
 
     public string Id { get; }
-    public string BaseUrl { get; }
+    public Uri BaseUrl { get; }
     public string EndpointName { get; }
 
     public OpenAIDownstreamEndpointAdapter(

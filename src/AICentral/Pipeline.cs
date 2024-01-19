@@ -111,22 +111,26 @@ public class Pipeline
                                         result.DownstreamUsageInformation.ModelName ?? 
                                         "";
                 
-                var normalisedHostName = result.DownstreamUsageInformation.OpenAIHost.Replace(".", "_");
-                
+                var remainingTokenTags = new TagList
+                {
+                    { "ModelOrDeployment", modelOrDeployment },
+                    { "Endpoint", result.DownstreamUsageInformation.OpenAIHost },
+                };
+
                 if (downsteamMetadata.RemainingTokens != null)
                 {
-                    AICentralActivitySources.RecordHistogram(
-                        $"downsteam.tokens_remaining", "tokens",
+                    AICentralActivitySources.RecordGaugeMetric(
+                        $"downstream.tokens_remaining", "tokens",
                         downsteamMetadata.RemainingTokens.Value,
-                        tagList);
+                        remainingTokenTags);
                 }
 
                 if (downsteamMetadata.RemainingRequests != null)
                 {
-                    AICentralActivitySources.RecordHistogram(
-                        $"downsteam.requests_remaining", "tokens",
+                    AICentralActivitySources.RecordGaugeMetric(
+                        $"downstream.requests_remaining", "tokens",
                         downsteamMetadata.RemainingRequests.Value,
-                        tagList);
+                        remainingTokenTags);
                 }
             }
 

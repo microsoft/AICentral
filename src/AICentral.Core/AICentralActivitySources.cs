@@ -15,7 +15,7 @@ public static class AICentralActivitySources
 
     public static void RecordGaugeMetric(string name, string unit, long value, TagList? tags = null)
     {
-        var otelKey = $"aicentral.{name}.{string.Join('.', tags.HasValue ? tags.Value.Select(x => x.Value ?? string.Empty) : string.Empty)}";
+        var otelKey = $"aicentral.{name}.{string.Join('.', tags.HasValue ? tags.Value.Select(x => x.Value?.ToString() ?? string.Empty).ToArray() : string.Empty)}";
         var otelName = $"aicentral.{name}";
 
         LongObservedValues.AddOrUpdate(otelKey, value, (_, _) => value);

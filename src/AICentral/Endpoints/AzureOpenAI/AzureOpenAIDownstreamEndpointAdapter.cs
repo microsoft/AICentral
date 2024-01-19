@@ -20,7 +20,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
     {
         Id = id;
         EndpointName = endpointName;
-        BaseUrl = languageUrl.EndsWith('/') ? languageUrl[..^1] : languageUrl;
+        BaseUrl = new Uri(languageUrl);
         _authHandler = authHandler;
     }
 
@@ -123,6 +123,6 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
     }
 
     public string Id { get; }
-    public string BaseUrl { get; }
+    public Uri BaseUrl { get; }
     public string EndpointName { get; }
 }
