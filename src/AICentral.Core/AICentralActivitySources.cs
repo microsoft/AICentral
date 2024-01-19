@@ -15,7 +15,7 @@ public static class AICentralActivitySources
 
     public static void RecordGaugeMetric(string name, string unit, long value, TagList? tags = null)
     {
-        var otelKey = $"aicentral.{name}.{string.Join('.', tags.HasValue ? tags.Value.Select(x => x.Value?.ToString() ?? string.Empty).ToArray() : string.Empty)}";
+        var otelKey = BuildGaugeKey(name, tags);
         var otelName = $"aicentral.{name}";
 
         LongObservedValues.AddOrUpdate(otelKey, value, (_, _) => value);
@@ -35,6 +35,13 @@ public static class AICentralActivitySources
 
             LongGauges.TryAdd(otelKey, gauge);
         }
+    }
+
+    public static string BuildGaugeKey(string name, TagList? tags)
+    {
+        var joinedTagValues = string.Join('.', (tags.HasValue ? tags.Value.Select(x => x.Value?.ToString() ?? string.Empty).ToArray() : Array.Empty<string>()));
+        var otelKey = $"aicentral.{name}.{joinedTagValues}";
+        return otelKey;
     }
 
     public static void RecordUpDownCounter(string name, string unit, int amount, TagList? tags = null)
