@@ -88,9 +88,10 @@ public class Pipeline
                 { "Model", result.DownstreamUsageInformation.ModelName },
                 { "Endpoint", result.DownstreamUsageInformation.OpenAIHost },
                 { "Success", result.DownstreamUsageInformation.Success },
+                { "Streaming", result.DownstreamUsageInformation.StreamingResponse },
                 { "Pipeline", _name },
             };
-
+            
             AICentralActivitySources.RecordHistogram(
                 $"request.duration",
                 "ms",
@@ -109,13 +110,13 @@ public class Pipeline
                 tagList);
 
             activity?.AddTag("AICentral.Duration", sw.ElapsedMilliseconds);
-            activity?.AddTag("AICentral.Downstream.Duration",
-                result.DownstreamUsageInformation.Duration.TotalMilliseconds);
+            activity?.AddTag("AICentral.Downstream.Duration", result.DownstreamUsageInformation.Duration.TotalMilliseconds);
             activity?.AddTag("AICentral.Deployment", result.DownstreamUsageInformation.DeploymentName);
             activity?.AddTag("AICentral.Model", result.DownstreamUsageInformation.ModelName);
             activity?.AddTag("AICentral.CallType", result.DownstreamUsageInformation.CallType);
             activity?.AddTag("AICentral.TotalTokens", result.DownstreamUsageInformation.TotalTokens);
             activity?.AddTag("AICentral.OpenAIHost", result.DownstreamUsageInformation.OpenAIHost);
+            activity?.AddTag("AICentral.Streaming", result.DownstreamUsageInformation.StreamingResponse);
             activity?.AddTag("AICentral.Pipeline", _name);
 
             return result;
