@@ -44,23 +44,23 @@ public class PipelineExecutor : IAICentralPipelineExecutor, IAICentralResponseGe
     /// <param name="requestInformation"></param>
     /// <param name="context"></param>
     /// <param name="rawResponse"></param>
-    /// <param name="sanitisedResponseHeaders"></param>
+    /// <param name="responseMetadata"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     async Task<AICentralResponse> IAICentralResponseGenerator.BuildResponse(
         DownstreamRequestInformation requestInformation, HttpContext context,
         HttpResponseMessage rawResponse, 
-        Dictionary<string, StringValues> sanitisedResponseHeaders,
+        ResponseMetadata responseMetadata,
         CancellationToken cancellationToken)
     {
-        await _iaiCentralEndpointSelector.BuildResponseHeaders(context, rawResponse, sanitisedResponseHeaders);
+        await _iaiCentralEndpointSelector.BuildResponseHeaders(context, rawResponse, responseMetadata.SanitisedHeaders);
         
         foreach (var completedStep in _outputHandlers)
         {
-            await completedStep.BuildResponseHeaders(context, rawResponse, sanitisedResponseHeaders);
+            await completedStep.BuildResponseHeaders(context, rawResponse, responseMetadata.SanitisedHeaders);
         }
 
-        return await HandleResponse(requestInformation, context, rawResponse, sanitisedResponseHeaders, cancellationToken);
+        return await HandleResponse(requestInformation, context, rawResponse, responseMetadata.SanitisedHeaders, cancellationToken);
     }
 
     private Task<AICentralResponse> HandleResponse(

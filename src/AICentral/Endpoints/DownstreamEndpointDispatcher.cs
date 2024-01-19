@@ -129,7 +129,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
                 sw.Elapsed),
             context,
             openAiResponse,
-            preProcessResult.SanitisedHeaders,
+            preProcessResult,
             cancellationToken);
 
         EmitTelemetry(newRequest, preProcessResult, pipelineResponse);
