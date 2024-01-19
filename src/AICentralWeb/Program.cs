@@ -10,25 +10,28 @@ using Serilog.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services
-    .AddOpenTelemetry()
-    .WithMetrics(metrics =>
-    {
-        metrics.AddAspNetCoreInstrumentation()
-            .AddMeter(AICentralActivitySource.AICentralTelemetryName);
-    })
-    .WithTracing(tracing =>
-    {
-        if (builder.Environment.IsDevelopment())
+if (builder.Environment.EnvironmentName != "tests")
+{
+    builder.Services
+        .AddOpenTelemetry()
+        .WithMetrics(metrics =>
         {
-            // We want to view all traces in development
-            tracing.SetSampler(new AlwaysOnSampler());
-        }
+            metrics.AddAspNetCoreInstrumentation()
+                .AddMeter(AICentralActivitySource.AICentralTelemetryName);
+        })
+        .WithTracing(tracing =>
+        {
+            if (builder.Environment.IsDevelopment())
+            {
+                // We want to view all traces in development
+                tracing.SetSampler(new AlwaysOnSampler());
+            }
 
-        tracing.AddAspNetCoreInstrumentation()
-            .AddSource(AICentralActivitySource.AICentralTelemetryName);
-    })
-    .UseAzureMonitor();
+            tracing.AddAspNetCoreInstrumentation()
+                .AddSource(AICentralActivitySource.AICentralTelemetryName);
+        })
+        .UseAzureMonitor();
+}
 
 var logger = new LoggerConfiguration()
     .MinimumLevel.Verbose()
