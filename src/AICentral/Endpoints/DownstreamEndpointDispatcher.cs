@@ -146,21 +146,19 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         {
             { "Deployment", pipelineResponse.DownstreamUsageInformation.DeploymentName },
             { "Model", pipelineResponse.DownstreamUsageInformation.ModelName },
-            { "Success", pipelineResponse.DownstreamUsageInformation.Success }
+            { "Success", pipelineResponse.DownstreamUsageInformation.Success },
+            { "AIHost", pipelineResponse.DownstreamUsageInformation.OpenAIHost }
         };
 
-        var sanitisedHostName =
-            new Uri(pipelineResponse.DownstreamUsageInformation.OpenAIHost).Host.ToLowerInvariant().Replace(".", "_");
-
         AICentralActivitySources.RecordHistogram(
-            $"{sanitisedHostName}.remaining_requests",
+            "remaining_requests",
             "ms", pipelineResponse.DownstreamUsageInformation.Duration.TotalMilliseconds,
             tagList);
 
         if (responseMetadata.RemainingRequests != null)
         {
             AICentralActivitySources.RecordGaugeMetric(
-                $"{sanitisedHostName}.remaining_requests",
+                "remaining_requests",
                 "requests",
                 responseMetadata.RemainingRequests.Value,
                 tagList);
@@ -169,7 +167,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         if (responseMetadata.RemainingTokens != null)
         {
             AICentralActivitySources.RecordGaugeMetric(
-                $"{sanitisedHostName}.remaining_tokens",
+                "remaining_tokens",
                 "tokens",
                 responseMetadata.RemainingTokens.Value,
                 tagList);

@@ -69,7 +69,13 @@ public class Pipeline
         var endpointSelector = FindEndpointSelectorOrAffinityServer(requestDetails);
 
         using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build()), endpointSelector);
-        AICentralActivitySources.RecordUpDownCounter($"{_name.ToLowerInvariant()}.activeRequests", "requests", 1);
+        var requestTagList = new TagList
+        {
+            { "Deployment", requestDetails.IncomingModelName },
+            { "Pipeline", _name },
+        };
+        AICentralActivitySources.RecordUpDownCounter($"activeRequests", "requests", 1, requestTagList);
+
         try
         {
             var result = await executor.Next(context, requestDetails, cancellationToken);
@@ -83,17 +89,18 @@ public class Pipeline
                 { "Model", result.DownstreamUsageInformation.ModelName },
                 { "Endpoint", result.DownstreamUsageInformation.OpenAIHost },
                 { "Success", result.DownstreamUsageInformation.Success },
+                { "Pipeline", _name },
             };
 
             AICentralActivitySources.RecordHistogram(
-                $"{_name.ToLowerInvariant()}.request.duration",
+                "request.duration",
                 "ms",
                 sw.ElapsedMilliseconds, tagList);
 
             if (result.DownstreamUsageInformation.TotalTokens != null)
             {
                 AICentralActivitySources.RecordHistogram(
-                    $"{_name.ToLowerInvariant()}.request.tokensconsumed", "tokens",
+                    $"request.tokensconsumed", "tokens",
                     result.DownstreamUsageInformation.TotalTokens.Value, tagList);
             }
 
@@ -104,12 +111,13 @@ public class Pipeline
             activity?.AddTag("AICentral.CallType", result.DownstreamUsageInformation.CallType);
             activity?.AddTag("AICentral.TotalTokens", result.DownstreamUsageInformation.TotalTokens);
             activity?.AddTag("AICentral.OpenAIHost", result.DownstreamUsageInformation.OpenAIHost);
+            activity?.AddTag("AICentral.Pipeline", _name);
 
             return result;
         }
         finally
         {
-            AICentralActivitySources.RecordUpDownCounter($"{_name.ToLowerInvariant()}.activeRequests", "requests", -1);
+            AICentralActivitySources.RecordUpDownCounter("activeRequests", "requests", -1, requestTagList);
         }
     }
 
