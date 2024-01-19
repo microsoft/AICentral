@@ -10,28 +10,25 @@ using Serilog.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services
-        .AddOpenTelemetry()
-        .WithMetrics(metrics =>
+builder.Services
+    .AddOpenTelemetry()
+    .WithMetrics(metrics =>
+    {
+        metrics.AddAspNetCoreInstrumentation()
+            .AddMeter(AICentralActivitySource.AICentralTelemetryName);
+    })
+    .WithTracing(tracing =>
+    {
+        if (builder.Environment.IsDevelopment())
         {
-            metrics.AddAspNetCoreInstrumentation()
-                .AddMeter(AICentralActivitySource.AICentralTelemetryName);
-        })
-        .WithTracing(tracing =>
-        {
-            if (builder.Environment.IsDevelopment())
-            {
-                // We want to view all traces in development
-                tracing.SetSampler(new AlwaysOnSampler());
-            }
+            // We want to view all traces in development
+            tracing.SetSampler(new AlwaysOnSampler());
+        }
 
-            tracing.AddAspNetCoreInstrumentation()
-                .AddSource(AICentralActivitySource.AICentralTelemetryName);
-        })
-        .UseAzureMonitor();
-}
+        tracing.AddAspNetCoreInstrumentation()
+            .AddSource(AICentralActivitySource.AICentralTelemetryName);
+    })
+    .UseAzureMonitor();
 
 var logger = new LoggerConfiguration()
     .MinimumLevel.Verbose()
@@ -47,7 +44,7 @@ builder.Services.AddAICentral(
     startupLogger: new SerilogLoggerProvider(logger).CreateLogger("AICentralStartup"),
     additionalComponentAssemblies:
     [
-        typeof(AzureMonitorLoggerFactory).Assembly, 
+        typeof(AzureMonitorLoggerFactory).Assembly,
     ]);
 
 builder.Services.AddRazorPages();
