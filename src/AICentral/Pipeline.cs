@@ -111,26 +111,22 @@ public class Pipeline
                                         result.DownstreamUsageInformation.ModelName ?? 
                                         "";
                 
-                var remainingTokenTags = new TagList
-                {
-                    { "ModelOrDeployment", modelOrDeployment },
-                    { "Endpoint", result.DownstreamUsageInformation.OpenAIHost },
-                };
-
+                var normalisedHostName = result.DownstreamUsageInformation.OpenAIHost.Replace(".", "_");
+                
                 if (downsteamMetadata.RemainingTokens != null)
                 {
+                    //Gauges don't transmit custom dimensions so I need a new metric name for each host / deployment pair.
                     AICentralActivitySources.RecordGaugeMetric(
-                        $"downstream.tokens_remaining", "tokens",
-                        downsteamMetadata.RemainingTokens.Value,
-                        remainingTokenTags);
+                        $"downstream.{normalisedHostName}.{modelOrDeployment}.tokens_remaining", "tokens",
+                        downsteamMetadata.RemainingTokens.Value);
                 }
 
                 if (downsteamMetadata.RemainingRequests != null)
                 {
+                    //Gauges don't transmit custom dimensions so I need a new metric name for each host / deployment pair.
                     AICentralActivitySources.RecordGaugeMetric(
-                        $"downstream.requests_remaining", "tokens",
-                        downsteamMetadata.RemainingRequests.Value,
-                        remainingTokenTags);
+                        $"downstream.{normalisedHostName}.{modelOrDeployment}.requests_remaining", "tokens",
+                        downsteamMetadata.RemainingRequests.Value);
                 }
             }
 
