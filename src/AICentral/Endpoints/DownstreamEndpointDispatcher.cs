@@ -154,28 +154,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             { "AIHost", pipelineResponse.DownstreamUsageInformation.OpenAIHost }
         };
 
-        AICentralActivitySources.RecordHistogram(
-            "remaining_requests",
-            "ms", pipelineResponse.DownstreamUsageInformation.Duration.TotalMilliseconds,
-            tagList);
 
-        if (responseMetadata.RemainingRequests != null)
-        {
-            AICentralActivitySources.RecordGaugeMetric(
-                "remaining_requests",
-                "requests",
-                responseMetadata.RemainingRequests.Value,
-                tagList);
-        }
-
-        if (responseMetadata.RemainingTokens != null)
-        {
-            AICentralActivitySources.RecordGaugeMetric(
-                "remaining_tokens",
-                "tokens",
-                responseMetadata.RemainingTokens.Value,
-                tagList);
-        }
     }
 
     public bool IsAffinityRequestToMe(string affinityHeaderValue)

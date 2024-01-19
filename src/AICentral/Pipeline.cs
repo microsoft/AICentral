@@ -100,12 +100,40 @@ public class Pipeline
             if (result.DownstreamUsageInformation.TotalTokens != null)
             {
                 AICentralActivitySources.RecordHistogram(
-                    $"request.tokensconsumed", "tokens",
+                    $"request.tokens_consumed", "tokens",
                     result.DownstreamUsageInformation.TotalTokens.Value, tagList);
             }
 
+            AICentralActivitySources.RecordHistogram(
+                "downstream.duration",
+                "ms", result.DownstreamUsageInformation.Duration.TotalMilliseconds,
+                tagList);
+
+            var downstreamResponseMetadata = result.DownstreamUsageInformation.ResponseMetadata;
+            if (downstreamResponseMetadata != null)
+            {
+                if (downstreamResponseMetadata.RemainingRequests != null)
+                {
+                    AICentralActivitySources.RecordGaugeMetric(
+                        "downstream.remaining_requests",
+                        "requests",
+                        downstreamResponseMetadata.RemainingRequests.Value,
+                        tagList);
+                }
+
+                if (downstreamResponseMetadata.RemainingTokens != null)
+                {
+                    AICentralActivitySources.RecordGaugeMetric(
+                        "downstream.remaining_tokens",
+                        "tokens",
+                        downstreamResponseMetadata.RemainingTokens.Value,
+                        tagList);
+                }
+            }
+
             activity?.AddTag("AICentral.Duration", sw.ElapsedMilliseconds);
-            activity?.AddTag("AICentral.Downstream.Duration", result.DownstreamUsageInformation.Duration.TotalMilliseconds);
+            activity?.AddTag("AICentral.Downstream.Duration",
+                result.DownstreamUsageInformation.Duration.TotalMilliseconds);
             activity?.AddTag("AICentral.Deployment", result.DownstreamUsageInformation.DeploymentName);
             activity?.AddTag("AICentral.Model", result.DownstreamUsageInformation.ModelName);
             activity?.AddTag("AICentral.CallType", result.DownstreamUsageInformation.CallType);
