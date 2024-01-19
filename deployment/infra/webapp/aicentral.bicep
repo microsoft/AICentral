@@ -3,7 +3,6 @@ param aspId string
 // param privateDnsZoneId string
 param vnetIntegrationSubnetId string
 param appName string
-param appInsightsConnectionString string
 param logAnalyticsId string
 param location string = resourceGroup().location
 param openAiName string
@@ -11,12 +10,17 @@ param openAiEndpoint string
 param managedIdentityId string
 param kvName string
 param azureMonitorWorkspaceName string
+param appInsightsName string
 param key1SecretName string
 param key2SecretName string
 param workspaceKeySecretName string
 
 resource monitorWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
   name: azureMonitorWorkspaceName
+}
+
+resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
+  name: appInsightsName
 }
 
 resource app 'Microsoft.Web/sites@2022-09-01' = {
@@ -45,7 +49,11 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
       appSettings: [
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsightsConnectionString
+          value: appInsights.properties.ConnectionString
+        }
+        {
+          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+          value: appInsights.properties.InstrumentationKey
         }
         {
           name: 'WEBSITES_PORT'

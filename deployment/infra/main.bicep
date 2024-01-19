@@ -124,7 +124,7 @@ module aicentral 'webapp/aicentral.bicep' = {
   scope: rg
   params: {
     location: location
-    appInsightsConnectionString: asp.outputs.applicationInsightsConnectionString
+    appInsightsName: asp.outputs.applicationInsightsName
     aspId: asp.outputs.aspId
     logAnalyticsId: asp.outputs.logAnalyticsId
     appName: aiCentralAppName

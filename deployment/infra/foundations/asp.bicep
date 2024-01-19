@@ -38,8 +38,7 @@ resource asp 'Microsoft.Web/serverfarms@2023-01-01' = {
   }
 }
 
-output applicationInsightsConnectionString string = appInsights.properties.ConnectionString
-output applicationInsightsInstrumentationKey string = appInsights.properties.InstrumentationKey
+output applicationInsightsName string = appInsights.name
 output aspId string = asp.id
 output logAnalyticsId string = lanalytics.id
 output logAnalyticsName string = lanalytics.name
