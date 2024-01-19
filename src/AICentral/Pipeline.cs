@@ -31,7 +31,6 @@ public class Pipeline
         _clientAuthStep = clientAuthStep;
         _pipelineSteps = pipelineSteps.Select(x => x).ToArray();
         _endpointSelector = endpointSelector;
-        // _tokenMeter = AICentralActivitySource.AICentralMeter.CreateHistogram<int>($"aicentral.{_name}.tokens.consumed", "{tokens}");
     }
 
     /// <summary>
@@ -93,7 +92,7 @@ public class Pipeline
             };
 
             AICentralActivitySources.RecordHistogram(
-                "request.duration",
+                $"request.duration",
                 "ms",
                 sw.ElapsedMilliseconds, tagList);
 
@@ -108,28 +107,6 @@ public class Pipeline
                 "downstream.duration",
                 "ms", result.DownstreamUsageInformation.Duration.TotalMilliseconds,
                 tagList);
-
-            var downstreamResponseMetadata = result.DownstreamUsageInformation.ResponseMetadata;
-            if (downstreamResponseMetadata != null)
-            {
-                if (downstreamResponseMetadata.RemainingRequests != null)
-                {
-                    AICentralActivitySources.RecordGaugeMetric(
-                        "downstream.remaining_requests",
-                        "requests",
-                        downstreamResponseMetadata.RemainingRequests.Value,
-                        tagList);
-                }
-
-                if (downstreamResponseMetadata.RemainingTokens != null)
-                {
-                    AICentralActivitySources.RecordGaugeMetric(
-                        "downstream.remaining_tokens",
-                        "tokens",
-                        downstreamResponseMetadata.RemainingTokens.Value,
-                        tagList);
-                }
-            }
 
             activity?.AddTag("AICentral.Duration", sw.ElapsedMilliseconds);
             activity?.AddTag("AICentral.Downstream.Duration",
