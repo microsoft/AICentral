@@ -239,3 +239,4 @@ appsettings.*.json
 [Oo]bj/
 [Dd]ebug/
 
+.azure/
