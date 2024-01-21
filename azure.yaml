@@ -5,7 +5,7 @@
 # To learn more about the azure.yaml file, visit https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/azd-schema
 
 # Name of the application.
-name: azd-starter
+name: aicentral
 # services:
 #   ## An example for a python API service.
 #   ## The service is named 'python-api'.
