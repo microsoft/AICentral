@@ -51,6 +51,8 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
         await Verify(_factory.VerifyRequestsAndResponses(result));
+
+        result.Headers.GetValues("x-aicentral-pipeline").Single().ShouldBe("azure-to-azure-openai.localtest.me-pipeline");
     }
 
 

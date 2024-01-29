@@ -215,7 +215,7 @@ public class TestAICentralPipelineBuilder
             {
                 new AICentralPipelineConfig()
                 {
-                    Name = Guid.NewGuid().ToString(),
+                    Name = host + "-pipeline",
                     Host = host,
                     AuthProvider = id,
                     Steps = steps.ToArray(),

@@ -11,7 +11,7 @@ public class AzureOpenAIDetector
         return request.Path.StartsWithSegments("/openai");
     }
 
-    public async Task<IncomingCallDetails> Detect(HttpRequest request, CancellationToken cancellationToken)
+    public async Task<IncomingCallDetails> Detect(string pipelineName, HttpRequest request, CancellationToken cancellationToken)
     {
         request.Path.StartsWithSegments("/openai", out var remainingUrlSegments);
 
@@ -57,6 +57,7 @@ public class AzureOpenAIDetector
             };
 
             return new IncomingCallDetails(
+                pipelineName,
                 callType,
                 promptText,
                 incomingModelName,
@@ -67,13 +68,13 @@ public class AzureOpenAIDetector
         if (callType == AICallType.Transcription || callType == AICallType.Translation)
         {
             var model = request.Form["model"];
-            return new IncomingCallDetails(callType, null, model, null,
+            return new IncomingCallDetails(pipelineName, callType, null, model, null,
                 QueryHelpers.ParseQuery(request.QueryString.Value));
         }
 
         if (request.Method == "GET")
         {
-            return new IncomingCallDetails(callType, null, null, null,
+            return new IncomingCallDetails(pipelineName, callType, null, null, null,
                 QueryHelpers.ParseQuery(request.QueryString.Value));
         }
 

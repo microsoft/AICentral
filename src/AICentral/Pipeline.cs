@@ -3,6 +3,8 @@ using System.Diagnostics.Metrics;
 using AICentral.ConsumerAuth;
 using AICentral.Core;
 using AICentral.EndpointSelectors;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral;
 
@@ -51,6 +53,12 @@ public class Pipeline
 
         // Create a new Activity scoped to the method
         using var activity = AICentralActivitySource.AICentralRequestActivitySource.StartActivity("AICentalRequest");
+        var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
+
+        if (config.Value.EnableDiagnosticsHeaders)
+        {
+            context.Response.Headers.TryAdd("x-aicentral-pipeline", new StringValues(_name));
+        }
 
         var logger = context.RequestServices.GetRequiredService<ILogger<Pipeline>>();
         using var scope = logger.BeginScope(new
@@ -60,7 +68,7 @@ public class Pipeline
 
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
 
-        var requestDetails = await new AzureOpenAIDetector().Detect( context.Request, cancellationToken);
+        var requestDetails = await new AzureOpenAIDetector().Detect(_name, context.Request, cancellationToken);
 
         logger.LogDebug("Detected {CallType} from incoming request",
             requestDetails.AICallType);
