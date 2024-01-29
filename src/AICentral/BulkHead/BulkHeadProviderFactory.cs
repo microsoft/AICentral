@@ -17,7 +17,7 @@ public class BulkHeadProviderFactory : IAICentralGenericStepFactory
     {
     }
 
-    public IAICentralPipelineStep Build()
+    public IAICentralPipelineStep Build(IServiceProvider serviceProvider)
     {
         return _provider.Value;
     }

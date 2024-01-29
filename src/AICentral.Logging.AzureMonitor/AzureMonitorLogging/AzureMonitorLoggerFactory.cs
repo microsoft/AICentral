@@ -51,7 +51,7 @@ public class AzureMonitorLoggerFactory : IAICentralGenericStepFactory
         );
     }
 
-    public IAICentralPipelineStep Build()
+    public IAICentralPipelineStep Build(IServiceProvider serviceProvider)
     {
         return _logger.Value;
     }

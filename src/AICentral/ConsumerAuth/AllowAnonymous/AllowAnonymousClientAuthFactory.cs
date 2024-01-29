@@ -9,7 +9,7 @@ public class AllowAnonymousClientAuthFactory: IConsumerAuthFactory
     {
     }
 
-    public IConsumerAuthStep Build()
+    public IConsumerAuthStep Build(IServiceProvider serviceProvider)
     {
         return AllowAnonymousClientAuthProvider.Instance;
     }
