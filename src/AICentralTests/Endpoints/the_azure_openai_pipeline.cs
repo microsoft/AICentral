@@ -244,6 +244,29 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
                 })));
     }
 
+    [Fact]
+    public async Task handles_500_model_errors()
+    {
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+            () => Task.FromResult(AICentralFakeResponses.FakeModelErrorResponse()));
+
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-azure.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            // ReSharper disable once RedundantArgumentDefaultValue
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
+            {
+                Transport = new HttpClientTransport(_httpClient),
+            });
+
+        await Should.ThrowAsync<RequestFailedException>(async () =>
+            await client.GetChatCompletionsAsync(
+                new ChatCompletionsOptions("Model1", new[]
+                {
+                    new ChatRequestSystemMessage("You are going to chuck an odd model error.")
+                })));
+    }
+
     public void Dispose()
     {
         _factory.Clear();

@@ -111,7 +111,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             }
         }
 
-        //Blow up if we didn't succeed and we don't have another option.
+        //Blow up now if we didn't succeed and we _do_ have another option. We'll let the endpoint dispatcher catch this and deal with it (by choosing another endpoint) 
         if (!isLastChance)
         {
             openAiResponse.EnsureSuccessStatusCode();
