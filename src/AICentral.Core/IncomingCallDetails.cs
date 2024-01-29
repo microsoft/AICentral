@@ -3,4 +3,4 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Core;
 
-public record IncomingCallDetails(AICallType AICallType, string? PromptText, string? IncomingModelName, JsonDocument? RequestContent, Dictionary<string, StringValues>? QueryString);
+public record IncomingCallDetails(string PipelineName, AICallType AICallType, string? PromptText, string? IncomingModelName, JsonDocument? RequestContent, Dictionary<string, StringValues>? QueryString);

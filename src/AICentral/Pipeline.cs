@@ -60,7 +60,7 @@ public class Pipeline
 
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
 
-        var requestDetails = await new AzureOpenAIDetector().Detect(context.Request, cancellationToken);
+        var requestDetails = await new AzureOpenAIDetector().Detect( context.Request, cancellationToken);
 
         logger.LogDebug("Detected {CallType} from incoming request",
             requestDetails.AICallType);
