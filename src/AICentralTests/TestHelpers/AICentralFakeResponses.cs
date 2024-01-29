@@ -16,6 +16,29 @@ public class AICentralFakeResponses
     public static readonly string SlowEndpoint = Guid.NewGuid().ToString();
     public static readonly string FakeResponseId = "chatcmpl-6v7mkQj980V1yBec6ETrKPRqFjNw9";
 
+    public static HttpResponseMessage FakeModelErrorResponse()
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            error = new[]
+            {
+                new
+                {
+                    message = "The server had an error processing your request. Sorry about that! You can retry your request, or contact us through an Azure support request at: https://go.microsoft.com/fwlink/?linkid=2213926 if you keep seeing this error. (Please include the request ID 00000000-0000-0000-0000-000000000000 in your email.)",
+                    type = "server_error",
+                    param = (string?)null,
+                    code = (string?)null
+                }
+            },
+        });
+
+        response.Headers.Add("ms-azureml-model-error-reason", "model_error");
+        response.Headers.Add("ms-azureml-model-error-statuscode", "500");
+
+        return response;
+    }    
+
     public static HttpResponseMessage FakeChatCompletionsResponse(int? totalTokens = 126)
     {
         var response = new HttpResponseMessage();

@@ -30,6 +30,9 @@ AI Central gives you control over your AI services.
 
 See [Configuration](./docs/configuration.md) for more details.
 
+> The Azure Open AI SDK retries by default. As AI Central does this for you you can turn it off in the client by passing ```new Azure.AI.OpenAI.OpenAIClientOptions()  {
+RetryPolicy = null }``` when you create an OpenAIClient
+
 ## Minimal
 
 This sample produces a AI-Central proxy that

@@ -9,14 +9,14 @@ public class FakeHttpMessageHandlerSeeder
 
     public async Task<HttpResponseMessage?> TryGet(HttpRequestMessage request)
     {
-        if (SeededResponses.TryGetValue(request.RequestUri!.AbsoluteUri, out var responseFunction))
+        var key = request.RequestUri!.AbsoluteUri;
+        if (SeededResponses.TryGetValue(key, out var responseFunction))
         {
             var response = await responseFunction(request);
             if (response.IsSuccessStatusCode)
             {
                 IncomingRequests.Add((request, request.Content?.ReadAsByteArrayAsync().Result ?? Array.Empty<byte>()));
             }
-
             return response;
         }
         return null;

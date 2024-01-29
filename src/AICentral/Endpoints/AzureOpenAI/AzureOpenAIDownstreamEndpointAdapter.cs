@@ -9,7 +9,7 @@ namespace AICentral.Endpoints.AzureOpenAI;
 public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 {
     private static readonly string[] HeadersToIgnore = { "host", "authorization", "api-key" };
-    private static readonly string[] HeaderPrefixesToCopy = { "x-", "apim", "operation-location" };
+    private static readonly string[] HeaderPrefixesToCopy = { "x-", "apim", "operation-location", "ms-azureml" };
     private readonly IEndpointAuthorisationHandler _authHandler;
 
     public AzureOpenAIDownstreamEndpointAdapter(
