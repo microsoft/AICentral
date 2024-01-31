@@ -9,18 +9,21 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Endpoints;
 
+/// <summary>
+/// Handles dispatching a call by using an IDownstreamEndpointAdapter
+/// </summary>
 public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 {
     private string EndpointName { get; }
     private readonly string _id;
-    private readonly IDownstreamEndpointAdapter _downstreamEndpointDispatcher;
+    private readonly IDownstreamEndpointAdapter _downstreamEndpointAdapter;
     private static readonly HttpResponseMessage RateLimitedFakeResponse = new(HttpStatusCode.TooManyRequests);
 
-    public DownstreamEndpointDispatcher(IDownstreamEndpointAdapter downstreamEndpointDispatcher)
+    public DownstreamEndpointDispatcher(IDownstreamEndpointAdapter downstreamEndpointAdapter)
     {
-        EndpointName = downstreamEndpointDispatcher.EndpointName;
-        _id = downstreamEndpointDispatcher.Id;
-        _downstreamEndpointDispatcher = downstreamEndpointDispatcher;
+        EndpointName = downstreamEndpointAdapter.EndpointName;
+        _id = downstreamEndpointAdapter.Id;
+        _downstreamEndpointAdapter = downstreamEndpointAdapter;
     }
 
     public async Task<AICentralResponse> Handle(
@@ -35,7 +38,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         var dateTimeProvider = context.RequestServices.GetRequiredService<IDateTimeProvider>();
         var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
 
-        var outboundRequest = await _downstreamEndpointDispatcher.BuildRequest(callInformation, context);
+        var outboundRequest = await _downstreamEndpointAdapter.BuildRequest(callInformation, context);
         if (outboundRequest.Right(out var result))
         {
             return new AICentralResponse(
@@ -43,7 +46,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
                     context, 
                     callInformation, 
                     null,
-                    _downstreamEndpointDispatcher.BaseUrl.Host
+                    _downstreamEndpointAdapter.BaseUrl.Host
                     ),
                 result!);
         }
@@ -97,7 +100,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             if (openAiResponse.StatusCode == HttpStatusCode.OK)
             {
                 context.Response.Headers.TryAdd("x-aicentral-server",
-                    new StringValues(_downstreamEndpointDispatcher.BaseUrl.Host));
+                    new StringValues(_downstreamEndpointAdapter.BaseUrl.Host));
             }
             else
             {
@@ -107,7 +110,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
                 }
 
                 context.Response.Headers.TryAdd("x-aicentral-failed-servers",
-                    StringValues.Concat(header, _downstreamEndpointDispatcher.BaseUrl.Host));
+                    StringValues.Concat(header, _downstreamEndpointAdapter.BaseUrl.Host));
             }
         }
 
@@ -117,7 +120,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             openAiResponse.EnsureSuccessStatusCode();
         }
 
-        var preProcessResult = await _downstreamEndpointDispatcher.ExtractResponseMetadata(
+        var preProcessResult = await _downstreamEndpointAdapter.ExtractResponseMetadata(
             callInformation,
             context,
             openAiResponse);
@@ -125,7 +128,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 
         var pipelineResponse = await responseGenerator.BuildResponse(
             new DownstreamRequestInformation(
-                _downstreamEndpointDispatcher.BaseUrl.Host,
+                _downstreamEndpointAdapter.BaseUrl.Host,
                 callInformation.AICallType,
                 callInformation.IncomingModelName,
                 callInformation.PromptText,
