@@ -45,7 +45,7 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         mappedModelName ??= callInformation.AICallType switch
         {
             AICallType.DALLE2 => "dall-e-2", //Azure Open AI doesn't use a deployment for dall-e-2 requests
-            _ => incomingModelName
+            _ => mappedModelName
         };
 
         if (MappedModelFoundAsEmptyString(callInformation, mappedModelName))
@@ -67,9 +67,9 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
     /// If we can't work out which model this should be then fail the request.
     /// </summary>
     /// <returns></returns>
-    private static bool MappedModelFoundAsEmptyString(IncomingCallDetails callInformation, string mappedModelName)
+    private static bool MappedModelFoundAsEmptyString(IncomingCallDetails callInformation, string? mappedModelName)
     {
-        return callInformation.AICallType != AICallType.Other && mappedModelName == string.Empty;
+        return callInformation.AICallType != AICallType.Other && string.IsNullOrWhiteSpace(mappedModelName);
     }
 
     private async Task<HttpRequestMessage> BuildNewRequest(HttpContext context, IncomingCallDetails callInformation,

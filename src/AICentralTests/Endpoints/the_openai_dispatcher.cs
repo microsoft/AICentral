@@ -209,6 +209,28 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
         await Verify(_factory.VerifyRequestsAndResponses(output));
     }
 
+    [Fact]
+    public async Task will_return_a_second_endpoint_when_no_model_mapping_on_the_first()
+    {
+        _factory.Seed("https://api.openai.com/v1/chat/completions", () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        
+ 
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-multiple-openai-different-model-mappings.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
+            {
+                Transport = new HttpClientTransport(_httpClient)
+            });
+
+        var response = await client.GetChatCompletionsAsync(new ChatCompletionsOptions("openaimodel1", new[]
+        {
+            new ChatRequestAssistantMessage("")
+        }));
+
+        await Verify(_factory.VerifyRequestsAndResponses(response.Value));
+        
+    }
 
     public void Dispose()
     {

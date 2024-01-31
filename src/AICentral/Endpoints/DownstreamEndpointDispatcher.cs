@@ -12,7 +12,7 @@ namespace AICentral.Endpoints;
 /// <summary>
 /// Handles dispatching a call by using an IDownstreamEndpointAdapter
 /// </summary>
-public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
+internal class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 {
     private string EndpointName { get; }
     private readonly string _id;
@@ -41,14 +41,18 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         var outboundRequest = await _downstreamEndpointAdapter.BuildRequest(callInformation, context);
         if (outboundRequest.Right(out var result))
         {
-            return new AICentralResponse(
-                DownstreamUsageInformation.Empty(
-                    context, 
-                    callInformation, 
-                    null,
-                    _downstreamEndpointAdapter.BaseUrl.Host
+            if (isLastChance)
+            {
+                return new AICentralResponse(
+                    DownstreamUsageInformation.Empty(
+                        context,
+                        callInformation,
+                        null,
+                        _downstreamEndpointAdapter.BaseUrl.Host
                     ),
-                result!);
+                    result!);
+            }
+            throw new HttpRequestException("Failed to satisfy request");
         }
 
         outboundRequest.Left(out var newRequest);
