@@ -1,5 +1,8 @@
 ﻿namespace AICentral.Core;
 
+/// <summary>
+/// Represents information about the Downstream AI Service usage information
+/// </summary>
 public record DownstreamUsageInformation(
     string OpenAIHost,
     string? ModelName,

@@ -1,11 +1,12 @@
 ﻿using System.Net;
+using AICentral.Core;
 
-namespace AICentral.Core;
+namespace AICentral.Endpoints;
 
 /// <summary>
 /// Registered as a Typed Http Client to leverage HttpClientFactory.
 /// </summary>
-public class HttpAIEndpointDispatcher
+internal class HttpAIEndpointDispatcher
 {
     private readonly HttpClient _httpClient;
     private readonly IDateTimeProvider _dateTimeProvider;

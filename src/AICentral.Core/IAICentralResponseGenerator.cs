@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Primitives;
-
-namespace AICentral.Core;
+﻿namespace AICentral.Core;
 
 public interface IAICentralResponseGenerator
 {
