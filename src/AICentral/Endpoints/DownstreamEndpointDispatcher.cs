@@ -50,7 +50,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 
         outboundRequest.Left(out var newRequest);
 
-        if (rateLimitingTracker.IsRateLimiting(newRequest!.HttpRequestMessage.RequestUri!.Host, out var until))
+        if (rateLimitingTracker.IsRateLimiting(newRequest!.RequestUri!.Host, out var until))
         {
             var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
             response.Headers.RetryAfter = new RetryConditionHeaderValue(until!.Value);
@@ -60,7 +60,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         logger.LogDebug(
             "Rewritten URL from {OriginalUrl} to {NewUrl}.",
             context.Request.GetEncodedUrl(),
-            newRequest.HttpRequestMessage.RequestUri!.AbsoluteUri
+            newRequest.RequestUri!.AbsoluteUri
         );
 
         using var source = AICentralActivitySource.AICentralRequestActivitySource.CreateActivity(
@@ -80,7 +80,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 
         sw.Start();
 
-        var openAiResponse = await typedDispatcher.Dispatch(newRequest.HttpRequestMessage, cancellationToken);
+        var openAiResponse = await typedDispatcher.Dispatch(newRequest, cancellationToken);
 
         //this will retry the operation for retryable status codes. When we reach here we might not want
         //to stream the response if it wasn't a 200.
@@ -88,7 +88,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 
         if (openAiResponse.StatusCode == HttpStatusCode.TooManyRequests)
         {
-            rateLimitingTracker.RateLimiting(newRequest.HttpRequestMessage.RequestUri.Host,
+            rateLimitingTracker.RateLimiting(newRequest.RequestUri.Host,
                 openAiResponse.Headers.RetryAfter);
         }
 
@@ -120,7 +120,6 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         var preProcessResult = await _downstreamEndpointDispatcher.ExtractResponseMetadata(
             callInformation,
             context,
-            newRequest,
             openAiResponse);
 
 
@@ -137,25 +136,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             preProcessResult,
             cancellationToken);
 
-        EmitTelemetry(newRequest, preProcessResult, pipelineResponse);
-
         return pipelineResponse;
-    }
-
-    private void EmitTelemetry(
-        AIRequest newRequest,
-        ResponseMetadata responseMetadata,
-        AICentralResponse pipelineResponse)
-    {
-        var tagList = new TagList
-        {
-            { "Deployment", pipelineResponse.DownstreamUsageInformation.DeploymentName },
-            { "Model", pipelineResponse.DownstreamUsageInformation.ModelName },
-            { "Success", pipelineResponse.DownstreamUsageInformation.Success },
-            { "AIHost", pipelineResponse.DownstreamUsageInformation.OpenAIHost }
-        };
-
-
     }
 
     public bool IsAffinityRequestToMe(string affinityHeaderValue)

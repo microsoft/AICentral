@@ -37,7 +37,7 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         _apiKey = apiKey;
     }
 
-    public async Task<Either<AIRequest, IResult>> BuildRequest(IncomingCallDetails callInformation, HttpContext context)
+    public async Task<Either<HttpRequestMessage, IResult>> BuildRequest(IncomingCallDetails callInformation, HttpContext context)
     {
         var incomingModelName = callInformation.IncomingModelName ?? string.Empty;
         _modelMappings.TryGetValue(incomingModelName, out var mappedModelName);
@@ -50,17 +50,16 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 
         if (MappedModelFoundAsEmptyString(callInformation, mappedModelName))
         {
-            return new Either<AIRequest, IResult>(Results.NotFound(new { message = "Unknown model mapping" }));
+            return new Either<HttpRequestMessage, IResult>(Results.NotFound(new { message = "Unknown model mapping" }));
         }
 
         try
         {
-            return new Either<AIRequest, IResult>(
-                new AIRequest(await BuildNewRequest(context, callInformation, mappedModelName), mappedModelName));
+            return new Either<HttpRequestMessage, IResult>(await BuildNewRequest(context, callInformation, mappedModelName));
         }
         catch (InvalidOperationException ie)
         {
-            return new Either<AIRequest, IResult>(Results.BadRequest(new { message = ie.Message }));
+            return new Either<HttpRequestMessage, IResult>(Results.BadRequest(new { message = ie.Message }));
         }
     }
 
@@ -98,7 +97,6 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
     public Task<ResponseMetadata> ExtractResponseMetadata(
         IncomingCallDetails callInformationIncomingCallDetails,
         HttpContext context,
-        AIRequest newRequest,
         HttpResponseMessage openAiResponse)
     {
         openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-requests", out var remainingRequestHeaderValues);
