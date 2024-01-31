@@ -11,7 +11,7 @@
       "OpenAI-Organization": "98892683-5712-4db4-ab5e-727275f88250"
     },
     "ContentType": "application/json",
-    "Content": "{\"messages\":[{\"content\":\"\",\"role\":\"assistant\"}],\"model\":\"openaiendpoint\"}"
+    "Content": "{\"messages\":[{\"content\":\"\",\"role\":\"assistant\"}],\"model\":\"gpt-3.5-turbo\"}"
   }
 ],
   Response:

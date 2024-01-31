@@ -57,7 +57,7 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
                 Transport = new HttpClientTransport(_httpClient)
             });
 
-        var response = await client.GetChatCompletionsAsync(new ChatCompletionsOptions("openaiendpoint", new[]
+        var response = await client.GetChatCompletionsAsync(new ChatCompletionsOptions("openaimodel", new[]
         {
             new ChatRequestAssistantMessage("")
         }));
@@ -147,7 +147,7 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
             new AudioTranslationOptions()
             {
                 ResponseFormat = AudioTranslationFormat.Simple,
-                DeploymentName = "openaimodel",
+                DeploymentName = "random",
                 AudioData = await BinaryData.FromStreamAsync(stream)
             });
 
@@ -174,7 +174,7 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
             new ImageGenerationOptions()
             {
                 Prompt = "Me building an Open AI Reverse Proxy",
-                DeploymentName = "openaimodel"
+                DeploymentName = "random"
             });
 
         await Verify(_factory.VerifyRequestsAndResponses(result));

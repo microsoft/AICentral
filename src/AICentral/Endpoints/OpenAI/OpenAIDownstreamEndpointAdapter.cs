@@ -44,7 +44,10 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 
         mappedModelName ??= callInformation.AICallType switch
         {
+            AICallType.Transcription => "whisper-1",
+            AICallType.Translation => "whisper-1",
             AICallType.DALLE2 => "dall-e-2", //Azure Open AI doesn't use a deployment for dall-e-2 requests
+            AICallType.DALLE3 => "dall-e-3", //Azure Open AI doesn't use a deployment for dall-e-2 requests
             _ => mappedModelName
         };
 
