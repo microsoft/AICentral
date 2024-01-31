@@ -75,7 +75,7 @@ public class Pipeline
 
         var endpointSelector = FindEndpointSelectorOrAffinityServer(requestDetails);
 
-        using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build()), endpointSelector);
+        using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build(context.RequestServices)), endpointSelector);
         var requestTagList = new TagList
         {
             { "Deployment", requestDetails.IncomingModelName },

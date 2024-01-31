@@ -54,7 +54,7 @@ public class FixedWindowRateLimitingProvider : IAICentralPipelineStep, IAICentra
     {
     }
 
-    public IAICentralPipelineStep Build()
+    public IAICentralPipelineStep Build(IServiceProvider serviceProvider)
     {
         return this;
     }

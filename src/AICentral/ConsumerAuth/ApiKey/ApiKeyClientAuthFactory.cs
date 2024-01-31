@@ -29,7 +29,7 @@ public class ApiKeyClientAuthFactory : IConsumerAuthFactory
                 .AddAuthenticationSchemes(schemeName));
     }
 
-    public IConsumerAuthStep Build()
+    public IConsumerAuthStep Build(IServiceProvider serviceProvider)
     {
         return _singleton.Value;
     }

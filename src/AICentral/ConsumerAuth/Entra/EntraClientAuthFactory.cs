@@ -40,7 +40,7 @@ public class EntraClientAuthFactory : IConsumerAuthFactory
 
     public static string ConfigName => "Entra";
 
-    public IConsumerAuthStep Build()
+    public IConsumerAuthStep Build(IServiceProvider serviceProvider)
     {
         return _provider.Value;
     }
