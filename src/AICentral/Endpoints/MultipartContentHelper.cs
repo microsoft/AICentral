@@ -1,8 +1,7 @@
-﻿using System.Net.Http.Headers;
-using System.Text;
+﻿using System.Text;
 using Microsoft.AspNetCore.Http.Extensions;
 
-namespace AICentral.Core;
+namespace AICentral.Endpoints;
 
 public static class MultipartContentHelper
 {
