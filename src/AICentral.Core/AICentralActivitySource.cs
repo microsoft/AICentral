@@ -13,6 +13,9 @@ public static class AICentralActivitySource
     private static readonly string AICentralMeterVersion =
         typeof(AICentralActivitySource).Assembly.GetName().Version!.ToString();
 
+    /// <summary>
+    /// TODO - we should inject this into the DI Container instead of using a singleton.
+    /// </summary>
     static AICentralActivitySource()
     {
         AICentralMeter = new Meter(AICentralTelemetryName, AICentralMeterVersion);

@@ -13,6 +13,13 @@ public static class AICentralActivitySources
 
     private static readonly ConcurrentDictionary<string, Histogram<double>> HistogramCounters = new();
 
+    /// <summary>
+    /// Create a Gauge metric that can be used to record a value that can go up and down. It will display as 'aicentral.{name}' in the metrics explorer.
+    /// </summary>
+    /// <param name="name">Name to suffix the metric with</param>
+    /// <param name="unit">Unit of measurement</param>
+    /// <param name="value">The value to record</param>
+    /// <param name="tags">Any additional metadata to store alongside the value</param>
     public static void RecordGaugeMetric(string name, string unit, long value, TagList? tags = null)
     {
         var otelKey = BuildGaugeKey(name, tags);
@@ -44,6 +51,13 @@ public static class AICentralActivitySources
         return otelKey;
     }
 
+    /// <summary>
+    /// Create an up-down metric that can be used to record a value that can go up and down. It will display as 'aicentral.{name}' in the metrics explorer.
+    /// </summary>
+    /// <param name="name">Name to suffix the metric with</param>
+    /// <param name="unit">Unit of measurement</param>
+    /// <param name="amount">The amount (either +ve or -ve) to move the counter by</param>
+    /// <param name="tags">Any additional metadata to store alongside the value</param>
     public static void RecordUpDownCounter(string name, string unit, int amount, TagList? tags = null)
     {
         var otelName = $"aicentral.{name}";
@@ -68,6 +82,13 @@ public static class AICentralActivitySources
         }
     }
 
+    /// <summary>
+    /// Create a histogram  metric that can be used to record values such as duration.
+    /// </summary>
+    /// <param name="name">Name to suffix the metric with</param>
+    /// <param name="unit">Unit of measurement</param>
+    /// <param name="value">The value recorded</param>
+    /// <param name="tags">Any additional metadata to store alongside the value</param>
     public static void RecordHistogram(string name, string unit, double value, TagList? tags = null)
     {
         var otelName = $"aicentral.{name}";
