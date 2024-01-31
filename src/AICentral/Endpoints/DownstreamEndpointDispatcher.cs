@@ -9,18 +9,21 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Endpoints;
 
-public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
+/// <summary>
+/// Handles dispatching a call by using an IDownstreamEndpointAdapter
+/// </summary>
+internal class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 {
     private string EndpointName { get; }
     private readonly string _id;
-    private readonly IDownstreamEndpointAdapter _downstreamEndpointDispatcher;
+    private readonly IDownstreamEndpointAdapter _downstreamEndpointAdapter;
     private static readonly HttpResponseMessage RateLimitedFakeResponse = new(HttpStatusCode.TooManyRequests);
 
-    public DownstreamEndpointDispatcher(IDownstreamEndpointAdapter downstreamEndpointDispatcher)
+    public DownstreamEndpointDispatcher(IDownstreamEndpointAdapter downstreamEndpointAdapter)
     {
-        EndpointName = downstreamEndpointDispatcher.EndpointName;
-        _id = downstreamEndpointDispatcher.Id;
-        _downstreamEndpointDispatcher = downstreamEndpointDispatcher;
+        EndpointName = downstreamEndpointAdapter.EndpointName;
+        _id = downstreamEndpointAdapter.Id;
+        _downstreamEndpointAdapter = downstreamEndpointAdapter;
     }
 
     public async Task<AICentralResponse> Handle(
@@ -35,22 +38,26 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         var dateTimeProvider = context.RequestServices.GetRequiredService<IDateTimeProvider>();
         var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
 
-        var outboundRequest = await _downstreamEndpointDispatcher.BuildRequest(callInformation, context);
+        var outboundRequest = await _downstreamEndpointAdapter.BuildRequest(callInformation, context);
         if (outboundRequest.Right(out var result))
         {
-            return new AICentralResponse(
-                DownstreamUsageInformation.Empty(
-                    context, 
-                    callInformation, 
-                    null,
-                    _downstreamEndpointDispatcher.BaseUrl.Host
+            if (isLastChance)
+            {
+                return new AICentralResponse(
+                    DownstreamUsageInformation.Empty(
+                        context,
+                        callInformation,
+                        null,
+                        _downstreamEndpointAdapter.BaseUrl.Host
                     ),
-                result!);
+                    result!);
+            }
+            throw new HttpRequestException("Failed to satisfy request");
         }
 
         outboundRequest.Left(out var newRequest);
 
-        if (rateLimitingTracker.IsRateLimiting(newRequest!.HttpRequestMessage.RequestUri!.Host, out var until))
+        if (rateLimitingTracker.IsRateLimiting(newRequest!.RequestUri!.Host, out var until))
         {
             var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
             response.Headers.RetryAfter = new RetryConditionHeaderValue(until!.Value);
@@ -60,7 +67,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         logger.LogDebug(
             "Rewritten URL from {OriginalUrl} to {NewUrl}.",
             context.Request.GetEncodedUrl(),
-            newRequest.HttpRequestMessage.RequestUri!.AbsoluteUri
+            newRequest.RequestUri!.AbsoluteUri
         );
 
         using var source = AICentralActivitySource.AICentralRequestActivitySource.CreateActivity(
@@ -80,7 +87,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 
         sw.Start();
 
-        var openAiResponse = await typedDispatcher.Dispatch(newRequest.HttpRequestMessage, cancellationToken);
+        var openAiResponse = await typedDispatcher.Dispatch(newRequest, cancellationToken);
 
         //this will retry the operation for retryable status codes. When we reach here we might not want
         //to stream the response if it wasn't a 200.
@@ -88,7 +95,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 
         if (openAiResponse.StatusCode == HttpStatusCode.TooManyRequests)
         {
-            rateLimitingTracker.RateLimiting(newRequest.HttpRequestMessage.RequestUri.Host,
+            rateLimitingTracker.RateLimiting(newRequest.RequestUri.Host,
                 openAiResponse.Headers.RetryAfter);
         }
 
@@ -97,7 +104,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             if (openAiResponse.StatusCode == HttpStatusCode.OK)
             {
                 context.Response.Headers.TryAdd("x-aicentral-server",
-                    new StringValues(_downstreamEndpointDispatcher.BaseUrl.Host));
+                    new StringValues(_downstreamEndpointAdapter.BaseUrl.Host));
             }
             else
             {
@@ -107,7 +114,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
                 }
 
                 context.Response.Headers.TryAdd("x-aicentral-failed-servers",
-                    StringValues.Concat(header, _downstreamEndpointDispatcher.BaseUrl.Host));
+                    StringValues.Concat(header, _downstreamEndpointAdapter.BaseUrl.Host));
             }
         }
 
@@ -117,16 +124,15 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             openAiResponse.EnsureSuccessStatusCode();
         }
 
-        var preProcessResult = await _downstreamEndpointDispatcher.ExtractResponseMetadata(
+        var preProcessResult = await _downstreamEndpointAdapter.ExtractResponseMetadata(
             callInformation,
             context,
-            newRequest,
             openAiResponse);
 
 
         var pipelineResponse = await responseGenerator.BuildResponse(
             new DownstreamRequestInformation(
-                _downstreamEndpointDispatcher.BaseUrl.Host,
+                _downstreamEndpointAdapter.BaseUrl.Host,
                 callInformation.AICallType,
                 callInformation.IncomingModelName,
                 callInformation.PromptText,
@@ -137,25 +143,7 @@ public class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             preProcessResult,
             cancellationToken);
 
-        EmitTelemetry(newRequest, preProcessResult, pipelineResponse);
-
         return pipelineResponse;
-    }
-
-    private void EmitTelemetry(
-        AIRequest newRequest,
-        ResponseMetadata responseMetadata,
-        AICentralResponse pipelineResponse)
-    {
-        var tagList = new TagList
-        {
-            { "Deployment", pipelineResponse.DownstreamUsageInformation.DeploymentName },
-            { "Model", pipelineResponse.DownstreamUsageInformation.ModelName },
-            { "Success", pipelineResponse.DownstreamUsageInformation.Success },
-            { "AIHost", pipelineResponse.DownstreamUsageInformation.OpenAIHost }
-        };
-
-
     }
 
     public bool IsAffinityRequestToMe(string affinityHeaderValue)

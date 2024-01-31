@@ -27,7 +27,6 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
     public Task<ResponseMetadata> ExtractResponseMetadata(
         IncomingCallDetails callInformationIncomingCallDetails,
         HttpContext context,
-        AIRequest newRequest,
         HttpResponseMessage openAiResponse)
     {
         openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-requests", out var remainingRequestHeaderValues);
@@ -92,7 +91,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         return QueryHelpers.AddQueryString(builder.ToString(), queryParts);
     }
 
-    public async Task<Either<AIRequest, IResult>> BuildRequest(IncomingCallDetails incomingCall, HttpContext context)
+    public async Task<Either<HttpRequestMessage, IResult>> BuildRequest(IncomingCallDetails incomingCall, HttpContext context)
     {
         var newRequestString = new Uri(BaseUrl, context.Request.Path).AbsoluteUri;
         newRequestString = QueryHelpers.AddQueryString(newRequestString, incomingCall.QueryString ?? new Dictionary<string, StringValues>());
@@ -118,8 +117,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
             newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
         }
 
-        return new Either<AIRequest, IResult>(
-            new AIRequest(newRequest, incomingCall.IncomingModelName));
+        return new Either<HttpRequestMessage, IResult>(newRequest);
     }
 
     public string Id { get; }

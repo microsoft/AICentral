@@ -1,5 +1,8 @@
 ﻿namespace AICentral.Core;
 
+/// <summary>
+/// Helper methods to check for Nulls / empty strings, etc and throw Argument Exceptions
+/// </summary>
 public static class Guard
 {
     public static T NotNull<T>(T? input, IConfigurationSection configurationSection, string parameterName)

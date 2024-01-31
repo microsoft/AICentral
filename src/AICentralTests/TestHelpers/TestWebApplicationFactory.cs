@@ -47,6 +47,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.AzureOpenAIServiceWithTokenRateLimitingAndSingleEndpoint(),
                 TestPipelines.AzureOpenAIServiceWithClientPartitionedTokenRateLimiter(),
                 TestPipelines.AzureOpenAIServiceWithRandomOpenAIEndpoints(),
+                TestPipelines.AzureOpenAIServiceWithRandomOpenAIEndpointsDifferentModelMappings(),
                 TestPipelines.AzureOpenAIServiceWith404Endpoint()
             };
 

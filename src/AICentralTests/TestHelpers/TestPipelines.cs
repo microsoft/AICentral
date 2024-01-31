@@ -85,6 +85,16 @@ public static class TestPipelines
                 })
             .Assemble("azure-openai-to-multiple-openai.localtest.me");
 
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithRandomOpenAIEndpointsDifferentModelMappings() =>
+        new TestAICentralPipelineBuilder()
+            .WithRandomOpenAIEndpoints(
+                new []
+                {
+                    ("openai-rnd1", "API-1000", "openaimodel1", "gpt-3.5-turbo"),
+                    ("openai-rnd2", "API-1000", "openaimodel2", "gpt-3.5-turbo")
+                })
+            .Assemble("azure-openai-to-multiple-openai-different-model-mappings.localtest.me");
+
     public static AICentralPipelineAssembler AzureOpenAIServiceWithAuth() =>
         new TestAICentralPipelineBuilder()
             .WithApiKeyAuth(("client-1", "123", "456"))

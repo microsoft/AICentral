@@ -37,30 +37,32 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         _apiKey = apiKey;
     }
 
-    public async Task<Either<AIRequest, IResult>> BuildRequest(IncomingCallDetails callInformation, HttpContext context)
+    public async Task<Either<HttpRequestMessage, IResult>> BuildRequest(IncomingCallDetails callInformation, HttpContext context)
     {
         var incomingModelName = callInformation.IncomingModelName ?? string.Empty;
         _modelMappings.TryGetValue(incomingModelName, out var mappedModelName);
 
         mappedModelName ??= callInformation.AICallType switch
         {
+            AICallType.Transcription => "whisper-1",
+            AICallType.Translation => "whisper-1",
             AICallType.DALLE2 => "dall-e-2", //Azure Open AI doesn't use a deployment for dall-e-2 requests
-            _ => incomingModelName
+            AICallType.DALLE3 => "dall-e-3", //Azure Open AI doesn't use a deployment for dall-e-2 requests
+            _ => mappedModelName
         };
 
         if (MappedModelFoundAsEmptyString(callInformation, mappedModelName))
         {
-            return new Either<AIRequest, IResult>(Results.NotFound(new { message = "Unknown model mapping" }));
+            return new Either<HttpRequestMessage, IResult>(Results.NotFound(new { message = "Unknown model mapping" }));
         }
 
         try
         {
-            return new Either<AIRequest, IResult>(
-                new AIRequest(await BuildNewRequest(context, callInformation, mappedModelName), mappedModelName));
+            return new Either<HttpRequestMessage, IResult>(await BuildNewRequest(context, callInformation, mappedModelName));
         }
         catch (InvalidOperationException ie)
         {
-            return new Either<AIRequest, IResult>(Results.BadRequest(new { message = ie.Message }));
+            return new Either<HttpRequestMessage, IResult>(Results.BadRequest(new { message = ie.Message }));
         }
     }
 
@@ -68,9 +70,9 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
     /// If we can't work out which model this should be then fail the request.
     /// </summary>
     /// <returns></returns>
-    private static bool MappedModelFoundAsEmptyString(IncomingCallDetails callInformation, string mappedModelName)
+    private static bool MappedModelFoundAsEmptyString(IncomingCallDetails callInformation, string? mappedModelName)
     {
-        return callInformation.AICallType != AICallType.Other && mappedModelName == string.Empty;
+        return callInformation.AICallType != AICallType.Other && string.IsNullOrWhiteSpace(mappedModelName);
     }
 
     private async Task<HttpRequestMessage> BuildNewRequest(HttpContext context, IncomingCallDetails callInformation,
@@ -98,7 +100,6 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
     public Task<ResponseMetadata> ExtractResponseMetadata(
         IncomingCallDetails callInformationIncomingCallDetails,
         HttpContext context,
-        AIRequest newRequest,
         HttpResponseMessage openAiResponse)
     {
         openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-requests", out var remainingRequestHeaderValues);

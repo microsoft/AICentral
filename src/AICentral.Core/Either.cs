@@ -3,8 +3,8 @@
 /// <summary>
 /// Type to allow a method to return either a left or a right value
 /// </summary>
-/// <typeparam name="T"></typeparam>
-/// <typeparam name="T1"></typeparam>
+/// <typeparam name="T">Type of the left value</typeparam>
+/// <typeparam name="T1">Type of the right value</typeparam>
 public class Either<T, T1>
 {
     private readonly T1? _right;
