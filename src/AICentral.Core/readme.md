@@ -33,4 +33,3 @@ It must also override the 2 static methods on the above interface:
 
 ### Extension
 A class that provides the extension functionality, by implementing the ```AICentral.Core.IAICentralPipelineStep```.
-

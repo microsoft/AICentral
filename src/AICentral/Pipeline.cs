@@ -5,7 +5,7 @@ using AICentral.Core;
 using AICentral.EndpointSelectors;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using ActivitySource = AICentral.Core.ActivitySource;
+using ActivitySource = AICentral.ActivitySource;
 
 namespace AICentral;
 

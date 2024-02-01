@@ -1,3 +1,4 @@
+using AICentral;
 using AICentral.Configuration;
 using AICentral.Core;
 using AICentral.Logging.AzureMonitor.AzureMonitorLogging;

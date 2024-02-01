@@ -1,7 +1,6 @@
-﻿using System.Diagnostics;
-using System.Diagnostics.Metrics;
+﻿using System.Diagnostics.Metrics;
 
-namespace AICentral.Core;
+namespace AICentral;
 
 /// <summary>
 /// Contains the Open Telemetry Activity source you can use to emit custom metrics and traces related to AI Central

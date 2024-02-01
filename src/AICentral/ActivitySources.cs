@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-namespace AICentral.Core;
+namespace AICentral;
 
 public static class ActivitySources
 {

@@ -13,13 +13,13 @@ public class BulkHeadProvider : IPipelineStep
     }
 
     public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
-        IPipelineExecutor pipeline,
+        NextPipelineStep next,
         CancellationToken cancellationToken)
     {
         try
         {
             await _semaphore.WaitAsync(cancellationToken);
-            return await pipeline.Next(context, aiCallInformation, cancellationToken);
+            return await next(context, aiCallInformation, cancellationToken);
         }
         finally
         {

@@ -1,4 +1,4 @@
-﻿namespace AICentral.Core;
+﻿namespace AICentral;
 
 /// <summary>
 /// Well-known header names used by AI Central. TODO - rename to AICentralQueryPartNames.

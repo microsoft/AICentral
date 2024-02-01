@@ -22,10 +22,10 @@ public class AzureMonitorLogger : IPipelineStep
     public async Task<AICentralResponse> Handle(
         HttpContext context, 
         IncomingCallDetails aiCallInformation,
-        IPipelineExecutor pipeline,
+        NextPipelineStep next,
         CancellationToken cancellationToken)
     {
-        var result = await pipeline.Next(context, aiCallInformation, cancellationToken);
+        var result = await next(context, aiCallInformation, cancellationToken);
 
         _serilogAzureLogAnalyticsLogger.Information(
             "AzureOpenAI call. ClientIP:{ClientIP} Host:{OpenAIHost}. Type:{CallType}. StreamedResponse:{Streamed}. Deployment:{Deployment} Model:{Model}. Prompt:{Prompt}. Response:{Response}. Estimated Prompt Tokens:{EstimatedPromptTokens}. Estimated Completion Tokens:{EstimatedCompletionTokens}. Prompt Tokens:{PromptTokens}. Completion Tokens:{CompletionTokens}. Total Tokens:{TotalTokens}. Duration:{Duration}",
