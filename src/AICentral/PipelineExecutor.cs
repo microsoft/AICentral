@@ -4,7 +4,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral;
 
-public class PipelineExecutor : IPipelineExecutor, IResponseGenerator, IDisposable
+public class PipelineExecutor : IResponseGenerator, IDisposable
 {
     private readonly IEndpointSelector _iaiCentralEndpointSelector;
     private readonly IEnumerator<IPipelineStep> _pipelineEnumerator;
@@ -25,7 +25,7 @@ public class PipelineExecutor : IPipelineExecutor, IResponseGenerator, IDisposab
         if (_pipelineEnumerator.MoveNext())
         {
             _outputHandlers.Add(_pipelineEnumerator.Current);
-            return _pipelineEnumerator.Current.Handle(context, requestDetails, this, cancellationToken);
+            return _pipelineEnumerator.Current.Handle(context, requestDetails, Next, cancellationToken);
         }
 
         return _iaiCentralEndpointSelector.Handle(context, requestDetails, true, this, cancellationToken);

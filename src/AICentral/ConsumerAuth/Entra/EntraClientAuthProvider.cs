@@ -6,10 +6,10 @@ namespace AICentral.ConsumerAuth.Entra;
 public class EntraClientAuthProvider : IPipelineStep
 {
     public Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
-        IPipelineExecutor pipeline,
+        NextPipelineStep next,
         CancellationToken cancellationToken)
     {
-        return pipeline.Next(context, aiCallInformation, cancellationToken);
+        return next(context, aiCallInformation, cancellationToken);
     }
 
 

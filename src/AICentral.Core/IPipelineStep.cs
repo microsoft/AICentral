@@ -9,16 +9,16 @@ public interface IPipelineStep
 {
     /// <summary>
     /// Core method for executing custom step logic.
-    /// You can execute logic pre and post calling the AI service. Use the pipeline.Next(...) method to call the next step in the pipeline.
+    /// You can execute logic pre and post calling the AI service. Use the next(...) method to call the next step in the pipeline.
     /// When the pipeline has executed you can run more logic if you wish. You must return the AICentralResponse object back up the chain.
     /// </summary>
     /// <param name="context"></param>
     /// <param name="aiCallInformation"></param>
-    /// <param name="pipeline"></param>
+    /// <param name="next"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
-        IPipelineExecutor pipeline,
+        NextPipelineStep next,
         CancellationToken cancellationToken);
 
     /// <summary>

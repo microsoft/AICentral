@@ -6,9 +6,9 @@ namespace AICentral.ConsumerAuth.ApiKey;
 public class ApiKeyClientAuthProvider : IPipelineStep
 {
     public Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
-        IPipelineExecutor pipeline, CancellationToken cancellationToken)
+        NextPipelineStep next, CancellationToken cancellationToken)
     {
-        return pipeline.Next(context, aiCallInformation, cancellationToken);
+        return next(context, aiCallInformation, cancellationToken);
     }
 
 

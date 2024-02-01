@@ -17,7 +17,7 @@ public class FixedWindowRateLimitingProvider : IPipelineStep, IPipelineStepFacto
     }
 
     public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
-        IPipelineExecutor pipeline,
+        NextPipelineStep next,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<FixedWindowRateLimitingProvider>>();
@@ -26,7 +26,7 @@ public class FixedWindowRateLimitingProvider : IPipelineStep, IPipelineStepFacto
             return ExceededRateLimitResponse(context, aiCallInformation, logger, retryAt);
         }
 
-        var result = await pipeline.Next(context, aiCallInformation, cancellationToken);
+        var result = await next(context, aiCallInformation, cancellationToken);
 
         var tokensConsumed = UsedTokens(result.DownstreamUsageInformation);
 
