@@ -1,4 +1,6 @@
-﻿namespace AICentral.Core;
+﻿using AICentral.Core;
+
+namespace AICentral;
 
 /// <summary>
 /// Main configuration class for AI Central. This is used to configure the pipelines, endpoints, and other settings.

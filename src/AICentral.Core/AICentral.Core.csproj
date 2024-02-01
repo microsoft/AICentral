@@ -13,4 +13,11 @@
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 
+    <ItemGroup>
+      <None Update="readme.md">
+        <Pack>true</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
+    </ItemGroup>
+
 </Project>

@@ -1,4 +1,4 @@
-﻿namespace AICentral.Core;
+﻿namespace AICentral;
 
 /// <summary>
 /// Configuration type representing an AI Central Pipeline

@@ -27,10 +27,6 @@
 
     <ItemGroup>
         <None Remove="Properties\launchSettings.json"/>
-        <None Update="Core\readme.md">
-          <Pack>true</Pack>
-          <PackagePath>\</PackagePath>
-        </None>
     </ItemGroup>
 
     <ItemGroup>

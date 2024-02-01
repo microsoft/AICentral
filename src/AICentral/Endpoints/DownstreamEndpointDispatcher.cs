@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using ActivitySource = AICentral.Core.ActivitySource;
+using ActivitySource = AICentral.ActivitySource;
 
 namespace AICentral.Endpoints;
 
