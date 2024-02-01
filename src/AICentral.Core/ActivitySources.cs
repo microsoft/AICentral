@@ -4,7 +4,7 @@ using System.Diagnostics.Metrics;
 
 namespace AICentral.Core;
 
-public static class AICentralActivitySources
+public static class ActivitySources
 {
     private static readonly ConcurrentDictionary<string, long> LongObservedValues = new();
     private static readonly ConcurrentDictionary<string, ObservableGauge<long>> LongGauges = new();
@@ -33,7 +33,7 @@ public static class AICentralActivitySources
                 ? tags.Value.Select(x => new KeyValuePair<string, object?>(x.Key, x.Value))
                 : new Dictionary<string, object?>();
 
-            var gauge = AICentralActivitySource.AICentralMeter.CreateObservableGauge(
+            var gauge = ActivitySource.AICentralMeter.CreateObservableGauge(
                 otelName,
                 () => LongObservedValues.GetValueOrDefault(otelKey, 0),
                 unit: $"{{{unit}}}",
@@ -65,7 +65,7 @@ public static class AICentralActivitySources
         if (!UpDownCounters.TryGetValue(otelName, out _))
         {
             var upDownCounter =
-                AICentralActivitySource.AICentralMeter.CreateUpDownCounter<int>(otelName, $"{{{unit}}}");
+                ActivitySource.AICentralMeter.CreateUpDownCounter<int>(otelName, $"{{{unit}}}");
             UpDownCounters.TryAdd(otelName, upDownCounter);
         }
 
@@ -95,7 +95,7 @@ public static class AICentralActivitySources
 
         if (!HistogramCounters.TryGetValue(otelName, out _))
         {
-            var histogram = AICentralActivitySource.AICentralMeter.CreateHistogram<double>(
+            var histogram = ActivitySource.AICentralMeter.CreateHistogram<double>(
                 otelName,
                 $"{{{unit}}}",
                 string.Empty);

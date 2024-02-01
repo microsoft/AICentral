@@ -2,18 +2,18 @@
 
 namespace AICentral.EndpointSelectors.Random;
 
-public class RandomEndpointSelectorFactory : IAICentralEndpointSelectorFactory
+public class RandomEndpointSelectorFactory : IEndpointSelectorFactory
 {
-    private readonly IAICentralEndpointDispatcherFactory[] _openAiServers;
+    private readonly IEndpointDispatcherFactory[] _openAiServers;
     private readonly Lazy<RandomEndpointSelector> _endpointSelector;
 
-    public RandomEndpointSelectorFactory(IAICentralEndpointDispatcherFactory[] openAiServers)
+    public RandomEndpointSelectorFactory(IEndpointDispatcherFactory[] openAiServers)
     {
         _openAiServers = openAiServers.ToArray();
         _endpointSelector = new Lazy<RandomEndpointSelector>(() => new RandomEndpointSelector(_openAiServers.Select(x => x.Build()).ToArray()));
     }
 
-    public IAICentralEndpointSelector Build()
+    public IEndpointSelector Build()
     {
         return _endpointSelector.Value;
     }
@@ -24,10 +24,10 @@ public class RandomEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 
     public static string ConfigName => "RandomCluster";
 
-    public static IAICentralEndpointSelectorFactory BuildFromConfig(
+    public static IEndpointSelectorFactory BuildFromConfig(
         ILogger logger, 
-        AICentralTypeAndNameConfig config,
-        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints)
+        TypeAndNameConfig config,
+        Dictionary<string, IEndpointDispatcherFactory> endpoints)
     {
         var properties = config.TypedProperties<RandomEndpointConfig>();
         Guard.NotNull(properties, "Properties");

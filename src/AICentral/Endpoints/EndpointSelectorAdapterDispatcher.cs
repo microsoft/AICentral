@@ -2,11 +2,11 @@
 
 namespace AICentral.Endpoints;
 
-public class EndpointSelectorAdapterDispatcher : IAICentralEndpointDispatcher
+public class EndpointSelectorAdapterDispatcher : IEndpointDispatcher
 {
-    private readonly IAICentralEndpointSelectorFactory _endpointSelectorFactory;
+    private readonly IEndpointSelectorFactory _endpointSelectorFactory;
 
-    public EndpointSelectorAdapterDispatcher(IAICentralEndpointSelectorFactory endpointSelectorFactory)
+    public EndpointSelectorAdapterDispatcher(IEndpointSelectorFactory endpointSelectorFactory)
     {
         _endpointSelectorFactory = endpointSelectorFactory;
     }
@@ -24,7 +24,7 @@ public class EndpointSelectorAdapterDispatcher : IAICentralEndpointDispatcher
         HttpContext context,
         IncomingCallDetails callInformation,
         bool isLastChance,
-        IAICentralResponseGenerator responseGenerator,
+        IResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
         return _endpointSelectorFactory.Build().Handle(context, callInformation, isLastChance, responseGenerator, cancellationToken);
@@ -35,7 +35,7 @@ public class EndpointSelectorAdapterDispatcher : IAICentralEndpointDispatcher
         return false;
     }
 
-    public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
+    public IEnumerable<IEndpointDispatcher> ContainedEndpoints()
     {
         foreach (var endpoint in _endpointSelectorFactory.Build().ContainedEndpoints())
         {

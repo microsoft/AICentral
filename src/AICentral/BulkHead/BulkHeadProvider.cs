@@ -3,7 +3,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.BulkHead;
 
-public class BulkHeadProvider : IAICentralPipelineStep
+public class BulkHeadProvider : IPipelineStep
 {
     private readonly SemaphoreSlim _semaphore;
 
@@ -13,7 +13,7 @@ public class BulkHeadProvider : IAICentralPipelineStep
     }
 
     public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
-        IAICentralPipelineExecutor pipeline,
+        IPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
         try

@@ -7,13 +7,11 @@ namespace AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 /// <summary>
 /// Logs out usage information to Azure Monitor
 /// </summary>
-public class AzureMonitorLoggerFactory : IAICentralGenericStepFactory
+public class AzureMonitorLoggerFactory : IPipelineStepFactory
 {
     private readonly string _workspaceId;
-    private readonly string _key;
     private readonly bool _logPrompt;
-    private readonly bool _logResponse;
-    private readonly Lazy<IAICentralPipelineStep> _logger;
+    private readonly Lazy<AzureMonitorLogger> _logger;
 
     public AzureMonitorLoggerFactory(
         string workspaceId,
@@ -22,23 +20,21 @@ public class AzureMonitorLoggerFactory : IAICentralGenericStepFactory
         bool logResponse)
     {
         _workspaceId = workspaceId;
-        _key = key;
         _logPrompt = logPrompt;
-        _logResponse = logResponse;
-        _logger = new Lazy<IAICentralPipelineStep>(() => new AzureMonitorLogger(new LoggerConfiguration().WriteTo
+        _logger = new Lazy<AzureMonitorLogger>(() => new AzureMonitorLogger(new LoggerConfiguration().WriteTo
                 .AzureAnalytics(
                     _workspaceId,
-                    _key,
+                    key,
                     logName: "AILogs"
-                ).CreateLogger(), _workspaceId, _logPrompt, _logResponse
+                ).CreateLogger(), _workspaceId, _logPrompt, logResponse
         ));
     }
 
     public static string ConfigName => "AzureMonitorLogger";
 
-    public static IAICentralGenericStepFactory BuildFromConfig(
+    public static IPipelineStepFactory BuildFromConfig(
         ILogger logger, 
-        AICentralTypeAndNameConfig config)
+        TypeAndNameConfig config)
     {
         var properties = config.TypedProperties<AzureMonitorLoggingConfig>()!;
         Guard.NotNull(properties, "Properties");
@@ -51,7 +47,7 @@ public class AzureMonitorLoggerFactory : IAICentralGenericStepFactory
         );
     }
 
-    public IAICentralPipelineStep Build(IServiceProvider serviceProvider)
+    public IPipelineStep Build(IServiceProvider serviceProvider)
     {
         return _logger.Value;
     }

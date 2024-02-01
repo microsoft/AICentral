@@ -21,9 +21,9 @@ namespace AICentralTests.TestHelpers;
 
 public class TestAICentralPipelineBuilder
 {
-    private IConsumerAuthFactory? _auth;
-    private IAICentralEndpointSelectorFactory? _endpointFactory;
-    private IAICentralEndpointDispatcherFactory[]? _openAiEndpointDispatcherBuilders;
+    private IPipelineStepFactory? _auth;
+    private IEndpointSelectorFactory? _endpointFactory;
+    private IEndpointDispatcherFactory[]? _openAiEndpointDispatcherBuilders;
     private int? _windowInSeconds;
     private int? _requestsPerWindow;
     private int? _tokensPerWindow;
@@ -82,7 +82,7 @@ public class TestAICentralPipelineBuilder
                         [x.model] = x.mappedModel
                     },
                     x.apiKey,
-                    "98892683-5712-4db4-ab5e-727275f88250", null))).Cast<IAICentralEndpointDispatcherFactory>().ToArray();
+                    "98892683-5712-4db4-ab5e-727275f88250", null))).Cast<IEndpointDispatcherFactory>().ToArray();
 
         _endpointFactory = new RandomEndpointSelectorFactory(_openAiEndpointDispatcherBuilders);
 
@@ -94,14 +94,14 @@ public class TestAICentralPipelineBuilder
         (string hostname, string model, string mappedModel)[] fallbackEndpoints
     )
     {
-        IAICentralEndpointDispatcherFactory[] priorityOpenAIEndpointDispatcherBuilder = priorityEndpoints.Select(x =>
+        IEndpointDispatcherFactory[] priorityOpenAIEndpointDispatcherBuilder = priorityEndpoints.Select(x =>
             new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
                 $"https://{x.hostname}",
                 "ApiKey",
                 Guid.NewGuid().ToString()))).ToArray();
 
-        IAICentralEndpointDispatcherFactory[] fallbackOpenAIEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
+        IEndpointDispatcherFactory[] fallbackOpenAIEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
             new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
                 $"https://{x.hostname}",
@@ -157,7 +157,7 @@ public class TestAICentralPipelineBuilder
     public AICentralPipelineAssembler Assemble(string host)
     {
         var id = Guid.NewGuid().ToString();
-        var genericSteps = new Dictionary<string, IAICentralGenericStepFactory>();
+        var genericSteps = new Dictionary<string, IPipelineStepFactory>();
         var steps = new List<string>();
 
         if (_windowInSeconds != null && _requestsPerWindow != null)
@@ -201,19 +201,19 @@ public class TestAICentralPipelineBuilder
 
         return new AICentralPipelineAssembler(
             HeaderMatchRouter.WithHostHeader,
-            new Dictionary<string, IConsumerAuthFactory>()
+            new Dictionary<string, IPipelineStepFactory>()
             {
                 [id] = _auth ?? new AllowAnonymousClientAuthFactory(),
             },
             _openAiEndpointDispatcherBuilders!.ToDictionary(x => Guid.NewGuid().ToString(), x => x),
-            new Dictionary<string, IAICentralEndpointSelectorFactory>()
+            new Dictionary<string, IEndpointSelectorFactory>()
             {
                 [id] = _endpointFactory!
             },
             genericSteps,
             new[]
             {
-                new AICentralPipelineConfig()
+                new PipelineConfig()
                 {
                     Name = host + "-pipeline",
                     Host = host,

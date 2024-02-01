@@ -3,12 +3,12 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.EndpointSelectors.Random;
 
-public class RandomEndpointSelector : IAICentralEndpointSelector
+public class RandomEndpointSelector : IEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
-    private readonly IAICentralEndpointDispatcher[] _openAiServers;
+    private readonly IEndpointDispatcher[] _openAiServers;
 
-    public RandomEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
+    public RandomEndpointSelector(IEndpointDispatcher[] openAiServers)
     {
         _openAiServers = openAiServers;
     }
@@ -16,7 +16,7 @@ public class RandomEndpointSelector : IAICentralEndpointSelector
     public async Task<AICentralResponse> Handle(HttpContext context,
         IncomingCallDetails aiCallInformation,
         bool isLastChance,
-        IAICentralResponseGenerator responseGenerator,
+        IResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelector>>();
@@ -50,7 +50,7 @@ public class RandomEndpointSelector : IAICentralEndpointSelector
         throw new InvalidOperationException("Failed to satisfy request");
     }
 
-    public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
+    public IEnumerable<IEndpointDispatcher> ContainedEndpoints()
     {
         return _openAiServers;
     }

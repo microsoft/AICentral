@@ -11,21 +11,21 @@ namespace AICentral.Configuration;
 public class AICentralPipelineAssembler
 {
     private readonly Func<string, HeaderMatchRouter> _routeBuilder;
-    private readonly Dictionary<string, IConsumerAuthFactory> _authProviders;
-    private readonly Dictionary<string, IAICentralEndpointDispatcherFactory> _endpoints;
-    private readonly Dictionary<string, IAICentralEndpointSelectorFactory> _endpointSelectors;
-    private readonly Dictionary<string, IAICentralGenericStepFactory> _genericSteps;
-    private readonly AICentralPipelineConfig[] _pipelines;
+    private readonly Dictionary<string, IPipelineStepFactory> _authProviders;
+    private readonly Dictionary<string, IEndpointDispatcherFactory> _endpoints;
+    private readonly Dictionary<string, IEndpointSelectorFactory> _endpointSelectors;
+    private readonly Dictionary<string, IPipelineStepFactory> _genericSteps;
+    private readonly PipelineConfig[] _pipelines;
 
     private bool _servicesAdded;
 
     public AICentralPipelineAssembler(
         Func<string, HeaderMatchRouter> routeBuilder,
-        Dictionary<string, IConsumerAuthFactory> authProviders,
-        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints,
-        Dictionary<string, IAICentralEndpointSelectorFactory> endpointSelectors,
-        Dictionary<string, IAICentralGenericStepFactory> genericSteps,
-        AICentralPipelineConfig[] pipelines)
+        Dictionary<string, IPipelineStepFactory> authProviders,
+        Dictionary<string, IEndpointDispatcherFactory> endpoints,
+        Dictionary<string, IEndpointSelectorFactory> endpointSelectors,
+        Dictionary<string, IPipelineStepFactory> genericSteps,
+        PipelineConfig[] pipelines)
     {
         _routeBuilder = routeBuilder;
         _authProviders = authProviders;

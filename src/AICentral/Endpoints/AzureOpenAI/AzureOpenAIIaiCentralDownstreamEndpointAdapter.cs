@@ -6,13 +6,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Endpoints.AzureOpenAI;
 
-public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
+public class AzureOpenAIIaiCentralDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 {
     private static readonly string[] HeadersToIgnore = { "host", "authorization", "api-key" };
     private static readonly string[] HeaderPrefixesToCopy = { "x-", "apim", "operation-location", "ms-azureml" };
     private readonly IEndpointAuthorisationHandler _authHandler;
 
-    public AzureOpenAIDownstreamEndpointAdapter(
+    public AzureOpenAIIaiCentralDownstreamEndpointAdapter(
         string id,
         string languageUrl,
         string endpointName,
@@ -80,7 +80,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         var locationRaw = header.Value.Single();
         var location = new Uri(locationRaw);
         var queryParts = QueryHelpers.ParseQuery(location.Query);
-        queryParts.Add(AICentralHeaders.AzureOpenAIHostAffinityHeader, EndpointName);
+        queryParts.Add(QueryPartNames.AzureOpenAIHostAffinityHeader, EndpointName);
 
         var builder = new UriBuilder(
             context.Request.Scheme,

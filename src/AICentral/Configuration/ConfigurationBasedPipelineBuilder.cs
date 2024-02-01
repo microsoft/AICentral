@@ -1,8 +1,6 @@
 ﻿using System.Reflection;
-using AICentral.ConsumerAuth;
 using AICentral.Core;
 using AICentral.Endpoints;
-using AICentral.EndpointSelectors;
 
 namespace AICentral.Configuration;
 
@@ -15,33 +13,33 @@ namespace AICentral.Configuration;
 public class ConfigurationBasedPipelineBuilder
 {
     private readonly Dictionary<string,
-            Func<ILogger, AICentralTypeAndNameConfig, IDownstreamEndpointAdapterFactory>>
+            Func<ILogger, TypeAndNameConfig, IDownstreamEndpointAdapterFactory>>
         _endpointConfigurationBuilders = new();
 
     private readonly
-        Dictionary<string, Func<ILogger, AICentralTypeAndNameConfig,
-            Dictionary<string, IAICentralEndpointDispatcherFactory>,
-            IAICentralEndpointSelectorFactory>> _endpointSelectorConfigurations = new();
+        Dictionary<string, Func<ILogger, TypeAndNameConfig,
+            Dictionary<string, IEndpointDispatcherFactory>,
+            IEndpointSelectorFactory>> _endpointSelectorConfigurations = new();
 
     private readonly Dictionary<string,
-            Func<ILogger, AICentralTypeAndNameConfig, IAICentralGenericStepFactory>>
+            Func<ILogger, TypeAndNameConfig, IPipelineStepFactory>>
         _genericStepBuilders = new();
 
     private readonly
-        Dictionary<string, Func<ILogger, AICentralTypeAndNameConfig, IConsumerAuthFactory>>
+        Dictionary<string, Func<ILogger, TypeAndNameConfig, IPipelineStepFactory>>
         _authProviderBuilders = new();
 
-    private void RegisterAuthProvider<T>() where T : IConsumerAuthFactory =>
+    private void RegisterAuthProvider<T>() where T : IPipelineStepFactory =>
         _authProviderBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
     private void RegisterEndpoint<T>() where T : IDownstreamEndpointAdapterFactory =>
         _endpointConfigurationBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
     // ReSharper disable once UnusedMember.Local
-    private void RegisterEndpointSelector<T>() where T : IAICentralEndpointSelectorFactory =>
+    private void RegisterEndpointSelector<T>() where T : IEndpointSelectorFactory =>
         _endpointSelectorConfigurations.Add(T.ConfigName, T.BuildFromConfig);
 
-    private void RegisterGenericStep<T>() where T : IAICentralGenericStepFactory =>
+    private void RegisterGenericStep<T>() where T : IPipelineStepFactory =>
         _genericStepBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
     public AICentralPipelineAssembler BuildPipelinesFromConfig(
@@ -49,12 +47,12 @@ public class ConfigurationBasedPipelineBuilder
         ILogger startupLogger,
         params Assembly[] additionalAssembliesToScan)
     {
-        RegisterBuilders<IAICentralEndpointSelectorFactory>(additionalAssembliesToScan,
+        RegisterBuilders<IEndpointSelectorFactory>(additionalAssembliesToScan,
             nameof(RegisterEndpointSelector));
         RegisterBuilders<IDownstreamEndpointAdapterFactory>(additionalAssembliesToScan, nameof(RegisterEndpoint));
-        RegisterBuilders<IAICentralGenericStepFactory>(additionalAssembliesToScan,
+        RegisterBuilders<IPipelineStepFactory>(additionalAssembliesToScan,
             nameof(RegisterGenericStep));
-        RegisterBuilders<IConsumerAuthFactory>(additionalAssembliesToScan, nameof(RegisterAuthProvider));
+        RegisterBuilders<IPipelineStepFactory>(additionalAssembliesToScan, nameof(RegisterAuthProvider));
 
         var endpoints =
             configuration
@@ -64,7 +62,7 @@ public class ConfigurationBasedPipelineBuilder
                     x =>
                     {
                         startupLogger.LogInformation("Configuring Endpoint {Name}", x.Name);
-                        return (IAICentralEndpointDispatcherFactory)new DownstreamEndpointDispatcherFactory(
+                        return (IEndpointDispatcherFactory)new DownstreamEndpointDispatcherFactory(
                             _endpointConfigurationBuilders[
                                 Guard.NotNull(x.Type, "Type") ??
                                 throw new ArgumentException("No Type specified for Endpoint")](
@@ -72,7 +70,7 @@ public class ConfigurationBasedPipelineBuilder
                                 x));
                     });
 
-        var endpointSelectors = new Dictionary<string, IAICentralEndpointSelectorFactory>();
+        var endpointSelectors = new Dictionary<string, IEndpointSelectorFactory>();
         foreach (var x in configuration.EndpointSelectors!)
         {
             Guard.NotNull(x.Name, "Name");
@@ -136,7 +134,7 @@ public class ConfigurationBasedPipelineBuilder
             endpoints,
             endpointSelectors,
             genericSteps,
-            configuration.Pipelines ?? Array.Empty<AICentralPipelineConfig>()
+            configuration.Pipelines ?? Array.Empty<PipelineConfig>()
         );
 
         return builder;

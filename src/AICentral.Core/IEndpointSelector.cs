@@ -2,7 +2,7 @@
 
 namespace AICentral.Core;
 
-public interface IAICentralEndpointSelector
+public interface IEndpointSelector
 {
     /// <summary>
     /// Handles AI calls and decides which endpoint to dispatch them by. If the downstream fails this method should throw if it has exhausted its available endpoints, and isLastChance is false (which means there is another option to handle the endpoint). 
@@ -17,10 +17,10 @@ public interface IAICentralEndpointSelector
         HttpContext context,
         IncomingCallDetails aiCallInformation,
         bool isLastChance,
-        IAICentralResponseGenerator responseGenerator,
+        IResponseGenerator responseGenerator,
         CancellationToken cancellationToken);
 
-    IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints();
+    IEnumerable<IEndpointDispatcher> ContainedEndpoints();
 
     Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders);
 }

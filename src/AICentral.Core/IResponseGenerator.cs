@@ -1,6 +1,6 @@
 ﻿namespace AICentral.Core;
 
-public interface IAICentralResponseGenerator
+public interface IResponseGenerator
 {
     Task<AICentralResponse> BuildResponse(
         DownstreamRequestInformation downstreamRequestInformation,

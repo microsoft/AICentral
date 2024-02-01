@@ -7,7 +7,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Endpoints.OpenAI;
 
-public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
+public class OpenAIIaiCentralDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 {
     private static readonly string[] HeadersToIgnore = { "host", "authorization", "api-key" };
     private static readonly string[] HeaderPrefixesToCopy = { "x-", "openai" };
@@ -22,7 +22,7 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
     public Uri BaseUrl { get; }
     public string EndpointName { get; }
 
-    public OpenAIDownstreamEndpointAdapter(
+    public OpenAIIaiCentralDownstreamEndpointAdapter(
         string id,
         string endpointName,
         Dictionary<string, string> modelMappings,

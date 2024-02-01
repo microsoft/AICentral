@@ -5,7 +5,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.RateLimiting;
 
-public class FixedWindowRateLimitingProvider : IAICentralPipelineStep, IAICentralGenericStepFactory
+public class FixedWindowRateLimitingProvider : IPipelineStep, IPipelineStepFactory
 {
     private readonly FixedWindowRateLimiterOptions _rateLimiterOptions;
     private readonly PartitionedRateLimiter<HttpContext> _rateLimiter;
@@ -17,7 +17,7 @@ public class FixedWindowRateLimitingProvider : IAICentralPipelineStep, IAICentra
     }
 
     public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
-        IAICentralPipelineExecutor pipeline,
+        IPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<FixedWindowRateLimitingProvider>>();
@@ -54,14 +54,14 @@ public class FixedWindowRateLimitingProvider : IAICentralPipelineStep, IAICentra
     {
     }
 
-    public IAICentralPipelineStep Build(IServiceProvider serviceProvider)
+    public IPipelineStep Build(IServiceProvider serviceProvider)
     {
         return this;
     }
 
-    public static IAICentralGenericStepFactory BuildFromConfig(
+    public static IPipelineStepFactory BuildFromConfig(
         ILogger logger,
-        AICentralTypeAndNameConfig config)
+        TypeAndNameConfig config)
     {
         var properties = config.TypedProperties<FixedWindowRateLimiterOptions>()!;
         Guard.NotNull(properties, "Properties");

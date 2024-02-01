@@ -17,7 +17,7 @@ if (builder.Environment.EnvironmentName != "tests")
         .WithMetrics(metrics =>
         {
             metrics.AddAspNetCoreInstrumentation()
-                .AddMeter(AICentralActivitySource.AICentralTelemetryName);
+                .AddMeter(ActivitySource.AICentralTelemetryName);
         })
         .WithTracing(tracing =>
         {
@@ -28,7 +28,7 @@ if (builder.Environment.EnvironmentName != "tests")
             }
 
             tracing.AddAspNetCoreInstrumentation()
-                .AddSource(AICentralActivitySource.AICentralTelemetryName);
+                .AddSource(ActivitySource.AICentralTelemetryName);
         })
         .UseAzureMonitor();
 }

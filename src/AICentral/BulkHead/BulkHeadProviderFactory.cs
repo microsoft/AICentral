@@ -2,7 +2,7 @@
 
 namespace AICentral.BulkHead;
 
-public class BulkHeadProviderFactory : IAICentralGenericStepFactory
+public class BulkHeadProviderFactory : IPipelineStepFactory
 {
     private readonly BulkHeadConfiguration _properties;
     private readonly Lazy<BulkHeadProvider> _provider;
@@ -17,14 +17,14 @@ public class BulkHeadProviderFactory : IAICentralGenericStepFactory
     {
     }
 
-    public IAICentralPipelineStep Build(IServiceProvider serviceProvider)
+    public IPipelineStep Build(IServiceProvider serviceProvider)
     {
         return _provider.Value;
     }
 
     public static string ConfigName => "BulkHead";
 
-    public static IAICentralGenericStepFactory BuildFromConfig(ILogger logger, AICentralTypeAndNameConfig config)
+    public static IPipelineStepFactory BuildFromConfig(ILogger logger, TypeAndNameConfig config)
     {
         var properties = config.TypedProperties<BulkHeadConfiguration>()!;
         Guard.NotNull(properties.MaxConcurrency, nameof(properties.MaxConcurrency));

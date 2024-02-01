@@ -3,7 +3,7 @@
 /// <summary>
 /// Central configuration class. Allows a typed configuration system
 /// </summary>
-public class AICentralTypeAndNameConfig
+public class TypeAndNameConfig
 {
     /// <summary>
     /// Type of configuration

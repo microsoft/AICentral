@@ -2,14 +2,14 @@
 
 namespace AICentral.ConsumerAuth.AllowAnonymous;
 
-public class AllowAnonymousClientAuthFactory: IConsumerAuthFactory
+public class AllowAnonymousClientAuthFactory: IPipelineStepFactory
 {
    
     public void RegisterServices(IServiceCollection services)
     {
     }
 
-    public IConsumerAuthStep Build(IServiceProvider serviceProvider)
+    public IPipelineStep Build(IServiceProvider serviceProvider)
     {
         return AllowAnonymousClientAuthProvider.Instance;
     }
@@ -24,7 +24,7 @@ public class AllowAnonymousClientAuthFactory: IConsumerAuthFactory
         //No-op
     }
 
-    public static IConsumerAuthFactory BuildFromConfig(ILogger logger, AICentralTypeAndNameConfig config)
+    public static IPipelineStepFactory BuildFromConfig(ILogger logger, TypeAndNameConfig config)
     {
         return new AllowAnonymousClientAuthFactory();
     }

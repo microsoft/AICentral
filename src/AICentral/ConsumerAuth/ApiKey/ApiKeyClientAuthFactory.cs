@@ -2,7 +2,7 @@
 
 namespace AICentral.ConsumerAuth.ApiKey;
 
-public class ApiKeyClientAuthFactory : IConsumerAuthFactory
+public class ApiKeyClientAuthFactory : IPipelineStepFactory
 {
     private readonly ApiKeyClientAuthConfig _config;
     private readonly string _policyId = Guid.NewGuid().ToString();
@@ -29,14 +29,14 @@ public class ApiKeyClientAuthFactory : IConsumerAuthFactory
                 .AddAuthenticationSchemes(schemeName));
     }
 
-    public IConsumerAuthStep Build(IServiceProvider serviceProvider)
+    public IPipelineStep Build(IServiceProvider serviceProvider)
     {
         return _singleton.Value;
     }
 
-    public static IConsumerAuthFactory BuildFromConfig(
+    public static IPipelineStepFactory BuildFromConfig(
         ILogger logger, 
-        AICentralTypeAndNameConfig config)
+        TypeAndNameConfig config)
     {
         var properties = config.TypedProperties<ApiKeyClientAuthConfig>();
 

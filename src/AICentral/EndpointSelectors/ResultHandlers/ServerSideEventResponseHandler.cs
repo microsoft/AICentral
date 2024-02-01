@@ -23,7 +23,7 @@ public static class ServerSideEventResponseHandler
         ResponseMetadata responseMetadata)
     {
         const string activityName = "StreamingResponse";
-        using var activity = AICentralActivitySource.AICentralRequestActivitySource.StartActivity(activityName);
+        using var activity = ActivitySource.AICentralRequestActivitySource.StartActivity(activityName);
 
         //send the headers down to the client
         context.Response.StatusCode = (int)openAiResponse.StatusCode;

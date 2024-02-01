@@ -4,7 +4,7 @@ using ILogger = Serilog.ILogger;
 
 namespace AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 
-public class AzureMonitorLogger : IAICentralPipelineStep
+public class AzureMonitorLogger : IPipelineStep
 {
     private readonly ILogger _serilogAzureLogAnalyticsLogger;
     private readonly string _workspaceId;
@@ -22,7 +22,7 @@ public class AzureMonitorLogger : IAICentralPipelineStep
     public async Task<AICentralResponse> Handle(
         HttpContext context, 
         IncomingCallDetails aiCallInformation,
-        IAICentralPipelineExecutor pipeline,
+        IPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
         var result = await pipeline.Next(context, aiCallInformation, cancellationToken);

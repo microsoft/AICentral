@@ -3,10 +3,10 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.ConsumerAuth.AllowAnonymous;
 
-public class AllowAnonymousClientAuthProvider : IConsumerAuthStep
+public class AllowAnonymousClientAuthProvider : IPipelineStep
 {
     public Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
-        IAICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
+        IPipelineExecutor pipeline, CancellationToken cancellationToken)
     {
         return pipeline.Next(context, aiCallInformation, cancellationToken);
     }

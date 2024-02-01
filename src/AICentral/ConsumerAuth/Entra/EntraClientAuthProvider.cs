@@ -3,10 +3,10 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.ConsumerAuth.Entra;
 
-public class EntraClientAuthProvider : IConsumerAuthStep
+public class EntraClientAuthProvider : IPipelineStep
 {
     public Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
-        IAICentralPipelineExecutor pipeline,
+        IPipelineExecutor pipeline,
         CancellationToken cancellationToken)
     {
         return pipeline.Next(context, aiCallInformation, cancellationToken);

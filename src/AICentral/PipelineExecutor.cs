@@ -4,15 +4,15 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral;
 
-public class PipelineExecutor : IAICentralPipelineExecutor, IAICentralResponseGenerator, IDisposable
+public class PipelineExecutor : IPipelineExecutor, IResponseGenerator, IDisposable
 {
-    private readonly IAICentralEndpointSelector _iaiCentralEndpointSelector;
-    private readonly IEnumerator<IAICentralPipelineStep> _pipelineEnumerator;
-    private readonly IList<IAICentralPipelineStep> _outputHandlers = new List<IAICentralPipelineStep>();
+    private readonly IEndpointSelector _iaiCentralEndpointSelector;
+    private readonly IEnumerator<IPipelineStep> _pipelineEnumerator;
+    private readonly IList<IPipelineStep> _outputHandlers = new List<IPipelineStep>();
 
     public PipelineExecutor(
-        IEnumerable<IAICentralPipelineStep> steps,
-        IAICentralEndpointSelector iaiCentralEndpointSelector)
+        IEnumerable<IPipelineStep> steps,
+        IEndpointSelector iaiCentralEndpointSelector)
     {
         _iaiCentralEndpointSelector = iaiCentralEndpointSelector;
         _pipelineEnumerator = steps.GetEnumerator();
@@ -46,7 +46,7 @@ public class PipelineExecutor : IAICentralPipelineExecutor, IAICentralResponseGe
     /// <param name="responseMetadata"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    async Task<AICentralResponse> IAICentralResponseGenerator.BuildResponse(
+    async Task<AICentralResponse> IResponseGenerator.BuildResponse(
         DownstreamRequestInformation requestInformation, HttpContext context,
         HttpResponseMessage rawResponse, 
         ResponseMetadata responseMetadata,

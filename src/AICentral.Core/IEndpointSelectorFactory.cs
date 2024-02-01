@@ -3,7 +3,7 @@
 /// <summary>
 /// Factory class to build instances of IAICentralEndpointSelectors
 /// </summary>
-public interface IAICentralEndpointSelectorFactory
+public interface IEndpointSelectorFactory
 {
     /// <summary>
     /// Name representing this endpoint selector. Used in config files.
@@ -19,17 +19,17 @@ public interface IAICentralEndpointSelectorFactory
     /// <param name="aiCentralEndpoints"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    static virtual IAICentralEndpointSelectorFactory BuildFromConfig(
+    static virtual IEndpointSelectorFactory BuildFromConfig(
         ILogger logger, 
-        AICentralTypeAndNameConfig config,
-        Dictionary<string, IAICentralEndpointDispatcherFactory> aiCentralEndpoints
+        TypeAndNameConfig config,
+        Dictionary<string, IEndpointDispatcherFactory> aiCentralEndpoints
         ) => throw new NotImplementedException();
 
     /// <summary>
     /// Builds an instance of the selector. 
     /// </summary>
     /// <returns></returns>
-    IAICentralEndpointSelector Build();
+    IEndpointSelector Build();
 
     /// <summary>
     /// Register any required services in the DI container.

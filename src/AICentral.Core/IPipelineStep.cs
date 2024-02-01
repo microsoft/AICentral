@@ -5,7 +5,7 @@ namespace AICentral.Core;
 /// <summary>
 /// Implement this interface to create steps that can execute in a pipeline.
 /// </summary>
-public interface IAICentralPipelineStep
+public interface IPipelineStep
 {
     /// <summary>
     /// Core method for executing custom step logic.
@@ -18,7 +18,7 @@ public interface IAICentralPipelineStep
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
-        IAICentralPipelineExecutor pipeline,
+        IPipelineExecutor pipeline,
         CancellationToken cancellationToken);
 
     /// <summary>

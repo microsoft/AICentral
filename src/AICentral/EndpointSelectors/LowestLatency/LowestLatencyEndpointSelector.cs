@@ -4,17 +4,17 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.EndpointSelectors.LowestLatency;
 
-public class LowestLatencyEndpointSelector : IAICentralEndpointSelector
+public class LowestLatencyEndpointSelector : IEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
-    private readonly IAICentralEndpointDispatcher[] _openAiServers;
+    private readonly IEndpointDispatcher[] _openAiServers;
 
-    private readonly ConcurrentDictionary<IAICentralEndpointDispatcher, ConcurrentQueue<double>> _recentLatencies =
+    private readonly ConcurrentDictionary<IEndpointDispatcher, ConcurrentQueue<double>> _recentLatencies =
         new();
 
     private const int RequiredCount = 10;
 
-    public LowestLatencyEndpointSelector(IAICentralEndpointDispatcher[] openAiServers)
+    public LowestLatencyEndpointSelector(IEndpointDispatcher[] openAiServers)
     {
         _openAiServers = openAiServers;
     }
@@ -23,7 +23,7 @@ public class LowestLatencyEndpointSelector : IAICentralEndpointSelector
         HttpContext context,
         IncomingCallDetails aiCallInformation,
         bool isLastChance,
-        IAICentralResponseGenerator responseGenerator,
+        IResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<LowestLatencyEndpointSelector>>();
@@ -64,7 +64,7 @@ public class LowestLatencyEndpointSelector : IAICentralEndpointSelector
         throw new InvalidOperationException("Failed to satisfy request");
     }
 
-    public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
+    public IEnumerable<IEndpointDispatcher> ContainedEndpoints()
     {
         return _openAiServers;
     }
@@ -76,7 +76,7 @@ public class LowestLatencyEndpointSelector : IAICentralEndpointSelector
         return Task.CompletedTask;
     }
 
-    private void UpdateLatencies(ILogger<LowestLatencyEndpointSelector> logger, IAICentralEndpointDispatcher endpoint,
+    private void UpdateLatencies(ILogger<LowestLatencyEndpointSelector> logger, IEndpointDispatcher endpoint,
         DownstreamUsageInformation requestInformation)
     {
         if (!_recentLatencies.ContainsKey(endpoint))
@@ -99,7 +99,7 @@ public class LowestLatencyEndpointSelector : IAICentralEndpointSelector
         }
     }
 
-    private double GetRecentAverageLatencyFor(IAICentralEndpointDispatcher endpoint)
+    private double GetRecentAverageLatencyFor(IEndpointDispatcher endpoint)
     {
         var hasLatencyData = _recentLatencies.TryGetValue(endpoint, out var queue);
         if (!hasLatencyData)
