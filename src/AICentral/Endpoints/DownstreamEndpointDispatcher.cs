@@ -6,31 +6,32 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using ActivitySource = AICentral.Core.ActivitySource;
 
 namespace AICentral.Endpoints;
 
 /// <summary>
 /// Handles dispatching a call by using an IDownstreamEndpointAdapter
 /// </summary>
-internal class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
+internal class DownstreamEndpointDispatcher : IEndpointDispatcher
 {
     private string EndpointName { get; }
     private readonly string _id;
-    private readonly IDownstreamEndpointAdapter _downstreamEndpointAdapter;
+    private readonly IDownstreamEndpointAdapter _iaiCentralDownstreamEndpointAdapter;
     private static readonly HttpResponseMessage RateLimitedFakeResponse = new(HttpStatusCode.TooManyRequests);
 
-    public DownstreamEndpointDispatcher(IDownstreamEndpointAdapter downstreamEndpointAdapter)
+    public DownstreamEndpointDispatcher(IDownstreamEndpointAdapter iaiCentralDownstreamEndpointAdapter)
     {
-        EndpointName = downstreamEndpointAdapter.EndpointName;
-        _id = downstreamEndpointAdapter.Id;
-        _downstreamEndpointAdapter = downstreamEndpointAdapter;
+        EndpointName = iaiCentralDownstreamEndpointAdapter.EndpointName;
+        _id = iaiCentralDownstreamEndpointAdapter.Id;
+        _iaiCentralDownstreamEndpointAdapter = iaiCentralDownstreamEndpointAdapter;
     }
 
     public async Task<AICentralResponse> Handle(
         HttpContext context,
         IncomingCallDetails callInformation,
         bool isLastChance,
-        IAICentralResponseGenerator responseGenerator,
+        IResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<DownstreamEndpointDispatcher>>();
@@ -38,7 +39,7 @@ internal class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
         var dateTimeProvider = context.RequestServices.GetRequiredService<IDateTimeProvider>();
         var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
 
-        var outboundRequest = await _downstreamEndpointAdapter.BuildRequest(callInformation, context);
+        var outboundRequest = await _iaiCentralDownstreamEndpointAdapter.BuildRequest(callInformation, context);
         if (outboundRequest.Right(out var result))
         {
             if (isLastChance)
@@ -48,7 +49,7 @@ internal class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
                         context,
                         callInformation,
                         null,
-                        _downstreamEndpointAdapter.BaseUrl.Host
+                        _iaiCentralDownstreamEndpointAdapter.BaseUrl.Host
                     ),
                     result!);
             }
@@ -70,7 +71,7 @@ internal class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             newRequest.RequestUri!.AbsoluteUri
         );
 
-        using var source = AICentralActivitySource.AICentralRequestActivitySource.CreateActivity(
+        using var source = ActivitySource.AICentralRequestActivitySource.CreateActivity(
             "Calling AI Service",
             ActivityKind.Client,
             Activity.Current!.Context
@@ -104,7 +105,7 @@ internal class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             if (openAiResponse.StatusCode == HttpStatusCode.OK)
             {
                 context.Response.Headers.TryAdd("x-aicentral-server",
-                    new StringValues(_downstreamEndpointAdapter.BaseUrl.Host));
+                    new StringValues(_iaiCentralDownstreamEndpointAdapter.BaseUrl.Host));
             }
             else
             {
@@ -114,7 +115,7 @@ internal class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
                 }
 
                 context.Response.Headers.TryAdd("x-aicentral-failed-servers",
-                    StringValues.Concat(header, _downstreamEndpointAdapter.BaseUrl.Host));
+                    StringValues.Concat(header, _iaiCentralDownstreamEndpointAdapter.BaseUrl.Host));
             }
         }
 
@@ -124,7 +125,7 @@ internal class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
             openAiResponse.EnsureSuccessStatusCode();
         }
 
-        var preProcessResult = await _downstreamEndpointAdapter.ExtractResponseMetadata(
+        var preProcessResult = await _iaiCentralDownstreamEndpointAdapter.ExtractResponseMetadata(
             callInformation,
             context,
             openAiResponse);
@@ -132,7 +133,7 @@ internal class DownstreamEndpointDispatcher : IAICentralEndpointDispatcher
 
         var pipelineResponse = await responseGenerator.BuildResponse(
             new DownstreamRequestInformation(
-                _downstreamEndpointAdapter.BaseUrl.Host,
+                _iaiCentralDownstreamEndpointAdapter.BaseUrl.Host,
                 callInformation.AICallType,
                 callInformation.IncomingModelName,
                 callInformation.PromptText,

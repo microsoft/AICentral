@@ -2,15 +2,15 @@
 
 namespace AICentral.EndpointSelectors.Priority;
 
-public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
+public class PriorityEndpointSelectorFactory : IEndpointSelectorFactory
 {
-    private readonly IAICentralEndpointDispatcherFactory[] _prioritisedOpenAIEndpoints;
-    private readonly IAICentralEndpointDispatcherFactory[] _fallbackOpenAIEndpoints;
+    private readonly IEndpointDispatcherFactory[] _prioritisedOpenAIEndpoints;
+    private readonly IEndpointDispatcherFactory[] _fallbackOpenAIEndpoints;
     private readonly Lazy<PriorityEndpointSelector> _endpointSelector;
 
     public PriorityEndpointSelectorFactory(
-        IAICentralEndpointDispatcherFactory[] prioritisedOpenAIEndpoints,
-        IAICentralEndpointDispatcherFactory[] fallbackOpenAIEndpoints)
+        IEndpointDispatcherFactory[] prioritisedOpenAIEndpoints,
+        IEndpointDispatcherFactory[] fallbackOpenAIEndpoints)
     {
         _prioritisedOpenAIEndpoints = prioritisedOpenAIEndpoints;
         _fallbackOpenAIEndpoints = fallbackOpenAIEndpoints;
@@ -25,10 +25,10 @@ public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 
     public static string ConfigName => "Prioritised";
 
-    public static IAICentralEndpointSelectorFactory BuildFromConfig(
+    public static IEndpointSelectorFactory BuildFromConfig(
         ILogger logger,
-        AICentralTypeAndNameConfig config,
-        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints)
+        TypeAndNameConfig config,
+        Dictionary<string, IEndpointDispatcherFactory> endpoints)
     {
         var properties = config.TypedProperties<PriorityEndpointConfig>();
 
@@ -53,7 +53,7 @@ public class PriorityEndpointSelectorFactory : IAICentralEndpointSelectorFactory
         );
     }
 
-    public IAICentralEndpointSelector Build()
+    public IEndpointSelector Build()
     {
         return _endpointSelector.Value;
     }

@@ -3,7 +3,7 @@
 /// <summary>
 /// Configuration type representing an AI Central Pipeline
 /// </summary>
-public class AICentralPipelineConfig
+public class PipelineConfig
 {
     /// <summary>
     /// Name of the pipeline

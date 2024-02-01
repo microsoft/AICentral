@@ -13,27 +13,27 @@ public class AICentralConfig
     /// <summary>
     /// The pipelines to use. These are the main entry points for the AI Central service.
     /// </summary>
-    public AICentralPipelineConfig[]? Pipelines { get; init; }
+    public PipelineConfig[]? Pipelines { get; init; }
     
     /// <summary>
     /// A set of Endpoints representing the downstream services we can call.
     /// </summary>
-    public AICentralTypeAndNameConfig[]? Endpoints { get; set; }
+    public TypeAndNameConfig[]? Endpoints { get; set; }
     
     /// <summary>
     /// A set of Endpoint Selectors that can be used to select an endpoint based on the request.
     /// </summary>
-    public AICentralTypeAndNameConfig[]? EndpointSelectors { get; set; }
+    public TypeAndNameConfig[]? EndpointSelectors { get; set; }
     
     /// <summary>
     /// A set of Auth Providers that can be used to authenticate the request.
     /// </summary>
-    public AICentralTypeAndNameConfig[]? AuthProviders { get; set; }
+    public TypeAndNameConfig[]? AuthProviders { get; set; }
     
     /// <summary>
     /// A set of generic steps that can be used in pipelines
     /// </summary>
-    public AICentralTypeAndNameConfig[]? GenericSteps { get; set; }
+    public TypeAndNameConfig[]? GenericSteps { get; set; }
     
     /// <summary>
     /// Optional Message Handler to use when making downstream requests. This can be used to add custom headers, or to add a proxy, etc.
@@ -52,14 +52,14 @@ public class AICentralConfig
         GenericSteps = FillCollection(nameof(GenericSteps), configurationSection).ToArray();
     }
 
-    private List<AICentralTypeAndNameConfig> FillCollection(
+    private List<TypeAndNameConfig> FillCollection(
         string property,
         IConfigurationSection configurationSection)
     {
-        var newList = new List<AICentralTypeAndNameConfig>();
+        var newList = new List<TypeAndNameConfig>();
         foreach (var item in configurationSection.GetSection(property).GetChildren())
         {
-            newList.Add(new AICentralTypeAndNameConfig()
+            newList.Add(new TypeAndNameConfig()
             {
                 Name = Guard.NotNull(item.GetValue<string>("Name"), item, "Name"),
                 Type = Guard.NotNull(item.GetValue<string>("Type"), item, "Type"),

@@ -3,10 +3,10 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.ConsumerAuth.ApiKey;
 
-public class ApiKeyClientAuthProvider : IConsumerAuthStep
+public class ApiKeyClientAuthProvider : IPipelineStep
 {
     public Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
-        IAICentralPipelineExecutor pipeline, CancellationToken cancellationToken)
+        IPipelineExecutor pipeline, CancellationToken cancellationToken)
     {
         return pipeline.Next(context, aiCallInformation, cancellationToken);
     }

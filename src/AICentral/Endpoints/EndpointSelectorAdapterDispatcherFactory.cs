@@ -2,12 +2,12 @@
 
 namespace AICentral.Endpoints;
 
-public class EndpointSelectorAdapterDispatcherFactory : IAICentralEndpointDispatcherFactory
+public class EndpointSelectorAdapterDispatcherFactory : IEndpointDispatcherFactory
 {
     private readonly Lazy<EndpointSelectorAdapterDispatcher> _instance;
-    private readonly IAICentralEndpointSelectorFactory _centralEndpointSelectorFactory;
+    private readonly IEndpointSelectorFactory _centralEndpointSelectorFactory;
 
-    public EndpointSelectorAdapterDispatcherFactory(IAICentralEndpointSelectorFactory centralEndpointSelectorFactory)
+    public EndpointSelectorAdapterDispatcherFactory(IEndpointSelectorFactory centralEndpointSelectorFactory)
     {
         _centralEndpointSelectorFactory = centralEndpointSelectorFactory;
         _instance = new Lazy<EndpointSelectorAdapterDispatcher>(() => new EndpointSelectorAdapterDispatcher(centralEndpointSelectorFactory));
@@ -17,7 +17,7 @@ public class EndpointSelectorAdapterDispatcherFactory : IAICentralEndpointDispat
     {
     }
 
-    public IAICentralEndpointDispatcher Build()
+    public IEndpointDispatcher Build()
     {
         return _instance.Value;
     }

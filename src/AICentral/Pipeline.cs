@@ -5,6 +5,7 @@ using AICentral.Core;
 using AICentral.EndpointSelectors;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using ActivitySource = AICentral.Core.ActivitySource;
 
 namespace AICentral;
 
@@ -17,16 +18,16 @@ public class Pipeline
 {
     private readonly string _name;
     private readonly HeaderMatchRouter _router;
-    private readonly IConsumerAuthFactory _clientAuthStep;
-    private readonly IList<IAICentralGenericStepFactory> _pipelineSteps;
-    private readonly IAICentralEndpointSelectorFactory _endpointSelector;
+    private readonly IPipelineStepFactory _clientAuthStep;
+    private readonly IList<IPipelineStepFactory> _pipelineSteps;
+    private readonly IEndpointSelectorFactory _endpointSelector;
 
     public Pipeline(
         string name,
         HeaderMatchRouter router,
-        IConsumerAuthFactory clientAuthStep,
-        IAICentralGenericStepFactory[] pipelineSteps,
-        IAICentralEndpointSelectorFactory endpointSelector)
+        IPipelineStepFactory clientAuthStep,
+        IPipelineStepFactory[] pipelineSteps,
+        IEndpointSelectorFactory endpointSelector)
     {
         _name = name;
         _router = router;
@@ -52,7 +53,7 @@ public class Pipeline
         sw.Start();
 
         // Create a new Activity scoped to the method
-        using var activity = AICentralActivitySource.AICentralRequestActivitySource.StartActivity("AICentalRequest");
+        using var activity = ActivitySource.AICentralRequestActivitySource.StartActivity("AICentalRequest");
         var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
 
         if (config.Value.EnableDiagnosticsHeaders)
@@ -81,7 +82,7 @@ public class Pipeline
             { "Deployment", requestDetails.IncomingModelName },
             { "Pipeline", _name },
         };
-        AICentralActivitySources.RecordUpDownCounter($"activeRequests", "requests", 1, requestTagList);
+        ActivitySources.RecordUpDownCounter($"activeRequests", "requests", 1, requestTagList);
 
         try
         {
@@ -100,14 +101,14 @@ public class Pipeline
                 { "Pipeline", _name },
             };
 
-            AICentralActivitySources.RecordHistogram(
+            ActivitySources.RecordHistogram(
                 $"request.duration",
                 "ms",
                 sw.ElapsedMilliseconds, tagList);
 
             if (result.DownstreamUsageInformation.TotalTokens != null)
             {
-                AICentralActivitySources.RecordHistogram(
+                ActivitySources.RecordHistogram(
                     $"request.tokens_consumed", "tokens",
                     result.DownstreamUsageInformation.TotalTokens.Value, tagList);
             }
@@ -124,7 +125,7 @@ public class Pipeline
                 if (downsteamMetadata.RemainingTokens != null)
                 {
                     //Gauges don't transmit custom dimensions so I need a new metric name for each host / deployment pair.
-                    AICentralActivitySources.RecordGaugeMetric(
+                    ActivitySources.RecordGaugeMetric(
                         $"downstream.{normalisedHostName}.{modelOrDeployment}.tokens_remaining", "tokens",
                         downsteamMetadata.RemainingTokens.Value);
                 }
@@ -132,13 +133,13 @@ public class Pipeline
                 if (downsteamMetadata.RemainingRequests != null)
                 {
                     //Gauges don't transmit custom dimensions so I need a new metric name for each host / deployment pair.
-                    AICentralActivitySources.RecordGaugeMetric(
+                    ActivitySources.RecordGaugeMetric(
                         $"downstream.{normalisedHostName}.{modelOrDeployment}.requests_remaining", "tokens",
                         downsteamMetadata.RemainingRequests.Value);
                 }
             }
 
-            AICentralActivitySources.RecordHistogram(
+            ActivitySources.RecordHistogram(
                 "downstream.duration",
                 "ms", result.DownstreamUsageInformation.Duration.TotalMilliseconds,
                 tagList);
@@ -158,13 +159,13 @@ public class Pipeline
         }
         finally
         {
-            AICentralActivitySources.RecordUpDownCounter("activeRequests", "requests", -1, requestTagList);
+            ActivitySources.RecordUpDownCounter("activeRequests", "requests", -1, requestTagList);
         }
     }
 
-    private IAICentralEndpointSelector FindEndpointSelectorOrAffinityServer(IncomingCallDetails requestDetails)
+    private IEndpointSelector FindEndpointSelectorOrAffinityServer(IncomingCallDetails requestDetails)
     {
-        IAICentralEndpointSelector? endpointSelector;
+        IEndpointSelector? endpointSelector;
         if (requestDetails.AICallType == AICallType.Other)
         {
             endpointSelector = FindAffinityServer(requestDetails) ?? _endpointSelector.Build();
@@ -177,12 +178,12 @@ public class Pipeline
         return endpointSelector;
     }
 
-    private IAICentralEndpointSelector? FindAffinityServer(IncomingCallDetails requestDetails)
+    private IEndpointSelector? FindAffinityServer(IncomingCallDetails requestDetails)
     {
         var availableEndpointSelectors = AffinityEndpointHelper.FlattenedEndpoints(_endpointSelector.Build());
         AffinityEndpointHelper.IsAffinityRequest(requestDetails, availableEndpointSelectors,
             out var affinityEndpointSelector);
-        requestDetails.QueryString?.Remove(AICentralHeaders.AzureOpenAIHostAffinityHeader);
+        requestDetails.QueryString?.Remove(QueryPartNames.AzureOpenAIHostAffinityHeader);
         return affinityEndpointSelector;
     }
 

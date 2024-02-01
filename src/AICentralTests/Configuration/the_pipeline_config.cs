@@ -58,7 +58,7 @@ public class the_pipeline_config
                     },
                     Pipelines = new[]
                     {
-                        new AICentralPipelineConfig()
+                        new PipelineConfig()
                         {
                             Name = "test-pipeline",
                             Host = "my-test-host.localtest.me",

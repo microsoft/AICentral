@@ -4,7 +4,7 @@
 /// Used to build pipeline steps that form the basis of AI Central's Pipelines.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public interface IAICentralPipelineStepFactory<out T> where T: IAICentralPipelineStep
+public interface IPipelineStepFactory
 {
     /// <summary>
     /// The name AICentral looks for in your configuration to trigger this step.
@@ -24,6 +24,12 @@ public interface IAICentralPipelineStepFactory<out T> where T: IAICentralPipelin
     /// </summary>
     /// <param name="serviceProvider"></param>
     /// <returns></returns>
-    T Build(IServiceProvider serviceProvider);
+    IPipelineStep Build(IServiceProvider serviceProvider);
+    
+    static virtual IPipelineStepFactory BuildFromConfig(ILogger logger, TypeAndNameConfig config) => throw new NotImplementedException();
+
+    void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route);
+
+    object WriteDebug();
 
 }

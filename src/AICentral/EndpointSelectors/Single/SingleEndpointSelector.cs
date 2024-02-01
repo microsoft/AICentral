@@ -3,11 +3,11 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.EndpointSelectors.Single;
 
-public class SingleEndpointSelector : IAICentralEndpointSelector
+public class SingleEndpointSelector : IEndpointSelector
 {
-    private readonly IAICentralEndpointDispatcher _endpoint;
+    private readonly IEndpointDispatcher _endpoint;
 
-    public SingleEndpointSelector(IAICentralEndpointDispatcher endpoint)
+    public SingleEndpointSelector(IEndpointDispatcher endpoint)
     {
         _endpoint = endpoint;
     }
@@ -16,7 +16,7 @@ public class SingleEndpointSelector : IAICentralEndpointSelector
         HttpContext context,
         IncomingCallDetails aiCallInformation,
         bool isLastChance,
-        IAICentralResponseGenerator responseGenerator,
+        IResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
         return _endpoint.Handle(
@@ -27,7 +27,7 @@ public class SingleEndpointSelector : IAICentralEndpointSelector
             cancellationToken);
     }
 
-    public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
+    public IEnumerable<IEndpointDispatcher> ContainedEndpoints()
     {
         return new[] { _endpoint };
     }

@@ -82,7 +82,7 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
                     },
                     Pipelines = new[]
                     {
-                        new AICentralPipelineConfig()
+                        new PipelineConfig()
                         {
                             Name = "test-pipeline",
                             Host = "my-test-host.localtest.me",
@@ -156,7 +156,7 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
                     },
                     Pipelines = new[]
                     {
-                        new AICentralPipelineConfig()
+                        new PipelineConfig()
                         {
                             Name = "test-pipeline",
                             Host = "my-test-host.localtest.me",

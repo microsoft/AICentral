@@ -1,6 +1,6 @@
 ﻿namespace AICentral.Core;
 
-public interface IAICentralPipelineExecutor
+public interface IPipelineExecutor
 {
     Task<AICentralResponse> Next(HttpContext context, IncomingCallDetails requestDetails,
         CancellationToken cancellationToken);

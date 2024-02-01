@@ -3,15 +3,15 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.EndpointSelectors.Priority;
 
-public class PriorityEndpointSelector : IAICentralEndpointSelector
+public class PriorityEndpointSelector : IEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
-    private readonly IAICentralEndpointDispatcher[] _prioritisedOpenAIEndpoints;
-    private readonly IAICentralEndpointDispatcher[] _fallbackOpenAIEndpoints;
+    private readonly IEndpointDispatcher[] _prioritisedOpenAIEndpoints;
+    private readonly IEndpointDispatcher[] _fallbackOpenAIEndpoints;
 
     public PriorityEndpointSelector(
-        IAICentralEndpointDispatcher[] prioritisedOpenAIEndpoints,
-        IAICentralEndpointDispatcher[] fallbackOpenAIEndpoints)
+        IEndpointDispatcher[] prioritisedOpenAIEndpoints,
+        IEndpointDispatcher[] fallbackOpenAIEndpoints)
     {
         _prioritisedOpenAIEndpoints = prioritisedOpenAIEndpoints;
         _fallbackOpenAIEndpoints = fallbackOpenAIEndpoints;
@@ -21,7 +21,7 @@ public class PriorityEndpointSelector : IAICentralEndpointSelector
         HttpContext context,
         IncomingCallDetails aiCallInformation,
         bool isLastChance,
-        IAICentralResponseGenerator responseGenerator,
+        IResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<PriorityEndpointSelector>>();
@@ -45,7 +45,7 @@ public class PriorityEndpointSelector : IAICentralEndpointSelector
         }
     }
 
-    public IEnumerable<IAICentralEndpointDispatcher> ContainedEndpoints()
+    public IEnumerable<IEndpointDispatcher> ContainedEndpoints()
     {
         return _fallbackOpenAIEndpoints.Concat(_prioritisedOpenAIEndpoints);
     }
@@ -54,9 +54,9 @@ public class PriorityEndpointSelector : IAICentralEndpointSelector
         HttpContext context,
         IncomingCallDetails aiCallInformation,
         CancellationToken cancellationToken,
-        IAICentralEndpointDispatcher[] endpoints,
+        IEndpointDispatcher[] endpoints,
         bool isLastChance,
-        IAICentralResponseGenerator responseGenerator
+        IResponseGenerator responseGenerator
         )
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<PriorityEndpointSelector>>();

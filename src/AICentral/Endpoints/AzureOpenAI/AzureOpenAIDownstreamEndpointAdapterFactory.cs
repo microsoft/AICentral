@@ -46,7 +46,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
 
     public static IDownstreamEndpointAdapterFactory BuildFromConfig(
         ILogger logger,
-        AICentralTypeAndNameConfig config)
+        TypeAndNameConfig config)
     {
         var properties = config.TypedProperties<AzureOpenAIEndpointPropertiesConfig>();
         
@@ -72,7 +72,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
 
     public IDownstreamEndpointAdapter Build()
     {
-        return new AzureOpenAIDownstreamEndpointAdapter(_id, _languageUrl, _endpointName, _authHandler);
+        return new AzureOpenAIIaiCentralDownstreamEndpointAdapter(_id, _languageUrl, _endpointName, _authHandler);
     }
 
     public object WriteDebug()

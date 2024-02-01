@@ -21,7 +21,7 @@ public class OpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAdapter
         _maxConcurrency = maxConcurrency;
 
         _endpointDispatcher = new Lazy<IDownstreamEndpointAdapter>(() =>
-            new OpenAIDownstreamEndpointAdapter(_id, endpointName, _modelMappings, apiKey, _organization));
+            new OpenAIIaiCentralDownstreamEndpointAdapter(_id, endpointName, _modelMappings, apiKey, _organization));
     }
 
     public void RegisterServices(HttpMessageHandler? httpMessageHandler, IServiceCollection services)
@@ -34,7 +34,7 @@ public class OpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAdapter
     public static string ConfigName => "OpenAIEndpoint";
 
     public static IDownstreamEndpointAdapterFactory BuildFromConfig(ILogger logger,
-        AICentralTypeAndNameConfig config)
+        TypeAndNameConfig config)
     {
         var properties = config.TypedProperties<OpenAIEndpointPropertiesConfig>();
         Guard.NotNull(properties, "Properties");
@@ -58,7 +58,7 @@ public class OpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAdapter
         return new
         {
             Type = "OpenAI",
-            Url = OpenAIDownstreamEndpointAdapter.OpenAIV1,
+            Url = OpenAIIaiCentralDownstreamEndpointAdapter.OpenAIV1,
             Mappings = _modelMappings,
             Organization = _organization
         };

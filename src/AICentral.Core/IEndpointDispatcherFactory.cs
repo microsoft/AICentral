@@ -7,9 +7,9 @@
 /// This interface is in the Core library to support Endpoint Selectors that need to dispatch to other Endpoint Selectors.
 /// Normal usage does not require you to provide your own implementation of this interface.  
 /// </remarks>
-public interface IAICentralEndpointDispatcherFactory
+public interface IEndpointDispatcherFactory
 {
-    IAICentralEndpointDispatcher Build();
+    IEndpointDispatcher Build();
     object WriteDebug();
     void RegisterServices(HttpMessageHandler? optionalHandler, IServiceCollection services);
 }

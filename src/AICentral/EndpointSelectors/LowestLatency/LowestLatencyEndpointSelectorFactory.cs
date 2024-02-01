@@ -2,19 +2,19 @@
 
 namespace AICentral.EndpointSelectors.LowestLatency;
 
-public class LowestLatencyEndpointSelectorFactory : IAICentralEndpointSelectorFactory
+public class LowestLatencyEndpointSelectorFactory : IEndpointSelectorFactory
 {
-    private readonly IAICentralEndpointDispatcherFactory[] _openAiServers;
+    private readonly IEndpointDispatcherFactory[] _openAiServers;
     private readonly Lazy<LowestLatencyEndpointSelector> _endpointSelector;
 
-    public LowestLatencyEndpointSelectorFactory(IAICentralEndpointDispatcherFactory[] openAiServers)
+    public LowestLatencyEndpointSelectorFactory(IEndpointDispatcherFactory[] openAiServers)
     {
         _openAiServers = openAiServers.ToArray();
         _endpointSelector = new Lazy<LowestLatencyEndpointSelector>(() => new LowestLatencyEndpointSelector(
             _openAiServers.Select(x => x.Build()).ToArray()));
     }
 
-    public IAICentralEndpointSelector Build()
+    public IEndpointSelector Build()
     {
         return _endpointSelector.Value;
     }
@@ -25,10 +25,10 @@ public class LowestLatencyEndpointSelectorFactory : IAICentralEndpointSelectorFa
 
     public static string ConfigName => "LowestLatency";
 
-    public static IAICentralEndpointSelectorFactory BuildFromConfig(
+    public static IEndpointSelectorFactory BuildFromConfig(
         ILogger logger, 
-        AICentralTypeAndNameConfig config,
-        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints
+        TypeAndNameConfig config,
+        Dictionary<string, IEndpointDispatcherFactory> endpoints
         )
     {
         var properties = config.TypedProperties<LowestLatencyEndpointConfig>();

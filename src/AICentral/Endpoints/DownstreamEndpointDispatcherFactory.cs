@@ -2,7 +2,7 @@
 
 namespace AICentral.Endpoints;
 
-public class DownstreamEndpointDispatcherFactory : IAICentralEndpointDispatcherFactory
+public class DownstreamEndpointDispatcherFactory : IEndpointDispatcherFactory
 {
     private readonly IDownstreamEndpointAdapterFactory _downstreamEndpointDispatcher;
 
@@ -11,7 +11,7 @@ public class DownstreamEndpointDispatcherFactory : IAICentralEndpointDispatcherF
         _downstreamEndpointDispatcher = downstreamEndpointDispatcher;
     }
     
-    public IAICentralEndpointDispatcher Build()
+    public IEndpointDispatcher Build()
     {
         return new DownstreamEndpointDispatcher(_downstreamEndpointDispatcher.Build());
     }

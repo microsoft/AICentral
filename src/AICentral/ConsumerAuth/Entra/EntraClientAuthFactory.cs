@@ -4,13 +4,13 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace AICentral.ConsumerAuth.Entra;
 
-public class EntraClientAuthFactory : IConsumerAuthFactory
+public class EntraClientAuthFactory : IPipelineStepFactory
 {
-    private readonly AICentralTypeAndNameConfig _configSection;
+    private readonly TypeAndNameConfig _configSection;
     private readonly string _id;
     private readonly Lazy<EntraClientAuthProvider> _provider;
 
-    public EntraClientAuthFactory(AICentralTypeAndNameConfig configSection)
+    public EntraClientAuthFactory(TypeAndNameConfig configSection)
     {
         _configSection = configSection;
         _id = Guid.NewGuid().ToString();
@@ -40,14 +40,14 @@ public class EntraClientAuthFactory : IConsumerAuthFactory
 
     public static string ConfigName => "Entra";
 
-    public IConsumerAuthStep Build(IServiceProvider serviceProvider)
+    public IPipelineStep Build(IServiceProvider serviceProvider)
     {
         return _provider.Value;
     }
 
-    public static IConsumerAuthFactory BuildFromConfig(
+    public static IPipelineStepFactory BuildFromConfig(
         ILogger logger, 
-        AICentralTypeAndNameConfig config)
+        TypeAndNameConfig config)
     {
 
         var customSection = config.TypedProperties<EntraClientAuthConfig>();

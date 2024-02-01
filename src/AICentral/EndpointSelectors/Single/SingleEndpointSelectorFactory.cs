@@ -2,19 +2,19 @@
 
 namespace AICentral.EndpointSelectors.Single;
 
-public class SingleEndpointSelectorFactory : IAICentralEndpointSelectorFactory
+public class SingleEndpointSelectorFactory : IEndpointSelectorFactory
 {
-    private readonly IAICentralEndpointDispatcherFactory _endpointRequestResponseHandlerFactory;
+    private readonly IEndpointDispatcherFactory _endpointRequestResponseHandlerFactory;
     private readonly Lazy<SingleEndpointSelector> _endpointSelector;
 
-    public SingleEndpointSelectorFactory(IAICentralEndpointDispatcherFactory endpointRequestResponseHandlerFactory)
+    public SingleEndpointSelectorFactory(IEndpointDispatcherFactory endpointRequestResponseHandlerFactory)
     {
         _endpointRequestResponseHandlerFactory = endpointRequestResponseHandlerFactory;
         _endpointSelector =
             new Lazy<SingleEndpointSelector>(() => new SingleEndpointSelector(endpointRequestResponseHandlerFactory.Build()));
     }
 
-    public IAICentralEndpointSelector Build()
+    public IEndpointSelector Build()
     {
         return _endpointSelector.Value;
     }
@@ -25,10 +25,10 @@ public class SingleEndpointSelectorFactory : IAICentralEndpointSelectorFactory
 
     public static string ConfigName => "SingleEndpoint";
 
-    public static IAICentralEndpointSelectorFactory BuildFromConfig(
+    public static IEndpointSelectorFactory BuildFromConfig(
         ILogger logger,
-        AICentralTypeAndNameConfig config,
-        Dictionary<string, IAICentralEndpointDispatcherFactory> endpoints)
+        TypeAndNameConfig config,
+        Dictionary<string, IEndpointDispatcherFactory> endpoints)
     {
         var properties = config.TypedProperties<SingleEndpointConfig>();
 
