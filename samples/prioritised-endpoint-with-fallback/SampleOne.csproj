@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <RootNamespace>AICentralWeb</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AICentral" Version="0.13.0" />
+      <PackageReference Include="AICentral.Logging.AzureMonitor" Version="0.13.0" />
+      <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.0.0" />
+      <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.7.0" />
+      <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.7.0" />
+      <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.7.0" />
+      <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Pages\Index.cshtml" />
+    </ItemGroup>
+
+</Project>
