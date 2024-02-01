@@ -11,7 +11,7 @@ public class EntraAuth : IEndpointAuthorisationHandler
         HttpRequestMessage outgoingRequest)
     {
         var token = (await new DefaultAzureCredential().GetTokenAsync(
-            new TokenRequestContext(new[] { "https://cognitiveservices.azure.com" }))).Token;
+                new TokenRequestContext(new[] { "https://cognitiveservices.azure.com" }))).Token;
         outgoingRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 
