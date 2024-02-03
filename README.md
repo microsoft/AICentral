@@ -87,14 +87,25 @@ app.Run();
         "Type": "AzureOpenAIEndpoint",
         "Name": "openai-1",
         "Properties": {
-          "LanguageEndpoint": "https://<my-ai>.openai.azure.com"
+          "LanguageEndpoint": "https://<my-ai>.openai.azure.com",
+          "AuthenticationType": "Entra"
         }
       }
     ],
     "AuthProviders": [
       {
-        "Type": "AllowAnonymous",
-        "Name": "allow-anonymous-auth"
+        "Type": "Entra",
+        "Name": "aad-role-auth",
+        "Properties": {
+          "Entra": {
+            "ClientId": "<my-client-id>",
+            "TenantId": "<my-tenant-id>",
+            "Instance": "https://login.microsoftonline.com/"
+          },
+          "Requirements" : {
+            "Roles": ["required-roles"]
+          }
+        }
       }
     ],
     "EndpointSelectors": [
@@ -110,7 +121,7 @@ app.Run();
       {
         "Name": "AzureOpenAIPipeline",
         "Host": "mypipeline.mydomain.com",
-        "AuthProvider": "allow-anonymous-auth",
+        "AuthProvider": "aad-role-auth",
         "EndpointSelector": "default"
       }
     ]
