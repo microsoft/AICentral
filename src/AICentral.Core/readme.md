@@ -14,7 +14,7 @@ A simple class that contains the configuration for your extension.
 
 A class that can determine how to create an instance of the extension given your configuration.
 
-It must implement from ```AICentral.Core.IAICentralGenericStepFactory```
+It must implement from ```AICentral.Core.IPipelineStepFactory```
 
 It must also override the 2 static methods on the above interface:
 
@@ -22,7 +22,7 @@ It must also override the 2 static methods on the above interface:
 
     public static string ConfigName => "<name-to-reference-the-step-in-config>";
 
-    public static IAICentralGenericStepFactory BuildFromConfig(
+    public static IPipelineStepFactory BuildFromConfig(
         ILogger logger, 
         AICentralTypeAndNameConfig config)
     {
@@ -32,4 +32,4 @@ It must also override the 2 static methods on the above interface:
 ```
 
 ### Extension
-A class that provides the extension functionality, by implementing the ```AICentral.Core.IAICentralPipelineStep```.
+A class that provides the extension functionality, by implementing the ```AICentral.Core.IPipelineStep```.

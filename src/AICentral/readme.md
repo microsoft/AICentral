@@ -32,7 +32,9 @@ This sample produces a AI-Central proxy that
         "Type": "AzureOpenAIEndpoint",
         "Name": "openai-1",
         "Properties": {
-          "LanguageEndpoint": "https://<my-ai>.openai.azure.com"
+          "LanguageEndpoint": "https://<my-ai>.openai.azure.com",
+          "AuthenticationType": "ApiKey",
+          "ApiKey": "<key>"
         }
       }
     ],
@@ -45,11 +47,27 @@ This sample produces a AI-Central proxy that
         }
       }
     ],
+    "AuthProviders": [
+      {
+        "Type": "ApiKey",
+        "Name": "apikey",
+        "Properties": {
+          "Clients": [
+            {
+              "ClientName": "Consumer-1",
+              "Key1": "<random-key>",
+              "Key2": "<random-key>"
+            }
+          ]
+        }
+      }
+    ],
     "Pipelines": [
       {
         "Name": "OpenAIPipeline",
         "Host": "mypipeline.mydomain.com",
-        "EndpointSelector": "default"
+        "EndpointSelector": "default",
+        "AuthProvider": "apikey"
       }
     ]
   }
@@ -79,7 +97,7 @@ This pipeline will:
           "LanguageEndpoint": "https://<my-ai>.openai.azure.com",
           "AuthenticationType": "Entra|EntraPassThrough|ApiKey",
           "MaxConcurrency": 10
-        }
+        }~~~~
       },
       {
         "Type": "OpenAIEndpoint",
