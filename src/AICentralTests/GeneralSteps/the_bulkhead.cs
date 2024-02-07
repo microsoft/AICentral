@@ -42,7 +42,7 @@ public class the_bulkhead : IClassFixture<TestWebApplicationFactory<Program>>
             () => BulkheadResponse(new CancellationToken()));
 
         var allResponses = await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => _httpClient.PostAsync(
-            "https://azure-with-bulkhead.localtest.me/openai/deployments/Model1/chat/completions?api-version=2023-05-15",
+            "https://azure-with-bulkhead.localtest.me/openai/deployments/Model1/chat/completions?api-version=2023-12-01-preview",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -63,7 +63,7 @@ public class the_bulkhead : IClassFixture<TestWebApplicationFactory<Program>>
             () => BulkheadResponse(new CancellationToken()));
 
         var allResponses = await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => _httpClient.PostAsync(
-            "https://azure-with-bulkhead-on-endpoint.localtest.me/openai/deployments/Model1/chat/completions?api-version=2023-05-15",
+            "https://azure-with-bulkhead-on-endpoint.localtest.me/openai/deployments/Model1/chat/completions?api-version=2023-12-01-preview",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]

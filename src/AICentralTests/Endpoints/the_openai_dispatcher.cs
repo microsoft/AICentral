@@ -35,7 +35,7 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
         //DALLE-2 is no longer reachable with the latest SDK!
         var response = await _httpClient.PostAsync(
             new Uri(
-                "http://azure-openai-to-openai.localtest.me/openai/images/generations:submit?api-version=2023-09-01-preview"),
+                "http://azure-openai-to-openai.localtest.me/openai/images/generations:submit?api-version=2023-12-01-preview"),
             new StringContent(JsonConvert.SerializeObject(new { prompt = "draw me something blue" }), Encoding.UTF8,
                 "application/json"));
 
@@ -52,7 +52,7 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-openai.localtest.me"),
             new AzureKeyCredential("ignore"),
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
             {
                 Transport = new HttpClientTransport(_httpClient)
             });
@@ -189,7 +189,7 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
             new Uri("http://azure-openai-to-openai.localtest.me"),
             new AzureKeyCredential("ignore"),
             // ReSharper disable once RedundantArgumentDefaultValue
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_09_01_Preview)
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
             {
                 Transport = new HttpClientTransport(_httpClient),
             });
@@ -218,7 +218,7 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-multiple-openai-different-model-mappings.localtest.me"),
             new AzureKeyCredential("ignore"),
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_05_15)
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
             {
                 Transport = new HttpClientTransport(_httpClient)
             });

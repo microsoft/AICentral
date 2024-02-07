@@ -2,7 +2,7 @@
   Requests:
 [
   {
-    "Uri": "/openai/deployments/whisper-1/audio/transcriptions?api-version=2023-05-15",
+    "Uri": "/openai/deployments/whisper-1/audio/transcriptions?api-version=2023-12-01-preview",
     "Method": "POST",
     "Headers": {
       "api-key": "80a59060-63f8-4a19-a5ce-ad1a44157897",

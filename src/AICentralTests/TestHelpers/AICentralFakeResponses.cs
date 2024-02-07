@@ -140,7 +140,7 @@ public class AICentralFakeResponses
     {
         var response = new HttpResponseMessage(HttpStatusCode.Accepted);
         response.Headers.Add("operation-location",
-            $"https://{Endpoint200}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-09-01-preview");
+            $"https://{Endpoint200}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-12-01-preview");
         response.Content = new OneTimeStreamReadHttpContent(new
         {
             id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
