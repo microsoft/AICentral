@@ -76,7 +76,7 @@ public class PipelineExecutor : IResponseGenerator, IDisposable
         
         CopyHeadersToResponse(context.Response, responseMetadata.SanitisedHeaders);
 
-        if (openAiResponse.Headers.TransferEncodingChunked == true)
+        if (openAiResponse.Content.Headers.ContentType?.MediaType?.Equals("text/event-stream") ?? false)
         {
             logger.LogDebug("Detected chunked encoding response. Streaming response back to consumer");
             return ServerSideEventResponseHandler.Handle(
