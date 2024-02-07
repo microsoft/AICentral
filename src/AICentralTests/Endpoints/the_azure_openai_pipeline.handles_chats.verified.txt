@@ -2,7 +2,7 @@
   Requests:
 [
   {
-    "Uri": "/openai/deployments/Model1/chat/completions?api-version=2023-05-15",
+    "Uri": "/openai/deployments/Model1/chat/completions?api-version=2023-12-01-preview",
     "Method": "POST",
     "Headers": {
       "api-key": "17f9b7db-f6b7-4b15-a868-38e19bbd88d1"

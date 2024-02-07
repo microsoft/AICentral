@@ -32,7 +32,7 @@ public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationF
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
 
         var result = await _httpClient
-            .PostAsync("http://azure-noauth-priority.localtest.me/openai/deployments/Model1/chat/completions?api-version=2023-05-15",
+            .PostAsync("http://azure-noauth-priority.localtest.me/openai/deployments/Model1/chat/completions?api-version=2023-12-01-preview",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]

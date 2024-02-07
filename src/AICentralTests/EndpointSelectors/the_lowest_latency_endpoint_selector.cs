@@ -38,7 +38,7 @@ public class the_lowest_latency_endpoint_selector : IClassFixture<TestWebApplica
         {
             await Task.Delay(rnd.Next(0, 25));
             return await _httpClient.PostAsync(
-                "http://lowest-latency-tester.localtest.me/openai/deployments/random/chat/completions?api-version=2023-05-15",
+                "http://lowest-latency-tester.localtest.me/openai/deployments/random/chat/completions?api-version=2023-12-01-preview",
                 new StringContent(JsonConvert.SerializeObject(new
                 {
                     messages = new[]

@@ -25,7 +25,7 @@ public class the_client_api_key : IClassFixture<TestWebApplicationFactory<Progra
     public async Task fails_without_api_key()
     {
         var result = await _httpClient.PostAsync(
-            "https://azure-with-auth.localtest.me/openai/deployments/api-key-auth/chat/completions?api-version=2023-05-15",
+            "https://azure-with-auth.localtest.me/openai/deployments/api-key-auth/chat/completions?api-version=2023-12-01-preview",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -49,7 +49,7 @@ public class the_client_api_key : IClassFixture<TestWebApplicationFactory<Progra
 
         var request = new HttpRequestMessage(
             HttpMethod.Post,
-            "https://azure-with-auth.localtest.me/openai/deployments/api-key-auth/chat/completions?api-version=2023-05-15");
+            "https://azure-with-auth.localtest.me/openai/deployments/api-key-auth/chat/completions?api-version=2023-12-01-preview");
         request.Content =
             new StringContent(JsonConvert.SerializeObject(new
             {

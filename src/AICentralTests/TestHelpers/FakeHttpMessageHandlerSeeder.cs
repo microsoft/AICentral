@@ -29,7 +29,7 @@ public class FakeHttpMessageHandlerSeeder
     }
 
     public void SeedChatCompletions(string endpoint, string modelName, Func<Task<HttpResponseMessage>> response,
-        string apiVersion = "2023-05-15")
+        string apiVersion = "2023-12-01-preview")
     {
         var url = $"https://{endpoint}/openai/deployments/{modelName}/chat/completions?api-version={apiVersion}";
         if (SeededResponses.ContainsKey(url)) SeededResponses.Remove(url, out _);
@@ -38,7 +38,7 @@ public class FakeHttpMessageHandlerSeeder
 
     public void SeedCompletions(string endpoint, string modelName, Func<Task<HttpResponseMessage>> response)
     {
-        var url = $"https://{endpoint}/openai/deployments/{modelName}/completions?api-version=2023-05-15";
+        var url = $"https://{endpoint}/openai/deployments/{modelName}/completions?api-version=2023-12-01-preview";
         if (SeededResponses.ContainsKey(url)) SeededResponses.Remove(url, out _);
         SeededResponses.TryAdd(url, _ => response());
     }
