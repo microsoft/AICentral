@@ -42,9 +42,11 @@ public class Pipeline
     /// containing only that downstream server.
     /// </remarks>
     /// <param name="context"></param>
+    /// <param name="callType"></param>
     /// <param name="cancellationToken"></param>
+    /// <param name="deploymentName"></param>
     /// <returns></returns>
-    private async Task<AICentralResponse> Execute(HttpContext context, CancellationToken cancellationToken)
+    private async Task<AICentralResponse> Execute(HttpContext context, string? deploymentName, AICallType callType, CancellationToken cancellationToken)
     {
         var sw = new Stopwatch();
         sw.Start();
@@ -66,7 +68,7 @@ public class Pipeline
 
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
 
-        var requestDetails = await new AzureOpenAIDetector().Detect(_name, context.Request, cancellationToken);
+        var requestDetails = await new AzureOpenAIDetector().Detect(_name, deploymentName, callType, context.Request, cancellationToken);
 
         logger.LogDebug("Detected {CallType} from incoming request",
             requestDetails.AICallType);
@@ -199,8 +201,7 @@ public class Pipeline
 
     public void BuildRoute(WebApplication webApplication)
     {
-        foreach (var route in _router.BuildRoutes(webApplication,
-                     async (HttpContext ctx, CancellationToken token) => (await Execute(ctx, token)).ResultHandler))
+        foreach (var route in _router.BuildRoutes(webApplication, Execute))
         {
             _clientAuthStep.ConfigureRoute(webApplication, route);
             foreach (var step in _pipelineSteps) step.ConfigureRoute(webApplication, route);

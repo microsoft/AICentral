@@ -6,33 +6,8 @@ namespace AICentral;
 
 public class AzureOpenAIDetector
 {
-    public async Task<IncomingCallDetails> Detect(string pipelineName, HttpRequest request, CancellationToken cancellationToken)
+    public async Task<IncomingCallDetails> Detect(string pipelineName, string deploymentName, AICallType callType, HttpRequest request, CancellationToken cancellationToken)
     {
-        request.Path.StartsWithSegments("/openai", out var remainingUrlSegments);
-
-        var remaining = remainingUrlSegments.ToString().Split('/');
-        var callTypeFromUrl = remaining[1];
-        string? incomingModelName = default;
-
-        if (remaining[1] == "deployments")
-        {
-            incomingModelName = remaining[2];
-            callTypeFromUrl = string.Join('/', remaining[3..]);
-        }
-
-        var callType = callTypeFromUrl switch
-        {
-            "chat/completions" => AICallType.Chat,
-            "completions" => AICallType.Completions,
-            "embeddings" => AICallType.Embeddings,
-            "images" => AICallType.DALLE2,
-            "operations" => AICallType.Other,
-            "images/generations" => AICallType.DALLE3,
-            "audio/transcriptions" => AICallType.Transcription,
-            "audio/translations" => AICallType.Translation,
-            _ => AICallType.Other
-        };
-
         if (request.ContentType?.Contains("json", StringComparison.InvariantCultureIgnoreCase) ?? false)
         {
             //Pull out the text
@@ -42,8 +17,7 @@ public class AzureOpenAIDetector
             {
                 AICallType.Chat => string.Join(
                     '\n',
-                    requestContent.RootElement.GetProperty("messages").EnumerateArray().Select(x => x.GetProperty("content").GetString()) ??
-                    Array.Empty<string>()),
+                    requestContent.RootElement.GetProperty("messages").EnumerateArray().Select(x => x.GetProperty("content").GetString())),
                 AICallType.Embeddings => requestContent.RootElement.GetProperty("input").GetString() ?? string.Empty,
                 AICallType.DALLE2 => requestContent.RootElement.GetProperty("prompt").GetString() ?? string.Empty,
                 AICallType.DALLE3 => requestContent.RootElement.GetProperty("prompt").GetString() ?? string.Empty,
@@ -55,7 +29,7 @@ public class AzureOpenAIDetector
                 pipelineName,
                 callType,
                 promptText,
-                incomingModelName,
+                deploymentName,
                 requestContent,
                 QueryHelpers.ParseQuery(request.QueryString.Value));
         }
