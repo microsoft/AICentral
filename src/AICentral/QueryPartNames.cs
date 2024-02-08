@@ -8,5 +8,5 @@ public static class QueryPartNames
     /// <summary>
     /// The name used in the query string to identify which downstream endpoint to call for asynchronous requests like DALLE-2 on Azure Open AI.
     /// </summary>
-    public const string AzureOpenAIHostAffinityHeader = "ai-central-host-affinity";
+    public const string AzureOpenAIHostAffinityQueryStringName = "ai-central-host-affinity";
 }
