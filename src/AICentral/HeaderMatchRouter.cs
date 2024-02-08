@@ -105,13 +105,6 @@ public class HeaderMatchRouter
             .RequireHost(_hostName);
 
         yield return application.MapMethods(
-                "/openai/deployments/{deploymentName}/completions",
-                new[] { "Post" },
-                async (HttpContext ctx, CancellationToken cancellationToken, string deploymentName) =>
-                    (await handler(ctx, deploymentName, null, AICallType.Completions, cancellationToken)).ResultHandler)
-            .RequireHost(_hostName);
-
-        yield return application.MapMethods(
                 "{*:rest}",
                 new[] { "Get", "Post", "Delete" },
                 async (HttpContext ctx, CancellationToken cancellationToken) =>

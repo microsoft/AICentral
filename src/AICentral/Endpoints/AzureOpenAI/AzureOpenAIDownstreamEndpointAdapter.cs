@@ -1,48 +1,26 @@
-﻿using System.Text;
-using System.Text.Json;
-using AICentral.Core;
+﻿using AICentral.Core;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Endpoints.AzureOpenAI;
 
-public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
+public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpointAdapter
 {
-    private static readonly string[] HeadersToIgnore = { "host", "authorization", "api-key" };
-    private static readonly string[] HeaderPrefixesToCopy = { "x-", "apim", "operation-location", "ms-azureml" };
+    protected override string[] HeadersToIgnore => ["host", "authorization", "api-key"];
+    protected override string[] HeaderPrefixesToCopy => ["x-", "apim", "operation-location", "ms-azureml"];
+    private readonly Dictionary<string, string> _assistantMappings;
     private readonly IEndpointAuthorisationHandler _authHandler;
 
     public AzureOpenAIDownstreamEndpointAdapter(
         string id,
         string languageUrl,
         string endpointName,
-        IEndpointAuthorisationHandler authHandler)
+        Dictionary<string, string> assistantMappings,
+        IEndpointAuthorisationHandler authHandler): base(id, new Uri(languageUrl), endpointName, new Dictionary<string, string>(), assistantMappings)
     {
-        Id = id;
-        EndpointName = endpointName;
-        BaseUrl = new Uri(languageUrl);
+        _assistantMappings = assistantMappings;
         _authHandler = authHandler;
     }
-
-    public Task<ResponseMetadata> ExtractResponseMetadata(
-        IncomingCallDetails callInformationIncomingCallDetails,
-        HttpContext context,
-        HttpResponseMessage openAiResponse)
-    {
-        openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-requests", out var remainingRequestHeaderValues);
-        openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-tokens", out var remainingTokensHeaderValues);
-        var didHaveRequestLimitHeader =
-            long.TryParse(remainingRequestHeaderValues?.FirstOrDefault(), out var remainingRequests);
-        var didHaveTokenLimitHeader =
-            long.TryParse(remainingTokensHeaderValues?.FirstOrDefault(), out var remainingTokens);
-
-        return Task.FromResult(new ResponseMetadata(
-            SanitiseHeaders(context, openAiResponse),
-            openAiResponse.Headers.Contains("operation-location"),
-            didHaveTokenLimitHeader ? remainingTokens : null,
-            didHaveRequestLimitHeader ? remainingRequests : null));
-    }
-
 
     /// <summary>
     /// Azure Open AI uses an async pattern for some actions like DALL-E 2 image generation. We need to tweak the operation-location
@@ -50,27 +28,27 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
     /// </summary>
     /// <param name="context"></param>
     /// <param name="openAiResponse"></param>
+    /// <param name="proxiedHeaders"></param>
     /// <returns></returns>
-    private Dictionary<string, StringValues> SanitiseHeaders(HttpContext context,
-        HttpResponseMessage openAiResponse)
+    protected override void CustomSanitiseHeaders(HttpContext context, HttpResponseMessage openAiResponse, Dictionary<string, StringValues> proxiedHeaders)
     {
-        var proxiedHeaders = new Dictionary<string, StringValues>();
         foreach (var header in openAiResponse.Headers)
         {
             if (HeaderPrefixesToCopy.Any(x => header.Key.StartsWith(x, StringComparison.InvariantCultureIgnoreCase)))
             {
                 if (header.Key.Equals("operation-location", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    proxiedHeaders.Add(header.Key, AdjustAzureOpenAILocationToAICentralHost(context, header));
-                }
-                else
-                {
-                    proxiedHeaders.Add(header.Key, new StringValues(header.Value.ToArray()));
+                    proxiedHeaders[header.Key] = AdjustAzureOpenAILocationToAICentralHost(context, header);
                 }
             }
         }
+    }
 
-        return proxiedHeaders;
+    protected override bool IsFixedModelName(AICallType callType, string? callInformationIncomingModelName, out string? fixedModelName)
+    {
+        //no mappings - just return the incoming model name
+        fixedModelName = callInformationIncomingModelName;
+        return true;
     }
 
     private string AdjustAzureOpenAILocationToAICentralHost(
@@ -91,36 +69,24 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         return QueryHelpers.AddQueryString(builder.ToString(), queryParts);
     }
 
-    public async Task<Either<HttpRequestMessage, IResult>> BuildRequest(IncomingCallDetails incomingCall, HttpContext context)
+    protected override Task ApplyAuthorisation(HttpContext context, HttpRequestMessage newRequest)
     {
-        var newRequestString = new Uri(BaseUrl, context.Request.Path).AbsoluteUri;
-        newRequestString = QueryHelpers.AddQueryString(newRequestString, incomingCall.QueryString ?? new Dictionary<string, StringValues>());
-        var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method), newRequestString);
-
-        if (incomingCall.RequestContent != null)
-        {
-            newRequest.Content = new StringContent(JsonSerializer.Serialize(incomingCall.RequestContent), Encoding.UTF8, "application/json");
-        }
-        else
-        {
-            if (context.Request.Method == "POST")
-            {
-                newRequest.Content = MultipartContentHelper.CopyMultipartContent(context.Request, incomingCall.IncomingModelName);
-            }
-        }
-
-        await _authHandler.ApplyAuthorisationToRequest(context.Request, newRequest);
-
-        foreach (var header in context.Request.Headers)
-        {
-            if (HeadersToIgnore.Contains(header.Key.ToLowerInvariant())) continue;
-            newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
-        }
-
-        return new Either<HttpRequestMessage, IResult>(newRequest);
+        return _authHandler.ApplyAuthorisationToRequest(context.Request, newRequest);
     }
+    
+    
+    protected override string BuildUri(HttpContext context, IncomingCallDetails aiCallInformation, string? incomingAssistantName, string? mappedAssistantName)
+    {
+        var pathPiece = aiCallInformation.AICallType switch
+        {
+            AICallType.Files => context.Request.Path.Value!.Replace("/openai/", "/"), //affinity will ensure the request is going to the right place
+            AICallType.Threads => context.Request.Path.Value!.Replace("/openai/", "/"), //affinity will ensure the request is going to the right place
+            AICallType.Assistants => context.Request.Path.Value!.Replace("/openai/", "/").Replace(incomingAssistantName ?? string.Empty, mappedAssistantName),
+            _ => context.Request.Path.Value
+        };
 
-    public string Id { get; }
-    public Uri BaseUrl { get; }
-    public string EndpointName { get; }
+        var newRequestString = new Uri(BaseUrl, pathPiece).AbsoluteUri;
+        return QueryHelpers.AddQueryString(newRequestString, aiCallInformation.QueryString ?? new Dictionary<string, StringValues>());
+    }
+    
 }

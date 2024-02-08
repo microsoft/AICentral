@@ -60,6 +60,7 @@ public class TestAICentralPipelineBuilder
             $"https://{hostname}",
             "ApiKey",
             "80a59060-63f8-4a19-a5ce-ad1a44157897",
+            new Dictionary<string, string>(),
             maxConcurrencyToAllowThrough);
 
         _endpointFactory =
@@ -81,6 +82,7 @@ public class TestAICentralPipelineBuilder
                     {
                         [x.model] = x.mappedModel
                     },
+                    new Dictionary<string, string>(),
                     x.apiKey,
                     "98892683-5712-4db4-ab5e-727275f88250", null))).Cast<IEndpointDispatcherFactory>().ToArray();
 
@@ -99,14 +101,17 @@ public class TestAICentralPipelineBuilder
                 x.hostname,
                 $"https://{x.hostname}",
                 "ApiKey",
-                Guid.NewGuid().ToString()))).ToArray();
+                Guid.NewGuid().ToString(),
+                new Dictionary<string, string>()
+                ))).ToArray();
 
         IEndpointDispatcherFactory[] fallbackOpenAIEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
             new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
                 $"https://{x.hostname}",
                 "ApiKey",
-                Guid.NewGuid().ToString()))).ToArray();
+                Guid.NewGuid().ToString(),
+                new Dictionary<string, string>()))).ToArray();
 
         _openAiEndpointDispatcherBuilders = priorityOpenAIEndpointDispatcherBuilder
             .Union(fallbackOpenAIEndpointDispatcherBuilder).ToArray();
@@ -127,7 +132,8 @@ public class TestAICentralPipelineBuilder
                 x.hostname,
                 $"https://{x.hostname}",
                 "ApiKey",
-                "17f9b7db-f6b7-4b15-a868-38e19bbd88d1"))).ToArray();
+                "17f9b7db-f6b7-4b15-a868-38e19bbd88d1",
+                new Dictionary<string, string>()))).ToArray();
 
         _endpointFactory = new RandomEndpointSelectorFactory(_openAiEndpointDispatcherBuilders!);
 
@@ -142,7 +148,8 @@ public class TestAICentralPipelineBuilder
                 x.hostname,
                 $"https://{x.hostname}",
                 "ApiKey",
-                Guid.NewGuid().ToString()))).ToArray();
+                Guid.NewGuid().ToString(),
+                new Dictionary<string, string>()))).ToArray();
 
         _endpointFactory = new LowestLatencyEndpointSelectorFactory(_openAiEndpointDispatcherBuilders!);
         return this;
@@ -250,7 +257,8 @@ public class TestAICentralPipelineBuilder
             endpoint200,
             $"https://{endpoint200}",
             "ApiKey",
-            "bacca18e-f471-4eca-9ea3-c8ee7155dacb");
+            "bacca18e-f471-4eca-9ea3-c8ee7155dacb",
+            new Dictionary<string, string>());
 
         var endpointFactory =
             new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
