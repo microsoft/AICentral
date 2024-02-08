@@ -19,8 +19,9 @@ public class AzureOpenAIDetector
             AICallType.Operations => DetectOperations(pipelineName, request),
             AICallType.DALLE2 => await DetectDalle2(pipelineName, request, cancellationToken),
             AICallType.DALLE3 => await DetectDalle3(pipelineName, deploymentName!, request, cancellationToken),
-            AICallType.Assistants => await DetectAssistant(pipelineName, assistantName!, request, cancellationToken),
+            AICallType.Assistants => await DetectAssistant(pipelineName, assistantName, request, cancellationToken),
             AICallType.Threads => await DetectThread(pipelineName, request, cancellationToken),
+            AICallType.Files => DetectFile(pipelineName, request),
             _ => new IncomingCallDetails(pipelineName, callType, null, null, null, QueryHelpers.ParseQuery(request.QueryString.Value))
         };
     }
@@ -83,6 +84,18 @@ public class AzureOpenAIDetector
             null);
     }
 
+    private IncomingCallDetails DetectFile(string pipelineName, HttpRequest request)
+    {
+        return new IncomingCallDetails(
+            pipelineName,
+            AICallType.Files,
+            null,
+            null,
+            null,
+            null,
+            QueryHelpers.ParseQuery(request.QueryString.Value));
+    }
+
     private IncomingCallDetails DetectTranslation(string pipelineName, string deploymentName, HttpRequest request)
     {
         return new IncomingCallDetails(
@@ -138,30 +151,37 @@ public class AzureOpenAIDetector
             null);
     }
     
-    private async Task<IncomingCallDetails> DetectAssistant(string pipelineName, string assistantName, HttpRequest request, CancellationToken cancellationToken)
-    /// A consumer may want affinity to a particular endpoint.
-    /// </summary>
-    /// <remarks>
-    /// DALLE-2 on Azure Open AI is a good example where the operation is asynchronous involving multiple calls. 
-    /// </remarks>
-    /// <param name="requestQueryString"></param>
-    /// <returns></returns>
-    private string? LookForAffinityOnRequest(Dictionary<string, StringValues> requestQueryString)
+    private async Task<IncomingCallDetails> DetectAssistant(string pipelineName, string? assistantName, HttpRequest request, CancellationToken cancellationToken)
     {
         var requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
         return new IncomingCallDetails(
             pipelineName,
-            AICallType.DALLE3,
+            AICallType.Assistants,
             null,
             null,
             assistantName,
             requestContent,
-                out var affinityMarker))
-            if (affinityMarker.Count == 1)
+            QueryHelpers.ParseQuery(request.QueryString.Value));
+    }
+    
     private async Task<IncomingCallDetails> DetectThread(string pipelineName, HttpRequest request, CancellationToken cancellationToken)
-            {
-            AICallType.DALLE3,
+    {
+        JsonDocument? requestContent = null;
+        string? assistantId = null;
+        if (request.HasJsonContentType() && (request.Method.Equals("post", StringComparison.InvariantCultureIgnoreCase)  || request.Method.Equals("put", StringComparison.InvariantCultureIgnoreCase)))
+        {
+            requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+            assistantId = requestContent.RootElement.TryGetProperty("assistant_id", out var elem)
+                ? elem.GetString()
+                : null;
+        }
+        
+        return new IncomingCallDetails(
+            pipelineName,
+            AICallType.Threads,
             null,
+            null,
+            assistantId,
             requestContent,
             QueryHelpers.ParseQuery(request.QueryString.Value));
     }

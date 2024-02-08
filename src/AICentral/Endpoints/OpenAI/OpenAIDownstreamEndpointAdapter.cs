@@ -124,7 +124,8 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         string? mappedModelName)
     {
         if (aiCallInformation.AICallType == AICallType.Transcription ||
-            aiCallInformation.AICallType == AICallType.Translation)
+            aiCallInformation.AICallType == AICallType.Translation || 
+            aiCallInformation.AICallType == AICallType.Files)
         {
             return Task.FromResult<HttpContent>(MultipartContentHelper.CopyMultipartContent(incomingRequest,
                 mappedModelName, OpenAIWellKnownModelNameField));

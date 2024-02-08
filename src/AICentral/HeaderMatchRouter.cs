@@ -77,10 +77,31 @@ public class HeaderMatchRouter
             .RequireHost(_hostName);
 
         yield return application.MapMethods(
+                "/openai/threads/{*:rest}",
+                new[] { "Get", "Delete", "Post" },
+                async (HttpContext ctx, CancellationToken cancellationToken) =>
+                    (await handler(ctx, null, null, AICallType.Threads, cancellationToken)).ResultHandler)
+            .RequireHost(_hostName);
+
+        yield return application.MapMethods(
                 "/openai/assistants/{assistantId}/{*:rest}",
                 new[] { "Get", "Delete", "Post" },
                 async (HttpContext ctx, CancellationToken cancellationToken, string assistantId) =>
-                    (await handler(ctx, null, assistantId, AICallType.Completions, cancellationToken)).ResultHandler)
+                    (await handler(ctx, null, assistantId, AICallType.Assistants, cancellationToken)).ResultHandler)
+            .RequireHost(_hostName);
+
+        yield return application.MapMethods(
+                "/openai/files",
+                new[] { "Post" },
+                async (HttpContext ctx, CancellationToken cancellationToken) =>
+                    (await handler(ctx, null, null, AICallType.Files, cancellationToken)).ResultHandler)
+            .RequireHost(_hostName);
+
+        yield return application.MapMethods(
+                "/openai/assistants",
+                new[] { "Post" },
+                async (HttpContext ctx, CancellationToken cancellationToken) =>
+                    (await handler(ctx, null, null, AICallType.Assistants, cancellationToken)).ResultHandler)
             .RequireHost(_hostName);
 
         yield return application.MapMethods(
