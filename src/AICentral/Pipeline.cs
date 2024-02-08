@@ -76,10 +76,7 @@ public class Pipeline
         logger.LogDebug("Detected {CallType} from incoming request",
             requestDetails.AICallType);
 
-        var endpointSelector = FindEndpointSelectorOrAffinityServer(requestDetails);
-
-        using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build(context.RequestServices)),
-            endpointSelector);
+        using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build(context.RequestServices)), FindEndpointSelectorOrAffinityServer);
         var requestTagList = new TagList
         {
             { "Deployment", requestDetails.IncomingModelName },

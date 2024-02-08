@@ -6,7 +6,7 @@ namespace AICentral.Endpoints.AzureOpenAI;
 
 public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpointAdapter
 {
-    protected override string[] HeadersToIgnore => ["host", "authorization", "api-key"];
+    protected override string[] HeadersToIgnore => ["x-aicentral-affinity-key", "host", "authorization", "api-key"];
     protected override string[] HeaderPrefixesToCopy => ["x-", "apim", "operation-location", "ms-azureml"];
     private readonly IEndpointAuthorisationHandler _authHandler;
 

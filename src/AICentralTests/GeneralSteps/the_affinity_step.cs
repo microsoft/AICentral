@@ -2,6 +2,7 @@
 using AICentralWeb;
 using Azure;
 using Azure.AI.OpenAI;
+using Azure.AI.OpenAI.Assistants;
 using Azure.Core.Pipeline;
 using Shouldly;
 using Xunit.Abstractions;
@@ -21,34 +22,42 @@ public class the_affinity_step : IClassFixture<TestWebApplicationFactory<Program
         _httpClient = factory.CreateClient();
     }
 
-    [Fact(Skip = "Waiting for Azure SDK to support assistants. I don't need affinity for any other types")]
+    [Fact]
     public async Task can_add_affinity_to_requests_to_allow_stateful_services_like_assistants()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "random",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse(10)));
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200Number2, "random",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse(20)));
+        _factory.Seed(
+            $"https://{AICentralFakeResponses.Endpoint200}/openai/assistants/ass-assistant-123-out?api-version=2024-02-15-preview",
+            () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIAssistantResponse("ass-assistant-123-out")));
+
+        _factory.Seed(
+            $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/assistants/ass-assistant-123-out?api-version=2024-02-15-preview",
+            () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIAssistantResponse("ass-assistant-123-out")));
+
+        _factory.Seed(
+            $"https://{AICentralFakeResponses.Endpoint200}/openai/threads/thread-1/messages?api-version=2024-02-15-preview",
+            () => Task.FromResult(AICentralFakeResponses.FakeMessageResponse("thread-123")));
+
+        _factory.Seed(
+            $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/threads/thread-1/messages?api-version=2024-02-15-preview",
+            () => Task.FromResult(AICentralFakeResponses.FakeMessageResponse("thread-123")));
 
         _httpClient.DefaultRequestHeaders.Add("x-aicentral-affinity-key", "asdfasdfasd");
         
-        var client = new OpenAIClient(
+        var client = new AssistantsClient(
             new Uri("http://azure-to-azure-openai-random-with-affinity.localtest.me"),
             new AzureKeyCredential("123"),
-            // ReSharper disable once RedundantArgumentDefaultValue
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            new AssistantsClientOptions(version: AssistantsClientOptions.ServiceVersion.V2024_02_15_Preview)
             {
-                Transport = new HttpClientTransport(_httpClient),
+                Transport = new HttpClientTransport(_httpClient)
             });
 
 
         //the affinity is set upon the first request being successful. After that, the chosen endpoint is used for all requests
-        var response1 =
-            await client.GetChatCompletionsAsync(new ChatCompletionsOptions("random",
-                [new ChatRequestSystemMessage("Test")]));
+        var response1 = await client.GetAssistantAsync("assistant-in");
 
+        //interact with a threads.
         var theRest = await Task.WhenAll(Enumerable.Range(1, 100).Select(_ =>
-            client.GetChatCompletionsAsync(new ChatCompletionsOptions("random",
-                [new ChatRequestSystemMessage("Test")]))));
+            client.CreateMessageAsync("thread-1", MessageRole.User, "test")));
 
         var chosenServer = response1.GetRawResponse().Headers.Single(x => x.Name == "x-aicentral-server").Value!;
 

@@ -25,7 +25,8 @@ public class AICentralFakeResponses
             {
                 new
                 {
-                    message = "The server had an error processing your request. Sorry about that! You can retry your request, or contact us through an Azure support request at: https://go.microsoft.com/fwlink/?linkid=2213926 if you keep seeing this error. (Please include the request ID 00000000-0000-0000-0000-000000000000 in your email.)",
+                    message =
+                        "The server had an error processing your request. Sorry about that! You can retry your request, or contact us through an Azure support request at: https://go.microsoft.com/fwlink/?linkid=2213926 if you keep seeing this error. (Please include the request ID 00000000-0000-0000-0000-000000000000 in your email.)",
                     type = "server_error",
                     param = (string?)null,
                     code = (string?)null
@@ -37,7 +38,7 @@ public class AICentralFakeResponses
         response.Headers.Add("ms-azureml-model-error-statuscode", "500");
 
         return response;
-    }    
+    }
 
     public static HttpResponseMessage FakeChatCompletionsResponse(int? totalTokens = 126)
     {
@@ -184,6 +185,51 @@ public class AICentralFakeResponses
                 new
                 {
                     url = "https://somewhere-else.com"
+                }
+            }
+        });
+
+        return response;
+    }
+
+    public static HttpResponseMessage FakeAzureOpenAIAssistantResponse(string assistantName)
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK);
+        var created = 1702525391;
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            id = assistantName,
+            @object = "assistant",
+            created_at = created,
+            name = "fred fibnar",
+            model = "gpt-4",
+            instructions = "You are Fred"
+        });
+
+        return response;
+    }
+
+    public static HttpResponseMessage FakeMessageResponse(string threadId)
+    {
+        var response = new HttpResponseMessage(HttpStatusCode.OK);
+        var created = 1702525391;
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            id = "msg_123",
+            @object = "thread.message",
+            created_at = created,
+            thread_id = threadId,
+            role = "user",
+            content = new[]
+            {
+                new
+                {
+                    type = "text",
+                    text = new
+                    {
+                        value = "test message",
+                        annotations = Array.Empty<object>()
+                    }
                 }
             }
         });

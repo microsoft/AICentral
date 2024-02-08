@@ -5,7 +5,7 @@ namespace AICentral.Endpoints.OpenAI;
 
 public class OpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpointAdapter
 {
-    protected override string[] HeadersToIgnore => ["host", "authorization", "api-key"];
+    protected override string[] HeadersToIgnore => ["x-aicentral-affinity-key", "host", "authorization", "api-key"];
     protected override string[] HeaderPrefixesToCopy => ["x-", "openai"];
     internal static readonly Uri OpenAIV1 = new("https://api.openai.com");
 

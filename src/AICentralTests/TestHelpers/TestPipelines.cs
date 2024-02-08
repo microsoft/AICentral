@@ -132,8 +132,8 @@ public static class TestPipelines
         new TestAICentralPipelineBuilder()
             .WithEndpointAffinity(TimeSpan.FromMinutes(1))
             .WithRandomEndpoints(
-                (AICentralFakeResponses.Endpoint200, "random", "Model1"),
-                (AICentralFakeResponses.Endpoint200Number2, "random", "Model1"))
+                (AICentralFakeResponses.Endpoint200, "assistant-in", "ass-assistant-123-out"),
+                (AICentralFakeResponses.Endpoint200Number2, "assistant-in", "ass-assistant-123-out"))
             .WithApiKeyAuth(
                 ("client-1", "123", "234"),
                 ("client-2", "345", "456")

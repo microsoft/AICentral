@@ -127,7 +127,7 @@ public class TestAICentralPipelineBuilder
 
 
     public TestAICentralPipelineBuilder WithRandomEndpoints(
-        params (string hostname, string model, string mappedModel)[] endpoints)
+        params (string hostname, string assistant, string mappedAssistant)[] endpoints)
     {
         _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
             new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
@@ -135,7 +135,10 @@ public class TestAICentralPipelineBuilder
                 $"https://{x.hostname}",
                 "ApiKey",
                 "17f9b7db-f6b7-4b15-a868-38e19bbd88d1",
-                new Dictionary<string, string>()))).ToArray();
+                new Dictionary<string, string>()
+                {
+                    [x.assistant] = x.mappedAssistant
+                }))).ToArray();
 
         _endpointFactory = new RandomEndpointSelectorFactory(_openAiEndpointDispatcherBuilders!);
 

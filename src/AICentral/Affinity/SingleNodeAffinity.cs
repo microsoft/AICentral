@@ -8,9 +8,6 @@ public class SingleNodeAffinity : IPipelineStep
 {
     private readonly TimeSpan _slidingAffinityWindow;
 
-    private static readonly AICallType[]
-        AffinityEndpoints = [AICallType.Threads]; //possibly files as-well.... not really sure.
-
     public SingleNodeAffinity(TimeSpan slidingAffinityWindow)
     {
         _slidingAffinityWindow = slidingAffinityWindow;
