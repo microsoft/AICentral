@@ -1,11 +1,8 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.Metrics;
-using AICentral.ConsumerAuth;
 using AICentral.Core;
 using AICentral.EndpointSelectors;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using ActivitySource = AICentral.ActivitySource;
 
 namespace AICentral;
 
@@ -76,7 +73,8 @@ public class Pipeline
 
         var endpointSelector = FindEndpointSelectorOrAffinityServer(requestDetails);
 
-        using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build(context.RequestServices)), endpointSelector);
+        using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build(context.RequestServices)),
+            endpointSelector);
         var requestTagList = new TagList
         {
             { "Deployment", requestDetails.IncomingModelName },
@@ -117,11 +115,11 @@ public class Pipeline
             if (downsteamMetadata != null)
             {
                 var modelOrDeployment = result.DownstreamUsageInformation.DeploymentName ??
-                                        result.DownstreamUsageInformation.ModelName ?? 
+                                        result.DownstreamUsageInformation.ModelName ??
                                         "";
-                
+
                 var normalisedHostName = result.DownstreamUsageInformation.OpenAIHost.Replace(".", "_");
-                
+
                 if (downsteamMetadata.RemainingTokens != null)
                 {
                     //Gauges don't transmit custom dimensions so I need a new metric name for each host / deployment pair.
@@ -201,10 +199,11 @@ public class Pipeline
 
     public void BuildRoute(WebApplication webApplication)
     {
-        var route = _router.BuildRoute(webApplication,
-            async (HttpContext ctx, CancellationToken token) => (await Execute(ctx, token)).ResultHandler);
-
-        _clientAuthStep.ConfigureRoute(webApplication, route);
-        foreach (var step in _pipelineSteps) step.ConfigureRoute(webApplication, route);
+        foreach (var route in _router.BuildRoutes(webApplication,
+                     async (HttpContext ctx, CancellationToken token) => (await Execute(ctx, token)).ResultHandler))
+        {
+            _clientAuthStep.ConfigureRoute(webApplication, route);
+            foreach (var step in _pipelineSteps) step.ConfigureRoute(webApplication, route);
+        }
     }
 }

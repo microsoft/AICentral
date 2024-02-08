@@ -15,13 +15,51 @@ public class HeaderMatchRouter
     {
         return new { Host = _hostName };
     }
-    
-    public RouteHandlerBuilder BuildRoute(WebApplication application, Delegate handler)
+
+    public IEnumerable<RouteHandlerBuilder> BuildRoutes(WebApplication application, Delegate handler)
     {
-        return application.MapMethods("{*:rest}", new[] { "Get", "Post" }, handler)
+        yield return application.MapMethods(
+                "/openai/images/generations:submit",
+                new[] { "Post" }, handler)
             .RequireHost(_hostName);
+
+        yield return application.MapMethods(
+                "/openai/operations/images/{operationId}",
+                new[] { "Get", "Delete" }, handler)
+            .RequireHost(_hostName);
+
+        yield return application.MapMethods(
+                "/openai/deployments/{deploymentName}/images/generations",
+                new[] { "Post" }, handler)
+            .RequireHost(_hostName);
+
+        yield return application.MapMethods(
+                "/openai/deployments/{deploymentName}/audio/transcriptions",
+                new[] { "Post" }, handler)
+            .RequireHost(_hostName);
+
+        yield return application.MapMethods(
+                "/openai/deployments/{deploymentName}/audio/translations",
+                new[] { "Post" }, handler)
+            .RequireHost(_hostName);
+
+        yield return application.MapMethods(
+                "/openai/deployments/{deploymentName}/chat/completions",
+                new[] { "Post" }, handler)
+            .RequireHost(_hostName);
+
+        yield return application.MapMethods(
+                "/openai/deployments/{deploymentName}/embeddings",
+                new[] { "Post" }, handler)
+            .RequireHost(_hostName);
+
+        yield return application.MapMethods(
+                "/openai/deployments/{deploymentName}/completions",
+                new[] { "Post" }, handler)
+            .RequireHost(_hostName);
+
     }
-    
+
     public static HeaderMatchRouter WithHostHeader(string host)
     {
         return new HeaderMatchRouter(Guard.NotNullOrEmptyOrWhitespace(host, nameof(host)));

@@ -6,11 +6,6 @@ namespace AICentral;
 
 public class AzureOpenAIDetector
 {
-    public bool CanDetect(HttpRequest request)
-    {
-        return request.Path.StartsWithSegments("/openai");
-    }
-
     public async Task<IncomingCallDetails> Detect(string pipelineName, HttpRequest request, CancellationToken cancellationToken)
     {
         request.Path.StartsWithSegments("/openai", out var remainingUrlSegments);
