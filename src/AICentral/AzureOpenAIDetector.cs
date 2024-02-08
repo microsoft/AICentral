@@ -7,19 +7,21 @@ namespace AICentral;
 
 public class AzureOpenAIDetector
 {
-    public async Task<IncomingCallDetails> Detect(string pipelineName, string deploymentName, AICallType callType, HttpRequest request, CancellationToken cancellationToken)
+    public async Task<IncomingCallDetails> Detect(string pipelineName, string? deploymentName, string? assistantName, AICallType callType, HttpRequest request, CancellationToken cancellationToken)
     {
         return callType switch
         {
-            AICallType.Chat => await DetectChat(pipelineName, deploymentName, request, cancellationToken),
-            AICallType.Completions => await DetectCompletions(pipelineName, deploymentName, request, cancellationToken),
-            AICallType.Embeddings => await DetectEmbeddings(pipelineName, deploymentName, request, cancellationToken),
-            AICallType.Transcription => DetectTranscription(pipelineName, deploymentName, request),
-            AICallType.Translation => DetectTranslation(pipelineName, deploymentName, request),
+            AICallType.Chat => await DetectChat(pipelineName, deploymentName!, request, cancellationToken),
+            AICallType.Completions => await DetectCompletions(pipelineName, deploymentName!, request, cancellationToken),
+            AICallType.Embeddings => await DetectEmbeddings(pipelineName, deploymentName!, request, cancellationToken),
+            AICallType.Transcription => DetectTranscription(pipelineName, deploymentName!, request),
+            AICallType.Translation => DetectTranslation(pipelineName, deploymentName!, request),
             AICallType.Operations => DetectOperations(pipelineName, request),
             AICallType.DALLE2 => await DetectDalle2(pipelineName, request, cancellationToken),
-            AICallType.DALLE3 => await DetectDalle3(pipelineName, deploymentName, request, cancellationToken),
-            _ => new IncomingCallDetails(pipelineName, callType, null, null, null, QueryHelpers.ParseQuery(request.QueryString.Value), null)
+            AICallType.DALLE3 => await DetectDalle3(pipelineName, deploymentName!, request, cancellationToken),
+            AICallType.Assistants => await DetectAssistant(pipelineName, assistantName!, request, cancellationToken),
+            AICallType.Threads => await DetectThread(pipelineName, request, cancellationToken),
+            _ => new IncomingCallDetails(pipelineName, callType, null, null, null, QueryHelpers.ParseQuery(request.QueryString.Value))
         };
     }
 
@@ -34,6 +36,7 @@ public class AzureOpenAIDetector
                 requestContent.RootElement.GetProperty("messages").EnumerateArray()
                     .Select(x => x.GetProperty("content").GetString())),
             deploymentName,
+            null,
             requestContent,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
@@ -47,6 +50,7 @@ public class AzureOpenAIDetector
             AICallType.Completions,
             string.Join('\n', requestContent.RootElement.GetProperty("prompt").EnumerateArray().Select(x => x.GetString())),
             deploymentName,
+            null,
             requestContent,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
@@ -60,6 +64,7 @@ public class AzureOpenAIDetector
             AICallType.Embeddings,
             requestContent.RootElement.GetProperty("input").GetString() ?? string.Empty,
             deploymentName,
+            null,
             requestContent,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
@@ -73,6 +78,7 @@ public class AzureOpenAIDetector
             null,
             deploymentName,
             null,
+            null,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
     }
@@ -85,6 +91,7 @@ public class AzureOpenAIDetector
             null,
             deploymentName,
             null,
+            null,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
     }
@@ -95,6 +102,7 @@ public class AzureOpenAIDetector
         return new IncomingCallDetails(
             pipelineName,
             AICallType.DALLE2,
+            null,
             null,
             null,
             requestContent,
@@ -124,12 +132,13 @@ public class AzureOpenAIDetector
             AICallType.DALLE3,
             null,
             deploymentName,
+            null,
             requestContent,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
     }
     
-    /// <summary>
+    private async Task<IncomingCallDetails> DetectAssistant(string pipelineName, string assistantName, HttpRequest request, CancellationToken cancellationToken)
     /// A consumer may want affinity to a particular endpoint.
     /// </summary>
     /// <remarks>
@@ -139,16 +148,21 @@ public class AzureOpenAIDetector
     /// <returns></returns>
     private string? LookForAffinityOnRequest(Dictionary<string, StringValues> requestQueryString)
     {
-        if (requestQueryString.TryGetValue(QueryPartNames.AzureOpenAIHostAffinityQueryStringName,
+        var requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+        return new IncomingCallDetails(
+            pipelineName,
+            AICallType.DALLE3,
+            null,
+            null,
+            assistantName,
+            requestContent,
                 out var affinityMarker))
-        {
             if (affinityMarker.Count == 1)
+    private async Task<IncomingCallDetails> DetectThread(string pipelineName, HttpRequest request, CancellationToken cancellationToken)
             {
-                requestQueryString.Remove(QueryPartNames.AzureOpenAIHostAffinityQueryStringName);
-                return affinityMarker.Single();
-            }
-        }
-
-        return null;
+            AICallType.DALLE3,
+            null,
+            requestContent,
+            QueryHelpers.ParseQuery(request.QueryString.Value));
     }
 }
