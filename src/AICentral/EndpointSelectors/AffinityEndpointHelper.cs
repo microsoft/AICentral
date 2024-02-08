@@ -4,40 +4,30 @@ using AICentral.EndpointSelectors.Single;
 
 namespace AICentral.EndpointSelectors;
 
-public class AffinityEndpointHelper
+internal class AffinityEndpointHelper
 {
     /// <summary>
     /// Affinity requests are denoted by an additional query-string entry that ai-central adds to an outgoing 'location' header.
     /// </summary>
     /// <param name="callInformation"></param>
     /// <param name="availableDispatchers"></param>
-    /// <param name="singleEndpointSelector"></param>
     /// <returns></returns>
-    public static bool IsAffinityRequest(
+    public static IEndpointSelector? FindAffinityRequestEndpoint(
         IncomingCallDetails callInformation,
-        IEnumerable<IEndpointDispatcher> availableDispatchers,
-        out IEndpointSelector? singleEndpointSelector)
+        IEnumerable<IEndpointDispatcher> availableDispatchers)
     {
-        if (callInformation.AICallType == AICallType.Other && callInformation.QueryString != null)
+        if (callInformation.PreferredEndpoint != null)
         {
-            if (callInformation.QueryString.TryGetValue(QueryPartNames.AzureOpenAIHostAffinityHeader,
-                    out var affinityHeader))
+            var aiCentralEndpointDispatcher =
+                availableDispatchers.SingleOrDefault(
+                    x => x.IsAffinityRequestToMe(callInformation.PreferredEndpoint));
+            if (aiCentralEndpointDispatcher != null)
             {
-                if (affinityHeader.Count == 1)
-                {
-                    var aiCentralEndpointDispatcher =
-                        availableDispatchers.SingleOrDefault(x => x.IsAffinityRequestToMe(affinityHeader[0]!));
-                    if (aiCentralEndpointDispatcher != null)
-                    {
-                        singleEndpointSelector = new SingleEndpointSelector(aiCentralEndpointDispatcher);
-                        return true;
-                    }
-                }
+                return new SingleEndpointSelector(aiCentralEndpointDispatcher);
             }
         }
 
-        singleEndpointSelector = null;
-        return false;
+        return null;
     }
 
     public static IEnumerable<IEndpointDispatcher> FlattenedEndpoints(

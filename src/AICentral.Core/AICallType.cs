@@ -26,6 +26,11 @@ public enum AICallType
     DALLE2,
     
     /// <summary>
+    /// DALLE-2 status call (Azure Open AI uses an asynchronous pattern) 
+    /// </summary>
+    Operations,
+    
+    /// <summary>
     /// DALLE-3 call
     /// </summary>
     DALLE3,

@@ -28,9 +28,9 @@ public class HeaderMatchRouter
 
         yield return application.MapMethods(
                 "/openai/operations/{*:rest}",
-                new[] { "Get", "Delete" },
+                new[] { "Get" },
                 async (HttpContext ctx, CancellationToken cancellationToken) =>
-                    (await handler(ctx, null, AICallType.Other, cancellationToken)).ResultHandler)
+                    (await handler(ctx, null, AICallType.Operations, cancellationToken)).ResultHandler)
             .RequireHost(_hostName);
 
         yield return application.MapMethods(

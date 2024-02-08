@@ -80,7 +80,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         var locationRaw = header.Value.Single();
         var location = new Uri(locationRaw);
         var queryParts = QueryHelpers.ParseQuery(location.Query);
-        queryParts.Add(QueryPartNames.AzureOpenAIHostAffinityHeader, EndpointName);
+        queryParts.Add(QueryPartNames.AzureOpenAIHostAffinityQueryStringName, EndpointName);
 
         var builder = new UriBuilder(
             context.Request.Scheme,
