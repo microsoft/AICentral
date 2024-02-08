@@ -6,13 +6,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Endpoints.AzureOpenAI;
 
-public class AzureOpenAIIaiCentralDownstreamEndpointAdapter : IDownstreamEndpointAdapter
+public class AzureOpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 {
     private static readonly string[] HeadersToIgnore = { "host", "authorization", "api-key" };
     private static readonly string[] HeaderPrefixesToCopy = { "x-", "apim", "operation-location", "ms-azureml" };
     private readonly IEndpointAuthorisationHandler _authHandler;
 
-    public AzureOpenAIIaiCentralDownstreamEndpointAdapter(
+    public AzureOpenAIDownstreamEndpointAdapter(
         string id,
         string languageUrl,
         string endpointName,

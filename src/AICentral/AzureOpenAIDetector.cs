@@ -13,8 +13,8 @@ public class AzureOpenAIDetector
             AICallType.Chat => await DetectChat(pipelineName, deploymentName, request, cancellationToken),
             AICallType.Completions => await DetectCompletions(pipelineName, deploymentName, request, cancellationToken),
             AICallType.Embeddings => await DetectEmbeddings(pipelineName, deploymentName, request, cancellationToken),
-            AICallType.Transcription => await DetectTranscription(pipelineName, deploymentName, request, cancellationToken),
-            AICallType.Translation => await DetectTranslation(pipelineName, deploymentName, request, cancellationToken),
+            AICallType.Transcription => DetectTranscription(pipelineName, deploymentName, request),
+            AICallType.Translation => DetectTranslation(pipelineName, deploymentName, request),
             AICallType.DALLE2 => await DetectDalle2(pipelineName, request, cancellationToken),
             AICallType.DALLE3 => await DetectDalle3(pipelineName, deploymentName, request, cancellationToken),
             _ => new IncomingCallDetails(pipelineName, callType, null, null, null, QueryHelpers.ParseQuery(request.QueryString.Value))
@@ -60,7 +60,7 @@ public class AzureOpenAIDetector
             QueryHelpers.ParseQuery(request.QueryString.Value));
     }
 
-    private async Task<IncomingCallDetails> DetectTranscription(string pipelineName, string deploymentName, HttpRequest request, CancellationToken cancellationToken)
+    private IncomingCallDetails DetectTranscription(string pipelineName, string deploymentName, HttpRequest request)
     {
         return new IncomingCallDetails(
             pipelineName,
@@ -71,7 +71,7 @@ public class AzureOpenAIDetector
             QueryHelpers.ParseQuery(request.QueryString.Value));
     }
 
-    private async Task<IncomingCallDetails> DetectTranslation(string pipelineName, string deploymentName, HttpRequest request, CancellationToken cancellationToken)
+    private IncomingCallDetails DetectTranslation(string pipelineName, string deploymentName, HttpRequest request)
     {
         return new IncomingCallDetails(
             pipelineName,
