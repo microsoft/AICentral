@@ -32,8 +32,9 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
         var incomingModelName = callInformation.IncomingModelName ?? string.Empty;
         _modelMappings.TryGetValue(incomingModelName, out var mappedModelName);
 
-        var incomingAssistantName = callInformation.IncomingModelName ?? string.Empty;
+        var incomingAssistantName = callInformation.IncomingAssistantName ?? string.Empty;
         _assistantMappings.TryGetValue(incomingAssistantName, out var mappedAssistantName);
+        mappedAssistantName ??= incomingAssistantName; //We are not transforming outgoing responses (i.e. changing the id of the agent to the friendly one)... so we need to keep the original name
 
         if (IsFixedModelName(callInformation.AICallType, callInformation.IncomingModelName, out var fixedModelName)) mappedModelName = fixedModelName;
 
@@ -126,7 +127,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
     }
 
     
-    private static Task<HttpContent> CopyRequestWithMappedModelAndAssistantName(
+    private static Task<HttpContent?> CopyRequestWithMappedModelAndAssistantName(
         IncomingCallDetails aiCallInformation,
         HttpRequest incomingRequest,
         string? mappedModelName,
@@ -137,14 +138,19 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
             aiCallInformation.AICallType == AICallType.Translation ||
             aiCallInformation.AICallType == AICallType.Files)
         {
-            return Task.FromResult<HttpContent>(
+            return Task.FromResult<HttpContent?>(
                 MultipartContentHelper.CopyMultipartContent(incomingRequest, mappedModelName));
+        }
+
+        if (aiCallInformation.RequestContent == null)
+        {
+            return Task.FromResult<HttpContent?>(null);
         }
 
         if (aiCallInformation.IncomingModelName != mappedModelName ||
             aiCallInformation.IncomingAssistantName != mappedAssistantName)
         {
-            return Task.FromResult<HttpContent>(
+            return Task.FromResult<HttpContent?>(
                 new StringContent(
                     JsonSerializer.Serialize(
                         AddModelAndAssistantName(
@@ -154,7 +160,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
                     Encoding.UTF8, "application/json"));
         }
 
-        return Task.FromResult<HttpContent>(new StringContent(
+        return Task.FromResult<HttpContent?>(new StringContent(
             JsonSerializer.Serialize(aiCallInformation.RequestContent),
             Encoding.UTF8,
             "application/json"));

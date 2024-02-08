@@ -153,7 +153,12 @@ public class AzureOpenAIDetector
     
     private async Task<IncomingCallDetails> DetectAssistant(string pipelineName, string? assistantName, HttpRequest request, CancellationToken cancellationToken)
     {
-        var requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+        JsonDocument? requestContent = null;
+        if (request.HasJsonContentType() && (request.Method.Equals("post", StringComparison.InvariantCultureIgnoreCase)  || request.Method.Equals("put", StringComparison.InvariantCultureIgnoreCase)))
+        {
+            requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+        }
+
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Assistants,

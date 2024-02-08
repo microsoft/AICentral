@@ -79,9 +79,9 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
     {
         var pathPiece = aiCallInformation.AICallType switch
         {
-            AICallType.Files => context.Request.Path.Value!.Replace("/openai/", "/"), //affinity will ensure the request is going to the right place
-            AICallType.Threads => context.Request.Path.Value!.Replace("/openai/", "/"), //affinity will ensure the request is going to the right place
-            AICallType.Assistants => context.Request.Path.Value!.Replace("/openai/", "/").Replace(incomingAssistantName ?? string.Empty, mappedAssistantName),
+            AICallType.Files => context.Request.Path.Value!, //affinity will ensure the request is going to the right place
+            AICallType.Threads => context.Request.Path.Value!, //affinity will ensure the request is going to the right place
+            AICallType.Assistants => context.Request.Path.Value!.Replace(incomingAssistantName ?? string.Empty, mappedAssistantName),
             _ => context.Request.Path.Value
         };
 
