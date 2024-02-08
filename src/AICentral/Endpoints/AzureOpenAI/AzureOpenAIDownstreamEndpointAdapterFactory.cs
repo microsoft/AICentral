@@ -72,7 +72,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
 
     public IDownstreamEndpointAdapter Build()
     {
-        return new AzureOpenAIIaiCentralDownstreamEndpointAdapter(_id, _languageUrl, _endpointName, _authHandler);
+        return new AzureOpenAIDownstreamEndpointAdapter(_id, _languageUrl, _endpointName, _authHandler);
     }
 
     public object WriteDebug()

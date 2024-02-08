@@ -7,7 +7,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Endpoints.OpenAI;
 
-public class OpenAIIaiCentralDownstreamEndpointAdapter : IDownstreamEndpointAdapter
+public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
 {
     private static readonly string[] HeadersToIgnore = { "host", "authorization", "api-key" };
     private static readonly string[] HeaderPrefixesToCopy = { "x-", "openai" };
@@ -22,7 +22,7 @@ public class OpenAIIaiCentralDownstreamEndpointAdapter : IDownstreamEndpointAdap
     public Uri BaseUrl { get; }
     public string EndpointName { get; }
 
-    public OpenAIIaiCentralDownstreamEndpointAdapter(
+    public OpenAIDownstreamEndpointAdapter(
         string id,
         string endpointName,
         Dictionary<string, string> modelMappings,
@@ -75,7 +75,9 @@ public class OpenAIIaiCentralDownstreamEndpointAdapter : IDownstreamEndpointAdap
         return callInformation.AICallType != AICallType.Other && string.IsNullOrWhiteSpace(mappedModelName);
     }
 
-    private async Task<HttpRequestMessage> BuildNewRequest(HttpContext context, IncomingCallDetails callInformation,
+    private async Task<HttpRequestMessage> BuildNewRequest(
+        HttpContext context, 
+        IncomingCallDetails callInformation,
         string? mappedModelName)
     {
         var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method),
@@ -116,7 +118,7 @@ public class OpenAIIaiCentralDownstreamEndpointAdapter : IDownstreamEndpointAdap
             didHaveRequestLimitHeader ? remainingRequests : null));
     }
 
-    private static Task<HttpContent> CopyResponseWithMappedModelName(
+    private static Task<HttpContent> CopyRequestWithMappedModelName(
         IncomingCallDetails aiCallInformation,
         HttpRequest incomingRequest,
         string? mappedModelName)
@@ -159,15 +161,15 @@ public class OpenAIIaiCentralDownstreamEndpointAdapter : IDownstreamEndpointAdap
         string? mappedModelName)
     {
         //if there is a model change then set the model on a new outbound JSON request. Else copy the content with no changes
-        if (aiCallInformation.AICallType != AICallType.Other)
+        if (aiCallInformation.AICallType == AICallType.Other)
         {
-            newRequest.Content =
-                await CopyResponseWithMappedModelName(aiCallInformation, context.Request, mappedModelName);
+            //Byte for byte copy as we don't know enough to get any smarter
+            newRequest.Content = new StreamContent(context.Request.Body);
+            newRequest.Content.Headers.Add("Content-Type", context.Request.Headers.ContentType.ToString());
         }
         else
         {
-            newRequest.Content = new StreamContent(context.Request.Body);
-            newRequest.Content.Headers.Add("Content-Type", context.Request.Headers.ContentType.ToString());
+            newRequest.Content = await CopyRequestWithMappedModelName(aiCallInformation, context.Request, mappedModelName);
         }
 
         newRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);

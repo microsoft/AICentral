@@ -21,7 +21,7 @@ public class OpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAdapter
         _maxConcurrency = maxConcurrency;
 
         _endpointDispatcher = new Lazy<IDownstreamEndpointAdapter>(() =>
-            new OpenAIIaiCentralDownstreamEndpointAdapter(_id, endpointName, _modelMappings, apiKey, _organization));
+            new OpenAIDownstreamEndpointAdapter(_id, endpointName, _modelMappings, apiKey, _organization));
     }
 
     public void RegisterServices(HttpMessageHandler? httpMessageHandler, IServiceCollection services)
@@ -58,7 +58,7 @@ public class OpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAdapter
         return new
         {
             Type = "OpenAI",
-            Url = OpenAIIaiCentralDownstreamEndpointAdapter.OpenAIV1,
+            Url = OpenAIDownstreamEndpointAdapter.OpenAIV1,
             Mappings = _modelMappings,
             Organization = _organization
         };
