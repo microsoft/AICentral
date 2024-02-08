@@ -30,7 +30,7 @@ public class the_lowest_latency_endpoint_selector : IClassFixture<TestWebApplica
             });
         _factory.SeedChatCompletions(AICentralFakeResponses.SlowEndpoint, "random", async () =>
             {
-                await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(15, 50)));
+                await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(25, 60)));
                 return AICentralFakeResponses.FakeChatCompletionsResponse();
             });
 
