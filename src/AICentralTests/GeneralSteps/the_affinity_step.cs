@@ -21,7 +21,7 @@ public class the_affinity_step : IClassFixture<TestWebApplicationFactory<Program
         _httpClient = factory.CreateClient();
     }
 
-    [Fact]
+    [Fact(Skip = "Waiting for Azure SDK to support assistants. I don't need affinity for any other types")]
     public async Task can_add_affinity_to_requests_to_allow_stateful_services_like_assistants()
     {
         _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "random",
@@ -29,6 +29,8 @@ public class the_affinity_step : IClassFixture<TestWebApplicationFactory<Program
         _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200Number2, "random",
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse(20)));
 
+        _httpClient.DefaultRequestHeaders.Add("x-aicentral-affinity-key", "asdfasdfasd");
+        
         var client = new OpenAIClient(
             new Uri("http://azure-to-azure-openai-random-with-affinity.localtest.me"),
             new AzureKeyCredential("123"),
@@ -50,8 +52,11 @@ public class the_affinity_step : IClassFixture<TestWebApplicationFactory<Program
 
         var chosenServer = response1.GetRawResponse().Headers.Single(x => x.Name == "x-aicentral-server").Value!;
 
-        theRest
+        var responseServers = theRest
             .Select(x => x.GetRawResponse().Headers.Single(h => h.Name == "x-aicentral-server").Value)
+            .ToArray();
+        
+        responseServers
             .ShouldAllBe(x => x == chosenServer);
     }
 }
