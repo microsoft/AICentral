@@ -123,7 +123,7 @@ public class Pipeline
                                         result.DownstreamUsageInformation.ModelName ??
                                         "";
 
-                var normalisedHostName = result.DownstreamUsageInformation.OpenAIHost.Replace(".", "_");
+                var normalisedHostName = result.DownstreamUsageInformation.OpenAIHost?.Replace(".", "_") ?? string.Empty;
 
                 if (downsteamMetadata.RemainingTokens != null)
                 {

@@ -8,7 +8,6 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
 {
     protected override string[] HeadersToIgnore => ["host", "authorization", "api-key"];
     protected override string[] HeaderPrefixesToCopy => ["x-", "apim", "operation-location", "ms-azureml"];
-    private readonly Dictionary<string, string> _assistantMappings;
     private readonly IEndpointAuthorisationHandler _authHandler;
 
     public AzureOpenAIDownstreamEndpointAdapter(
@@ -18,7 +17,6 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
         Dictionary<string, string> assistantMappings,
         IEndpointAuthorisationHandler authHandler): base(id, new Uri(languageUrl), endpointName, new Dictionary<string, string>(), assistantMappings)
     {
-        _assistantMappings = assistantMappings;
         _authHandler = authHandler;
     }
 

@@ -49,7 +49,8 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
                         context,
                         callInformation,
                         null,
-                        _iaiCentralDownstreamEndpointAdapter.BaseUrl.Host
+                        _iaiCentralDownstreamEndpointAdapter.BaseUrl.Host,
+                        EndpointName
                     ),
                     result!);
             }
@@ -134,6 +135,7 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
         var pipelineResponse = await responseGenerator.BuildResponse(
             new DownstreamRequestInformation(
                 _iaiCentralDownstreamEndpointAdapter.BaseUrl.Host,
+                EndpointName,
                 callInformation.AICallType,
                 callInformation.IncomingModelName,
                 callInformation.PromptText,

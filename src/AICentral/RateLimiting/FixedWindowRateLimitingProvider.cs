@@ -101,7 +101,8 @@ public class FixedWindowRateLimitingProvider : IPipelineStep, IPipelineStepFacto
                 context, 
                 aiCallInformation, 
                 null, 
-                string.Empty),
+                null,
+                null),
             resultHandler);
     }
 

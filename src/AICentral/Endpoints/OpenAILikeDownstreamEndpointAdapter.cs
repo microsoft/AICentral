@@ -29,11 +29,11 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
     public async Task<Either<HttpRequestMessage, IResult>> BuildRequest(IncomingCallDetails callInformation,
         HttpContext context)
     {
-        var incomingModelName = callInformation.IncomingModelName ?? string.Empty;
-        _modelMappings.TryGetValue(incomingModelName, out var mappedModelName);
+        var incomingModelName = callInformation.IncomingModelName;
+        _modelMappings.TryGetValue(incomingModelName ?? string.Empty, out var mappedModelName);
 
-        var incomingAssistantName = callInformation.IncomingAssistantName ?? string.Empty;
-        _assistantMappings.TryGetValue(incomingAssistantName, out var mappedAssistantName);
+        var incomingAssistantName = callInformation.IncomingAssistantName;
+         _assistantMappings.TryGetValue(incomingAssistantName ?? string.Empty, out var mappedAssistantName);
         mappedAssistantName ??= incomingAssistantName; //We are not transforming outgoing responses (i.e. changing the id of the agent to the friendly one)... so we need to keep the original name
 
         if (IsFixedModelName(callInformation.AICallType, callInformation.IncomingModelName, out var fixedModelName)) mappedModelName = fixedModelName;

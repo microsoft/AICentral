@@ -1,5 +1,6 @@
 ﻿using System.Threading.RateLimiting;
 using AICentral;
+using AICentral.Affinity;
 using AICentral.BulkHead;
 using AICentral.Configuration;
 using AICentral.ConsumerAuth;
@@ -30,6 +31,7 @@ public class TestAICentralPipelineBuilder
     private int? _allowedConcurrency;
     private RateLimitingLimitType? _fixedWindowLimitType;
     private RateLimitingLimitType? _tokenLimitType;
+    private TimeSpan? _endpointAffinityTimespan;
 
     public TestAICentralPipelineBuilder WithApiKeyAuth(params (string clientName, string key1, string key2)[] clients)
     {
@@ -206,6 +208,13 @@ public class TestAICentralPipelineBuilder
             steps.Add(stepId);
         }
 
+        if (_endpointAffinityTimespan != null)
+        {
+            var stepId = Guid.NewGuid().ToString();
+            genericSteps[stepId] = new SingleNodeAffinityFactory(_endpointAffinityTimespan.Value);
+            steps.Add(stepId);
+        }
+        
         return new AICentralPipelineAssembler(
             HeaderMatchRouter.WithHostHeader,
             new Dictionary<string, IPipelineStepFactory>()
@@ -267,6 +276,12 @@ public class TestAICentralPipelineBuilder
         _openAiEndpointDispatcherBuilders = new[]
             { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
 
+        return this;
+    }
+
+    public TestAICentralPipelineBuilder WithEndpointAffinity(TimeSpan affinityTimespan)
+    {
+        _endpointAffinityTimespan = affinityTimespan;
         return this;
     }
 }

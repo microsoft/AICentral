@@ -1,6 +1,6 @@
 ﻿namespace AICentral.Affinity;
 
-public class AffinityConfig
+public class SingleNodeAffinityConfig
 {
     public TimeSpan? SlidingAffinityWindow { get; init; }
 }
