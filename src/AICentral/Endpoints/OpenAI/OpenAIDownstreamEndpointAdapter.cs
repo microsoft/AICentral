@@ -75,7 +75,9 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         return callInformation.AICallType != AICallType.Other && string.IsNullOrWhiteSpace(mappedModelName);
     }
 
-    private async Task<HttpRequestMessage> BuildNewRequest(HttpContext context, IncomingCallDetails callInformation,
+    private async Task<HttpRequestMessage> BuildNewRequest(
+        HttpContext context, 
+        IncomingCallDetails callInformation,
         string? mappedModelName)
     {
         var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method),
@@ -116,7 +118,7 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
             didHaveRequestLimitHeader ? remainingRequests : null));
     }
 
-    private static Task<HttpContent> CopyResponseWithMappedModelName(
+    private static Task<HttpContent> CopyRequestWithMappedModelName(
         IncomingCallDetails aiCallInformation,
         HttpRequest incomingRequest,
         string? mappedModelName)
@@ -159,15 +161,15 @@ public class OpenAIDownstreamEndpointAdapter : IDownstreamEndpointAdapter
         string? mappedModelName)
     {
         //if there is a model change then set the model on a new outbound JSON request. Else copy the content with no changes
-        if (aiCallInformation.AICallType != AICallType.Other)
+        if (aiCallInformation.AICallType == AICallType.Other)
         {
-            newRequest.Content =
-                await CopyResponseWithMappedModelName(aiCallInformation, context.Request, mappedModelName);
+            //Byte for byte copy as we don't know enough to get any smarter
+            newRequest.Content = new StreamContent(context.Request.Body);
+            newRequest.Content.Headers.Add("Content-Type", context.Request.Headers.ContentType.ToString());
         }
         else
         {
-            newRequest.Content = new StreamContent(context.Request.Body);
-            newRequest.Content.Headers.Add("Content-Type", context.Request.Headers.ContentType.ToString());
+            newRequest.Content = await CopyRequestWithMappedModelName(aiCallInformation, context.Request, mappedModelName);
         }
 
         newRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
