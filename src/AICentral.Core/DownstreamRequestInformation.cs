@@ -9,4 +9,4 @@ namespace AICentral.Core;
 /// <param name="Prompt">The prompt passed by the consumer</param>
 /// <param name="StartDate">When the call to the downstream was made</param>
 /// <param name="Duration">Duration of the downstream call</param>
-public record DownstreamRequestInformation(string LanguageUrl, AICallType CallType, string? DeploymentName, string? Prompt, DateTimeOffset StartDate, TimeSpan Duration);
+public record DownstreamRequestInformation(string LanguageUrl, string InternalEndpointName, AICallType CallType, string? DeploymentName, string? Prompt, DateTimeOffset StartDate, TimeSpan Duration);

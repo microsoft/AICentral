@@ -127,4 +127,17 @@ public static class TestPipelines
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, 5)
             .Assemble("azure-with-bulkhead-on-endpoint.localtest.me");
+    
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithRandomAffinityBasedAzureOpenAIEndpoints() =>
+        new TestAICentralPipelineBuilder()
+            .WithEndpointAffinity(TimeSpan.FromMinutes(1))
+            .WithRandomEndpoints(
+                (AICentralFakeResponses.Endpoint200, "assistant-in", "ass-assistant-123-out"),
+                (AICentralFakeResponses.Endpoint200Number2, "assistant-in", "ass-assistant-123-out"))
+            .WithApiKeyAuth(
+                ("client-1", "123", "234"),
+                ("client-2", "345", "456")
+            )
+            .Assemble("azure-to-azure-openai-random-with-affinity.localtest.me");
+
 }

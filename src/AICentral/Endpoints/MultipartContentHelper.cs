@@ -12,8 +12,7 @@ public static class MultipartContentHelper
     /// </summary>
     public static MultipartFormDataContent CopyMultipartContent(
         HttpRequest incomingRequest,
-        string? mappedModelName,
-        string? modelNameProperty = null)
+        string? mappedModelName)
     {
         var newContent = new MultipartFormDataContent(incomingRequest.GetMultipartBoundary());
 
@@ -27,7 +26,7 @@ public static class MultipartContentHelper
 
         foreach (var item in incomingRequest.Form)
         {
-            if (item.Key == modelNameProperty)
+            if (item.Key == "model")
             {
                 if (mappedModelName != null || item.Value.Count > 0)
                 {

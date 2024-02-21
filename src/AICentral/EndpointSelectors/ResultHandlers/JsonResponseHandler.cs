@@ -44,6 +44,7 @@ public static class JsonResponseHandler
 
             var chatRequestInformation = new DownstreamUsageInformation(
                 requestInformation.LanguageUrl,
+                requestInformation.InternalEndpointName,
                 model,
                 requestInformation.DeploymentName,
                 context.User.Identity?.Name ?? string.Empty,
@@ -67,6 +68,7 @@ public static class JsonResponseHandler
         {
             var chatRequestInformation = new DownstreamUsageInformation(
                 requestInformation.LanguageUrl,
+                requestInformation.InternalEndpointName,
                 null,
                 requestInformation.DeploymentName,
                 context.User.Identity?.Name ?? string.Empty,

@@ -7,19 +7,22 @@ namespace AICentral;
 
 public class AzureOpenAIDetector
 {
-    public async Task<IncomingCallDetails> Detect(string pipelineName, string deploymentName, AICallType callType, HttpRequest request, CancellationToken cancellationToken)
+    public async Task<IncomingCallDetails> Detect(string pipelineName, string? deploymentName, string? assistantName, AICallType callType, HttpRequest request, CancellationToken cancellationToken)
     {
         return callType switch
         {
-            AICallType.Chat => await DetectChat(pipelineName, deploymentName, request, cancellationToken),
-            AICallType.Completions => await DetectCompletions(pipelineName, deploymentName, request, cancellationToken),
-            AICallType.Embeddings => await DetectEmbeddings(pipelineName, deploymentName, request, cancellationToken),
-            AICallType.Transcription => DetectTranscription(pipelineName, deploymentName, request),
-            AICallType.Translation => DetectTranslation(pipelineName, deploymentName, request),
+            AICallType.Chat => await DetectChat(pipelineName, deploymentName!, request, cancellationToken),
+            AICallType.Completions => await DetectCompletions(pipelineName, deploymentName!, request, cancellationToken),
+            AICallType.Embeddings => await DetectEmbeddings(pipelineName, deploymentName!, request, cancellationToken),
+            AICallType.Transcription => DetectTranscription(pipelineName, deploymentName!, request),
+            AICallType.Translation => DetectTranslation(pipelineName, deploymentName!, request),
             AICallType.Operations => DetectOperations(pipelineName, request),
             AICallType.DALLE2 => await DetectDalle2(pipelineName, request, cancellationToken),
-            AICallType.DALLE3 => await DetectDalle3(pipelineName, deploymentName, request, cancellationToken),
-            _ => new IncomingCallDetails(pipelineName, callType, null, null, null, QueryHelpers.ParseQuery(request.QueryString.Value), null)
+            AICallType.DALLE3 => await DetectDalle3(pipelineName, deploymentName!, request, cancellationToken),
+            AICallType.Assistants => await DetectAssistant(pipelineName, assistantName, request, cancellationToken),
+            AICallType.Threads => await DetectThread(pipelineName, request, cancellationToken),
+            AICallType.Files => DetectFile(pipelineName, request),
+            _ => new IncomingCallDetails(pipelineName, callType, null, null, null, null, QueryHelpers.ParseQuery(request.QueryString.Value), null)
         };
     }
 
@@ -34,6 +37,7 @@ public class AzureOpenAIDetector
                 requestContent.RootElement.GetProperty("messages").EnumerateArray()
                     .Select(x => x.GetProperty("content").GetString())),
             deploymentName,
+            null,
             requestContent,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
@@ -47,6 +51,7 @@ public class AzureOpenAIDetector
             AICallType.Completions,
             string.Join('\n', requestContent.RootElement.GetProperty("prompt").EnumerateArray().Select(x => x.GetString())),
             deploymentName,
+            null,
             requestContent,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
@@ -60,6 +65,7 @@ public class AzureOpenAIDetector
             AICallType.Embeddings,
             requestContent.RootElement.GetProperty("input").GetString() ?? string.Empty,
             deploymentName,
+            null,
             requestContent,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
@@ -73,6 +79,20 @@ public class AzureOpenAIDetector
             null,
             deploymentName,
             null,
+            null,
+            QueryHelpers.ParseQuery(request.QueryString.Value),
+            null);
+    }
+
+    private IncomingCallDetails DetectFile(string pipelineName, HttpRequest request)
+    {
+        return new IncomingCallDetails(
+            pipelineName,
+            AICallType.Files,
+            null,
+            null,
+            null,
+            null,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
     }
@@ -84,6 +104,7 @@ public class AzureOpenAIDetector
             AICallType.Translation,
             null,
             deploymentName,
+            null,
             null,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
@@ -97,10 +118,12 @@ public class AzureOpenAIDetector
             AICallType.DALLE2,
             null,
             null,
+            null,
             requestContent,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
-    }    
+    }
+    
     private IncomingCallDetails DetectOperations(string pipelineName, HttpRequest request)
     {
         var queryString = QueryHelpers.ParseQuery(request.QueryString.Value);
@@ -109,6 +132,7 @@ public class AzureOpenAIDetector
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Operations,
+            null,
             null,
             null,
             null,
@@ -124,6 +148,49 @@ public class AzureOpenAIDetector
             AICallType.DALLE3,
             null,
             deploymentName,
+            null,
+            requestContent,
+            QueryHelpers.ParseQuery(request.QueryString.Value),
+            null);
+    }
+    
+    private async Task<IncomingCallDetails> DetectAssistant(string pipelineName, string? assistantName, HttpRequest request, CancellationToken cancellationToken)
+    {
+        JsonDocument? requestContent = null;
+        if (request.HasJsonContentType() && (request.Method.Equals("post", StringComparison.InvariantCultureIgnoreCase)  || request.Method.Equals("put", StringComparison.InvariantCultureIgnoreCase)))
+        {
+            requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+        }
+
+        return new IncomingCallDetails(
+            pipelineName,
+            AICallType.Assistants,
+            null,
+            null,
+            assistantName,
+            requestContent,
+            QueryHelpers.ParseQuery(request.QueryString.Value),
+            null);
+    }
+    
+    private async Task<IncomingCallDetails> DetectThread(string pipelineName, HttpRequest request, CancellationToken cancellationToken)
+    {
+        JsonDocument? requestContent = null;
+        string? assistantId = null;
+        if (request.HasJsonContentType() && (request.Method.Equals("post", StringComparison.InvariantCultureIgnoreCase)  || request.Method.Equals("put", StringComparison.InvariantCultureIgnoreCase)))
+        {
+            requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+            assistantId = requestContent.RootElement.TryGetProperty("assistant_id", out var elem)
+                ? elem.GetString()
+                : null;
+        }
+        
+        return new IncomingCallDetails(
+            pipelineName,
+            AICallType.Threads,
+            null,
+            null,
+            assistantId,
             requestContent,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);

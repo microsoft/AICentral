@@ -7,6 +7,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
     private readonly IEndpointAuthorisationHandler _authHandler;
     private readonly string _endpointName;
     private readonly string _languageUrl;
+    private readonly Dictionary<string, string> _assistantMappings;
     private readonly string _id;
     private readonly int? _maxConcurrency;
     
@@ -15,12 +16,14 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
         string languageUrl,
         string authenticationType,
         string? authenticationKey,
+        Dictionary<string, string> assistantMappings,
         int? maxConcurrency = null)
     {
         _id = Guid.NewGuid().ToString();
 
         _endpointName = endpointName;
         _languageUrl = languageUrl;
+        _assistantMappings = assistantMappings;
         _maxConcurrency = maxConcurrency;
 
         _authHandler = authenticationType.ToLowerInvariant() switch
@@ -67,12 +70,13 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
             Guard.NotNull(properties.LanguageEndpoint, nameof(properties.LanguageEndpoint)),
             authenticationType,
             properties.ApiKey,
+            properties.AssistantMappings ?? new Dictionary<string, string>(),
             properties.MaxConcurrency);
     }
 
     public IDownstreamEndpointAdapter Build()
     {
-        return new AzureOpenAIDownstreamEndpointAdapter(_id, _languageUrl, _endpointName, _authHandler);
+        return new AzureOpenAIDownstreamEndpointAdapter(_id, _languageUrl, _endpointName, _assistantMappings, _authHandler);
     }
 
     public object WriteDebug()

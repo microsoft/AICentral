@@ -5,9 +5,9 @@
     "Uri": "/openai/deployments/gpt-3.5-turbo/images/generations?api-version=2023-12-01-preview",
     "Method": "POST",
     "Headers": {
-      "api-key": "80a59060-63f8-4a19-a5ce-ad1a44157897",
       "Accept": "application/json",
-      "x-ms-return-client-request-id": "true"
+      "x-ms-return-client-request-id": "true",
+      "api-key": "80a59060-63f8-4a19-a5ce-ad1a44157897"
     },
     "ContentType": "application/json",
     "Content": "{\"model\":\"gpt-3.5-turbo\",\"prompt\":\"Me building an Open AI Reverse Proxy\"}"

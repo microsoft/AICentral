@@ -6,6 +6,8 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral;
 
+public delegate Task<AICentralResponse> AIHandler(HttpContext context, string? deploymentName, string? assistantName, AICallType callType, CancellationToken cancellationToken);
+
 /// <summary>
 /// Represents a Pipeline. This class is the main entry path for a request after it's been matched by a route.
 /// It's a stateless class which emits telemetry, but the main work of executing steps is performed by the
@@ -42,12 +44,12 @@ public class Pipeline
     /// containing only that downstream server.
     /// </remarks>
     /// <param name="context"></param>
+    /// <param name="assistantName"></param>
     /// <param name="callType"></param>
     /// <param name="cancellationToken"></param>
     /// <param name="deploymentName"></param>
     /// <returns></returns>
-    private async Task<AICentralResponse> Execute(HttpContext context, string? deploymentName, AICallType callType,
-        CancellationToken cancellationToken)
+    private async Task<AICentralResponse> Execute(HttpContext context, string? deploymentName, string? assistantName, AICallType callType, CancellationToken cancellationToken)
     {
         var sw = new Stopwatch();
         sw.Start();
@@ -69,16 +71,12 @@ public class Pipeline
 
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
 
-        var requestDetails =
-            await new AzureOpenAIDetector().Detect(_name, deploymentName, callType, context.Request, cancellationToken);
+        var requestDetails = await new AzureOpenAIDetector().Detect(_name, deploymentName, assistantName, callType, context.Request, cancellationToken);
 
         logger.LogDebug("Detected {CallType} from incoming request",
             requestDetails.AICallType);
 
-        var endpointSelector = FindEndpointSelectorOrAffinityServer(requestDetails);
-
-        using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build(context.RequestServices)),
-            endpointSelector);
+        using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build(context.RequestServices)), FindEndpointSelectorOrAffinityServer);
         var requestTagList = new TagList
         {
             { "Deployment", requestDetails.IncomingModelName },
@@ -122,7 +120,7 @@ public class Pipeline
                                         result.DownstreamUsageInformation.ModelName ??
                                         "";
 
-                var normalisedHostName = result.DownstreamUsageInformation.OpenAIHost.Replace(".", "_");
+                var normalisedHostName = result.DownstreamUsageInformation.OpenAIHost?.Replace(".", "_") ?? string.Empty;
 
                 if (downsteamMetadata.RemainingTokens != null)
                 {

@@ -48,7 +48,8 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.AzureOpenAIServiceWithClientPartitionedTokenRateLimiter(),
                 TestPipelines.AzureOpenAIServiceWithRandomOpenAIEndpoints(),
                 TestPipelines.AzureOpenAIServiceWithRandomOpenAIEndpointsDifferentModelMappings(),
-                TestPipelines.AzureOpenAIServiceWith404Endpoint()
+                TestPipelines.AzureOpenAIServiceWith404Endpoint(),
+                TestPipelines.AzureOpenAIServiceWithRandomAffinityBasedAzureOpenAIEndpoints()
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));

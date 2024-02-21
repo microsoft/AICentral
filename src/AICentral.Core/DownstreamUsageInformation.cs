@@ -4,7 +4,8 @@
 /// Represents information about the Downstream AI Service usage information
 /// </summary>
 public record DownstreamUsageInformation(
-    string OpenAIHost,
+    string? InternalEndpointName,
+    string? OpenAIHost,
     string? ModelName,
     string? DeploymentName,
     string Client,
@@ -25,9 +26,11 @@ public record DownstreamUsageInformation(
         HttpContext context, 
         IncomingCallDetails incomingCallDetails,
         ResponseMetadata? responseMetadata,
-        string hostUriBase)
+        string? hostUriBase,
+        string? internalEndpointName)
         =>
             new DownstreamUsageInformation(
+                internalEndpointName,
                 hostUriBase,
                 string.Empty,
                 string.Empty,

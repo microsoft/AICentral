@@ -6,15 +6,16 @@ namespace AICentral;
 
 public class PipelineExecutor : IResponseGenerator, IDisposable
 {
-    private readonly IEndpointSelector _iaiCentralEndpointSelector;
+    private readonly Func<IncomingCallDetails, IEndpointSelector> _endpointSelectorChooser;
     private readonly IEnumerator<IPipelineStep> _pipelineEnumerator;
     private readonly IList<IPipelineStep> _outputHandlers = new List<IPipelineStep>();
+    private IEndpointSelector? _endpointSelector;
 
     public PipelineExecutor(
         IEnumerable<IPipelineStep> steps,
-        IEndpointSelector iaiCentralEndpointSelector)
+        Func<IncomingCallDetails, IEndpointSelector> endpointSelectorChooser)
     {
-        _iaiCentralEndpointSelector = iaiCentralEndpointSelector;
+        _endpointSelectorChooser = endpointSelectorChooser;
         _pipelineEnumerator = steps.GetEnumerator();
     }
 
@@ -28,7 +29,12 @@ public class PipelineExecutor : IResponseGenerator, IDisposable
             return _pipelineEnumerator.Current.Handle(context, requestDetails, Next, cancellationToken);
         }
 
-        return _iaiCentralEndpointSelector.Handle(context, requestDetails, true, this, cancellationToken);
+        //Once we have enumerated the steps, work out which endpoint selector is going to handle the request.
+        //If a step detects affinity then we need to honour it.
+        _endpointSelector = _endpointSelectorChooser(requestDetails);
+        
+        
+        return _endpointSelector.Handle(context, requestDetails, true, this, cancellationToken);
     }
 
     public void Dispose()
@@ -52,7 +58,7 @@ public class PipelineExecutor : IResponseGenerator, IDisposable
         ResponseMetadata responseMetadata,
         CancellationToken cancellationToken)
     {
-        await _iaiCentralEndpointSelector.BuildResponseHeaders(context, rawResponse, responseMetadata.SanitisedHeaders);
+        await _endpointSelector!.BuildResponseHeaders(context, rawResponse, responseMetadata.SanitisedHeaders);
         
         foreach (var completedStep in _outputHandlers)
         {

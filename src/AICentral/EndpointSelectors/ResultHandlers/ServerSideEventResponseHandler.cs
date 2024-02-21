@@ -95,6 +95,7 @@ public static class ServerSideEventResponseHandler
 
         var chatRequestInformation = new DownstreamUsageInformation(
             requestInformation.LanguageUrl,
+            requestInformation.InternalEndpointName,
             model,
             requestInformation.DeploymentName,
             context.User.Identity?.Name ?? "unknown",
