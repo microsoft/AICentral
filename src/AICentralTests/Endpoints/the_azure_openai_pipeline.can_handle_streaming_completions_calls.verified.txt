@@ -1,0 +1,23 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/openai/deployments/ModelStream/completions?api-version=2023-12-01-preview",
+    "Method": "POST",
+    "Headers": {
+      "Accept": "application/json",
+      "x-ms-return-client-request-id": "true",
+      "api-key": "80a59060-63f8-4a19-a5ce-ad1a44157897"
+    },
+    "ContentType": "application/json",
+    "Content": "{\"prompt\":[\"You are a helpful assistant.\"],\"stream\":true,\"model\":\"ModelStream\"}"
+  }
+],
+  Response:
+{
+  "m_MaxCapacity": 2147483647,
+  "Capacity": 2048,
+  "m_StringValue": " or weather pattern.\n\nRaindrops on petals\n\nReflecting their beauty bright\n\nNature’s gentle gift\n\nDORA AWARD-WINNING PLAYWRIGHT, ACTOR, & DIRECTOR, AUDREY DWYER\n\nBorn in London, England, Audrey Dwyer is an award-winning theatre artist who arrived in Canada in the early 90s. She has worked extensively as a director, actor, and writer across the country for over twenty years. Her most recent work includes directing the world premiere of The Secret Life of a Mother, a play by Hannah Moscovitch for the Theatre Centre in Toronto; directing the world premiere of Tracey Power’s Miss Shakespeare at Western Canada Theatre; and her own play, Calpurnia, at Nightwood Theatre. Calpurnia won the Gwen Pharis Ringwood Award for Drama at the Alberta Literary Awards and was nominated for two Dora Mavor Moore Awards. Audrey has also worked as a performer with companies including Soulpepper, Obsidian Theatre, National Arts Centre, and Factory Theatre. She is a graduate of the National Theatre School of Canada and the University of Alberta, has won numerous awards for her work, and is a member of the Royal Court Theatre/British Council International Playwriting residency, where she is developing a new play.\n\n1. What are you currently working on?\n\nI am working on a few things at the moment. I am collaborating with my partner to set up a new theatre company (more to come on that), and I am writing a TV pilot about a black woman in her 40s who suddenly inherits a fortune and has to deal with the consequences of that. I am also working on a new play which is a bit of a departure for me",
+  "m_currentThread": 0
+}
+}

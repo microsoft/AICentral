@@ -22,7 +22,7 @@ public class AzureOpenAIDetector
             AICallType.Assistants => await DetectAssistant(pipelineName, assistantName, request, cancellationToken),
             AICallType.Threads => await DetectThread(pipelineName, request, cancellationToken),
             AICallType.Files => DetectFile(pipelineName, request),
-            _ => new IncomingCallDetails(pipelineName, callType, null, null, null, null, QueryHelpers.ParseQuery(request.QueryString.Value), null)
+            _ => new IncomingCallDetails(pipelineName, callType, AICallResponseType.NonStreaming, null, null, null, null, QueryHelpers.ParseQuery(request.QueryString.Value), null)
         };
     }
 
@@ -32,6 +32,11 @@ public class AzureOpenAIDetector
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Chat,
+            requestContent.RootElement.TryGetProperty("stream", out var stream) ? 
+                stream.GetBoolean()
+                    ? AICallResponseType.Streaming 
+                    : AICallResponseType.NonStreaming 
+                : AICallResponseType.NonStreaming,
             string.Join(
                 '\n',
                 requestContent.RootElement.GetProperty("messages").EnumerateArray()
@@ -49,6 +54,11 @@ public class AzureOpenAIDetector
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Completions,
+            requestContent.RootElement.TryGetProperty("stream", out var stream) ? 
+                stream.GetBoolean() 
+                    ? AICallResponseType.Streaming 
+                    : AICallResponseType.NonStreaming 
+                : AICallResponseType.NonStreaming,
             string.Join('\n', requestContent.RootElement.GetProperty("prompt").EnumerateArray().Select(x => x.GetString())),
             deploymentName,
             null,
@@ -63,6 +73,7 @@ public class AzureOpenAIDetector
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Embeddings,
+            AICallResponseType.NonStreaming,
             requestContent.RootElement.GetProperty("input").GetString() ?? string.Empty,
             deploymentName,
             null,
@@ -76,6 +87,7 @@ public class AzureOpenAIDetector
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Transcription,
+            AICallResponseType.NonStreaming,
             null,
             deploymentName,
             null,
@@ -89,6 +101,7 @@ public class AzureOpenAIDetector
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Files,
+            AICallResponseType.NonStreaming,
             null,
             null,
             null,
@@ -102,6 +115,7 @@ public class AzureOpenAIDetector
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Translation,
+            AICallResponseType.NonStreaming,
             null,
             deploymentName,
             null,
@@ -116,6 +130,7 @@ public class AzureOpenAIDetector
         return new IncomingCallDetails(
             pipelineName,
             AICallType.DALLE2,
+            AICallResponseType.NonStreaming,
             null,
             null,
             null,
@@ -132,6 +147,7 @@ public class AzureOpenAIDetector
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Operations,
+            AICallResponseType.NonStreaming,
             null,
             null,
             null,
@@ -146,6 +162,7 @@ public class AzureOpenAIDetector
         return new IncomingCallDetails(
             pipelineName,
             AICallType.DALLE3,
+            AICallResponseType.NonStreaming,
             null,
             deploymentName,
             null,
@@ -165,6 +182,7 @@ public class AzureOpenAIDetector
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Assistants,
+            AICallResponseType.NonStreaming,
             null,
             null,
             assistantName,
@@ -188,6 +206,7 @@ public class AzureOpenAIDetector
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Threads,
+            AICallResponseType.NonStreaming,
             null,
             null,
             assistantId,

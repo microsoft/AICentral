@@ -8,4 +8,4 @@ namespace AICentral.Core;
 /// <param name="SanitisedHeaders"></param>
 /// <param name="RemainingTokens"></param>
 /// <param name="RemainingRequests"></param>
-public record ResponseMetadata(Dictionary<string, StringValues> SanitisedHeaders, bool RequiresAffinityOnSubsequentRequests, long? RemainingTokens, long? RemainingRequests);
+public record ResponseMetadata(Dictionary<string, StringValues> SanitisedHeaders, long? RemainingTokens, long? RemainingRequests);

@@ -72,7 +72,6 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
 
         return Task.FromResult(new ResponseMetadata(
             SanitiseHeaders(context, openAiResponse),
-            false,
             didHaveTokenLimitHeader ? remainingTokens : null,
             didHaveRequestLimitHeader ? remainingRequests : null));
     }
