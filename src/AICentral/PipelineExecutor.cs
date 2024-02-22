@@ -84,7 +84,7 @@ public class PipelineExecutor : IResponseGenerator, IDisposable
 
         if (openAiResponse.Content.Headers.ContentType?.MediaType?.Equals("text/event-stream") ?? false)
         {
-            logger.LogDebug("Detected chunked encoding response. Streaming response back to consumer");
+            logger.LogDebug("Detected SSE response. Streaming response back to consumer");
             return ServerSideEventResponseHandler.Handle(
                 context,
                 cancellationToken,

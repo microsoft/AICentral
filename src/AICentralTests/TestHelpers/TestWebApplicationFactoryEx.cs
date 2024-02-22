@@ -97,7 +97,7 @@ public static class TestWebApplicationFactoryEx
         return new Dictionary<string, object>()
         {
             ["Requests"] = JsonConvert.SerializeObject(webApplicationFactory.EndpointRequests(), Formatting.Indented),
-            ["Response"] = JsonConvert.SerializeObject(JObject.FromObject(response), Formatting.Indented)
+            ["Response"] = JsonConvert.SerializeObject(response, Formatting.Indented)
         };
     }
 

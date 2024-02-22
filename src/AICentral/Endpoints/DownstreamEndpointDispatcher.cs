@@ -94,6 +94,7 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
         //this will retry the operation for retryable status codes. When we reach here we might not want
         //to stream the response if it wasn't a 200.
         sw.Stop();
+        var timeToResponse = sw.Elapsed;
 
         if (openAiResponse.StatusCode == HttpStatusCode.TooManyRequests)
         {
@@ -126,6 +127,7 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
             openAiResponse.EnsureSuccessStatusCode();
         }
 
+        sw.Restart();
         var preProcessResult = await _iaiCentralDownstreamEndpointAdapter.ExtractResponseMetadata(
             callInformation,
             context,
@@ -137,14 +139,19 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
                 _iaiCentralDownstreamEndpointAdapter.BaseUrl.Host,
                 EndpointName,
                 callInformation.AICallType,
+                callInformation.AICallResponseType,
                 callInformation.IncomingModelName,
                 callInformation.PromptText,
                 now,
-                sw.Elapsed),
+                timeToResponse),
             context,
             openAiResponse,
             preProcessResult,
             cancellationToken);
+
+        sw.Stop();
+        var timeToRespondToConsumer = sw.Elapsed;
+        logger.LogDebug("AICentral took {DownstreamTime} to get initial response from AI Service and {ConsumerTime} to retransmit the response", timeToResponse, timeToRespondToConsumer);
 
         return pipelineResponse;
     }

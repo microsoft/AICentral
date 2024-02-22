@@ -51,6 +51,7 @@
     <ItemGroup>
       <None Remove="Assets\Recording.m4a" />
         <EmbeddedResource Include="Assets\FakeOpenAIStreamingResponse.testcontent.txt" />
+        <EmbeddedResource Include="Assets\FakeStreamingCompletionsResponse.testcontent.txt" />
         <EmbeddedResource Include="Assets\FakeStreamingResponse.testcontent.txt" />
       <EmbeddedResource Include="Assets\Recording.m4a" />
     </ItemGroup>

@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AICentral" Version="0.13.0" />
+      <PackageReference Include="AICentral" Version="0.15.0-pullrequest0084-0003" />
       <PackageReference Include="AICentral.Logging.AzureMonitor" Version="0.13.0" />
       <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.0.0" />
     </ItemGroup>

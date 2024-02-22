@@ -107,13 +107,27 @@ public class AICentralFakeResponses
         return response;
     }
 
+    public static async Task<HttpResponseMessage> FakeStreamingChatCompletionsResponse()
+    {
+        using var stream =
+            new StreamReader(
+                typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
+                    "AICentralTests.Assets.FakeStreamingResponse.testcontent.txt")!);
+
+        var content = await stream.ReadToEndAsync();
+        var response = new HttpResponseMessage();
+        response.Content = new SSEResponse(content);
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
+        response.Headers.TransferEncodingChunked = true;
+        return response;
+    }
 
     public static async Task<HttpResponseMessage> FakeStreamingCompletionsResponse()
     {
         using var stream =
             new StreamReader(
                 typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
-                    "AICentralTests.Assets.FakeStreamingResponse.testcontent.txt")!);
+                    "AICentralTests.Assets.FakeStreamingCompletionsResponse.testcontent.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
@@ -344,7 +358,7 @@ public class AICentralFakeResponses
             {
                 await writer.WriteAsync($"{line}\n");
                 await writer.FlushAsync();
-                await Task.Delay(TimeSpan.FromMilliseconds(25));
+                await Task.Delay(TimeSpan.FromMilliseconds(5));
             }
         }
 

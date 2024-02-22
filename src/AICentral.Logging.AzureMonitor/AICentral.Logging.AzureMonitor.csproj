@@ -14,16 +14,13 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AICentral.Core" Version="0.15.0-pullrequest0084-0003" />
         <PackageReference Include="Serilog" Version="3.1.1" />
         <PackageReference Include="Serilog.Sinks.AzureAnalytics" Version="5.0.0" />
     </ItemGroup>
 
     <ItemGroup>
         <None Include="readme.md" Pack="true" PackagePath="\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\AICentral.Core\AICentral.Core.csproj" />
     </ItemGroup>
 
 </Project>

@@ -152,7 +152,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public async Task can_handle_streaming_calls()
     {
         _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "ModelStream",
-            AICentralFakeResponses.FakeStreamingCompletionsResponse, "2023-12-01-preview");
+            AICentralFakeResponses.FakeStreamingChatCompletionsResponse, "2023-12-01-preview");
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-azure.localtest.me"),
@@ -174,6 +174,35 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         await foreach (var completion in completions)
         {
             output.Append(completion.ContentUpdate);
+        }
+
+        await Verify(_factory.VerifyRequestsAndResponses(output));
+    }
+
+    
+    [Fact]
+    public async Task can_handle_streaming_completions_calls()
+    {
+        _factory.SeedCompletions(AICentralFakeResponses.Endpoint200, "ModelStream",
+            AICentralFakeResponses.FakeStreamingCompletionsResponse);
+
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-azure.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            // ReSharper disable once RedundantArgumentDefaultValue
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            {
+                Transport = new HttpClientTransport(_httpClient),
+            });
+
+        var completions = await client.GetCompletionsStreamingAsync(
+            new CompletionsOptions("ModelStream", ["You are a helpful assistant."]));
+
+        var output = new StringBuilder();
+
+        await foreach (var completion in completions)
+        {
+            output.Append(completion.Choices.Any() ? completion.Choices[0].Text : string.Empty);
         }
 
         await Verify(_factory.VerifyRequestsAndResponses(output));
