@@ -1,6 +1,6 @@
 using AICentral.Core;
 
-namespace AICentral.EndpointSelectors.ResultHandlers;
+namespace AICentral.ResultHandlers;
 
 public class StreamResponseHandler
 {

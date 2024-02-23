@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using AICentral;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Azure;
@@ -206,6 +207,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         }
 
         await Verify(_factory.VerifyRequestsAndResponses(output));
+
     }
 
     [Fact]

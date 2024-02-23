@@ -2,7 +2,7 @@ using System.Net;
 using System.Text.Json;
 using AICentral.Core;
 
-namespace AICentral.EndpointSelectors.ResultHandlers;
+namespace AICentral.ResultHandlers;
 
 public static class JsonResponseHandler
 {

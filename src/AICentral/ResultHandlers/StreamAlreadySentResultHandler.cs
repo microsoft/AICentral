@@ -1,4 +1,4 @@
-﻿namespace AICentral.EndpointSelectors.ResultHandlers;
+﻿namespace AICentral.ResultHandlers;
 
 public class StreamAlreadySentResultHandler: IResult
 {

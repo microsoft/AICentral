@@ -1,5 +1,5 @@
 ﻿using AICentral.Core;
-using AICentral.EndpointSelectors.ResultHandlers;
+using AICentral.ResultHandlers;
 using Microsoft.Extensions.Primitives;
 
 namespace AICentral;
