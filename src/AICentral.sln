@@ -1,0 +1,100 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral", "AICentral\AICentral.csproj", "{087EA4B4-12E0-4517-B481-97ECE4F0FED9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{5BA03E0C-710E-428C-B5C7-8B62F99793A8}"
+	ProjectSection(SolutionItems) = preProject
+		..\.dockerignore = ..\.dockerignore
+		..\.gitattributes = ..\.gitattributes
+		..\.gitignore = ..\.gitignore
+		..\CODE_OF_CONDUCT.md = ..\CODE_OF_CONDUCT.md
+		..\CONTRIBUTING.md = ..\CONTRIBUTING.md
+		..\Dockerfile = ..\Dockerfile
+		..\GitVersion.yml = ..\GitVersion.yml
+		..\LICENSE = ..\LICENSE
+		..\README.md = ..\README.md
+		..\RELEASENOTES.md = ..\RELEASENOTES.md
+		..\SECURITY.md = ..\SECURITY.md
+		..\SUPPORT.md = ..\SUPPORT.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentralWeb", "AICentralWeb\AICentralWeb.csproj", "{0A14EC5A-DBA0-4065-BFF1-BE0E355268EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentralTests", "AICentralTests\AICentralTests.csproj", "{D2418EC8-B3E5-4534-A8E1-1384D05CEA53}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F59D2976-A325-496C-85DE-F7C9C1A2D987}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{DBC3240F-7978-4C3D-B266-CA5B378992B8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{8B63898C-9A97-4FB0-8C9C-7155691E0C36}"
+	ProjectSection(SolutionItems) = preProject
+		..\docs\AI Central.drawio.svg = ..\docs\AI Central.drawio.svg
+		..\docs\configuration.md = ..\docs\configuration.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.Core", "AICentral.Core\AICentral.Core.csproj", "{A61ABFAB-3E7F-400F-8F89-C3CC3705AA91}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{407570C3-E43F-4075-A539-217B1C3713F8}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\build-aicentral.yaml = ..\.github\workflows\build-aicentral.yaml
+		..\.github\workflows\build-aicentral-azure-monitor-logger.yaml = ..\.github\workflows\build-aicentral-azure-monitor-logger.yaml
+		..\.github\workflows\build-aicentral-core.yaml = ..\.github\workflows\build-aicentral-core.yaml
+		..\.github\workflows\codeql.yml = ..\.github\workflows\codeql.yml
+		..\.github\workflows\docker.yaml = ..\.github\workflows\docker.yaml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.Logging.AzureMonitor", "AICentral.Logging.AzureMonitor\AICentral.Logging.AzureMonitor.csproj", "{D6C1FAC7-ABC6-49A4-A2A4-6FAD13A9B483}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{56E7C71B-7A4B-4A52-9CF9-E8F593C33D8A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleTwo", "..\samples\consumer-aad-with-local-token-rate-limiting\SampleTwo.csproj", "{0B378F87-C21D-4302-A56F-67687757664C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleOne", "..\samples\prioritised-endpoint-with-fallback-and-streaming-quota-logging\SampleOne.csproj", "{A670A0BF-7921-4F13-A926-B33573042730}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{087EA4B4-12E0-4517-B481-97ECE4F0FED9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{087EA4B4-12E0-4517-B481-97ECE4F0FED9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{087EA4B4-12E0-4517-B481-97ECE4F0FED9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{087EA4B4-12E0-4517-B481-97ECE4F0FED9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A14EC5A-DBA0-4065-BFF1-BE0E355268EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A14EC5A-DBA0-4065-BFF1-BE0E355268EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A14EC5A-DBA0-4065-BFF1-BE0E355268EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A14EC5A-DBA0-4065-BFF1-BE0E355268EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2418EC8-B3E5-4534-A8E1-1384D05CEA53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2418EC8-B3E5-4534-A8E1-1384D05CEA53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2418EC8-B3E5-4534-A8E1-1384D05CEA53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2418EC8-B3E5-4534-A8E1-1384D05CEA53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A61ABFAB-3E7F-400F-8F89-C3CC3705AA91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A61ABFAB-3E7F-400F-8F89-C3CC3705AA91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A61ABFAB-3E7F-400F-8F89-C3CC3705AA91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A61ABFAB-3E7F-400F-8F89-C3CC3705AA91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D6C1FAC7-ABC6-49A4-A2A4-6FAD13A9B483}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D6C1FAC7-ABC6-49A4-A2A4-6FAD13A9B483}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D6C1FAC7-ABC6-49A4-A2A4-6FAD13A9B483}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D6C1FAC7-ABC6-49A4-A2A4-6FAD13A9B483}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B378F87-C21D-4302-A56F-67687757664C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B378F87-C21D-4302-A56F-67687757664C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B378F87-C21D-4302-A56F-67687757664C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B378F87-C21D-4302-A56F-67687757664C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A670A0BF-7921-4F13-A926-B33573042730}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A670A0BF-7921-4F13-A926-B33573042730}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A670A0BF-7921-4F13-A926-B33573042730}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A670A0BF-7921-4F13-A926-B33573042730}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{087EA4B4-12E0-4517-B481-97ECE4F0FED9} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
+		{0A14EC5A-DBA0-4065-BFF1-BE0E355268EF} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
+		{D2418EC8-B3E5-4534-A8E1-1384D05CEA53} = {DBC3240F-7978-4C3D-B266-CA5B378992B8}
+		{8B63898C-9A97-4FB0-8C9C-7155691E0C36} = {5BA03E0C-710E-428C-B5C7-8B62F99793A8}
+		{A61ABFAB-3E7F-400F-8F89-C3CC3705AA91} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
+		{407570C3-E43F-4075-A539-217B1C3713F8} = {5BA03E0C-710E-428C-B5C7-8B62F99793A8}
+		{D6C1FAC7-ABC6-49A4-A2A4-6FAD13A9B483} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
+		{0B378F87-C21D-4302-A56F-67687757664C} = {56E7C71B-7A4B-4A52-9CF9-E8F593C33D8A}
+		{A670A0BF-7921-4F13-A926-B33573042730} = {56E7C71B-7A4B-4A52-9CF9-E8F593C33D8A}
+	EndGlobalSection
+EndGlobal
