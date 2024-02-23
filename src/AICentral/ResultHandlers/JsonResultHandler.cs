@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace AICentral.EndpointSelectors.ResultHandlers;
+namespace AICentral.ResultHandlers;
 
 public class JsonResultHandler : IResult, IDisposable
 {

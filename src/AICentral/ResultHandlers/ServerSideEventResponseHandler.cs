@@ -1,12 +1,10 @@
 using System.Collections.Concurrent;
-using System.Reflection.Metadata;
-using System.Text;
 using System.Text.Json;
 using AICentral.Core;
 using Microsoft.Extensions.Primitives;
 using SharpToken;
 
-namespace AICentral.EndpointSelectors.ResultHandlers;
+namespace AICentral.ResultHandlers;
 
 public static class ServerSideEventResponseHandler
 {
