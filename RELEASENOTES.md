@@ -1,5 +1,8 @@
 Release Notes:
 
+0.15.1 (23/feb/2024)
+Fixed missing token counts for streaming completions requests
+
 0.15.0 (22/feb/2024)
 Adding a flag to show Streaming requests
 
