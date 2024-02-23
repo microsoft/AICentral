@@ -20,6 +20,8 @@ public class Pipeline
     private readonly IPipelineStepFactory _clientAuthStep;
     private readonly IList<IPipelineStepFactory> _pipelineSteps;
     private readonly IEndpointSelectorFactory _endpointSelector;
+    
+    public const string XAiCentralStreamingTokenHeader = "x-aicentral-streaming-tokens";
 
     public Pipeline(
         string name,
@@ -86,74 +88,28 @@ public class Pipeline
 
         try
         {
+            if (requestDetails.AICallResponseType == AICallResponseType.Streaming && context.Response.SupportsTrailers())
+            {
+                context.Response.DeclareTrailer(XAiCentralStreamingTokenHeader);
+            }
+
             var result = await executor.Next(context, requestDetails, cancellationToken);
             sw.Stop();
 
             logger.LogInformation("Executed Pipeline {PipelineName}", _name);
 
-            var tagList = new TagList
+            if (result.DownstreamUsageInformation.StreamingResponse.GetValueOrDefault() && 
+                result.DownstreamUsageInformation.EstimatedTokens?.Value.EstimatedCompletionTokens != null &&
+                context.Response.SupportsTrailers())
             {
-                { "Deployment", result.DownstreamUsageInformation.DeploymentName },
-                { "Model", result.DownstreamUsageInformation.ModelName },
-                { "Endpoint", result.DownstreamUsageInformation.OpenAIHost },
-                { "Success", result.DownstreamUsageInformation.Success },
-                { "Streaming", result.DownstreamUsageInformation.StreamingResponse },
-                { "Pipeline", _name },
-            };
+                var streamingTokenCount = result.DownstreamUsageInformation.EstimatedTokens!.Value.EstimatedCompletionTokens!.ToString();
 
-            ActivitySources.RecordHistogram(
-                $"request.duration",
-                "ms",
-                sw.ElapsedMilliseconds, tagList);
-
-            if (result.DownstreamUsageInformation.TotalTokens != null)
-            {
-                ActivitySources.RecordHistogram(
-                    $"request.tokens_consumed", "tokens",
-                    result.DownstreamUsageInformation.TotalTokens.Value, tagList);
+                context.Response.AppendTrailer(
+                    XAiCentralStreamingTokenHeader,
+                    streamingTokenCount);
             }
 
-            var downsteamMetadata = result.DownstreamUsageInformation.ResponseMetadata;
-            if (downsteamMetadata != null)
-            {
-                var modelOrDeployment = result.DownstreamUsageInformation.DeploymentName ??
-                                        result.DownstreamUsageInformation.ModelName ??
-                                        "";
-
-                var normalisedHostName = result.DownstreamUsageInformation.OpenAIHost?.Replace(".", "_") ?? string.Empty;
-
-                if (downsteamMetadata.RemainingTokens != null)
-                {
-                    //Gauges don't transmit custom dimensions so I need a new metric name for each host / deployment pair.
-                    ActivitySources.RecordGaugeMetric(
-                        $"downstream.{normalisedHostName}.{modelOrDeployment}.tokens_remaining", "tokens",
-                        downsteamMetadata.RemainingTokens.Value);
-                }
-
-                if (downsteamMetadata.RemainingRequests != null)
-                {
-                    //Gauges don't transmit custom dimensions so I need a new metric name for each host / deployment pair.
-                    ActivitySources.RecordGaugeMetric(
-                        $"downstream.{normalisedHostName}.{modelOrDeployment}.requests_remaining", "tokens",
-                        downsteamMetadata.RemainingRequests.Value);
-                }
-            }
-
-            ActivitySources.RecordHistogram(
-                "downstream.duration",
-                "ms", result.DownstreamUsageInformation.Duration.TotalMilliseconds,
-                tagList);
-
-            activity?.AddTag("AICentral.Duration", sw.ElapsedMilliseconds);
-            activity?.AddTag("AICentral.Downstream.Duration",
-                result.DownstreamUsageInformation.Duration.TotalMilliseconds);
-            activity?.AddTag("AICentral.Deployment", result.DownstreamUsageInformation.DeploymentName);
-            activity?.AddTag("AICentral.Model", result.DownstreamUsageInformation.ModelName);
-            activity?.AddTag("AICentral.CallType", result.DownstreamUsageInformation.CallType);
-            activity?.AddTag("AICentral.TotalTokens", result.DownstreamUsageInformation.TotalTokens);
-            activity?.AddTag("AICentral.OpenAIHost", result.DownstreamUsageInformation.OpenAIHost);
-            activity?.AddTag("AICentral.Streaming", result.DownstreamUsageInformation.StreamingResponse);
-            activity?.AddTag("AICentral.Pipeline", _name);
+            TransmitOtelTelemetry(result, sw, activity);
 
             return result;
         }
@@ -161,6 +117,73 @@ public class Pipeline
         {
             ActivitySources.RecordUpDownCounter("activeRequests", "requests", -1, requestTagList);
         }
+    }
+
+    private void TransmitOtelTelemetry(AICentralResponse result, Stopwatch sw, Activity? activity)
+    {
+        var tagList = new TagList
+        {
+            { "Deployment", result.DownstreamUsageInformation.DeploymentName },
+            { "Model", result.DownstreamUsageInformation.ModelName },
+            { "Endpoint", result.DownstreamUsageInformation.OpenAIHost },
+            { "Success", result.DownstreamUsageInformation.Success },
+            { "Streaming", result.DownstreamUsageInformation.StreamingResponse },
+            { "Pipeline", _name },
+        };
+
+        ActivitySources.RecordHistogram(
+            $"request.duration",
+            "ms",
+            sw.ElapsedMilliseconds, tagList);
+
+        if (result.DownstreamUsageInformation.TotalTokens != null)
+        {
+            ActivitySources.RecordHistogram(
+                $"request.tokens_consumed", "tokens",
+                result.DownstreamUsageInformation.TotalTokens.Value, tagList);
+        }
+
+        var downsteamMetadata = result.DownstreamUsageInformation.ResponseMetadata;
+        if (downsteamMetadata != null)
+        {
+            var modelOrDeployment = result.DownstreamUsageInformation.DeploymentName ??
+                                    result.DownstreamUsageInformation.ModelName ??
+                                    "";
+
+            var normalisedHostName = result.DownstreamUsageInformation.OpenAIHost?.Replace(".", "_") ?? string.Empty;
+
+            if (downsteamMetadata.RemainingTokens != null)
+            {
+                //Gauges don't transmit custom dimensions so I need a new metric name for each host / deployment pair.
+                ActivitySources.RecordGaugeMetric(
+                    $"downstream.{normalisedHostName}.{modelOrDeployment}.tokens_remaining", "tokens",
+                    downsteamMetadata.RemainingTokens.Value);
+            }
+
+            if (downsteamMetadata.RemainingRequests != null)
+            {
+                //Gauges don't transmit custom dimensions so I need a new metric name for each host / deployment pair.
+                ActivitySources.RecordGaugeMetric(
+                    $"downstream.{normalisedHostName}.{modelOrDeployment}.requests_remaining", "tokens",
+                    downsteamMetadata.RemainingRequests.Value);
+            }
+        }
+
+        ActivitySources.RecordHistogram(
+            "downstream.duration",
+            "ms", result.DownstreamUsageInformation.Duration.TotalMilliseconds,
+            tagList);
+
+        activity?.AddTag("AICentral.Duration", sw.ElapsedMilliseconds);
+        activity?.AddTag("AICentral.Downstream.Duration",
+            result.DownstreamUsageInformation.Duration.TotalMilliseconds);
+        activity?.AddTag("AICentral.Deployment", result.DownstreamUsageInformation.DeploymentName);
+        activity?.AddTag("AICentral.Model", result.DownstreamUsageInformation.ModelName);
+        activity?.AddTag("AICentral.CallType", result.DownstreamUsageInformation.CallType);
+        activity?.AddTag("AICentral.TotalTokens", result.DownstreamUsageInformation.TotalTokens);
+        activity?.AddTag("AICentral.OpenAIHost", result.DownstreamUsageInformation.OpenAIHost);
+        activity?.AddTag("AICentral.Streaming", result.DownstreamUsageInformation.StreamingResponse);
+        activity?.AddTag("AICentral.Pipeline", _name);
     }
 
     private IEndpointSelector FindEndpointSelectorOrAffinityServer(IncomingCallDetails requestDetails)

@@ -49,15 +49,31 @@ public static class ServerSideEventResponseHandler
                     var lineObject = JsonDocument.Parse(line.Substring(StreamingLinePrefixLength));
                     model = lineObject.RootElement.GetProperty("model").GetString();
 
-                    if (lineObject.RootElement.TryGetProperty("choices", out var choicesProp))
+                    if (requestInformation.CallType == AICallType.Chat)
                     {
-                        if (choicesProp.GetArrayLength() > 0)
+                        if (lineObject.RootElement.TryGetProperty("choices", out var choicesProp))
                         {
-                            if (choicesProp[0].TryGetProperty("delta", out var deltaProp))
+                            if (choicesProp.GetArrayLength() > 0)
                             {
-                                if (deltaProp.TryGetProperty("content", out var contentProp))
+                                if (choicesProp[0].TryGetProperty("delta", out var deltaProp))
                                 {
-                                    content.Add(contentProp.GetString() ?? string.Empty);
+                                    if (deltaProp.TryGetProperty("content", out var contentProp))
+                                    {
+                                        content.Add(contentProp.GetString() ?? string.Empty);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (requestInformation.CallType == AICallType.Completions)
+                    {
+                        if (lineObject.RootElement.TryGetProperty("choices", out var choicesProp))
+                        {
+                            if (choicesProp.GetArrayLength() > 0)
+                            {
+                                if (choicesProp[0].TryGetProperty("text", out var textProp))
+                                {
+                                    content.Add(textProp.GetString() ?? string.Empty);
                                 }
                             }
                         }
