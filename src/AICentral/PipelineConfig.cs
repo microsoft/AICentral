@@ -29,4 +29,10 @@ public class PipelineConfig
     /// Array of step-names to execute in order
     /// </summary>
     public string[]? Steps { get; init; }
+
+    public OTelConfig? OpenTelemetryConfig
+    {
+        get;
+        init;
+    }
 }
