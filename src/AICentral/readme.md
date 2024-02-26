@@ -23,6 +23,7 @@ This sample produces a AI-Central proxy that
 - Listens on a hostname of your choosing
 - Proxies directly through to a back-end Open AI server
 - Can be accessed using standard SDKs
+- Outputs open-telemetry metrics to capture usage information
 
 ```json
 {
@@ -68,6 +69,7 @@ This sample produces a AI-Central proxy that
         "Host": "mypipeline.mydomain.com",
         "EndpointSelector": "default",
         "AuthProvider": "apikey"
+        
       }
     ]
   }
@@ -85,6 +87,7 @@ This pipeline will:
 - Put a local Asp.Net core rate-limiting policy over the endpoint
 - Add logging to Azure monitor
     - Logs quota, client caller information, and in this case the Prompt but not the response.
+- Publish the client-name as a tag in Open Telemetry
 
 ```json
 {
@@ -97,7 +100,7 @@ This pipeline will:
           "LanguageEndpoint": "https://<my-ai>.openai.azure.com",
           "AuthenticationType": "Entra|EntraPassThrough|ApiKey",
           "MaxConcurrency": 10
-        }~~~~
+        }
       },
       {
         "Type": "OpenAIEndpoint",
@@ -190,7 +193,10 @@ This pipeline will:
           "window-rate-limiter",
           "bulk-head",
           "azure-monitor-logger"
-        ]
+        ],
+        "OpenTelemetryConfig": {
+          "AddClientNameTag": true
+        }
       }
     ]
   }
