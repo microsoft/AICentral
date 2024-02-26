@@ -214,7 +214,8 @@ This pipeline will:
           "WorkspaceId": "<workspace-id>",
           "Key": "<key>",
           "LogPrompt": true,
-          "LogResponse": false
+          "LogResponse": false,
+          "LogClient": true
         }
       }
     ],

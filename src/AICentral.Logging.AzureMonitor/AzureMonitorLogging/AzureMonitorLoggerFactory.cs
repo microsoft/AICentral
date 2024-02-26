@@ -17,7 +17,8 @@ public class AzureMonitorLoggerFactory : IPipelineStepFactory
         string workspaceId,
         string key,
         bool logPrompt,
-        bool logResponse)
+        bool logResponse,
+        bool logClient)
     {
         _workspaceId = workspaceId;
         _logPrompt = logPrompt;
@@ -26,14 +27,14 @@ public class AzureMonitorLoggerFactory : IPipelineStepFactory
                     _workspaceId,
                     key,
                     logName: "AILogs"
-                ).CreateLogger(), _workspaceId, _logPrompt, logResponse
+                ).CreateLogger(), _workspaceId, _logPrompt, logResponse, logClient
         ));
     }
 
     public static string ConfigName => "AzureMonitorLogger";
 
     public static IPipelineStepFactory BuildFromConfig(
-        ILogger logger, 
+        ILogger logger,
         TypeAndNameConfig config)
     {
         var properties = config.TypedProperties<AzureMonitorLoggingConfig>()!;
@@ -43,7 +44,8 @@ public class AzureMonitorLoggerFactory : IPipelineStepFactory
             Guard.NotNull(properties.WorkspaceId, nameof(properties.WorkspaceId)),
             Guard.NotNull(properties.Key, nameof(properties.Key)),
             Guard.NotNull(properties.LogPrompt, nameof(properties.LogPrompt))!.Value,
-            Guard.NotNull(properties.LogResponse, nameof(properties.LogResponse))!.Value
+            Guard.NotNull(properties.LogResponse, nameof(properties.LogResponse))!.Value,
+            properties.LogClient.GetValueOrDefault()
         );
     }
 
@@ -55,7 +57,7 @@ public class AzureMonitorLoggerFactory : IPipelineStepFactory
     public void RegisterServices(IServiceCollection services)
     {
     }
-    
+
     public object WriteDebug()
     {
         return new
