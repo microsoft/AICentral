@@ -86,7 +86,7 @@ This pipeline will:
 - Protect the front-end by requiring an AAD token issued for your own AAD application
 - Put a local Asp.Net core rate-limiting policy over the endpoint
 - Add logging to Azure monitor
-    - Logs quota, client caller information, and in this case the Prompt but not the response.
+    - Logs quota, client caller information (IP and identity name), and in this case the Prompt but not the response.
 - Publish the client-name as a tag in Open Telemetry
 
 ```json
@@ -172,7 +172,8 @@ This pipeline will:
           "WorkspaceId": "<workspace-id>",
           "Key": "<key>",
           "LogPrompt": true,
-          "LogResponse": false
+          "LogResponse": false,
+          "LogClient": true
         }
       },
       {
