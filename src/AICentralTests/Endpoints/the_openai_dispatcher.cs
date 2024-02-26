@@ -11,7 +11,6 @@ using Xunit.Abstractions;
 
 namespace AICentralTests.Endpoints;
 
-[UsesVerify]
 public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Program>>, IDisposable
 {
     private readonly TestWebApplicationFactory<Program> _factory;

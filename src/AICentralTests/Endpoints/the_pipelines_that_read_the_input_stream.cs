@@ -8,7 +8,6 @@ using Xunit.Abstractions;
 
 namespace AICentralTests.Endpoints;
 
-[UsesVerify]
 public class the_pipelines_that_read_the_input_stream : IClassFixture<TestWebApplicationFactory<Program>>, IDisposable
 {
     public void Dispose()

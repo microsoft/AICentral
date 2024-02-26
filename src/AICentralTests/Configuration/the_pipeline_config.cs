@@ -11,7 +11,6 @@ using Newtonsoft.Json;
 
 namespace AICentralTests.Configuration;
 
-[UsesVerify]
 public class the_pipeline_config
 {
     [Fact]

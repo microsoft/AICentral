@@ -13,16 +13,16 @@
         <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.13" />
         <PackageReference Include="Azure.AI.OpenAI.Assistants" Version="1.0.0-beta.2" />
         <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.3.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.2" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
         <PackageReference Include="Shouldly" Version="4.2.1" />
-        <PackageReference Include="Verify.Xunit" Version="22.8.0" />
-        <PackageReference Include="xunit" Version="2.6.3" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.5">
+        <PackageReference Include="Verify.Xunit" Version="23.2.1" />
+        <PackageReference Include="xunit" Version="2.7.0" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.7">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="coverlet.collector" Version="6.0.0">
+        <PackageReference Include="coverlet.collector" Version="6.0.1">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>

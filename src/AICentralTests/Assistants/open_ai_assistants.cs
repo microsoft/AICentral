@@ -7,7 +7,6 @@ using Xunit.Abstractions;
 
 namespace AICentralTests.Assistants;
 
-[UsesVerify]
 public class open_ai_assistants : IClassFixture<TestWebApplicationFactory<Program>>, IDisposable
 {
     private readonly TestWebApplicationFactory<Program> _factory;

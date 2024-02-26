@@ -16,7 +16,6 @@ using Xunit.Abstractions;
 
 namespace AICentralTests.EndpointSelectors;
 
-[UsesVerify]
 public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Program>>
 {
     private readonly TestWebApplicationFactory<Program> _factory;
