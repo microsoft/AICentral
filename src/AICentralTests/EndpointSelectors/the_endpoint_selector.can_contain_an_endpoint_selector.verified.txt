@@ -23,6 +23,9 @@
           ]
         }
       ]
+    },
+    OpenTelemetryConfig: {
+      AddClientNameTag: false
     }
   }
 ]
