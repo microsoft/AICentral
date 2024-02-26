@@ -12,7 +12,6 @@ using Xunit.Abstractions;
 
 namespace AICentralTests.Endpoints;
 
-[UsesVerify]
 public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory<Program>>, IDisposable
 {
     private readonly TestWebApplicationFactory<Program> _factory;

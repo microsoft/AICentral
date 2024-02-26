@@ -6,4 +6,5 @@ public class AzureMonitorLoggingConfig
     public string? Key { get; init; }
     public bool? LogPrompt { get; init; }
     public bool? LogResponse { get; init; }
+    public bool? LogClient { get; init; }
 }

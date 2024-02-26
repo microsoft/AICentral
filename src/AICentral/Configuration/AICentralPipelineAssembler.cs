@@ -104,7 +104,11 @@ public class AICentralPipelineAssembler
                         throw new ArgumentException($"No EndpointSelector for pipeline {pipelineConfig.Name}"))
                         ? _endpointSelectors[pipelineConfig.EndpointSelector ?? string.Empty]
                         : throw new ArgumentException(
-                            $"Cannot find EndpointSelector {pipelineConfig.EndpointSelector}"));
+                            $"Cannot find EndpointSelector {pipelineConfig.EndpointSelector}"),
+                    pipelineConfig.OpenTelemetryConfig ?? new OTelConfig()
+                    {
+                        AddClientNameTag = false
+                    });
 
                 startupLogger.LogInformation("Configured Pipeline {Name} on Host {Host}", pipelineConfig.Name,
                     pipelineConfig.Host);

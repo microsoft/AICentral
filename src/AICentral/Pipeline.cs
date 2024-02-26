@@ -20,7 +20,8 @@ public class Pipeline
     private readonly IPipelineStepFactory _clientAuthStep;
     private readonly IList<IPipelineStepFactory> _pipelineSteps;
     private readonly IEndpointSelectorFactory _endpointSelector;
-    
+    private readonly OTelConfig _openTelemetryConfig;
+
     public const string XAiCentralStreamingTokenHeader = "x-aicentral-streaming-tokens";
 
     public Pipeline(
@@ -28,13 +29,15 @@ public class Pipeline
         HeaderMatchRouter router,
         IPipelineStepFactory clientAuthStep,
         IPipelineStepFactory[] pipelineSteps,
-        IEndpointSelectorFactory endpointSelector)
+        IEndpointSelectorFactory endpointSelector,
+        OTelConfig openTelemetryConfig)
     {
         _name = name;
         _router = router;
         _clientAuthStep = clientAuthStep;
         _pipelineSteps = pipelineSteps.Select(x => x).ToArray();
         _endpointSelector = endpointSelector;
+        _openTelemetryConfig = openTelemetryConfig;
     }
 
     /// <summary>
@@ -109,7 +112,7 @@ public class Pipeline
                     streamingTokenCount);
             }
 
-            TransmitOtelTelemetry(result, sw, activity);
+            TransmitOtelTelemetry(context, result, sw, activity);
 
             return result;
         }
@@ -119,7 +122,7 @@ public class Pipeline
         }
     }
 
-    private void TransmitOtelTelemetry(AICentralResponse result, Stopwatch sw, Activity? activity)
+    private void TransmitOtelTelemetry(HttpContext context, AICentralResponse result, Stopwatch sw, Activity? activity)
     {
         var tagList = new TagList
         {
@@ -130,6 +133,11 @@ public class Pipeline
             { "Streaming", result.DownstreamUsageInformation.StreamingResponse },
             { "Pipeline", _name },
         };
+
+        if (_openTelemetryConfig.AddClientNameTag.GetValueOrDefault())
+        {
+            tagList.Add("ClientName", context.User.Identity?.Name ?? "unknown");
+        }
 
         ActivitySources.RecordHistogram(
             $"request.duration",
@@ -209,7 +217,8 @@ public class Pipeline
             RouteMatch = _router.WriteDebug(),
             ClientAuth = _clientAuthStep.WriteDebug(),
             Steps = _pipelineSteps.Select(x => x.WriteDebug()),
-            EndpointSelector = _endpointSelector.WriteDebug()
+            EndpointSelector = _endpointSelector.WriteDebug(),
+            OpenTelemetryConfig = _openTelemetryConfig
         };
     }
 
