@@ -25,7 +25,7 @@ public interface IDownstreamEndpointAdapter
     /// <param name="requestMessage"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<HttpResponseMessage> DispatchRequest(HttpContext context, HttpResponseMessage requestMessage, CancellationToken cancellationToken);
+    Task<HttpResponseMessage> DispatchRequest(HttpContext context, HttpRequestMessage requestMessage, CancellationToken cancellationToken);
 
     /// <summary>
     /// PreProcess the response from the AI service. This is where you can do things like sanitise headers, or extract remaining tokens and requests.

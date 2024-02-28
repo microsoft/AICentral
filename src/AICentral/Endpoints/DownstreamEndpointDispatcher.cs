@@ -80,14 +80,14 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
         var now = dateTimeProvider.Now;
         var sw = new Stopwatch();
         
+        sw.Start();
+
         var typedDispatcher = context.RequestServices
             .GetRequiredService<ITypedHttpClientFactory<HttpAIEndpointDispatcher>>()
             .CreateClient(
                 context.RequestServices.GetRequiredService<IHttpClientFactory>()
                     .CreateClient(_id)
             );
-
-        sw.Start();
 
         var openAiResponse = await typedDispatcher.Dispatch(newRequest, cancellationToken);
 
