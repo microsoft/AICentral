@@ -9,6 +9,11 @@ public class PreCannedEndpoint: IDownstreamEndpointAdapter, IDownstreamEndpointA
         throw new NotImplementedException();
     }
 
+    public Task<HttpResponseMessage> DispatchRequest(HttpResponseMessage requestMessage, CancellationToken cancellationToken)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<HttpResponseMessage> DispatchRequest(HttpResponseMessage requestMessage)
     {
         throw new NotImplementedException();

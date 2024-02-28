@@ -58,7 +58,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
         }
     }
 
-    public Task<HttpResponseMessage> DispatchRequest(HttpResponseMessage requestMessage)
+    public Task<HttpResponseMessage> DispatchRequest(HttpResponseMessage requestMessage, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
