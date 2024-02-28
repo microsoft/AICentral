@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text;
 using AICentral.Core;
 using Microsoft.Extensions.Primitives;
 
@@ -35,7 +36,7 @@ public class PreCannedEndpointAdapterFactory : IDownstreamEndpointAdapter, IDown
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(_content!)
+            Content = new StringContent(_content!, Encoding.UTF8, "application/json")
         };
         return Task.FromResult(response);
     }

@@ -219,7 +219,7 @@ public class TestAICentralPipelineBuilder
         }
         
         return new AICentralPipelineAssembler(
-            HeaderMatchRouter.WithHostHeader,
+            HostNameMatchRouter.WithHostHeader,
             new Dictionary<string, IPipelineStepFactory>()
             {
                 [id] = _auth ?? new AllowAnonymousClientAuthFactory(),
