@@ -58,6 +58,11 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
         }
     }
 
+    public Task<HttpResponseMessage> DispatchRequest(HttpResponseMessage requestMessage)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<ResponseMetadata> ExtractResponseMetadata(
         IncomingCallDetails callInformationIncomingCallDetails,
         HttpContext context,

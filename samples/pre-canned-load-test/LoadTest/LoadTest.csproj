@@ -16,7 +16,7 @@
 
     <ItemGroup>
       <Content Include="Assets\FakeOpenAIChatCompletionsResponse.json" />
-      <EmbeddedResource Include="Assets\FakeOpenAIStreamingResponse.testcontent.txt" />
+      <EmbeddedResource Include="Assets\FakeOpenAIStreamingResponse.txt" />
     </ItemGroup>
 
 </Project>

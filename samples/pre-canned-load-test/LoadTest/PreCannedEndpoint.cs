@@ -9,6 +9,11 @@ public class PreCannedEndpoint: IDownstreamEndpointAdapter, IDownstreamEndpointA
         throw new NotImplementedException();
     }
 
+    public Task<HttpResponseMessage> DispatchRequest(HttpResponseMessage requestMessage)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<ResponseMetadata> ExtractResponseMetadata(IncomingCallDetails callInformationIncomingCallDetails, HttpContext context,
         HttpResponseMessage openAiResponse)
     {
