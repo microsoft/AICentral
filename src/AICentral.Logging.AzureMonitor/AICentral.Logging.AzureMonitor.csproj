@@ -14,7 +14,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AICentral.Core" Version="0.16.0-pullrequest0087-0007" />
+        <PackageReference Include="AICentral.Core" Version="0.16.0-pullrequest0087-0009" />
         <PackageReference Include="Serilog" Version="3.1.1" />
         <PackageReference Include="Serilog.Sinks.AzureAnalytics" Version="5.0.0" />
     </ItemGroup>
