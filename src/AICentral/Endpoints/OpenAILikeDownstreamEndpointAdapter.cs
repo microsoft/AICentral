@@ -2,6 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using AICentral.Core;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Endpoints;
@@ -58,9 +59,16 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
         }
     }
 
-    public Task<HttpResponseMessage> DispatchRequest(HttpResponseMessage requestMessage, CancellationToken cancellationToken)
+    public async Task<HttpResponseMessage> DispatchRequest(HttpContext context, HttpRequestMessage requestMessage, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var typedDispatcher = context.RequestServices
+            .GetRequiredService<ITypedHttpClientFactory<HttpAIEndpointDispatcher>>()
+            .CreateClient(
+                context.RequestServices.GetRequiredService<IHttpClientFactory>()
+                    .CreateClient(Id)
+            );
+
+        return await typedDispatcher.Dispatch(requestMessage, cancellationToken);
     }
 
     public Task<ResponseMetadata> ExtractResponseMetadata(

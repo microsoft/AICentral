@@ -3,11 +3,8 @@ using System.Net;
 using System.Net.Http.Headers;
 using AICentral.Core;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
-using ActivitySource = AICentral.ActivitySource;
-
 namespace AICentral.Endpoints;
 
 /// <summary>
@@ -82,14 +79,7 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
         
         sw.Start();
 
-        var typedDispatcher = context.RequestServices
-            .GetRequiredService<ITypedHttpClientFactory<HttpAIEndpointDispatcher>>()
-            .CreateClient(
-                context.RequestServices.GetRequiredService<IHttpClientFactory>()
-                    .CreateClient(_id)
-            );
-
-        var openAiResponse = await typedDispatcher.Dispatch(newRequest, cancellationToken);
+        var openAiResponse = await _iaiCentralDownstreamEndpointAdapter.DispatchRequest(context, newRequest, cancellationToken);
 
         //this will retry the operation for retryable status codes. When we reach here we might not want
         //to stream the response if it wasn't a 200.
