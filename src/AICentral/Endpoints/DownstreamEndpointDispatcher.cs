@@ -79,7 +79,7 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
         );
         var now = dateTimeProvider.Now;
         var sw = new Stopwatch();
-
+        
         var typedDispatcher = context.RequestServices
             .GetRequiredService<ITypedHttpClientFactory<HttpAIEndpointDispatcher>>()
             .CreateClient(

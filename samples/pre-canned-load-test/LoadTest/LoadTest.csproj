@@ -14,4 +14,9 @@
       <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.1.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Content Include="Assets\FakeOpenAIChatCompletionsResponse.json" />
+      <EmbeddedResource Include="Assets\FakeOpenAIStreamingResponse.testcontent.txt" />
+    </ItemGroup>
+
 </Project>
