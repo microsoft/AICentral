@@ -2,7 +2,9 @@
   {
     Name: test-pipeline,
     RouteMatch: {
-      Host: my-test-host.localtest.me
+      Host: [
+        my-test-host.localtest.me
+      ]
     },
     ClientAuth: {
       auth: No Consumer Auth
@@ -25,6 +27,7 @@
       ]
     },
     OpenTelemetryConfig: {
+      Transmit: false,
       AddClientNameTag: false
     }
   }

@@ -4,17 +4,16 @@
         <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>SampleOne</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="AICentral" Version="0.16.0-pullrequest0087-0009" />
-      <PackageReference Include="AICentral.Logging.AzureMonitor" Version="0.16.0-pullrequest0087-0007" />
       <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.1.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <_ContentIncludedByDefault Remove="Pages\Index.cshtml" />
+      <EmbeddedResource Include="Assets\FakeOpenAIChatCompletionsResponse.json" />
+      <EmbeddedResource Include="Assets\FakeOpenAIStreamingResponse.txt" />
     </ItemGroup>
 
 </Project>

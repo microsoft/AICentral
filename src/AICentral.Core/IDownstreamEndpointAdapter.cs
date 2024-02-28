@@ -18,6 +18,16 @@ public interface IDownstreamEndpointAdapter
     Task<Either<HttpRequestMessage, IResult>> BuildRequest(IncomingCallDetails incomingCall, HttpContext context);
 
     /// <summary>
+    /// Dispatch the HttpRequestMessage to the downstream AI service.
+    /// Layer in retries / circuit breakers, etc into these calls as per your AI Service requirements.
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="requestMessage"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<HttpResponseMessage> DispatchRequest(HttpContext context, HttpRequestMessage requestMessage, CancellationToken cancellationToken);
+
+    /// <summary>
     /// PreProcess the response from the AI service. This is where you can do things like sanitise headers, or extract remaining tokens and requests.
     /// </summary>
     /// <param name="callInformationIncomingCallDetails"></param>

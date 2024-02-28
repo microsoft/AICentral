@@ -16,7 +16,7 @@ public delegate Task<AICentralResponse> AIHandler(HttpContext context, string? d
 public class Pipeline
 {
     private readonly string _name;
-    private readonly HeaderMatchRouter _router;
+    private readonly HostNameMatchRouter _router;
     private readonly IPipelineStepFactory _clientAuthStep;
     private readonly IList<IPipelineStepFactory> _pipelineSteps;
     private readonly IEndpointSelectorFactory _endpointSelector;
@@ -26,7 +26,7 @@ public class Pipeline
 
     public Pipeline(
         string name,
-        HeaderMatchRouter router,
+        HostNameMatchRouter router,
         IPipelineStepFactory clientAuthStep,
         IPipelineStepFactory[] pipelineSteps,
         IEndpointSelectorFactory endpointSelector,
@@ -82,12 +82,16 @@ public class Pipeline
             requestDetails.AICallType);
 
         using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build(context.RequestServices)), FindEndpointSelectorOrAffinityServer);
+
         var requestTagList = new TagList
         {
             { "Deployment", requestDetails.IncomingModelName },
             { "Pipeline", _name },
         };
-        ActivitySources.RecordUpDownCounter($"activeRequests", "requests", 1, requestTagList);
+        if (_openTelemetryConfig.Transmit.GetValueOrDefault())
+        {
+            ActivitySources.RecordUpDownCounter($"activeRequests", "requests", 1, requestTagList);
+        }
 
         try
         {
@@ -118,12 +122,17 @@ public class Pipeline
         }
         finally
         {
-            ActivitySources.RecordUpDownCounter("activeRequests", "requests", -1, requestTagList);
+            if (_openTelemetryConfig.Transmit.GetValueOrDefault())
+            {
+                ActivitySources.RecordUpDownCounter("activeRequests", "requests", -1, requestTagList);
+            }
         }
     }
 
     private void TransmitOtelTelemetry(HttpContext context, AICentralResponse result, Stopwatch sw, Activity? activity)
     {
+        if (!_openTelemetryConfig.Transmit.GetValueOrDefault()) return;
+        
         var tagList = new TagList
         {
             { "Deployment", result.DownstreamUsageInformation.DeploymentName },

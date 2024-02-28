@@ -10,7 +10,7 @@ namespace AICentral.Configuration;
 /// </summary>
 public class AICentralPipelineAssembler
 {
-    private readonly Func<string, HeaderMatchRouter> _routeBuilder;
+    private readonly Func<string, HostNameMatchRouter> _routeBuilder;
     private readonly Dictionary<string, IPipelineStepFactory> _authProviders;
     private readonly Dictionary<string, IEndpointDispatcherFactory> _endpoints;
     private readonly Dictionary<string, IEndpointSelectorFactory> _endpointSelectors;
@@ -20,7 +20,7 @@ public class AICentralPipelineAssembler
     private bool _servicesAdded;
 
     public AICentralPipelineAssembler(
-        Func<string, HeaderMatchRouter> routeBuilder,
+        Func<string, HostNameMatchRouter> routeBuilder,
         Dictionary<string, IPipelineStepFactory> authProviders,
         Dictionary<string, IEndpointDispatcherFactory> endpoints,
         Dictionary<string, IEndpointSelectorFactory> endpointSelectors,
@@ -107,7 +107,8 @@ public class AICentralPipelineAssembler
                             $"Cannot find EndpointSelector {pipelineConfig.EndpointSelector}"),
                     pipelineConfig.OpenTelemetryConfig ?? new OTelConfig()
                     {
-                        AddClientNameTag = false
+                        AddClientNameTag = false,
+                        Transmit = false
                     });
 
                 startupLogger.LogInformation("Configured Pipeline {Name} on Host {Host}", pipelineConfig.Name,
