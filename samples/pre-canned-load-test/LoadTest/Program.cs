@@ -1,6 +1,5 @@
 using AICentral;
 using AICentral.Configuration;
-using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,11 +17,7 @@ builder.Services
     .UseAzureMonitor();
 
 builder.Services.AddAICentral(
-    builder.Configuration,
-    additionalComponentAssemblies:
-    [
-        typeof(AzureMonitorLoggerFactory).Assembly,
-    ]);
+    builder.Configuration);
 
 var app = builder.Build();
 
