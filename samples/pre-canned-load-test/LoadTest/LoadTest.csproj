@@ -7,13 +7,32 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AICentral" Version="0.16.0-pullrequest0087-0009" />
+      <PackageReference Include="AICentral" Version="0.16.0" />
       <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.1.0" />
     </ItemGroup>
 
     <ItemGroup>
       <EmbeddedResource Include="Assets\FakeOpenAIChatCompletionsResponse.json" />
       <EmbeddedResource Include="Assets\FakeOpenAIStreamingResponse.txt" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="app\publish\web.config" />
+      <_ContentIncludedByDefault Remove="app\build\appsettings.Development.json" />
+      <_ContentIncludedByDefault Remove="app\build\appsettings.json" />
+      <_ContentIncludedByDefault Remove="app\build\Assets\FakeOpenAIChatCompletionsResponse.json" />
+      <_ContentIncludedByDefault Remove="app\build\LoadTest.deps.json" />
+      <_ContentIncludedByDefault Remove="app\build\LoadTest.runtimeconfig.json" />
+      <_ContentIncludedByDefault Remove="app\publish\appsettings.Development.json" />
+      <_ContentIncludedByDefault Remove="app\publish\appsettings.json" />
+      <_ContentIncludedByDefault Remove="app\publish\app\build\appsettings.Development.json" />
+      <_ContentIncludedByDefault Remove="app\publish\app\build\appsettings.json" />
+      <_ContentIncludedByDefault Remove="app\publish\app\build\Assets\FakeOpenAIChatCompletionsResponse.json" />
+      <_ContentIncludedByDefault Remove="app\publish\app\build\LoadTest.deps.json" />
+      <_ContentIncludedByDefault Remove="app\publish\app\build\LoadTest.runtimeconfig.json" />
+      <_ContentIncludedByDefault Remove="app\publish\Assets\FakeOpenAIChatCompletionsResponse.json" />
+      <_ContentIncludedByDefault Remove="app\publish\LoadTest.deps.json" />
+      <_ContentIncludedByDefault Remove="app\publish\LoadTest.runtimeconfig.json" />
     </ItemGroup>
 
 </Project>

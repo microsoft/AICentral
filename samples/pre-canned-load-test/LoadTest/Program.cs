@@ -9,10 +9,9 @@ builder.Services.AddAICentral(
         typeof(Program).Assembly
     });
 
-builder.Logging.AddConsole();
-
 var app = builder.Build();
 
+app.Map("/health", () => "OK");
 app.UseAICentral();
 
 app.Run();
