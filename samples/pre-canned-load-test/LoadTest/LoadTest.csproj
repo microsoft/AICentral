@@ -16,23 +16,4 @@
       <EmbeddedResource Include="Assets\FakeOpenAIStreamingResponse.txt" />
     </ItemGroup>
 
-    <ItemGroup>
-      <_ContentIncludedByDefault Remove="app\publish\web.config" />
-      <_ContentIncludedByDefault Remove="app\build\appsettings.Development.json" />
-      <_ContentIncludedByDefault Remove="app\build\appsettings.json" />
-      <_ContentIncludedByDefault Remove="app\build\Assets\FakeOpenAIChatCompletionsResponse.json" />
-      <_ContentIncludedByDefault Remove="app\build\LoadTest.deps.json" />
-      <_ContentIncludedByDefault Remove="app\build\LoadTest.runtimeconfig.json" />
-      <_ContentIncludedByDefault Remove="app\publish\appsettings.Development.json" />
-      <_ContentIncludedByDefault Remove="app\publish\appsettings.json" />
-      <_ContentIncludedByDefault Remove="app\publish\app\build\appsettings.Development.json" />
-      <_ContentIncludedByDefault Remove="app\publish\app\build\appsettings.json" />
-      <_ContentIncludedByDefault Remove="app\publish\app\build\Assets\FakeOpenAIChatCompletionsResponse.json" />
-      <_ContentIncludedByDefault Remove="app\publish\app\build\LoadTest.deps.json" />
-      <_ContentIncludedByDefault Remove="app\publish\app\build\LoadTest.runtimeconfig.json" />
-      <_ContentIncludedByDefault Remove="app\publish\Assets\FakeOpenAIChatCompletionsResponse.json" />
-      <_ContentIncludedByDefault Remove="app\publish\LoadTest.deps.json" />
-      <_ContentIncludedByDefault Remove="app\publish\LoadTest.runtimeconfig.json" />
-    </ItemGroup>
-
 </Project>
