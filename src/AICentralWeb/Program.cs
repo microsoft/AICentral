@@ -57,6 +57,7 @@ var app = builder.Build();
 
 app.MapRazorPages();
 
+app.Map("/health", () => "OK");
 app.UseAICentral();
 
 app.Run();

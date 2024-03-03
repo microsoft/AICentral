@@ -7,8 +7,9 @@ namespace LoadTest;
 
 public class PreCannedEndpointAdapterFactory : IDownstreamEndpointAdapter, IDownstreamEndpointAdapterFactory
 {
-    private static string? _content;
-    private static readonly Dictionary<string,StringValues> EmptyHeaders = new Dictionary<string, StringValues>();
+    private static readonly Dictionary<string,StringValues> EmptyHeaders = new();
+    private readonly Task<Either<HttpRequestMessage,IResult>> _preCannedRequest;
+    private readonly byte[] _content;
 
     public PreCannedEndpointAdapterFactory(string endpointName)
     {
@@ -21,24 +22,31 @@ public class PreCannedEndpointAdapterFactory : IDownstreamEndpointAdapter, IDown
                 .GetManifestResourceStream("LoadTest.Assets.FakeOpenAIChatCompletionsResponse.json")!
         );
 
-        _content = contentReader.ReadToEnd();
+        _preCannedRequest = Task.FromResult(
+            new Either<HttpRequestMessage, IResult>(new HttpRequestMessage(HttpMethod.Post,
+                new Uri("https://localtest.me"))
+            {
+                Content = new StringContent("{}", Encoding.UTF8, "application/json")
+            }));
+
+        _content = Encoding.UTF8.GetBytes(contentReader.ReadToEnd());
     }
 
     public Task<Either<HttpRequestMessage, IResult>> BuildRequest(IncomingCallDetails incomingCall, HttpContext context)
     {
-        return Task.FromResult(
-            new Either<HttpRequestMessage, IResult>(new HttpRequestMessage(HttpMethod.Post,
-                new Uri("https://localtest.me"))));
+        return _preCannedRequest;
     }
 
     public Task<HttpResponseMessage> DispatchRequest(HttpContext context, HttpRequestMessage requestMessage,
         CancellationToken cancellationToken)
     {
-        var response = new HttpResponseMessage(HttpStatusCode.OK)
+        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
         {
-            Content = new StringContent(_content!, Encoding.UTF8, "application/json")
-        };
-        return Task.FromResult(response);
+            Content = new ByteArrayContent(_content)
+            {
+                Headers =  { { "Content-Type", "application/json" } }
+            }
+        });
     }
 
     public Task<ResponseMetadata> ExtractResponseMetadata(IncomingCallDetails callInformationIncomingCallDetails,
