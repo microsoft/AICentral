@@ -35,25 +35,6 @@ See [Configuration](./docs/configuration.md) for more details.
 > The Azure Open AI SDK retries by default. As AI Central does this for you you can turn it off in the client by passing ```new Azure.AI.OpenAI.OpenAIClientOptions()  {
 RetryPolicy = null }``` when you create an OpenAIClient
 
-## Enriched telemetry and logging
-
-Out of the box AI Central emits Open Telemetry metrics with the following dimensions:
-- Consumer
-- Endpoint
-- Pipeline
-- Prompt Tokens
-- Response Tokens **including streaming**
-
-Allowing insightful dashboards to be built using your monitoring tool of choice.
-
-![OTel](./docs/simple-otel.png)
-
-
-
-AI Central also allows fine-grained logging. We ship an extension that logs to Azure Monitor, but it's easy to build your own.
-
-![logging](./docs/enriched-logging.png)
-
 ## Minimal
 
 This sample produces a AI-Central proxy that
@@ -148,7 +129,27 @@ app.Run();
     ]
   }
 }
+
 ```
+
+## Enriched telemetry and logging
+
+Out of the box AI Central emits Open Telemetry metrics with the following dimensions:
+- Consumer
+- Endpoint
+- Pipeline
+- Prompt Tokens
+- Response Tokens **including streaming**
+
+Allowing insightful dashboards to be built using your monitoring tool of choice.
+
+![OTel](./docs/simple-otel.png)
+
+AI Central also allows fine-grained logging. We ship an extension that logs to Azure Monitor, but it's easy to build your own.
+
+![logging](./docs/enriched-logging.png)
+
+See [advanced-otel](./docs/advanced-otel.md) for dashboard inspiration!
 
 ## Full example
 
@@ -249,7 +250,11 @@ This pipeline will:
         "Steps": [
           "window-rate-limiter",
           "azure-monitor-logger"
-        ]
+        ],
+        "OpenTelemetryConfig": {
+          "AddClientNameTag": true,
+          "Transmit": true
+        }
       }
     ]
   }

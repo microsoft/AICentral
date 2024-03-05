@@ -49,6 +49,10 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
       linuxFxVersion: 'DOCKER|graemefoster/aicentral:latest'
       appSettings: [
         {
+          name: 'DOCKER_REGISTRY_SERVER_URL'
+          value: 'https://index.docker.io/v1'
+        }
+        {
           name: 'ASPNETCORE_ENVIRONMENT'
           value: environment
         }
