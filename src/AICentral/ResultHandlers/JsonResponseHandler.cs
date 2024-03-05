@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text;
 using System.Text.Json;
 using AICentral.Core;
 
@@ -34,13 +35,28 @@ public static class JsonResponseHandler
                     : 0
                 : 0;
 
-            var responseContent = response.RootElement.TryGetProperty("choices", out var choicesProp)
-                ? choicesProp.EnumerateArray().FirstOrDefault().TryGetProperty("message", out var messageProp)
-                    ? messageProp.TryGetProperty("content", out var contentProp)
-                        ? contentProp.GetString()
-                        : string.Empty
-                    : string.Empty
-                : string.Empty;
+            var hasResponseContent = response.RootElement.TryGetProperty("choices", out var choicesProp);
+            var choices = new Dictionary<int, StringBuilder>();
+            if (hasResponseContent)
+            {
+                foreach (var choiceElement in choicesProp.EnumerateArray())
+                {
+                    choiceElement.TryGetProperty("index", out var index);
+                    var content = choiceElement.TryGetProperty("message", out var messageProp)
+                        ? messageProp.TryGetProperty("content", out var contentProp)
+                            ? contentProp.GetString() ?? string.Empty
+                            : string.Empty
+                        : string.Empty;
+
+                    var indexInt = index.GetInt32();
+                    if (!choices.ContainsKey(indexInt))
+                    {
+                        choices.Add(indexInt, new StringBuilder());
+                    }
+
+                    choices[indexInt].AppendLine(content);
+                }
+            }
 
             var chatRequestInformation = new DownstreamUsageInformation(
                 requestInformation.LanguageUrl,
@@ -51,7 +67,7 @@ public static class JsonResponseHandler
                 requestInformation.CallType,
                 false,
                 requestInformation.Prompt,
-                responseContent,
+                string.Join("\n\n", choices.Select(kvp => $"Choice {kvp.Key}\n\n" + string.Join(string.Empty, kvp.Value))),
                 null,
                 (promptTokens, completionTokens, totalTokens),
                 responseMetadata,

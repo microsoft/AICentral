@@ -1,16 +1,13 @@
-﻿using System.Threading.RateLimiting;
-using AICentral;
+﻿using AICentral;
 using AICentral.Affinity;
 using AICentral.BulkHead;
 using AICentral.Configuration;
-using AICentral.ConsumerAuth;
 using AICentral.ConsumerAuth.AllowAnonymous;
 using AICentral.ConsumerAuth.ApiKey;
 using AICentral.Core;
 using AICentral.Endpoints;
 using AICentral.Endpoints.AzureOpenAI;
 using AICentral.Endpoints.OpenAI;
-using AICentral.EndpointSelectors;
 using AICentral.EndpointSelectors.LowestLatency;
 using AICentral.EndpointSelectors.Priority;
 using AICentral.EndpointSelectors.Random;
@@ -32,6 +29,8 @@ public class TestAICentralPipelineBuilder
     private RateLimitingLimitType? _fixedWindowLimitType;
     private RateLimitingLimitType? _tokenLimitType;
     private TimeSpan? _endpointAffinityTimespan;
+    private static readonly DiagnosticsCollectorFactory DiagnosticsCollectorFactory = new();
+    private static readonly string DiagnosticsCollectorFactoryId = Guid.NewGuid().ToString();
 
     public TestAICentralPipelineBuilder WithApiKeyAuth(params (string clientName, string key1, string key2)[] clients)
     {
@@ -171,6 +170,9 @@ public class TestAICentralPipelineBuilder
         var id = Guid.NewGuid().ToString();
         var genericSteps = new Dictionary<string, IPipelineStepFactory>();
         var steps = new List<string>();
+
+        genericSteps[DiagnosticsCollectorFactoryId] = DiagnosticsCollectorFactory;
+        steps.Add(DiagnosticsCollectorFactoryId);
 
         if (_windowInSeconds != null && _requestsPerWindow != null)
         {

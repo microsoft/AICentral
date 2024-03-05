@@ -1,0 +1,98 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/openai/deployments/Model1/chat/completions?api-version=2023-12-01-preview",
+    "Method": "POST",
+    "Headers": {
+      "api-key": "80a59060-63f8-4a19-a5ce-ad1a44157897"
+    },
+    "ContentType": "application/json",
+    "Content": "{\"messages\":[{\"role\":\"user\",\"content\":\"Do other Azure AI services support this too?\"}],\"max_tokens\":5}"
+  }
+],
+  Response: {
+    Headers: [
+      {
+        x-ratelimit-remaining-requests: [
+          12
+        ]
+      },
+      {
+        x-ratelimit-remaining-tokens: [
+          234
+        ]
+      }
+    ],
+    Content:
+{
+  "id": "chatcmpl-6v7mkQj980V1yBec6ETrKPRqFjNw9",
+  "object": "chat.completion",
+  "created": 1679072642,
+  "model": "gpt-35-turbo",
+  "usage": {
+    "prompt_tokens": 29,
+    "completion_tokens": 30,
+    "total_tokens": 59
+  },
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": "Response one."
+      },
+      "finish_reason": "stop",
+      "index": 0
+    },
+    {
+      "message": {
+        "role": "assistant",
+        "content": "Response two two two."
+      },
+      "finish_reason": "stop",
+      "index": 1
+    }
+  ]
+}
+  },
+  ResponseMetadata: {
+    InternalEndpointName: Guid_1,
+    OpenAIHost: Guid_1,
+    ModelName: gpt-35-turbo,
+    DeploymentName: Model1,
+    Client: ,
+    StreamingResponse: false,
+    Prompt: Do other Azure AI services support this too?,
+    Response:
+Choice 0
+
+Response one.
+
+
+Choice 1
+
+Response two two two.
+,
+    KnownTokens: {
+      Item1: 29,
+      Item2: 30,
+      Item3: 59
+    },
+    ResponseMetadata: {
+      SanitisedHeaders: {
+        x-ratelimit-remaining-requests: [
+          12
+        ],
+        x-ratelimit-remaining-tokens: [
+          234
+        ]
+      },
+      RemainingTokens: 234,
+      RemainingRequests: 12
+    },
+    RemoteIpAddress: ,
+    StartDate: DateTimeOffset_1,
+    Success: true,
+    TotalTokens: 59
+  }
+}

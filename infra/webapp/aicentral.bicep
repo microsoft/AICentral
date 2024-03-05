@@ -149,6 +149,10 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
           value: 'true'
         }
         {
+          name: 'AICentral__GenericSteps__1__Properties__LogClient'
+          value: 'true'
+        }
+        {
           name: 'AICentral__EndpointSelectors__0__Type'
           value: 'SingleEndpoint'
         }
@@ -183,6 +187,18 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
         {
           name: 'AICentral__Pipelines__0__Steps__1'
           value: 'azure-monitor-logger'
+        }
+        {
+          name: 'AICentral__Pipelines__0__OpenTelemetryConfig__Transmit'
+          value: 'true'
+        }
+        {
+          name: 'AICentral__Pipelines__0__OpenTelemetryConfig__AddClientNameTag'
+          value: 'true'
+        }
+        {
+          name: 'EnableAICentralSummaryWebPage'
+          value: 'false'
         }
       ]
     }

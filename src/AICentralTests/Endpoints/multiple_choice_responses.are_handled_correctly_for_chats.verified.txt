@@ -1,0 +1,73 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/openai/deployments/ModelStream/chat/completions?api-version=2023-12-01-preview",
+    "Method": "POST",
+    "Headers": {
+      "Accept": "application/json",
+      "x-ms-return-client-request-id": "true",
+      "api-key": "80a59060-63f8-4a19-a5ce-ad1a44157897"
+    },
+    "ContentType": "application/json",
+    "Content": "{\"messages\":[{\"content\":\"You are a helpful assistant.\",\"role\":\"system\"}],\"stream\":true,\"model\":\"ModelStream\"}"
+  }
+],
+  Response: {
+    Headers: [
+      {
+        Name: Trailer,
+        Value: x-aicentral-streaming-tokens
+      },
+      {
+        Name: Cache-Control,
+        Value: no-cache
+      },
+      {
+        Name: Content-Type,
+        Value: text/event-stream
+      }
+    ]
+  },
+  ResponseMetadata: {
+    InternalEndpointName: Guid_1,
+    OpenAIHost: Guid_1,
+    ModelName: gpt-35-turbo,
+    DeploymentName: ModelStream,
+    Client: unknown,
+    StreamingResponse: true,
+    Prompt: You are a helpful assistant.,
+    Response:
+Choice 0
+
+(Verse 1)
+In the stadium, where legends were born,
+Their magic on the field forever sworn.
+From Pele's grace to Maradona's hand,
+These soccer greats still rule the land.
+
+(Chorus)
+Soccer legends, heroes of the past,
+Their legacy forever will last.
+With every goal and every dive,
+They taught us how to truly thrive.
+
+Choice 1
+
+(Verse 1)
+On the pitch, where legends soar,
+Their magic feet, forever roar.
+From Maradona to Pelé's grace,
+Soccer's legends leave a lasting trace.
+
+(Chorus)
+Oh, the beautiful game, it's a sight to behold,
+With heroes of past, their stories untold.
+They played with passion, hearts beating fast,
+Soccer legends, forever they'll last.,
+    ResponseMetadata: {},
+    RemoteIpAddress: ,
+    StartDate: DateTimeOffset_1,
+    Success: true
+  }
+}

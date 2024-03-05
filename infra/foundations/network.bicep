@@ -58,29 +58,12 @@ resource gwayNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
   }
 }
 
-
 resource privateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   name: 'privatelink.azurewebsites.net'
   location: 'global'
 
   resource vnetLink 'virtualNetworkLinks@2020-06-01' = {
     name: 'privatelink.azurewebsites.net-link'
-    location: 'global'
-    properties: {
-      registrationEnabled: false
-      virtualNetwork: {
-        id: vnet.id
-      }
-    }
-  }
-}
-
-resource cosmosPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: 'privatelink.documents.azure.com'
-  location: 'global'
-
-  resource vnetLink 'virtualNetworkLinks@2020-06-01' = {
-    name: 'privatelink.documents.azure.com-link'
     location: 'global'
     properties: {
       registrationEnabled: false
@@ -123,43 +106,8 @@ resource keyvaultPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' =
   }
 }
 
-resource cogSearchPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: 'privatelink.search.windows.net'
-  location: 'global'
-
-  resource vnetLink 'virtualNetworkLinks@2020-06-01' = {
-    name: 'privatelink.search.windows.net-link'
-    location: 'global'
-    properties: {
-      registrationEnabled: false
-      virtualNetwork: {
-        id: vnet.id
-      }
-    }
-  }
-}
-
-resource storagePrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
-  name: 'privatelink.blob.${environment().suffixes.storage}'
-  location: 'global'
-
-  resource vnetLink 'virtualNetworkLinks@2020-06-01' = {
-    name: 'privatelink.blob.${environment().suffixes.storage}-link'
-    location: 'global'
-    properties: {
-      registrationEnabled: false
-      virtualNetwork: {
-        id: vnet.id
-      }
-    }
-  }
-}
-
 output privateEndpointSubnetId string = filter(vnet.properties.subnets, subnet => subnet.name == 'PrivateEndpoints')[0].id
 output vnetIntegrationSubnetId string = filter(vnet.properties.subnets, subnet => subnet.name == 'AppServiceDelegated')[0].id
 output privateDnsZoneId string = privateDnsZone.id
 output openAiPrivateDnsZoneId string = openAiPrivateDnsZone.id
-output cosmosPrivateDnsZoneId string = cosmosPrivateDnsZone.id
-output cogSearchPrivateDnsZoneId string = cogSearchPrivateDnsZone.id
-output storagePrivateDnsZoneId string =  storagePrivateDnsZone.id
 output keyvaultPrivateDnsZoneId string =  keyvaultPrivateDnsZone.id

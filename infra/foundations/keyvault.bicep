@@ -17,14 +17,8 @@ param key2 string
 
 var openAiSecretName = 'OpenAiKey'
 
-resource lanalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+resource lanalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
   name: logAnalyticsName
-  location: location
-  properties: {
-    sku: {
-      name: 'PerGB2018'
-    }
-  }
 }
 
 //used to store LetsEncrypt certificate we generate on post-hook
@@ -126,5 +120,4 @@ resource privateEndpoint 'Microsoft.Network/privateEndpoints@2022-11-01' = {
 output kvName string = kvName
 output kvId string = keyvault.id
 output kvUri string = keyvault.properties.vaultUri
-output logAnalyticsId string = lanalytics.id
 output openAiSecretName string = openAiSecretName
