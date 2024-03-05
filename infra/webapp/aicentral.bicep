@@ -192,6 +192,10 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
           name: 'AICentral__Pipelines__0__OpenTelemetryConfig__AddClientNameTag'
           value: 'true'
         }
+        {
+          name: 'EnableAICentralSummaryWebPage'
+          value: 'false'
+        }
       ]
     }
   }
