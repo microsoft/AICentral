@@ -1,0 +1,750 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "tabs",
+        "links": [
+          {
+            "id": "96630c8a-5738-4d20-95b3-769bb7620afd",
+            "cellValue": "VisibleTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Standard Metrics",
+            "subTarget": "0",
+            "style": "link"
+          },
+          {
+            "id": "a4be053e-585c-48d4-a802-186cfed15122",
+            "cellValue": "VisibleTab",
+            "linkTarget": "parameter",
+            "linkLabel": "AI Central Metrics",
+            "subTarget": "1",
+            "style": "link"
+          },
+          {
+            "id": "0ecf9d1f-4d70-4492-91e9-ffa7ab45b6de",
+            "cellValue": "VisibleTab",
+            "linkTarget": "parameter",
+            "linkLabel": "AI Central Traces",
+            "subTarget": "2",
+            "style": "link"
+          }
+        ]
+      },
+      "name": "links - 5"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 9,
+            "content": {
+              "version": "KqlParameterItem/1.0",
+              "parameters": [
+                {
+                  "id": "8c38d6b0-f9cb-4a71-996e-9881acef5f97",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "OpenAIResources",
+                  "type": 5,
+                  "isRequired": true,
+                  "multiSelect": true,
+                  "quote": "'",
+                  "delimiter": ",",
+                  "query": "where type == 'microsoft.cognitiveservices/accounts'\r\n| project value = id, label = name\r\n",
+                  "typeSettings": {
+                    "additionalResourceOptions": [],
+                    "showDefault": false
+                  },
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "queryType": 1,
+                  "resourceType": "microsoft.resourcegraph/resources",
+                  "value": []
+                },
+                {
+                  "id": "74ba3903-ea0c-41bc-9832-1d9e1077b415",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "TimeRange",
+                  "type": 4,
+                  "isRequired": true,
+                  "typeSettings": {
+                    "selectableValues": [
+                      {
+                        "durationMs": 300000
+                      },
+                      {
+                        "durationMs": 900000
+                      },
+                      {
+                        "durationMs": 1800000
+                      },
+                      {
+                        "durationMs": 3600000
+                      },
+                      {
+                        "durationMs": 14400000
+                      },
+                      {
+                        "durationMs": 43200000
+                      },
+                      {
+                        "durationMs": 86400000
+                      },
+                      {
+                        "durationMs": 172800000
+                      },
+                      {
+                        "durationMs": 259200000
+                      },
+                      {
+                        "durationMs": 604800000
+                      },
+                      {
+                        "durationMs": 1209600000
+                      },
+                      {
+                        "durationMs": 2419200000
+                      },
+                      {
+                        "durationMs": 2592000000
+                      },
+                      {
+                        "durationMs": 5184000000
+                      },
+                      {
+                        "durationMs": 7776000000
+                      }
+                    ],
+                    "allowCustom": true
+                  },
+                  "value": {
+                    "durationMs": 604800000
+                  }
+                }
+              ],
+              "style": "pills",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources"
+            },
+            "name": "parameters - 1"
+          },
+          {
+            "type": 12,
+            "content": {
+              "version": "NotebookGroup/1.0",
+              "groupType": "editable",
+              "items": [
+                {
+                  "type": 1,
+                  "content": {
+                    "json": "# Request Breakdown"
+                  },
+                  "name": "text - 4"
+                },
+                {
+                  "type": 10,
+                  "content": {
+                    "chartId": "workbookdfad49a5-a961-4fdb-88b9-20f35cba2db9",
+                    "version": "MetricsItem/2.0",
+                    "size": 0,
+                    "chartType": 2,
+                    "resourceType": "microsoft.cognitiveservices/accounts",
+                    "metricScope": 0,
+                    "resourceParameter": "OpenAIResources",
+                    "resourceIds": [
+                      "{OpenAIResources}"
+                    ],
+                    "timeContextFromParameter": "TimeRange",
+                    "timeContext": {
+                      "durationMs": 604800000
+                    },
+                    "metrics": [
+                      {
+                        "namespace": "microsoft.cognitiveservices/accounts",
+                        "metric": "microsoft.cognitiveservices/accounts-Azure OpenAI  HTTP Requests-AzureOpenAIRequests",
+                        "aggregation": 1,
+                        "columnName": "Requests"
+                      }
+                    ],
+                    "gridSettings": {
+                      "rowLimit": 10000
+                    }
+                  },
+                  "customWidth": "50",
+                  "name": "metric - 2",
+                  "styleSettings": {
+                    "maxWidth": "50%"
+                  }
+                },
+                {
+                  "type": 10,
+                  "content": {
+                    "chartId": "workbookdfad49a5-a961-4fdb-88b9-20f35cba2db9",
+                    "version": "MetricsItem/2.0",
+                    "size": 0,
+                    "chartType": 2,
+                    "resourceType": "microsoft.cognitiveservices/accounts",
+                    "metricScope": 0,
+                    "resourceParameter": "OpenAIResources",
+                    "resourceIds": [
+                      "{OpenAIResources}"
+                    ],
+                    "timeContextFromParameter": "TimeRange",
+                    "timeContext": {
+                      "durationMs": 604800000
+                    },
+                    "metrics": [
+                      {
+                        "namespace": "microsoft.cognitiveservices/accounts",
+                        "metric": "microsoft.cognitiveservices/accounts-Azure OpenAI  HTTP Requests-AzureOpenAIRequests",
+                        "aggregation": 1,
+                        "columnName": "Requests"
+                      }
+                    ],
+                    "gridSettings": {
+                      "rowLimit": 10000
+                    }
+                  },
+                  "customWidth": "50",
+                  "name": "metric - 2 - Copy"
+                },
+                {
+                  "type": 1,
+                  "content": {
+                    "json": "# Response Token Breakdown"
+                  },
+                  "name": "text - 5"
+                },
+                {
+                  "type": 10,
+                  "content": {
+                    "chartId": "workbook06d8e435-e6de-47ab-9f86-6ba91f898bb0",
+                    "version": "MetricsItem/2.0",
+                    "size": 0,
+                    "chartType": 2,
+                    "resourceType": "microsoft.cognitiveservices/accounts",
+                    "metricScope": 0,
+                    "resourceParameter": "OpenAIResources",
+                    "resourceIds": [
+                      "{OpenAIResources}"
+                    ],
+                    "timeContextFromParameter": "TimeRange",
+                    "timeContext": {
+                      "durationMs": 604800000
+                    },
+                    "metrics": [
+                      {
+                        "namespace": "microsoft.cognitiveservices/accounts",
+                        "metric": "microsoft.cognitiveservices/accounts-Azure OpenAI  Usage-GeneratedTokens",
+                        "aggregation": 1
+                      }
+                    ],
+                    "gridSettings": {
+                      "rowLimit": 10000
+                    }
+                  },
+                  "customWidth": "50",
+                  "name": "metric - 1"
+                },
+                {
+                  "type": 10,
+                  "content": {
+                    "chartId": "workbook06d8e435-e6de-47ab-9f86-6ba91f898bb0",
+                    "version": "MetricsItem/2.0",
+                    "size": 0,
+                    "chartType": 2,
+                    "resourceType": "microsoft.cognitiveservices/accounts",
+                    "metricScope": 0,
+                    "resourceParameter": "OpenAIResources",
+                    "resourceIds": [
+                      "{OpenAIResources}"
+                    ],
+                    "timeContextFromParameter": "TimeRange",
+                    "timeContext": {
+                      "durationMs": 604800000
+                    },
+                    "metrics": [
+                      {
+                        "namespace": "microsoft.cognitiveservices/accounts",
+                        "metric": "microsoft.cognitiveservices/accounts-Azure OpenAI  Usage-GeneratedTokens",
+                        "aggregation": 1
+                      }
+                    ],
+                    "gridSettings": {
+                      "rowLimit": 10000
+                    }
+                  },
+                  "customWidth": "50",
+                  "name": "metric - 1 - Copy"
+                }
+              ]
+            },
+            "name": "Open AI Usage"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "AzureDiagnostics\r\n| where Category == 'RequestResponse'\r\n| order by TimeGenerated desc\r\n| take 15\r\n| extend props = parse_json(properties_s)\r\n| project TimeGenerated, Resource, OperationName, DurationMs, props.modelName, props.modelDeploymentName, props.requestLength, props.streamType\r\n",
+              "size": 0,
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.cognitiveservices/accounts",
+              "crossComponentResources": [
+                "{OpenAIResources}"
+              ]
+            },
+            "name": "query - 0"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "# Last 15 requests"
+            },
+            "name": "text - 3"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "VisibleTab",
+        "comparison": "isEqualTo",
+        "value": "0"
+      },
+      "name": "StandardMetrics"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 9,
+            "content": {
+              "version": "KqlParameterItem/1.0",
+              "crossComponentResources": [
+                "{Workspace}"
+              ],
+              "parameters": [
+                {
+                  "id": "bbb6f902-6aad-4d1d-8866-2cc9125e9406",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "Workspace",
+                  "type": 5,
+                  "query": "resources \r\n| where type == 'microsoft.insights/components'\r\n| project id\r\n",
+                  "typeSettings": {
+                    "resourceTypeFilter": {
+                      "microsoft.insights/components": true
+                    },
+                    "additionalResourceOptions": [],
+                    "showDefault": false
+                  },
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "queryType": 1,
+                  "resourceType": "microsoft.resourcegraph/resources",
+                  "value": null
+                },
+                {
+                  "id": "61c670ef-efb8-41c1-a49e-b5751af71d6c",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "AICentralPipeline",
+                  "type": 2,
+                  "query": "customMetrics\r\n| where name == 'aicentral.request.duration'\r\n| project PipelineName = tostring(customDimensions.Pipeline)\r\n| distinct PipelineName\r\n| order by PipelineName\r\n\r\n",
+                  "crossComponentResources": [
+                    "{Workspace}"
+                  ],
+                  "typeSettings": {
+                    "additionalResourceOptions": []
+                  },
+                  "timeContext": {
+                    "durationMs": 604800000
+                  },
+                  "queryType": 0,
+                  "resourceType": "microsoft.insights/components",
+                  "value": null
+                },
+                {
+                  "id": "fcee9ce1-dd20-41bd-add4-5c22bb005201",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "TimeRange",
+                  "type": 4,
+                  "typeSettings": {
+                    "selectableValues": [
+                      {
+                        "durationMs": 300000
+                      },
+                      {
+                        "durationMs": 900000
+                      },
+                      {
+                        "durationMs": 1800000
+                      },
+                      {
+                        "durationMs": 3600000
+                      },
+                      {
+                        "durationMs": 14400000
+                      },
+                      {
+                        "durationMs": 43200000
+                      },
+                      {
+                        "durationMs": 86400000
+                      },
+                      {
+                        "durationMs": 172800000
+                      },
+                      {
+                        "durationMs": 259200000
+                      },
+                      {
+                        "durationMs": 604800000
+                      },
+                      {
+                        "durationMs": 1209600000
+                      },
+                      {
+                        "durationMs": 2419200000
+                      },
+                      {
+                        "durationMs": 2592000000
+                      },
+                      {
+                        "durationMs": 5184000000
+                      },
+                      {
+                        "durationMs": 7776000000
+                      }
+                    ],
+                    "allowCustom": true
+                  },
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "value": {
+                    "durationMs": 604800000
+                  }
+                }
+              ],
+              "style": "pills",
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components"
+            },
+            "name": "parameters - 1"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "customMetrics\r\n| where name == 'aicentral.request.duration'\r\n| where customDimensions.Pipeline == '{AICentralPipeline}'\r\n| summarize average_duration = avg(value) by combo = strcat(tostring(customDimensions.ClientName))\r\n\r\n",
+              "size": 3,
+              "title": "Request duration by Consumer",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "crossComponentResources": [
+                "{Workspace}"
+              ],
+              "visualization": "piechart"
+            },
+            "customWidth": "25",
+            "name": "query - 3"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "customMetrics\r\n| where name == 'aicentral.request.duration'\r\n| where customDimensions.Pipeline == '{AICentralPipeline}'\r\n| summarize average_duration = avg(value) by combo = strcat(tostring(customDimensions.Endpoint), '-', tostring(customDimensions.Deployment))\r\n\r\n",
+              "size": 3,
+              "title": "Request duration by AI Service",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "crossComponentResources": [
+                "{Workspace}"
+              ],
+              "visualization": "piechart"
+            },
+            "customWidth": "25",
+            "name": "query - 3 - Copy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "customMetrics\r\n| where name == 'aicentral.request.tokens_consumed'\r\n| where customDimensions.Pipeline == '{AICentralPipeline}'\r\n| summarize average_duration = sum(value) by combo = strcat(tostring(customDimensions.ClientName))\r\n\r\n",
+              "size": 3,
+              "title": "Tokens used by Consumer",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "crossComponentResources": [
+                "{Workspace}"
+              ],
+              "visualization": "piechart"
+            },
+            "customWidth": "25",
+            "name": "query - 3 - Copy - Copy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "customMetrics\r\n| where name == 'aicentral.request.tokens_consumed'\r\n| where customDimensions.Pipeline == '{AICentralPipeline}'\r\n| summarize average_duration = sum(value) by combo = strcat(tostring(customDimensions.Endpoint), '-', tostring(customDimensions.Deployment))\r\n\r\n",
+              "size": 3,
+              "title": "Tokens used by AI Service / Deployment",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "crossComponentResources": [
+                "{Workspace}"
+              ],
+              "visualization": "piechart"
+            },
+            "customWidth": "25",
+            "name": "query - 3 - Copy - Copy - Copy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "customMetrics\r\n| where name == 'aicentral.downstream.duration'\r\n| where customDimensions.Pipeline == '{AICentralPipeline}'\r\n| summarize average_duration = sum(value) by split = iff(customDimensions.Streaming == 'True', 'Streaming', 'Non Streaming')\r\n\r\n",
+              "size": 3,
+              "title": "Streaming vs Non Streaming calls Duration",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "crossComponentResources": [
+                "{Workspace}"
+              ],
+              "visualization": "piechart"
+            },
+            "customWidth": "25",
+            "name": "query - 3 - Copy - Copy - Copy - Copy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "customMetrics\r\n| where name == 'aicentral.downstream.duration'\r\n| where customDimensions.Pipeline == '{AICentralPipeline}'\r\n| summarize request_count = count(value) by split = strcat(iff(customDimensions.Streaming == 'True', 'Streaming', 'Non Streaming'), '-', tostring(customDimensions.Endpoint), '-', tostring(customDimensions.Deployment))\r\n\r\n",
+              "size": 3,
+              "title": "Count of Streaming vs Non Streaming calls",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "crossComponentResources": [
+                "{Workspace}"
+              ],
+              "visualization": "piechart"
+            },
+            "customWidth": "25",
+            "name": "query - 3 - Copy - Copy - Copy - Copy - Copy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "customMetrics\r\n| where name == 'aicentral.request.tokens_consumed'\r\n| where customDimensions.Pipeline == '{AICentralPipeline}'\r\n| summarize request_count = sum(value) by split = strcat(iff(customDimensions.Streaming == 'True', 'Streaming', 'Non Streaming'), '-', tostring(customDimensions.Endpoint), '-', tostring(customDimensions.Deployment))\r\n\r\n",
+              "size": 3,
+              "title": "Streaming vs Non Streaming calls Tokens by Endpoint",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "crossComponentResources": [
+                "{Workspace}"
+              ],
+              "visualization": "piechart"
+            },
+            "customWidth": "25",
+            "name": "query - 3 - Copy - Copy - Copy - Copy - Copy - Copy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "customMetrics\r\n| where name == 'aicentral.request.tokens_consumed'\r\n| where customDimensions.Pipeline == '{AICentralPipeline}'\r\n| summarize value = avg(value) by bin(timestamp, 10m), strcat(tostring(customDimensions.ClientName), '-', iif(customDimensions.Streaming == 'True', 'Streaming', 'NonStreaming'))\r\n\r\n\r\n",
+              "size": 0,
+              "title": "Tokens used per Consumer per hour",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "crossComponentResources": [
+                "{Workspace}"
+              ],
+              "visualization": "barchart"
+            },
+            "customWidth": "50",
+            "name": "query - 3"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "customMetrics\r\n| where name == 'aicentral.request.tokens_consumed'\r\n| where customDimensions.Pipeline == '{AICentralPipeline}'\r\n| summarize value = avg(value) by bin(timestamp, 10m), strcat(tostring(customDimensions.Endpoint), '-', tostring(customDimensions.DeploymentName), '-', iif(customDimensions.Streaming == 'True', 'Streaming', 'NonStreaming'))\r\n\r\n\r\n",
+              "size": 0,
+              "title": "Tokens used per Deployment per hour",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.insights/components",
+              "crossComponentResources": [
+                "{Workspace}"
+              ],
+              "visualization": "barchart"
+            },
+            "customWidth": "50",
+            "name": "query - 3 - Copy"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "VisibleTab",
+        "comparison": "isEqualTo",
+        "value": "1"
+      },
+      "name": "AICentralMetrics"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 9,
+            "content": {
+              "version": "KqlParameterItem/1.0",
+              "parameters": [
+                {
+                  "id": "495da136-e85e-472d-b120-3eb4851a8d09",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "LogAnalyticsWorkspace",
+                  "label": "LogAnalytics Workspace",
+                  "type": 5,
+                  "typeSettings": {
+                    "additionalResourceOptions": []
+                  },
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "value": null
+                },
+                {
+                  "id": "2c21b2f0-1f79-4765-b1f9-215d975b6ae7",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "TimeRange",
+                  "type": 4,
+                  "typeSettings": {
+                    "selectableValues": [
+                      {
+                        "durationMs": 300000
+                      },
+                      {
+                        "durationMs": 900000
+                      },
+                      {
+                        "durationMs": 1800000
+                      },
+                      {
+                        "durationMs": 3600000
+                      },
+                      {
+                        "durationMs": 14400000
+                      },
+                      {
+                        "durationMs": 43200000
+                      },
+                      {
+                        "durationMs": 86400000
+                      },
+                      {
+                        "durationMs": 172800000
+                      },
+                      {
+                        "durationMs": 259200000
+                      },
+                      {
+                        "durationMs": 604800000
+                      },
+                      {
+                        "durationMs": 1209600000
+                      },
+                      {
+                        "durationMs": 2419200000
+                      },
+                      {
+                        "durationMs": 2592000000
+                      },
+                      {
+                        "durationMs": 5184000000
+                      },
+                      {
+                        "durationMs": 7776000000
+                      }
+                    ],
+                    "allowCustom": true
+                  },
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "value": {
+                    "durationMs": 604800000
+                  }
+                }
+              ],
+              "style": "pills",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces"
+            },
+            "name": "parameters - 4"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "AILogs_CL\r\n| order by TimeGenerated desc\r\n| take 15\r\n| project TimeGenerated, LogProperties_Duration_s, Streamed=iif(LogProperties_Streamed_b, 'Streaming', 'NonStreaming'), LogProperties_ClientName_s, LogProperties_OpenAIHost_s , LogProperties_Deployment_s, Prompt = substring(LogProperties_Prompt_s, 0, 50), Response = substring(LogProperties_Response_s, 0, 50), LogProperties_TotalTokens_d",
+              "size": 0,
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "crossComponentResources": [
+                "{LogAnalyticsWorkspace}"
+              ],
+              "gridSettings": {
+                "sortBy": [
+                  {
+                    "itemKey": "LogProperties_TotalTokens_d",
+                    "sortOrder": 2
+                  }
+                ]
+              },
+              "sortBy": [
+                {
+                  "itemKey": "LogProperties_TotalTokens_d",
+                  "sortOrder": 2
+                }
+              ]
+            },
+            "name": "query - 10"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "VisibleTab",
+        "comparison": "isEqualTo",
+        "value": "2"
+      },
+      "name": "AICentralLogs"
+    }
+  ],
+  "fallbackResourceIds": [
+  ],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
