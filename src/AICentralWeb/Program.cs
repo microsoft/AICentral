@@ -3,7 +3,6 @@ using AICentral.Configuration;
 using AICentral.Core;
 using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
-using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Serilog;
 using Serilog.Events;
@@ -49,13 +48,20 @@ builder.Services.AddAICentral(
         typeof(AzureMonitorLoggerFactory).Assembly,
     ]);
 
-builder.Services.AddRazorPages();
+var enableSummaryPage = builder.Configuration.GetValue<bool>("EnableAICentralSummaryWebPage");
+
+if (enableSummaryPage)
+{
+    builder.Services.AddRazorPages();
+}
 
 var app = builder.Build();
 
-app.MapRazorPages();
+if (enableSummaryPage)
+{
+    app.MapRazorPages();
+}
 
-app.Map("/health", () => "OK");
 app.UseAICentral();
 
 app.Run();

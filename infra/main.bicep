@@ -79,12 +79,21 @@ module managedIdentities 'foundations/identities.bicep' = {
 }
 
 module asp 'foundations/asp.bicep' = {
-  name: '${deployment().name}-foudndations'
+  name: '${deployment().name}-foundations'
   scope: rg
   params: {
     aspName: aspName
     logAnalyticsName: lanalytics
     location: location
+  }
+}
+
+module workbook 'foundations/workbook.bicep' = {
+  name: '${deployment().name}-workbook'
+  scope: rg
+  params: {
+    location: location
+    logAnalyticsName: asp.outputs.logAnalyticsName
   }
 }
 
