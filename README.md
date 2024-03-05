@@ -8,6 +8,10 @@
 
 AI Central gives you control over your AI services.
 
+- Prompt and usage logging to Azure Monitor
+  - **Works for streaming endpoints as-well as non streaming**
+- Enhanced Open Telemetry metrics
+  - Build insightful dashboards using your monitoring tool of choice
 - Intelligent Routing
   - Random endpoint selector
   - Prioritised endpoint selector with fallback
@@ -21,8 +25,6 @@ AI Central gives you control over your AI services.
 - Local request rate limiting
   - By consumer / by endpoint
 - Bulkhead support for buffering requests to backend
-- Prompt and usage logging to Azure Monitor
-  - **Works for streaming endpoints as-well as non streaming**
 
 > Extensibility model makes it easy to build your own plugins
 
@@ -32,6 +34,25 @@ See [Configuration](./docs/configuration.md) for more details.
 
 > The Azure Open AI SDK retries by default. As AI Central does this for you you can turn it off in the client by passing ```new Azure.AI.OpenAI.OpenAIClientOptions()  {
 RetryPolicy = null }``` when you create an OpenAIClient
+
+## Enriched telemetry and logging
+
+Out of the box AI Central emits Open Telemetry metrics with the following dimensions:
+- Consumer
+- Endpoint
+- Pipeline
+- Prompt Tokens
+- Response Tokens **including streaming**
+
+Allowing insightful dashboards to be built using your monitoring tool of choice.
+
+![OTel](./docs/simple-otel.png)
+
+
+
+AI Central also allows fine-grained logging. We ship an extension that logs to Azure Monitor, but it's easy to build your own.
+
+![logging](./docs/enriched-logging.png)
 
 ## Minimal
 
