@@ -77,6 +77,55 @@ public class AICentralFakeResponses
         return response;
     }
 
+    public static HttpResponseMessage FakeChatCompletionsResponseMultipleChoices()
+    {
+        var response = new HttpResponseMessage();
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            id = FakeResponseId,
+            @object = "chat.completion",
+            created = 1679072642,
+            model = "gpt-35-turbo",
+            usage = new
+            {
+                prompt_tokens = 29,
+                completion_tokens = 30,
+                total_tokens = 59
+            },
+            choices = new[]
+            {
+                new
+                {
+                    message = new
+                    {
+                        role = "assistant",
+                        content =
+                            "Response one."
+                    },
+                    finish_reason = "stop",
+                    index = 0
+                },
+                new
+                {
+                    message = new
+                    {
+                        role = "assistant",
+                        content =
+                            "Response two two two."
+                    },
+                    finish_reason = "stop",
+                    index = 1
+                }
+
+            },
+        });
+
+        response.Headers.Add("x-ratelimit-remaining-requests", "12");
+        response.Headers.Add("x-ratelimit-remaining-tokens", "234");
+
+        return response;
+    }
+
     public static HttpResponseMessage FakeCompletionsResponse()
     {
         var response = new HttpResponseMessage();
@@ -113,6 +162,21 @@ public class AICentralFakeResponses
             new StreamReader(
                 typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
                     "AICentralTests.Assets.FakeStreamingResponse.testcontent.txt")!);
+
+        var content = await stream.ReadToEndAsync();
+        var response = new HttpResponseMessage();
+        response.Content = new SSEResponse(content);
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
+        response.Headers.TransferEncodingChunked = true;
+        return response;
+    }
+
+    public static async Task<HttpResponseMessage> FakeStreamingChatCompletionsResponseMultipleChoices()
+    {
+        using var stream =
+            new StreamReader(
+                typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
+                    "AICentralTests.Assets.FakeOpenAIStreamingResponseMultipleChoices.testcontent.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();

@@ -74,11 +74,42 @@ public static class TestWebApplicationFactoryEx
             }).ToArray();
     }
 
+    public static JObject[] GetDiagnostics(this TestWebApplicationFactory<Program> webApplicationFactory)
+    {
+        return webApplicationFactory
+            .Services
+            .GetRequiredService<FakeHttpMessageHandlerSeeder>()
+            .IncomingRequests
+            .Select(x =>
+            {
+                var streamBytes = x.Item2;
+
+                var contentInformation = x.Item1.Content?.Headers.ContentType?.MediaType == "application/json" ||
+                                         x.Item1.Content?.Headers.ContentType?.MediaType == "text/plain"
+                    ? (object)Encoding.UTF8.GetString(streamBytes)
+                    : new
+                    {
+                        Type = x.Item1.Content?.Headers.ContentType?.MediaType,
+                        Length = streamBytes.Length
+                    };
+
+                return JObject.FromObject(new
+                {
+                    Uri = x.Item1.RequestUri!.PathAndQuery,
+                    Method = x.Item1.Method.ToString(),
+                    Headers = x.Item1.Headers.Where(x => x.Key != "x-ms-client-request-id" && x.Key != "User-Agent")
+                        .ToDictionary(h => h.Key, h => string.Join(';', h.Value)),
+                    ContentType = x.Item1.Content?.Headers.ContentType?.MediaType,
+                    Content = contentInformation,
+                });
+            }).ToArray();
+    }
+
     public static Dictionary<string, object> VerifyRequestsAndResponses(
         this TestWebApplicationFactory<Program> webApplicationFactory,
-        HttpResponseMessage response)
+        HttpResponseMessage response, bool validateResponseMetadata = false)
     {
-        return new Dictionary<string, object>()
+        var validation = new Dictionary<string, object>()
         {
             ["Requests"] = JsonConvert.SerializeObject(webApplicationFactory.EndpointRequests(), Formatting.Indented),
             ["Response"] = new
@@ -88,6 +119,40 @@ public static class TestWebApplicationFactoryEx
                     Formatting.Indented)
             }
         };
+
+        if (validateResponseMetadata)
+        {
+            response.Headers.TryGetValues("x-aicentral-test-diagnostics", out var key); 
+            var downstreamUsageInformation = webApplicationFactory.Services.GetRequiredService<DiagnosticsCollector>().DownstreamUsageInformation[key!.Single()];
+            var info = downstreamUsageInformation with { Duration = TimeSpan.Zero, EstimatedTokens = null};
+            validation["ResponseMetadata"] =  info;
+        }
+        
+        return validation;
+    }
+
+    public static Dictionary<string, object> VerifyRequestsAndResponses(
+        this TestWebApplicationFactory<Program> webApplicationFactory,
+        Azure.Response response, bool validateResponseMetadata = false)
+    {
+        var validation = new Dictionary<string, object>()
+        {
+            ["Requests"] = JsonConvert.SerializeObject(webApplicationFactory.EndpointRequests(), Formatting.Indented),
+            ["Response"] = new
+            {
+                Headers = response.Headers.Where(x => !x.Name.StartsWith("x-ai"))
+            }
+        };
+
+        if (validateResponseMetadata)
+        {
+            response.Headers.TryGetValues("x-aicentral-test-diagnostics", out var key); 
+            var downstreamUsageInformation = webApplicationFactory.Services.GetRequiredService<DiagnosticsCollector>().DownstreamUsageInformation[key!.Single()];
+            var info = downstreamUsageInformation with { Duration = TimeSpan.Zero, EstimatedTokens = null};
+            validation["ResponseMetadata"] =  info;
+        }
+        
+        return validation;
     }
 
     public static Dictionary<string, object> VerifyRequestsAndResponses(

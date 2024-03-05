@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text;
 using System.Text.Json;
 using AICentral.Core;
 using Microsoft.Extensions.Primitives;
@@ -32,8 +33,8 @@ public static class ServerSideEventResponseHandler
         context.Response.Headers.CacheControl = new StringValues("no-cache");
         context.Response.ContentType = "text/event-stream";
 
-        var content = new List<string>();
         var model = string.Empty;
+        var choices = new Dictionary<int, List<string>>();
         while (!openAiResponseReader.EndOfStream)
         {
             var line = await openAiResponseReader.ReadLineAsync(cancellationToken);
@@ -53,13 +54,22 @@ public static class ServerSideEventResponseHandler
                     {
                         if (lineObject.RootElement.TryGetProperty("choices", out var choicesProp))
                         {
-                            if (choicesProp.GetArrayLength() > 0)
+                            foreach (var choice in choicesProp.EnumerateArray())
                             {
-                                if (choicesProp[0].TryGetProperty("delta", out var deltaProp))
+                                if (choice.TryGetProperty("index", out var index))
                                 {
-                                    if (deltaProp.TryGetProperty("content", out var contentProp))
+                                    if (choice.TryGetProperty("delta", out var deltaProp))
                                     {
-                                        content.Add(contentProp.GetString() ?? string.Empty);
+                                        if (deltaProp.TryGetProperty("content", out var contentProp))
+                                        {
+                                            var indexInt = index.GetInt32();
+                                            if (!choices.ContainsKey(indexInt))
+                                            {
+                                                choices.Add(indexInt, new List<string>());
+                                            }
+
+                                            choices[indexInt].Add(contentProp.GetString() ?? string.Empty);
+                                        }
                                     }
                                 }
                             }
@@ -69,11 +79,20 @@ public static class ServerSideEventResponseHandler
                     {
                         if (lineObject.RootElement.TryGetProperty("choices", out var choicesProp))
                         {
-                            if (choicesProp.GetArrayLength() > 0)
+                            foreach (var choice in choicesProp.EnumerateArray())
                             {
-                                if (choicesProp[0].TryGetProperty("text", out var textProp))
+                                if (choice.TryGetProperty("index", out var index))
                                 {
-                                    content.Add(textProp.GetString() ?? string.Empty);
+                                    if (choice.TryGetProperty("text", out var textProp))
+                                    {
+                                        var indexInt = index.GetInt32();
+                                        if (!choices.ContainsKey(indexInt))
+                                        {
+                                            choices.Add(indexInt, new List<string>());
+                                        }
+
+                                        choices[indexInt].Add(textProp.GetString() ?? string.Empty);
+                                    }
                                 }
                             }
                         }
@@ -94,7 +113,8 @@ public static class ServerSideEventResponseHandler
                         ? 0
                         : tokeniser?.Encode(requestInformation.Prompt, EmptySet, EmptySet).Count ?? 0;
 
-                    var estimatedCompletionTokens = content.Sum(x => tokeniser?.Encode(x, EmptySet, EmptySet).Count);
+                    var estimatedCompletionTokens = choices.Sum(kvp =>
+                        kvp.Value.Sum(x => tokeniser?.Encode(x, EmptySet, EmptySet).Count));
 
                     return (estimatedPromptTokens, estimatedCompletionTokens);
                 }
@@ -116,7 +136,7 @@ public static class ServerSideEventResponseHandler
             requestInformation.CallType,
             true,
             requestInformation.Prompt,
-            string.Join("", content),
+            string.Join("\n\n", choices.Select(kvp => $"Choice {kvp.Key}\n\n" + string.Join(string.Empty, kvp.Value))),
             estimatedTokens,
             null,
             responseMetadata,
