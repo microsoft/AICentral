@@ -11,6 +11,8 @@ public class AzureMonitorLoggerFactory : IPipelineStepFactory
 {
     private readonly string _workspaceId;
     private readonly bool _logPrompt;
+    private readonly bool _logResponse;
+    private readonly bool _logClient;
     private readonly Lazy<AzureMonitorLogger> _logger;
 
     public AzureMonitorLoggerFactory(
@@ -22,6 +24,8 @@ public class AzureMonitorLoggerFactory : IPipelineStepFactory
     {
         _workspaceId = workspaceId;
         _logPrompt = logPrompt;
+        _logResponse = logResponse;
+        _logClient = logClient;
         _logger = new Lazy<AzureMonitorLogger>(() => new AzureMonitorLogger(new LoggerConfiguration().WriteTo
                 .AzureAnalytics(
                     _workspaceId,
@@ -64,6 +68,8 @@ public class AzureMonitorLoggerFactory : IPipelineStepFactory
         {
             Type = "AzureMonitorLogging",
             LogPrompt = _logPrompt,
+            LogResponse = _logResponse,
+            LogClient = _logClient,
             WorkspaceId = _workspaceId
         };
     }

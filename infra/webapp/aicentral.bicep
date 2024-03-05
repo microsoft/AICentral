@@ -149,6 +149,10 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
           value: 'true'
         }
         {
+          name: 'AICentral__GenericSteps__1__Properties__LogClient'
+          value: 'true'
+        }
+        {
           name: 'AICentral__EndpointSelectors__0__Type'
           value: 'SingleEndpoint'
         }
