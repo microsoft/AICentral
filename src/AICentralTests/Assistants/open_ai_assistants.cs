@@ -35,7 +35,7 @@ public class open_ai_assistants : IClassFixture<TestWebApplicationFactory<Progra
         _httpClient.DefaultRequestHeaders.Add("x-aicentral-affinity-key", Guid.NewGuid().ToString());  
         var client = new AssistantsClient(
             new Uri("http://azure-to-azure-openai-random-with-affinity.localtest.me"),
-            new AzureKeyCredential("123"),
+            new AzureKeyCredential("ignore-fake-key-123"),
             new AssistantsClientOptions(version: AssistantsClientOptions.ServiceVersion.V2024_02_15_Preview)
             {
                 Transport = new HttpClientTransport(_httpClient)

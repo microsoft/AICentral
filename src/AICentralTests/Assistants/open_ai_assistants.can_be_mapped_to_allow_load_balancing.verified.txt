@@ -7,7 +7,7 @@
     "Headers": {
       "Accept": "application/json",
       "x-ms-return-client-request-id": "true",
-      "api-key": "17f9b7db-f6b7-4b15-a868-38e19bbd88d1"
+      "api-key": "ignore-fake-key-12345678"
     },
     "ContentType": null,
     "Content": {

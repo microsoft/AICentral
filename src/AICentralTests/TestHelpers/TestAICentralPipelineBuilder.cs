@@ -60,7 +60,7 @@ public class TestAICentralPipelineBuilder
             hostname,
             $"https://{hostname}",
             "ApiKey",
-            "80a59060-63f8-4a19-a5ce-ad1a44157897",
+            "ignore-fake-key-hr987345",
             new Dictionary<string, string>(),
             maxConcurrencyToAllowThrough);
 
@@ -102,7 +102,7 @@ public class TestAICentralPipelineBuilder
                 x.hostname,
                 $"https://{x.hostname}",
                 "ApiKey",
-                Guid.NewGuid().ToString(),
+                "ignore-fake-key-456456",
                 new Dictionary<string, string>()
                 ))).ToArray();
 
@@ -111,7 +111,7 @@ public class TestAICentralPipelineBuilder
                 x.hostname,
                 $"https://{x.hostname}",
                 "ApiKey",
-                Guid.NewGuid().ToString(),
+                "ignore-fake-key-sdfsdf",
                 new Dictionary<string, string>()))).ToArray();
 
         _openAiEndpointDispatcherBuilders = priorityOpenAIEndpointDispatcherBuilder
@@ -133,7 +133,7 @@ public class TestAICentralPipelineBuilder
                 x.hostname,
                 $"https://{x.hostname}",
                 "ApiKey",
-                "17f9b7db-f6b7-4b15-a868-38e19bbd88d1",
+                "ignore-fake-key-12345678",
                 new Dictionary<string, string>()
                 {
                     [x.assistant] = x.mappedAssistant
@@ -152,7 +152,7 @@ public class TestAICentralPipelineBuilder
                 x.hostname,
                 $"https://{x.hostname}",
                 "ApiKey",
-                Guid.NewGuid().ToString(),
+                "fake-dfjiud",
                 new Dictionary<string, string>()))).ToArray();
 
         _endpointFactory = new LowestLatencyEndpointSelectorFactory(_openAiEndpointDispatcherBuilders!);

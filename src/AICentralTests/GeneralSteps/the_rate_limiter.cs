@@ -81,13 +81,13 @@ public class the_rate_limiter : IClassFixture<TestWebApplicationFactory<Program>
         await Task.Delay(TimeSpan.FromSeconds(2));
 
         _testOutputHelper.WriteLine("1");
-        var client1Call1 = await Call("123");
+        var client1Call1 = await Call("ignore-fake-key-123");
         _testOutputHelper.WriteLine("2");
-        var client2Call1 = await Call("456");
+        var client2Call1 = await Call("ignore-fake-key-456");
         _testOutputHelper.WriteLine("3");
-        var client1Call2 = await Call("123");
+        var client1Call2 = await Call("ignore-fake-key-123");
         _testOutputHelper.WriteLine("4");
-        var client2Call2 = await Call("456");
+        var client2Call2 = await Call("ignore-fake-key-456");
 
         client1Call1.StatusCode.ShouldBe(HttpStatusCode.OK);
         client1Call2.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
@@ -97,10 +97,10 @@ public class the_rate_limiter : IClassFixture<TestWebApplicationFactory<Program>
         
         await Task.Delay(TimeSpan.FromSeconds(3));
         
-        client1Call1 = await Call("123");
-        client2Call1 = await Call("456");
-        client1Call2 = await Call("123");
-        client2Call2 = await Call("456");
+        client1Call1 = await Call("ignore-fake-key-123");
+        client2Call1 = await Call("ignore-fake-key-456");
+        client1Call2 = await Call("ignore-fake-key-123");
+        client2Call2 = await Call("ignore-fake-key-456");
 
         client1Call1.StatusCode.ShouldBe(HttpStatusCode.OK);
         client1Call2.StatusCode.ShouldBe(HttpStatusCode.TooManyRequests);
