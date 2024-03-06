@@ -6,7 +6,7 @@
     "Method": "POST",
     "Headers": {
       "x-ms-return-client-request-id": "true",
-      "api-key": "80a59060-63f8-4a19-a5ce-ad1a44157897"
+      "api-key": "ignore-fake-key-hr987345"
     },
     "ContentType": "multipart/form-data",
     "Content": {

@@ -6,7 +6,7 @@
     "Method": "POST",
     "Headers": {
       "x-ms-return-client-request-id": "true",
-      "Authorization": "Bearer API-1000",
+      "Authorization": "Bearer ignore-fake-key-4323431",
       "OpenAI-Organization": "98892683-5712-4db4-ab5e-727275f88250"
     },
     "ContentType": "multipart/form-data",

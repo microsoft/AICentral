@@ -7,7 +7,7 @@
     "Headers": {
       "Accept": "application/json",
       "x-ms-return-client-request-id": "true",
-      "Authorization": "Bearer API-1000",
+      "Authorization": "Bearer ignore-fake-key-67098981",
       "OpenAI-Organization": "98892683-5712-4db4-ab5e-727275f88250"
     },
     "ContentType": "application/json",

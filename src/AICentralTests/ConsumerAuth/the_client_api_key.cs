@@ -39,9 +39,9 @@ public class the_client_api_key : IClassFixture<TestWebApplicationFactory<Progra
     }
 
     [Theory]
-    [InlineData("123", true)]
-    [InlineData("456", true)]
-    [InlineData("789", false)]
+    [InlineData("ignore-fake-key-123", true)]
+    [InlineData("ignore-fake-key-456", true)]
+    [InlineData("ignore-fake-key-789", false)]
     public async Task succeeds_with_correct_api_key(string apiKey, bool isValidKey)
     {
         _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "api-key-auth",
