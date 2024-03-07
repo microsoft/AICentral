@@ -46,6 +46,9 @@
         <ParentFile>the_azure_openai_pipeline</ParentFile>
         <DependentUpon>the_azure_openai_pipeline.cs</DependentUpon>
       </None>
+      <None Update="Endpoints\multiple_choice_responses.are_handled_correctly_for_chats.verified.txt">
+        <DependentUpon>multiple_choice_responses.cs</DependentUpon>
+      </None>
     </ItemGroup>
 
     <ItemGroup>

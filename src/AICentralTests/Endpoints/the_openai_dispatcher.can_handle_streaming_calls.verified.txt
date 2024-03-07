@@ -6,9 +6,7 @@
     "Method": "POST",
     "Headers": {
       "Accept": "application/json",
-      "x-ms-return-client-request-id": "true",
-      "Authorization": "Bearer ignore-fake-key-34523412",
-      "OpenAI-Organization": "98892683-5712-4db4-ab5e-727275f88250"
+      "x-ms-return-client-request-id": "true"
     },
     "ContentType": "application/json",
     "Content": "{\"messages\":[{\"content\":\"You are a helpful assistant.\",\"role\":\"system\"}],\"stream\":true,\"model\":\"gpt-3.5-turbo\"}"

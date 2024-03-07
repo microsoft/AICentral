@@ -66,7 +66,8 @@ public static class TestWebApplicationFactoryEx
                 {
                     Uri = x.Item1.RequestUri!.PathAndQuery,
                     Method = x.Item1.Method.ToString(),
-                    Headers = x.Item1.Headers.Where(x => x.Key != "x-ms-client-request-id" && x.Key != "User-Agent")
+                    Headers = x.Item1.Headers.Where
+                            (x => x.Key != "x-ms-client-request-id" && x.Key != "User-Agent" && x.Key != "Authorization" && x.Key != "OpenAI-Organization")
                         .ToDictionary(h => h.Key, h => string.Join(';', h.Value)),
                     ContentType = x.Item1.Content?.Headers.ContentType?.MediaType,
                     Content = contentInformation,
