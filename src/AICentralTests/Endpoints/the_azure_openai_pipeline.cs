@@ -299,6 +299,39 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
                 })));
     }
 
+    [Fact]
+    public async Task works_with_the_azure_sdk_chat_completions()
+    {
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "random",
+            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-azure.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            new OpenAIClientOptions()
+            {
+                Transport = new HttpClientTransport(_httpClient)
+            });
+
+        var result = await client.GetChatCompletionsAsync(
+            new ChatCompletionsOptions()
+            {
+                Messages = { new ChatRequestUserMessage(
+                    [
+                        new ChatMessageTextContentItem("I am some text"),
+                        new ChatMessageImageContentItem(new Uri("http://image.localtest.me/1234")),
+                        new ChatMessageImageContentItem(new Uri("http://image.localtest.me/1234"), ChatMessageImageDetailLevel.High),
+                        new ChatMessageImageContentItem(new ChatMessageImageUrl(new Uri("http://image.localtest.me/1234"))),
+                        new ChatMessageTextContentItem("And so am I!"),
+                    ]) 
+                },
+                DeploymentName = "random"
+            });
+
+        await Verify(_factory.VerifyRequestsAndResponses(result.GetRawResponse(), true));
+    }
+
+   
     public void Dispose()
     {
         _factory.Clear();

@@ -1,0 +1,67 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/openai/deployments/random/chat/completions?api-version=2023-12-01-preview",
+    "Method": "POST",
+    "Headers": {
+      "Accept": "application/json",
+      "x-ms-return-client-request-id": "true",
+      "api-key": "ignore-fake-key-hr987345"
+    },
+    "ContentType": "application/json",
+    "Content": "{\"messages\":[{\"content\":[{\"text\":\"I am some text\",\"type\":\"text\"},{\"image_url\":{\"url\":\"http://image.localtest.me/1234\"},\"type\":\"image_url\"},{\"image_url\":{\"url\":\"http://image.localtest.me/1234\",\"detail\":\"high\"},\"type\":\"image_url\"},{\"image_url\":{\"url\":\"http://image.localtest.me/1234\"},\"type\":\"image_url\"},{\"text\":\"And so am I!\",\"type\":\"text\"}],\"role\":\"user\"}],\"model\":\"random\"}"
+  }
+],
+  Response: {
+    Headers: [
+      {
+        Name: x-ratelimit-remaining-requests,
+        Value: 12
+      },
+      {
+        Name: x-ratelimit-remaining-tokens,
+        Value: 234
+      },
+      {
+        Name: Content-Type,
+        Value: application/json
+      }
+    ]
+  },
+  ResponseMetadata: {
+    InternalEndpointName: Guid_1,
+    OpenAIHost: Guid_1,
+    ModelName: gpt-35-turbo,
+    DeploymentName: random,
+    Client: ,
+    StreamingResponse: false,
+    Prompt: I am some text And so am I! ,
+    Response:
+Choice 0
+
+Yes, other Azure AI services also support customer managed keys. Azure AI services offer multiple options for customers to manage keys, such as using Azure Key Vault, customer-managed keys in Azure Key Vault or customer-managed keys through Azure Storage service. This helps customers ensure that their data is secure and access to their services is controlled.
+,
+    KnownTokens: {
+      Item1: 58,
+      Item2: 68,
+      Item3: 126
+    },
+    ResponseMetadata: {
+      SanitisedHeaders: {
+        x-ratelimit-remaining-requests: [
+          12
+        ],
+        x-ratelimit-remaining-tokens: [
+          234
+        ]
+      },
+      RemainingTokens: 234,
+      RemainingRequests: 12
+    },
+    RemoteIpAddress: ,
+    StartDate: DateTimeOffset_1,
+    Success: true,
+    TotalTokens: 126
+  }
+}

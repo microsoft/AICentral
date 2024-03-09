@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using AICentral.Core;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
@@ -40,12 +41,37 @@ public class AzureOpenAIDetector
             string.Join(
                 '\n',
                 requestContent.RootElement.GetProperty("messages").EnumerateArray()
-                    .Select(x => x.GetProperty("content").GetString())),
+                    .Select(x => GetTextContent(x.GetProperty("content")))),
             deploymentName,
             null,
             requestContent,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
+    }
+
+    private string? GetTextContent(JsonElement contentProperty)
+    {
+        if (contentProperty.ValueKind == JsonValueKind.Array)
+        {
+            var arrayContent = new StringBuilder();
+            foreach(var item in contentProperty.EnumerateArray())
+            {
+                if (item.TryGetProperty("type", out var typeElement))
+                {
+                    if (typeElement.GetString() == "text")
+                    {
+                        arrayContent.Append(item.GetProperty("text").GetString());
+                        arrayContent.Append(" ");
+                    }
+                }
+            }
+
+            return arrayContent.ToString();
+        }
+        else
+        {
+            return contentProperty.GetString();
+        }
     }
 
     private async Task<IncomingCallDetails> DetectCompletions(string pipelineName, string deploymentName, HttpRequest request, CancellationToken cancellationToken)
