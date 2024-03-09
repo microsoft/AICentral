@@ -5,9 +5,7 @@
     "Uri": "/v1/audio/transcriptions",
     "Method": "POST",
     "Headers": {
-      "x-ms-return-client-request-id": "true",
-      "Authorization": "Bearer ignore-fake-key-34523412",
-      "OpenAI-Organization": "98892683-5712-4db4-ab5e-727275f88250"
+      "x-ms-return-client-request-id": "true"
     },
     "ContentType": "multipart/form-data",
     "Content": {

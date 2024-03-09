@@ -4,10 +4,7 @@
   {
     "Uri": "/v1/images/generations",
     "Method": "POST",
-    "Headers": {
-      "Authorization": "Bearer ignore-fake-key-34523412",
-      "OpenAI-Organization": "98892683-5712-4db4-ab5e-727275f88250"
-    },
+    "Headers": {},
     "ContentType": "application/json",
     "Content": "{\"prompt\":\"draw me something blue\",\"model\":\"dall-e-2\"}"
   }
