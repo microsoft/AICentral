@@ -52,7 +52,8 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
 
         await Verify(_factory.VerifyRequestsAndResponses(result));
 
-        result.Headers.GetValues("x-aicentral-pipeline").Single().ShouldBe("azure-to-azure-openai.localtest.me-pipeline");
+        result.Headers.GetValues("x-aicentral-pipeline").Single()
+            .ShouldBe("azure-to-azure-openai.localtest.me-pipeline");
     }
 
 
@@ -179,7 +180,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         await Verify(_factory.VerifyRequestsAndResponses(output));
     }
 
-    
+
     [Fact]
     public async Task can_handle_streaming_completions_calls()
     {
@@ -206,7 +207,6 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         }
 
         await Verify(_factory.VerifyRequestsAndResponses(output));
-
     }
 
     [Fact]
@@ -316,14 +316,21 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         var result = await client.GetChatCompletionsAsync(
             new ChatCompletionsOptions()
             {
-                Messages = { new ChatRequestUserMessage(
+                Messages =
+                {
+                    new ChatRequestUserMessage(
                     [
                         new ChatMessageTextContentItem("I am some text"),
                         new ChatMessageImageContentItem(new Uri("http://image.localtest.me/1234")),
-                        new ChatMessageImageContentItem(new Uri("http://image.localtest.me/1234"), ChatMessageImageDetailLevel.High),
-                        new ChatMessageImageContentItem(new ChatMessageImageUrl(new Uri("http://image.localtest.me/1234"))),
+                        new ChatMessageImageContentItem(new Uri("http://image.localtest.me/1234"),
+                            ChatMessageImageDetailLevel.High),
+                        new ChatMessageImageContentItem(
+                            new ChatMessageImageUrl(new Uri("http://image.localtest.me/1234"))),
                         new ChatMessageTextContentItem("And so am I!"),
-                    ]) 
+                    ]),
+                    new ChatRequestFunctionMessage("Function Message", "I am function output"),
+                    new ChatRequestAssistantMessage("Assistant Message"),
+                    new ChatRequestSystemMessage("System content")
                 },
                 DeploymentName = "random"
             });
@@ -331,7 +338,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         await Verify(_factory.VerifyRequestsAndResponses(result.GetRawResponse(), true));
     }
 
-   
+
     public void Dispose()
     {
         _factory.Clear();

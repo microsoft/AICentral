@@ -10,7 +10,7 @@
       "api-key": "ignore-fake-key-hr987345"
     },
     "ContentType": "application/json",
-    "Content": "{\"messages\":[{\"content\":[{\"text\":\"I am some text\",\"type\":\"text\"},{\"image_url\":{\"url\":\"http://image.localtest.me/1234\"},\"type\":\"image_url\"},{\"image_url\":{\"url\":\"http://image.localtest.me/1234\",\"detail\":\"high\"},\"type\":\"image_url\"},{\"image_url\":{\"url\":\"http://image.localtest.me/1234\"},\"type\":\"image_url\"},{\"text\":\"And so am I!\",\"type\":\"text\"}],\"role\":\"user\"}],\"model\":\"random\"}"
+    "Content": "{\"messages\":[{\"content\":[{\"text\":\"I am some text\",\"type\":\"text\"},{\"image_url\":{\"url\":\"http://image.localtest.me/1234\"},\"type\":\"image_url\"},{\"image_url\":{\"url\":\"http://image.localtest.me/1234\",\"detail\":\"high\"},\"type\":\"image_url\"},{\"image_url\":{\"url\":\"http://image.localtest.me/1234\"},\"type\":\"image_url\"},{\"text\":\"And so am I!\",\"type\":\"text\"}],\"role\":\"user\"},{\"name\":\"Function Message\",\"content\":\"I am function output\",\"role\":\"function\"},{\"content\":\"Assistant Message\",\"role\":\"assistant\"},{\"content\":\"System content\",\"role\":\"system\"}],\"model\":\"random\"}"
   }
 ],
   Response: {
@@ -36,7 +36,11 @@
     DeploymentName: random,
     Client: ,
     StreamingResponse: false,
-    Prompt: I am some text And so am I! ,
+    Prompt:
+I am some text And so am I! 
+I am function output
+Assistant Message
+System content,
     Response:
 Choice 0
 
