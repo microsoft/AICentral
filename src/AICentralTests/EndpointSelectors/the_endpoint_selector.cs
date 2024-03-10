@@ -179,7 +179,7 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
 
         var result = await _httpClient.PostAsync(
-            "https://azure-hierarchical-selector.localtest.me/openai/deployments/random/chat/completions?api-version=2023-12-01-preview",
+            "https://azure-hierarchical-selector.localtest.me/openai/deployments/random/chat/completions?api-version=2024-02-15-preview",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]

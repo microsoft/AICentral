@@ -2,7 +2,7 @@
   Requests:
 [
   {
-    "Uri": "/openai/images/generations:submit?api-version=2023-12-01-preview",
+    "Uri": "/openai/images/generations:submit?api-version=2024-02-15-preview",
     "Method": "POST",
     "Headers": {
       "api-key": "ignore-fake-key-12345678"
@@ -11,7 +11,7 @@
     "Content": "{\"prompt\":\"Draw me an image\"}"
   },
   {
-    "Uri": "/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-12-01-preview",
+    "Uri": "/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2024-02-15-preview",
     "Method": "GET",
     "Headers": {
       "api-key": "ignore-fake-key-12345678"

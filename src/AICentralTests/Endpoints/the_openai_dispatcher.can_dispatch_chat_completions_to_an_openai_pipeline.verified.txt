@@ -25,6 +25,7 @@
         "FunctionCall": null,
         "AzureExtensionsContext": null
       },
+      "LogProbabilityInfo": null,
       "Index": 0,
       "FinishReason": {},
       "FinishDetails": null,

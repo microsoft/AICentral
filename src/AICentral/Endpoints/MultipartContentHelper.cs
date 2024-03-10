@@ -19,8 +19,8 @@ public static class MultipartContentHelper
         foreach (var item in incomingRequest.Form.Files)
         {
             var fileContent = new StreamContent(item.OpenReadStream());
-            fileContent.Headers.Add("Content-Disposition", item.ContentDisposition);
-            fileContent.Headers.Add("Content-Type", item.ContentType);
+            fileContent.Headers.TryAddWithoutValidation("Content-Disposition", item.ContentDisposition);
+            fileContent.Headers.TryAddWithoutValidation("Content-Type", item.ContentType);
             newContent.Add(fileContent);
         }
 

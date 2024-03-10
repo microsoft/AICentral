@@ -32,7 +32,7 @@ public class the_streaming_endpoints : IClassFixture<TestWebApplicationFactory<P
             AICentralFakeResponses.FakeStreamingChatCompletionsResponse);
 
         var result = await _httpClient.PostAsync(
-            "http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/chat/completions?api-version=2023-12-01-preview",
+            "http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/chat/completions?api-version=2024-02-15-preview",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -57,7 +57,7 @@ public class the_streaming_endpoints : IClassFixture<TestWebApplicationFactory<P
             AICentralFakeResponses.FakeStreamingCompletionsResponse);
 
         var result = await _httpClient.PostAsync(
-            "http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/completions?api-version=2023-12-01-preview",
+            "http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/completions?api-version=2024-02-15-preview",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 prompt =new[] {"You are a helpful assistant."},
