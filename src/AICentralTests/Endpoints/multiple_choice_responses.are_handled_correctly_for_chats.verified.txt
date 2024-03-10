@@ -2,7 +2,7 @@
   Requests:
 [
   {
-    "Uri": "/openai/deployments/ModelStream/chat/completions?api-version=2023-12-01-preview",
+    "Uri": "/openai/deployments/ModelStream/chat/completions?api-version=2024-02-15-preview",
     "Method": "POST",
     "Headers": {
       "Accept": "application/json",

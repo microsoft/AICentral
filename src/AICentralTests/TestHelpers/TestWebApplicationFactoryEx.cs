@@ -13,7 +13,7 @@ public static class TestWebApplicationFactoryEx
         string endpoint,
         string modelName,
         Func<Task<HttpResponseMessage>> response,
-        string apiVersion = "2023-12-01-preview")
+        string apiVersion = "2024-02-15-preview")
     {
         webApplicationFactory.Services.GetRequiredService<FakeHttpMessageHandlerSeeder>()
             .SeedChatCompletions(endpoint, modelName, response, apiVersion);

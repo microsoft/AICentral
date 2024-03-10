@@ -20,7 +20,9 @@
       {
         "Url": "https://somewhere-else.com",
         "Base64Data": null,
-        "RevisedPrompt": null
+        "ContentFilterResults": null,
+        "RevisedPrompt": null,
+        "PromptFilterResults": null
       }
     ]
   },

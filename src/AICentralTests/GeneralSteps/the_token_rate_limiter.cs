@@ -28,7 +28,7 @@ public class the_token_rate_limiter : IClassFixture<TestWebApplicationFactory<Pr
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse(50)));
 
         Task<HttpResponseMessage> Call() => _httpClient.PostAsync(
-            "http://azure-with-token-rate-limiter.localtest.me/openai/deployments/random/chat/completions?api-version=2023-12-01-preview",
+            "http://azure-with-token-rate-limiter.localtest.me/openai/deployments/random/chat/completions?api-version=2024-02-15-preview",
             new StringContent(
                 JsonConvert.SerializeObject(new
                 {
@@ -54,7 +54,7 @@ public class the_token_rate_limiter : IClassFixture<TestWebApplicationFactory<Pr
 
         Task<HttpResponseMessage> Call(string apiKey) => _httpClient.SendAsync(
             new HttpRequestMessage(HttpMethod.Post,
-                "http://azure-with-client-partitioned-token-rate-limiter.localtest.me/openai/deployments/random/chat/completions?api-version=2023-12-01-preview")
+                "http://azure-with-client-partitioned-token-rate-limiter.localtest.me/openai/deployments/random/chat/completions?api-version=2024-02-15-preview")
             {
                 Headers = { { "api-key", apiKey } },
                 Content = new StringContent(

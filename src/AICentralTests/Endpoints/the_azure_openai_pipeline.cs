@@ -35,7 +35,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
 
         var result = await _httpClient.PostAsync(
-            "http://azure-to-azure-openai.localtest.me/openai/deployments/Model1/chat/completions?api-version=2023-12-01-preview",
+            "http://azure-to-azure-openai.localtest.me/openai/deployments/Model1/chat/completions?api-version=2024-02-15-preview",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -68,7 +68,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         var client = new OpenAIClient(
             new Uri("http://azure-to-azure-openai.localtest.me"),
             new AzureKeyCredential("ignore"),
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview)
             {
                 Transport = new HttpClientTransport(_httpClient)
             });
@@ -87,13 +87,13 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public async Task can_proxy_a_whisper_audio_request()
     {
         _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/whisper-1/audio/transcriptions?api-version=2023-12-01-preview",
+            $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/whisper-1/audio/transcriptions?api-version=2024-02-15-preview",
             () => Task.FromResult(AICentralFakeResponses.FakeOpenAIAudioTranscriptionResponse()));
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-azure.localtest.me"),
             new AzureKeyCredential("ignore"),
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview)
             {
                 Transport = new HttpClientTransport(_httpClient)
             });
@@ -120,25 +120,25 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         //test will fail on the first endpoint, so has to pick the second. This test should always pass, as the 2nd call to check the image completion status
         //will always have an affinity header to the working endpoint.
         _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200}/openai/images/generations:submit?api-version=2023-12-01-preview",
+            $"https://{AICentralFakeResponses.Endpoint200}/openai/images/generations:submit?api-version=2024-02-15-preview",
             () => Task.FromResult(AICentralFakeResponses.NotFoundResponse()));
 
         _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-12-01-preview",
+            $"https://{AICentralFakeResponses.Endpoint200}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2024-02-15-preview",
             () => Task.FromResult(AICentralFakeResponses.NotFoundResponse()));
 
         _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/images/generations:submit?api-version=2023-12-01-preview",
+            $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/images/generations:submit?api-version=2024-02-15-preview",
             () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIImageResponse()));
 
         _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2023-12-01-preview",
+            $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2024-02-15-preview",
             () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIImageStatusResponse()));
 
         //DALLE-2 is no longer reachable with the latest SDK!
         var response = await _httpClient.PostAsync(
             new Uri(
-                "http://azure-to-azure-openai.localtest.me/openai/images/generations:submit?api-version=2023-12-01-preview"),
+                "http://azure-to-azure-openai.localtest.me/openai/images/generations:submit?api-version=2024-02-15-preview"),
             new StringContent(JsonConvert.SerializeObject(new
                 { prompt = "Draw me an image" }), Encoding.UTF8, "application/json"));
 
@@ -153,13 +153,13 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public async Task can_handle_streaming_calls()
     {
         _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "ModelStream",
-            AICentralFakeResponses.FakeStreamingChatCompletionsResponse, "2023-12-01-preview");
+            AICentralFakeResponses.FakeStreamingChatCompletionsResponse, "2024-02-15-preview");
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-azure.localtest.me"),
             new AzureKeyCredential("ignore"),
             // ReSharper disable once RedundantArgumentDefaultValue
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview)
             {
                 Transport = new HttpClientTransport(_httpClient),
             });
@@ -191,7 +191,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             new Uri("http://azure-openai-to-azure.localtest.me"),
             new AzureKeyCredential("ignore"),
             // ReSharper disable once RedundantArgumentDefaultValue
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview)
             {
                 Transport = new HttpClientTransport(_httpClient),
             });
@@ -213,12 +213,12 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public async Task can_proxy_dalle2_requests()
     {
         _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200}/openai/images/generations:submit?api-version=2023-12-01-preview",
+            $"https://{AICentralFakeResponses.Endpoint200}/openai/images/generations:submit?api-version=2024-02-15-preview",
             () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIImageResponse()));
 
         var response = await _httpClient.PostAsync(
             new Uri(
-                "http://azure-openai-to-azure.localtest.me/openai/images/generations:submit?api-version=2023-12-01-preview"),
+                "http://azure-openai-to-azure.localtest.me/openai/images/generations:submit?api-version=2024-02-15-preview"),
             new StringContent(JsonConvert.SerializeObject(new { prompt = "draw me an image" }), Encoding.UTF8,
                 "application/json"));
 
@@ -229,14 +229,14 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public async Task can_proxy_dalle3_requests()
     {
         _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/gpt-3.5-turbo/images/generations?api-version=2023-12-01-preview",
+            $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/gpt-3.5-turbo/images/generations?api-version=2024-02-15-preview",
             () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIDALLE3ImageResponse()));
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-azure.localtest.me"),
             new AzureKeyCredential("ignore"),
             // ReSharper disable once RedundantArgumentDefaultValue
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview)
             {
                 Transport = new HttpClientTransport(_httpClient),
             });
@@ -263,7 +263,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             new Uri("http://azure-openai-to-404.localtest.me"),
             new AzureKeyCredential("ignore"),
             // ReSharper disable once RedundantArgumentDefaultValue
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview)
             {
                 Transport = new HttpClientTransport(_httpClient),
             });
@@ -286,7 +286,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             new Uri("http://azure-openai-to-azure.localtest.me"),
             new AzureKeyCredential("ignore"),
             // ReSharper disable once RedundantArgumentDefaultValue
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview)
             {
                 Transport = new HttpClientTransport(_httpClient),
             });

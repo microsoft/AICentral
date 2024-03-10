@@ -2,7 +2,7 @@
   Requests:
 [
   {
-    "Uri": "/openai/deployments/gpt-3.5-turbo/images/generations?api-version=2023-12-01-preview",
+    "Uri": "/openai/deployments/gpt-3.5-turbo/images/generations?api-version=2024-02-15-preview",
     "Method": "POST",
     "Headers": {
       "Accept": "application/json",
@@ -21,7 +21,9 @@
       {
         "Url": "https://somewhere-else.com",
         "Base64Data": null,
-        "RevisedPrompt": "A middle-aged computer programmer of ambiguous descent, typing code into a laptop in a spacious, brightly lit living room. Regardless of gender, they bear a somewhat weary look reflecting their extensive experience in their profession. Their room is illuminated by the warm sunbeams filtering through the window."
+        "ContentFilterResults": null,
+        "RevisedPrompt": "A middle-aged computer programmer of ambiguous descent, typing code into a laptop in a spacious, brightly lit living room. Regardless of gender, they bear a somewhat weary look reflecting their extensive experience in their profession. Their room is illuminated by the warm sunbeams filtering through the window.",
+        "PromptFilterResults": null
       }
     ]
   },

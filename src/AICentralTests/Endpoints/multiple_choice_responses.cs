@@ -33,7 +33,7 @@ public class multiple_choice_responses : IClassFixture<TestWebApplicationFactory
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponseMultipleChoices()));
 
         var result = await _httpClient.PostAsync(
-            "http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/chat/completions?api-version=2023-12-01-preview",
+            "http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/chat/completions?api-version=2024-02-15-preview",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -55,13 +55,13 @@ public class multiple_choice_responses : IClassFixture<TestWebApplicationFactory
     public async Task are_handled_correctly_for_chats()
     {
         _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "ModelStream",
-            AICentralFakeResponses.FakeStreamingChatCompletionsResponseMultipleChoices, "2023-12-01-preview");
+            AICentralFakeResponses.FakeStreamingChatCompletionsResponseMultipleChoices, "2024-02-15-preview");
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-azure.localtest.me"),
             new AzureKeyCredential("ignore"),
             // ReSharper disable once RedundantArgumentDefaultValue
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview)
             {
                 Transport = new HttpClientTransport(_httpClient),
             });

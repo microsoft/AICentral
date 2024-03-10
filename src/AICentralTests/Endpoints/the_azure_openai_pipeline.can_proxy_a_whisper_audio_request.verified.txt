@@ -2,7 +2,7 @@
   Requests:
 [
   {
-    "Uri": "/openai/deployments/whisper-1/audio/transcriptions?api-version=2023-12-01-preview",
+    "Uri": "/openai/deployments/whisper-1/audio/transcriptions?api-version=2024-02-15-preview",
     "Method": "POST",
     "Headers": {
       "x-ms-return-client-request-id": "true",
@@ -11,7 +11,7 @@
     "ContentType": "multipart/form-data",
     "Content": {
       "Type": "multipart/form-data",
-      "Length": 34376
+      "Length": 34370
     }
   }
 ],

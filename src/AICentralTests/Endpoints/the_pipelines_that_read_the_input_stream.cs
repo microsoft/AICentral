@@ -32,17 +32,17 @@ public class the_pipelines_that_read_the_input_stream : IClassFixture<TestWebApp
     public async Task can_handle_failed_downstreams()
     {
         _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/whisper/audio/transcriptions?api-version=2023-12-01-preview",
+            $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/whisper/audio/transcriptions?api-version=2024-02-15-preview",
             () => Task.FromResult(AICentralFakeResponses.FakeOpenAIAudioTranscriptionResponse()));
 
         _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/deployments/whisper/audio/transcriptions?api-version=2023-12-01-preview",
+            $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/deployments/whisper/audio/transcriptions?api-version=2024-02-15-preview",
             () => Task.FromResult(AICentralFakeResponses.NotFoundResponse()));
 
         var client = new OpenAIClient(
             new Uri("http://azure-to-azure-openai.localtest.me"),
             new AzureKeyCredential("ignore"),
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2023_12_01_Preview)
+            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview)
             {
                 Transport = new HttpClientTransport(_httpClient)
             });
