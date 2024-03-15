@@ -156,15 +156,38 @@ public static class TestWebApplicationFactoryEx
         return validation;
     }
 
-    public static Dictionary<string, object> VerifyRequestsAndResponses(
+    public static Dictionary<string, object> VerifyRequestsAndResponses<T>(
         this TestWebApplicationFactory<Program> webApplicationFactory,
-        object response)
+        Azure.Response<T> response, bool validateResponseMetadata = false)
     {
-        return new Dictionary<string, object>()
+        var validation = new Dictionary<string, object>()
         {
             ["Requests"] = JsonConvert.SerializeObject(webApplicationFactory.EndpointRequests(), Formatting.Indented),
             ["Response"] = JsonConvert.SerializeObject(response, Formatting.Indented)
         };
+        if (validateResponseMetadata)
+        {
+            response.GetRawResponse().Headers.TryGetValues("x-aicentral-test-diagnostics", out var key); 
+            var downstreamUsageInformation = webApplicationFactory.Services.GetRequiredService<DiagnosticsCollector>().DownstreamUsageInformation[key!.Single()];
+            var info = downstreamUsageInformation with { Duration = TimeSpan.Zero, EstimatedTokens = null};
+            validation["ResponseMetadata"] =  info;
+        }
+
+        return validation;
+
+    }
+
+    public static Dictionary<string, object> VerifyRequestsAndResponses(
+        this TestWebApplicationFactory<Program> webApplicationFactory,
+        object response)
+    {
+        var validation = new Dictionary<string, object>()
+        {
+            ["Requests"] = JsonConvert.SerializeObject(webApplicationFactory.EndpointRequests(), Formatting.Indented),
+            ["Response"] = JsonConvert.SerializeObject(response, Formatting.Indented)
+        };
+        return validation;
+
     }
 
     public static void Clear(this TestWebApplicationFactory<Program> webApplicationFactory)
