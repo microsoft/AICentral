@@ -61,7 +61,7 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
             new ChatRequestAssistantMessage("")
         }));
 
-        await Verify(_factory.VerifyRequestsAndResponses(response.Value));
+        await Verify(_factory.VerifyRequestsAndResponses(response));
     }
 
     [Fact]

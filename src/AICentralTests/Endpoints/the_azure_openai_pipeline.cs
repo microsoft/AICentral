@@ -115,6 +115,51 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     }
 
     [Fact]
+    public async Task can_proxy_embedding_requests()
+    {
+        _factory.Seed(
+            $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/adatest/embeddings?api-version=2024-02-15-preview",
+            AICentralFakeResponses.FakeEmbeddingResponse);
+
+        var result = await _httpClient.PostAsync(
+            "http://azure-openai-to-azure.localtest.me/openai/deployments/adatest/embeddings?api-version=2024-02-15-preview",
+            new StringContent(JsonConvert.SerializeObject(new
+            {
+                input = "Test"
+            }), Encoding.UTF8, "application/json"));
+
+        result.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        await Verify(_factory.VerifyRequestsAndResponses(result, validateResponseMetadata:true));
+    }
+
+    
+    [Fact]
+    public async Task can_proxy_embedding_requests_array()
+    {
+        _factory.Seed(
+            $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/adatest/embeddings?api-version=2024-02-15-preview",
+            AICentralFakeResponses.FakeEmbeddingArrayResponse);
+
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-azure.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            new OpenAIClientOptions()
+            {
+                Transport = new HttpClientTransport(_httpClient)
+            });
+
+        var response = await client.GetEmbeddingsAsync(new EmbeddingsOptions()
+        {
+            DeploymentName = "adatest",
+            Input = {"Test1", "Test2"}
+        });
+
+        response.Value.ShouldNotBeNull();
+        await Verify(_factory.VerifyRequestsAndResponses(response, validateResponseMetadata:true));
+    }
+
+    [Fact]
     public async Task will_follow_affinity_requests_to_allow_async_against_a_multi_endpoint()
     {
         //test will fail on the first endpoint, so has to pick the second. This test should always pass, as the 2nd call to check the image completion status

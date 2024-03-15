@@ -116,7 +116,6 @@ public class AICentralFakeResponses
                     finish_reason = "stop",
                     index = 1
                 }
-
             },
         });
 
@@ -168,6 +167,67 @@ public class AICentralFakeResponses
         response.Content = new SSEResponse(content);
         response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
         response.Headers.TransferEncodingChunked = true;
+        return response;
+    }
+
+    public static async Task<HttpResponseMessage> FakeEmbeddingArrayResponse()
+    {
+        var response = new HttpResponseMessage();
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            id = FakeResponseId,
+            @object = "list",
+            model = "ada",
+            usage = new
+            {
+                prompt_tokens = 58,
+                total_tokens = 126
+            },
+            data = new []
+            {
+                new             
+                {
+                    embedding = new float[] { 0.1f, 0.2f, 0.3f },
+                    index = 0,
+                    @object = "embedding"
+                },
+                new             
+                {
+                    embedding = new float[] { 0.4f, 0.5f, 0.6f },
+                    index = 1,
+                    @object = "embedding"
+                }
+            }
+        });
+
+        return response;
+    }
+
+    
+    public static async Task<HttpResponseMessage> FakeEmbeddingResponse()
+    {
+        var response = new HttpResponseMessage();
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            id = FakeResponseId,
+            @object = "list",
+            model = "ada",
+            usage = new
+            {
+                prompt_tokens = 58,
+                total_tokens = 126
+            },
+            data = new []
+            {
+                new             
+                {
+                    embedding = new float[] { 0.1f, 0.2f, 0.3f },
+                    index = 0,
+                    @object = "embedding"
+                }
+            }
+        });
+
         return response;
     }
 

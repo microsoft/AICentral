@@ -14,31 +14,34 @@
 ],
   Response:
 {
-  "Id": "chatcmpl-6v7mkQj980V1yBec6ETrKPRqFjNw9",
-  "Created": "2023-03-17T17:04:02+00:00",
-  "Choices": [
-    {
-      "Message": {
-        "Role": {},
-        "Content": "Yes, other Azure AI services also support customer managed keys. Azure AI services offer multiple options for customers to manage keys, such as using Azure Key Vault, customer-managed keys in Azure Key Vault or customer-managed keys through Azure Storage service. This helps customers ensure that their data is secure and access to their services is controlled.",
-        "ToolCalls": [],
-        "FunctionCall": null,
-        "AzureExtensionsContext": null
-      },
-      "LogProbabilityInfo": null,
-      "Index": 0,
-      "FinishReason": {},
-      "FinishDetails": null,
-      "ContentFilterResults": null,
-      "Enhancements": null
+  "Value": {
+    "Id": "chatcmpl-6v7mkQj980V1yBec6ETrKPRqFjNw9",
+    "Created": "2023-03-17T17:04:02+00:00",
+    "Choices": [
+      {
+        "Message": {
+          "Role": {},
+          "Content": "Yes, other Azure AI services also support customer managed keys. Azure AI services offer multiple options for customers to manage keys, such as using Azure Key Vault, customer-managed keys in Azure Key Vault or customer-managed keys through Azure Storage service. This helps customers ensure that their data is secure and access to their services is controlled.",
+          "ToolCalls": [],
+          "FunctionCall": null,
+          "AzureExtensionsContext": null
+        },
+        "LogProbabilityInfo": null,
+        "Index": 0,
+        "FinishReason": {},
+        "FinishDetails": null,
+        "ContentFilterResults": null,
+        "Enhancements": null
+      }
+    ],
+    "PromptFilterResults": [],
+    "SystemFingerprint": null,
+    "Usage": {
+      "CompletionTokens": 68,
+      "PromptTokens": 58,
+      "TotalTokens": 126
     }
-  ],
-  "PromptFilterResults": [],
-  "SystemFingerprint": null,
-  "Usage": {
-    "CompletionTokens": 68,
-    "PromptTokens": 58,
-    "TotalTokens": 126
-  }
+  },
+  "HasValue": true
 }
 }

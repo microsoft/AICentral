@@ -68,12 +68,10 @@ public class AzureOpenAIDetector
 
             return arrayContent.ToString();
         }
-        else
-        {
-            return contentProperty.GetString();
-        }
-    }
 
+        return contentProperty.GetString();
+    }
+    
     private async Task<IncomingCallDetails> DetectCompletions(string pipelineName, string deploymentName, HttpRequest request, CancellationToken cancellationToken)
     {
         var requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
@@ -100,12 +98,29 @@ public class AzureOpenAIDetector
             pipelineName,
             AICallType.Embeddings,
             AICallResponseType.NonStreaming,
-            requestContent.RootElement.GetProperty("input").GetString() ?? string.Empty,
+            GetEmbeddingContent(requestContent.RootElement.GetProperty("input")),
             deploymentName,
             null,
             requestContent,
             QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
+    }
+
+    private string? GetEmbeddingContent(JsonElement contentProperty)
+    {
+        if (contentProperty.ValueKind == JsonValueKind.Array)
+        {
+            var arrayContent = new StringBuilder();
+            foreach(var item in contentProperty.EnumerateArray())
+            {
+                arrayContent.Append(item.GetString());
+                arrayContent.Append(" ");
+            }
+
+            return arrayContent.ToString();
+        }
+
+        return contentProperty.GetString();
     }
 
     private IncomingCallDetails DetectTranscription(string pipelineName, string deploymentName, HttpRequest request)

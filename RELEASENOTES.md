@@ -1,5 +1,11 @@
 Release Notes:
 
+0.16.8 (15/mar/2024)
+Fixed a bug when array is passed into Embeddings.
+
+0.16.7 (10/mar/2024)
+Fixed a bug when complex types are passed into Chat Completions.
+
 0.15.1 (23/feb/2024)
 Fixed missing token counts for streaming completions requests
 
