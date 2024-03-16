@@ -205,6 +205,59 @@ Using Endpoints and Endpoint Selectors we can create a pipeline like this:
     }
 }
 ```
+## Open Telemetry
+
+To enable OTel metrics on a pipeline, add this section
+
+> AddClientNameTag adds the consumers name to the OTel metrics. This will enable chargeback scenarios across your Pipelines.
+
+> The examples shown will capture Telemetry and send it to Azure Monitor. Use your Open Telemetry collector of choice for other destinations. 
+
+```json
+{
+  "AICentral": {
+    "Endpoints": [ "... as above" ],
+    "EndpointSelectors": [ "... as above" ],
+    "Pipelines": [
+      {
+        "Name": "MyPipeline",
+        "Host": "<host-name-we-listen-for-requests-on>",
+        "EndpointSelector": "name-from-above",
+        "OpenTelemetryConfig": {
+          "AddClientNameTag": true,
+          "Transmit": true
+        }
+      }
+    ]
+  }
+}
+```
+
+```bash
+dotnet add package Azure.Monitor.OpenTelemetry.AspNetCore
+```
+
+```csharp
+    builder.Services
+        .AddOpenTelemetry()
+        .WithMetrics(metrics =>
+        {
+            metrics.AddMeter(ActivitySource.AICentralTelemetryName);
+        })
+        .UseAzureMonitor();
+
+```
+
+To enable additional AICentrl traces in your Open Telemetry distributed tracing
+```csharp
+    builder.Services
+        .AddOpenTelemetry()
+        .WithTracing(tracing =>
+        {
+            tracing.AddSource(ActivitySource.AICentralTelemetryName);
+        })
+
+```
 
 ## Incoming Client Auth
 
