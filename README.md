@@ -8,15 +8,13 @@
 
 AI Central gives you control over your AI services.
 
-- Lightweight out-the-box token logging using Open Telemetry
+- Lightweight out-the-box token metrics surfaced through Open Telemetry
   - **Does not buffer and block streaming** 
   - Use for PTU Chargeback scenarios
   - Gain quick insights into who's using what, how much, and how often
-  - Standard Open Telemetry format to plug into you monitoring solution of choice
+  - Standard Open Telemetry format to surface Dashboards in you monitoring solution of choice
 - Prompt and usage logging to Azure Monitor
   - **Works for streaming endpoints as-well as non streaming**
-- Enhanced Open Telemetry metrics
-  - Build insightful dashboards using your monitoring tool of choice
 - Intelligent Routing
   - Random endpoint selector
   - Prioritised endpoint selector with fallback

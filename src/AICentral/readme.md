@@ -2,6 +2,7 @@
 
 AI Central gives you control over your AI services.
 
+- Lightweight out-the-box token logging using Open Telemetry
 - Intelligent Routing
 - Custom consumer OAuth2 authorisation
 - Fallback AI service
