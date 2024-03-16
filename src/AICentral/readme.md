@@ -2,6 +2,7 @@
 
 AI Central gives you control over your AI services.
 
+- Lightweight out-the-box token logging using Open Telemetry
 - Intelligent Routing
 - Custom consumer OAuth2 authorisation
 - Fallback AI service
@@ -68,8 +69,11 @@ This sample produces a AI-Central proxy that
         "Name": "OpenAIPipeline",
         "Host": "mypipeline.mydomain.com",
         "EndpointSelector": "default",
-        "AuthProvider": "apikey"
-        
+        "AuthProvider": "apikey",
+        "OpenTelemetryConfig": {
+          "AddClientNameTag": true,
+          "Transmit": true
+        }
       }
     ]
   }
@@ -85,7 +89,8 @@ This pipeline will:
 - Present it as an Azure Open AI style endpoint
 - Protect the front-end by requiring an AAD token issued for your own AAD application
 - Put a local Asp.Net core rate-limiting policy over the endpoint
-- Add logging to Azure monitor
+- Emit Open Telemetry to be picked up by your OTel collector
+- Add rich logging to Azure monitor
     - Logs quota, client caller information (IP and identity name), and in this case the Prompt but not the response.
 - Publish the client-name as a tag in Open Telemetry
 
@@ -196,7 +201,8 @@ This pipeline will:
           "azure-monitor-logger"
         ],
         "OpenTelemetryConfig": {
-          "AddClientNameTag": true
+          "AddClientNameTag": true,
+          "Transmit": true
         }
       }
     ]

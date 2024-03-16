@@ -8,10 +8,14 @@
 
 AI Central gives you control over your AI services.
 
+- Minimal overhead - written on Asp.Net Core, on dotnet 8. One of the fastest web-servers in the business.
+- Lightweight out-the-box token metrics surfaced through Open Telemetry
+  - **Does not buffer and block streaming** 
+  - Use for PTU Chargeback scenarios
+  - Gain quick insights into who's using what, how much, and how often
+  - Standard Open Telemetry format to surface Dashboards in you monitoring solution of choice
 - Prompt and usage logging to Azure Monitor
   - **Works for streaming endpoints as-well as non streaming**
-- Enhanced Open Telemetry metrics
-  - Build insightful dashboards using your monitoring tool of choice
 - Intelligent Routing
   - Random endpoint selector
   - Prioritised endpoint selector with fallback
