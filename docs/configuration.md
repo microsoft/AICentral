@@ -248,9 +248,8 @@ dotnet add package Azure.Monitor.OpenTelemetry.AspNetCore
 
 ```
 
-```bicep
-Check out this [dashboard](../infra/dashboards/aicentral-dashboards.json) for inspiration on how to visualise your metrics. 
-```
+> Check out this [dashboard](../infra/dashboards/aicentral-dashboards.json) for inspiration on how to visualise your metrics.
+
 
 To enable additional AICentrl traces in your Open Telemetry distributed tracing
 ```csharp
