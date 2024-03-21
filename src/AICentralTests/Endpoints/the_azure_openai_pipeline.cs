@@ -1,6 +1,5 @@
 using System.Net;
 using System.Text;
-using AICentral;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Azure;
@@ -380,6 +379,37 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
                 DeploymentName = "random"
             });
 
+        await Verify(_factory.VerifyRequestsAndResponses(result.GetRawResponse(), true));
+    }
+
+    [Fact]
+    public async Task can_map_models()
+    {
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "mapped",
+            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-azure-with-mapped-models.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            new OpenAIClientOptions()
+            {
+                Transport = new HttpClientTransport(_httpClient)
+            });
+
+        var result = await client.GetChatCompletionsAsync(
+            new ChatCompletionsOptions()
+            {
+                Messages =
+                {
+                    new ChatRequestUserMessage(
+                    [
+                        new ChatMessageTextContentItem("I am some text"),
+                    ]),
+                },
+                DeploymentName = "random"
+            });
+
+        result.GetRawResponse().Status.ShouldBe(200);
         await Verify(_factory.VerifyRequestsAndResponses(result.GetRawResponse(), true));
     }
 

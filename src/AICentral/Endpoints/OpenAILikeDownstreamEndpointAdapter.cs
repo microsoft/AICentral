@@ -30,14 +30,21 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
     public async Task<Either<HttpRequestMessage, IResult>> BuildRequest(IncomingCallDetails callInformation,
         HttpContext context)
     {
+        var logger = context.RequestServices.GetRequiredService<ILogger<OpenAILikeDownstreamEndpointAdapter>>();
+        
         var incomingModelName = callInformation.IncomingModelName;
         _modelMappings.TryGetValue(incomingModelName ?? string.Empty, out var mappedModelName);
 
         var incomingAssistantName = callInformation.IncomingAssistantName;
-         _assistantMappings.TryGetValue(incomingAssistantName ?? string.Empty, out var mappedAssistantName);
-        mappedAssistantName ??= incomingAssistantName; //We are not transforming outgoing responses (i.e. changing the id of the agent to the friendly one)... so we need to keep the original name
+        _assistantMappings.TryGetValue(incomingAssistantName ?? string.Empty, out var mappedAssistantName);
+        mappedAssistantName ??=
+            incomingAssistantName; //We are not transforming outgoing responses (i.e. changing the id of the agent to the friendly one)... so we need to keep the original name
 
-        if (IsFixedModelName(callInformation.AICallType, callInformation.IncomingModelName, out var fixedModelName)) mappedModelName = fixedModelName;
+        if (mappedModelName == null && IsFixedModelName(callInformation.AICallType, callInformation.IncomingModelName,
+                out var fixedModelName))
+        {
+            mappedModelName = fixedModelName;
+        }
 
         if (callInformation.IncomingModelName != null && string.IsNullOrWhiteSpace(mappedModelName))
         {
@@ -46,6 +53,15 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
 
         try
         {
+            if (incomingModelName != mappedModelName)
+            {
+                logger.LogDebug("Detected mapped model - Mapping incoming model {IncomingModel} to {MappedModel}", incomingModelName, mappedModelName);
+            }
+            if (incomingAssistantName != mappedAssistantName)
+            {
+                logger.LogDebug("Detected assistant call - Mapping incoming assistant {IncomingAssistant} to {MappedAssistant}", incomingAssistantName, mappedAssistantName);
+            }
+            
             return new Either<HttpRequestMessage, IResult>(
                 await BuildNewRequest(
                     context,
@@ -59,7 +75,8 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
         }
     }
 
-    public async Task<HttpResponseMessage> DispatchRequest(HttpContext context, HttpRequestMessage requestMessage, CancellationToken cancellationToken)
+    public async Task<HttpResponseMessage> DispatchRequest(HttpContext context, HttpRequestMessage requestMessage,
+        CancellationToken cancellationToken)
     {
         var typedDispatcher = context.RequestServices
             .GetRequiredService<ITypedHttpClientFactory<HttpAIEndpointDispatcher>>()
@@ -106,13 +123,20 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
     }
 
     protected virtual void CustomSanitiseHeaders(
-        HttpContext context, 
+        HttpContext context,
         HttpResponseMessage openAiResponse,
         Dictionary<string, StringValues> proxiedHeaders)
     {
     }
 
-    protected abstract bool IsFixedModelName(AICallType callType, string? callInformationIncomingModelName, out string? fixedModelName);
+    /// <summary>
+    /// If we didn't find a mapped-model name then you have an option to pin it to something.
+    /// </summary>
+    /// <remarks>
+    /// For AOAI you might just pass through the original model name, but for OpenAI you might want to map it to a specific model name.
+    /// </remarks>
+    protected abstract bool IsFixedModelName(AICallType callType, string? callInformationIncomingModelName,
+        out string? fixedModelName);
 
     private async Task<HttpRequestMessage> BuildNewRequest(
         HttpContext context,
@@ -120,7 +144,9 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
         string? mappedModelName,
         string? mappedAssistantName)
     {
-        var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method), BuildUri(context, callInformation, callInformation.IncomingAssistantName, mappedAssistantName));
+        var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method),
+            BuildUri(context, callInformation, callInformation.IncomingAssistantName, mappedAssistantName,
+                callInformation.IncomingModelName, mappedModelName));
 
         foreach (var header in context.Request.Headers)
         {
@@ -138,8 +164,8 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
         return newRequest;
     }
 
-    
-    private static Task<HttpContent?> CopyRequestWithMappedModelAndAssistantName(
+
+    private Task<HttpContent?> CopyRequestWithMappedModelAndAssistantName(
         IncomingCallDetails aiCallInformation,
         HttpRequest incomingRequest,
         string? mappedModelName,
@@ -178,7 +204,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
             "application/json"));
     }
 
-    
+
     /// <summary>
     /// Adjust the model name to the one used by Open AI
     /// </summary>
@@ -186,11 +212,28 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
     /// <param name="mappedModelName"></param>
     /// <param name="mappedAssistantName"></param>
     /// <returns></returns>
-    private static JsonNode AddModelAndAssistantName(JsonNode deepClone, string? mappedModelName,
+    private JsonNode AddModelAndAssistantName(
+        JsonNode deepClone,
+        string? mappedModelName,
         string? mappedAssistantName)
     {
-        if (mappedModelName != null) deepClone["model"] = mappedModelName;
-        if (mappedAssistantName != null) deepClone["assistant_id"] = mappedAssistantName;
+        if (mappedModelName != null)
+        {
+            if (deepClone["model"] != null)
+            {
+                deepClone["model"] = mappedModelName;
+            }
+            else if (ForceAddModelNameToBody())
+            {
+                deepClone["model"] = mappedModelName;
+            }
+        }
+
+        if (mappedAssistantName != null)
+        {
+            deepClone["assistant_id"] = mappedAssistantName;
+        }
+
         return deepClone;
     }
 
@@ -212,14 +255,23 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
         }
         else
         {
-            newRequest.Content = await CopyRequestWithMappedModelAndAssistantName(aiCallInformation, context.Request, mappedModelName, mappedAssistantName);
+            newRequest.Content = await CopyRequestWithMappedModelAndAssistantName(
+                aiCallInformation, context.Request,
+                mappedModelName, mappedAssistantName);
         }
 
         await ApplyAuthorisation(context, newRequest);
     }
 
+    protected virtual bool ForceAddModelNameToBody() => false;
+
     protected abstract Task ApplyAuthorisation(HttpContext context, HttpRequestMessage newRequest);
-    protected abstract string BuildUri(HttpContext context, IncomingCallDetails aiCallInformation, string? incomingAssistantName, string? mappedAssistantName);
 
-
+    protected abstract string BuildUri(
+        HttpContext context,
+        IncomingCallDetails aiCallInformation,
+        string? incomingAssistantName,
+        string? mappedAssistantName,
+        string? incomingModelName,
+        string? mappedModelName);
 }

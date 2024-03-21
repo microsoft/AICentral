@@ -45,7 +45,7 @@ public class OpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpointAdapt
         return false;
     }
 
-    protected override string BuildUri(HttpContext context, IncomingCallDetails aiCallInformation, string? incomingAssistantName, string? mappedAssistantName)
+    protected override string BuildUri(HttpContext context, IncomingCallDetails aiCallInformation, string? incomingAssistantName, string? mappedAssistantName, string? incomingModelName, string? mappedModelName)
     {
         var pathPiece = aiCallInformation.AICallType switch
         {
@@ -80,4 +80,10 @@ public class OpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpointAdapt
 
         return Task.CompletedTask;
     }
+
+    /// <summary>
+    /// Open AI always takes a model name in the body, so we need to ensure it is there.
+    /// </summary>
+    /// <returns></returns>
+    protected override bool ForceAddModelNameToBody() => true;
 }

@@ -58,6 +58,11 @@ public static class TestPipelines
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200)
             .Assemble("azure-openai-to-azure.localtest.me");
 
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleAzureOpenAIEndpointWithMappedModel() =>
+        new TestAICentralPipelineBuilder()
+            .WithSingleMappedEndpoint(AICentralFakeResponses.Endpoint200, "random", "mapped")
+            .Assemble("azure-openai-to-azure-with-mapped-models.localtest.me");
+
     public static AICentralPipelineAssembler AzureOpenAIServiceWith404Endpoint() =>
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint404)

@@ -62,7 +62,29 @@ public class TestAICentralPipelineBuilder
             "ApiKey",
             "ignore-fake-key-hr987345",
             new Dictionary<string, string>(),
+            new Dictionary<string, string>(),
             maxConcurrencyToAllowThrough);
+
+        _endpointFactory =
+            new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
+        _openAiEndpointDispatcherBuilders = new[]
+            { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
+
+        return this;
+    }
+    
+    public TestAICentralPipelineBuilder WithSingleMappedEndpoint(string hostname, string model, string mappedModel)
+    {
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
+            hostname,
+            $"https://{hostname}",
+            "ApiKey",
+            "ignore-fake-key-hr987345",
+            new Dictionary<string, string>()
+            {
+                [model] = mappedModel
+            }, 
+            new Dictionary<string, string>());
 
         _endpointFactory =
             new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
@@ -103,6 +125,7 @@ public class TestAICentralPipelineBuilder
                 $"https://{x.hostname}",
                 "ApiKey",
                 "ignore-fake-key-456456",
+                new Dictionary<string, string>(),
                 new Dictionary<string, string>()
                 ))).ToArray();
 
@@ -112,6 +135,7 @@ public class TestAICentralPipelineBuilder
                 $"https://{x.hostname}",
                 "ApiKey",
                 "ignore-fake-key-sdfsdf",
+                new Dictionary<string, string>(),
                 new Dictionary<string, string>()))).ToArray();
 
         _openAiEndpointDispatcherBuilders = priorityOpenAIEndpointDispatcherBuilder
@@ -134,6 +158,7 @@ public class TestAICentralPipelineBuilder
                 $"https://{x.hostname}",
                 "ApiKey",
                 "ignore-fake-key-12345678",
+                new Dictionary<string, string>(),
                 new Dictionary<string, string>()
                 {
                     [x.assistant] = x.mappedAssistant
@@ -153,6 +178,7 @@ public class TestAICentralPipelineBuilder
                 $"https://{x.hostname}",
                 "ApiKey",
                 "fake-dfjiud",
+                new Dictionary<string, string>(),
                 new Dictionary<string, string>()))).ToArray();
 
         _endpointFactory = new LowestLatencyEndpointSelectorFactory(_openAiEndpointDispatcherBuilders!);
@@ -272,6 +298,7 @@ public class TestAICentralPipelineBuilder
             $"https://{endpoint200}",
             "ApiKey",
             "bacca18e-f471-4eca-9ea3-c8ee7155dacb",
+            new Dictionary<string, string>(),
             new Dictionary<string, string>());
 
         var endpointFactory =

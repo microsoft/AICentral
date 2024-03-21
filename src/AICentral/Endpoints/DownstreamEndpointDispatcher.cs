@@ -101,10 +101,7 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
             }
             else
             {
-                if (context.Response.Headers.TryGetValue("x-aicentral-failed-servers", out var header))
-                {
-                    context.Response.Headers.Remove("x-aicentral-failed-servers");
-                }
+                context.Response.Headers.Remove("x-aicentral-failed-servers", out var header);
 
                 context.Response.Headers.TryAdd("x-aicentral-failed-servers",
                     StringValues.Concat(header, _iaiCentralDownstreamEndpointAdapter.BaseUrl.Host));
