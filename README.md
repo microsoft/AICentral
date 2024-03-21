@@ -160,6 +160,7 @@ See [advanced-otel](./docs/advanced-otel.md) for dashboard inspiration!
 This pipeline will:
 
 - Present an Azure Open AI, and an Open AI downstream as a single upstream endpoint
+  - maps the incoming deployment Name "GPT35Turbo0613" to the downstream Azure Open AI deployment "MyGptModel"
   - maps incoming Azure Open AI deployments to Open AI models
 - Present it as an Azure Open AI style endpoint
 - Protect the front-end by requiring an AAD token issued for your own AAD application
@@ -176,7 +177,10 @@ This pipeline will:
         "Name": "openai-priority",
         "Properties": {
           "LanguageEndpoint": "https://<my-ai>.openai.azure.com",
-          "AuthenticationType": "Entra|EntraPassThrough|ApiKey"
+          "AuthenticationType": "Entra|EntraPassThrough|ApiKey",
+          "ModelMappings": {
+            "Gpt35Turbo0613": "MyGptModel"
+          }
         }
       },
       {
