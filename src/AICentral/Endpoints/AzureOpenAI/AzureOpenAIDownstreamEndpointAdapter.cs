@@ -14,8 +14,9 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
         string id,
         string languageUrl,
         string endpointName,
+        Dictionary<string, string> modelMappings,
         Dictionary<string, string> assistantMappings,
-        IEndpointAuthorisationHandler authHandler): base(id, new Uri(languageUrl), endpointName, new Dictionary<string, string>(), assistantMappings)
+        IEndpointAuthorisationHandler authHandler): base(id, new Uri(languageUrl), endpointName, modelMappings, assistantMappings)
     {
         _authHandler = authHandler;
     }
@@ -44,7 +45,6 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
 
     protected override bool IsFixedModelName(AICallType callType, string? callInformationIncomingModelName, out string? fixedModelName)
     {
-        //no mappings - just return the incoming model name
         fixedModelName = callInformationIncomingModelName;
         return true;
     }
@@ -73,14 +73,20 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
     }
     
     
-    protected override string BuildUri(HttpContext context, IncomingCallDetails aiCallInformation, string? incomingAssistantName, string? mappedAssistantName)
+    protected override string BuildUri(
+        HttpContext context, 
+        IncomingCallDetails aiCallInformation, 
+        string? incomingAssistantName, 
+        string? mappedAssistantName,
+        string? incomingModelName,
+        string? mappedModelName)
     {
         var pathPiece = aiCallInformation.AICallType switch
         {
             AICallType.Files => context.Request.Path.Value!, //affinity will ensure the request is going to the right place
             AICallType.Threads => context.Request.Path.Value!, //affinity will ensure the request is going to the right place
             AICallType.Assistants => context.Request.Path.Value!.Replace(incomingAssistantName ?? string.Empty, mappedAssistantName),
-            _ => context.Request.Path.Value
+            _ => incomingModelName != null && mappedModelName != null ? context.Request.Path.Value!.Replace($"/{incomingModelName}/", $"/{mappedModelName}/") : context.Request.Path
         };
 
         var newRequestString = new Uri(BaseUrl, pathPiece).AbsoluteUri;

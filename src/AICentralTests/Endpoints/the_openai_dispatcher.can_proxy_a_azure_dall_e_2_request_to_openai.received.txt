@@ -1,0 +1,24 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/v1/images/generations",
+    "Method": "POST",
+    "Headers": {},
+    "ContentType": "application/json",
+    "Content": "{\"prompt\":\"draw me something blue\"}"
+  }
+],
+  Response: {
+    Headers: [],
+    Content:
+{
+  "created": 1702525301,
+  "data": [
+    {
+      "url": "https://somewhere-else.com"
+    }
+  ]
+}
+  }
+}
