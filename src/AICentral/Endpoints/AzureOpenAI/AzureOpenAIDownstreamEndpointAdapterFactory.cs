@@ -89,6 +89,8 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
         {
             Type = "AzureOpenAI",
             Url = _languageUrl,
+            Mappings = _modelMappings,
+            AssistantMappings = _assistantMappings,
             Auth = _authHandler.WriteDebug()
         };
     }

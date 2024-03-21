@@ -30,6 +30,8 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
     public async Task<Either<HttpRequestMessage, IResult>> BuildRequest(IncomingCallDetails callInformation,
         HttpContext context)
     {
+        var logger = context.RequestServices.GetRequiredService<ILogger<OpenAILikeDownstreamEndpointAdapter>>();
+        
         var incomingModelName = callInformation.IncomingModelName;
         _modelMappings.TryGetValue(incomingModelName ?? string.Empty, out var mappedModelName);
 
@@ -51,6 +53,15 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
 
         try
         {
+            if (incomingModelName != mappedModelName)
+            {
+                logger.LogDebug("Detected mapped model - Mapping incoming model {IncomingModel} to {MappedModel}", incomingModelName, mappedModelName);
+            }
+            if (incomingAssistantName != mappedAssistantName)
+            {
+                logger.LogDebug("Detected assistant call - Mapping incoming assistant {IncomingAssistant} to {MappedAssistant}", incomingAssistantName, mappedAssistantName);
+            }
+            
             return new Either<HttpRequestMessage, IResult>(
                 await BuildNewRequest(
                     context,
