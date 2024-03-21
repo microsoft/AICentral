@@ -53,6 +53,6 @@ internal class AICentralJwtAuthenticationHandler(
             }
         }
 
-        return AuthenticateResult.Fail($"Invalid or missing AICentralJwt api-key");
+        return AuthenticateResult.Fail("Invalid or missing AICentralJwt api-key");
     }
 }

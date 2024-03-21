@@ -10,12 +10,14 @@ namespace AICentral.ConsumerAuth.AICentralJWT;
 public class AICentralJwtAuthFactory : IPipelineStepFactory
 {
     private readonly string _policyId = Guid.NewGuid().ToString();
+    private readonly string _stepName;
     private readonly AICentralJwtAuthProviderConfig _config;
     private bool _builtTokenDispatchRoute;
     private readonly SigningCredentials _signingCredentials;
 
-    public AICentralJwtAuthFactory(AICentralJwtAuthProviderConfig config)
+    public AICentralJwtAuthFactory(string stepName, AICentralJwtAuthProviderConfig config)
     {
+        _stepName = stepName;
         _config = config;
         var rsa = RSA.Create();
         rsa.ImportFromPem(config.PrivateKeyPem);
@@ -25,21 +27,20 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
             KeyId = "0"
         };
 
-        _signingCredentials = new SigningCredentials(
-            securityKey,
-            SecurityAlgorithms.RsaSha512);
+        _signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.RsaSha512);
         _builtTokenDispatchRoute = false;
     }
 
     public void RegisterServices(IServiceCollection services)
     {
         var schemeName = $"AICentralJwt_{_policyId}";
-        services.AddAuthentication().AddScheme<AICentralJwtAuthProviderConfig, AICentralJwtAuthenticationHandler>(schemeName, options =>
-        {
-            options.TokenIssuer = _config.TokenIssuer;
-            options.PrivateKeyPem = _config.PrivateKeyPem;
-            options.PublicKeyPem = _config.PublicKeyPem;
-        });
+        services.AddAuthentication().AddScheme<AICentralJwtAuthProviderConfig, AICentralJwtAuthenticationHandler>(
+            schemeName, options =>
+            {
+                options.TokenIssuer = _config.TokenIssuer;
+                options.PrivateKeyPem = _config.PrivateKeyPem;
+                options.PublicKeyPem = _config.PublicKeyPem;
+            });
 
         services.AddAuthorizationBuilder().AddPolicy(_policyId,
             policyBuilder => policyBuilder
@@ -54,7 +55,12 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
 
     public object WriteDebug()
     {
-        return new { auth = "AICentral JWT" };
+        return new
+        {
+            auth = "AICentral JWT",
+            path = $"/aicentraljwt/{_stepName}/tokens",
+            issuer = _config.TokenIssuer,
+        };
     }
 
     public void ConfigureRoute(WebApplication app, IEndpointConventionBuilder route)
@@ -63,14 +69,12 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
 
         if (_builtTokenDispatchRoute) return;
 
-        app.MapPost("/aicentraljwt/tokenrequest", async (HttpContext context, TokenRequest request) =>
+        app.MapPost("/aicentraljwt/{_stepName}/tokens", (TokenRequest request) =>
         {
-            var logger = context.RequestServices.GetRequiredService<ILogger<AICentralJwtAuthFactory>>();
-
             var issuer = _config.TokenIssuer;
             var tokenHandler = new JwtSecurityTokenHandler();
 
-            return request.Names.Select(x =>
+            return Task.FromResult(request.Names.Select(x =>
             {
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
@@ -88,7 +92,7 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
                     NotBefore = DateTime.UtcNow.AddSeconds(-10),
                 };
                 return tokenHandler.WriteToken(tokenHandler.CreateJwtSecurityToken(tokenDescriptor));
-            });
+            }));
         });
 
         _builtTokenDispatchRoute = true;
@@ -97,7 +101,23 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
     public static IPipelineStepFactory BuildFromConfig(ILogger logger, TypeAndNameConfig config)
     {
         var aiCentralJwtAuthProviderConfig = config.TypedProperties<AICentralJwtAuthProviderConfig>();
-        if (aiCentralJwtAuthProviderConfig.PrivateKeyPem == null)
+
+        Guard.NotNullOrEmptyOrWhitespace(aiCentralJwtAuthProviderConfig.AdminKey,
+            nameof(aiCentralJwtAuthProviderConfig.AdminKey));
+
+        if (string.IsNullOrEmpty(aiCentralJwtAuthProviderConfig.PrivateKeyPem))
+        {
+            logger.LogWarning("No Private Key found in config for {AuthStepName}, generating a random one. ",
+                config.Name);
+        }
+        else if (string.IsNullOrEmpty(aiCentralJwtAuthProviderConfig.PublicKeyPem))
+        {
+            logger.LogWarning("No Public Key found in config for {AuthStepName}, generating a random one. ",
+                config.Name);
+        }
+
+        if (string.IsNullOrEmpty(aiCentralJwtAuthProviderConfig.PrivateKeyPem) ||
+            string.IsNullOrEmpty(aiCentralJwtAuthProviderConfig.PublicKeyPem))
         {
             //make a new x509certificate2
             var rsa = RSA.Create();
@@ -118,7 +138,7 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
             };
         }
 
-        return new AICentralJwtAuthFactory(aiCentralJwtAuthProviderConfig);
+        return new AICentralJwtAuthFactory(config.Name!, aiCentralJwtAuthProviderConfig);
     }
 
     public static string ConfigName => "AICentralJWT";
