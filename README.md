@@ -22,6 +22,7 @@ AI Central gives you control over your AI services.
   - Lowest Latency endpoint selector
 - Can proxy asynchronous requests such as Azure Open AI Image Generation across fleets of servers
 - Custom consumer OAuth2 authorisation
+- Can mint JWT time-bound and consumer-bound JWT tokens to make it easy to run events like Hackathons without blowing your budgets! 
 - Circuit breakers, and backoff-retry over downstream AI services
 - Local token rate limiting
   - By consumer / by endpoint

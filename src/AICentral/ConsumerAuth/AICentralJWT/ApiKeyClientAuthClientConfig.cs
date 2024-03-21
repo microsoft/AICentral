@@ -8,4 +8,5 @@ public class AICentralJwtAuthProviderConfig: AuthenticationSchemeOptions
     public string? TokenIssuer { get; set; }
     public string? PrivateKeyPem { get; set; }
     public string? PublicKeyPem { get; set; }
+    public string[] ValidPipelines { get; set; }
 }

@@ -368,6 +368,45 @@ You can specify clients, along with a pair of keys, and authenticate your pipeli
 }
 ```
 
+### Inbuilt JWT Token Provider
+
+AI Central can act as a Token Provider. The tokens are bound to a Consumer, Pipelines, and a time window. 
+
+> Use this to facilitate a Hackathon without blowing your budget!
+
+```json
+{
+  "AICentral": {
+    "AuthProviders": [
+      {
+        "Type": "AICentralJWT",
+        "Name": "hackathon",
+        "Properties": {
+          "TokenIssuer": "https://hackathon.auth.graeme.com",
+          "AdminKey": "<hard-to-guess-api-key>"
+        }
+      }
+    ],
+    "Endpoints": [
+      {
+        "Name": "MyPipeline",
+        "Host": "<host-name-we-listen-for-requests-on>",
+        "EndpointSelector": "name-from-above",
+        "AuthProvider": "hackathon"
+      }
+    ]
+  }
+}
+```
+
+```bash
+# The above pipeline will expose an endpoint that can mint JWT's
+curl -X POST https://<host-name-we-listen-for-requests-on>/aicentraljwt/<auth-provider-name>/tokens \
+     -H "api-key=<hard-to-guess-api-key>" \
+     -d "{ \"names\": [\"Consumer-1\", \"Consumer-2\", ...], \"ValidPipelines\": [\"MyPipeline\", ...], \"ValidFor\": \"00:24:00\" }"
+```
+
+
 ## "Steps"
 
 A pipeline can run multiple steps. We currently provide steps for:

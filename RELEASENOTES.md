@@ -1,5 +1,11 @@
 Release Notes:
 
+0.17.0 (21/mar/2024)
+Added a inbuilt JWT Token Provider that can produce time-bound JWTs for use in pipelines. Perfect for Hackathons!
+
+0.16.11 (20/mar/2024)
+Allow Model Mappings for Azure Open AI deployments
+
 0.16.8 (15/mar/2024)
 Fixed a bug when array is passed into Embeddings.
 

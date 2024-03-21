@@ -8,7 +8,19 @@ public class AICentralJwtAuthProvider : IPipelineStep
     public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
         NextPipelineStep next, CancellationToken cancellationToken)
     {
-        return await next(context, aiCallInformation, cancellationToken);
+        var validPipelines = context.User.FindFirst("pipelines")!;
+        var pipelines = validPipelines.Value.Split(' ');
+        
+        if (pipelines.Contains("*") ||
+            pipelines.Contains(aiCallInformation.PipelineName, StringComparer.InvariantCultureIgnoreCase))
+        {
+            return await next(context, aiCallInformation, cancellationToken);
+        }
+
+        return new AICentralResponse(
+            DownstreamUsageInformation.Empty(context, aiCallInformation, null, null, null),
+            Results.Unauthorized()
+        );
     }
 
     public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse,
