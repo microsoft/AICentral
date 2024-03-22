@@ -15,7 +15,6 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
     private string EndpointName { get; }
     private readonly string _id;
     private readonly IDownstreamEndpointAdapter _iaiCentralDownstreamEndpointAdapter;
-    private static readonly HttpResponseMessage RateLimitedFakeResponse = new(HttpStatusCode.TooManyRequests);
 
     public DownstreamEndpointDispatcher(IDownstreamEndpointAdapter iaiCentralDownstreamEndpointAdapter)
     {
@@ -56,40 +55,48 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
 
         outboundRequest.Left(out var newRequest);
 
+        var now = dateTimeProvider.Now;
+        TimeSpan timeToResponse = TimeSpan.Zero;
+        HttpResponseMessage? openAiResponse;
+        bool addEndpointToFailed = true;
+
         if (rateLimitingTracker.IsRateLimiting(newRequest!.RequestUri!.Host, out var until))
         {
-            var response = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
-            response.Headers.RetryAfter = new RetryConditionHeaderValue(until!.Value);
-            RateLimitedFakeResponse.EnsureSuccessStatusCode();
+            openAiResponse = new HttpResponseMessage(HttpStatusCode.TooManyRequests);
+            openAiResponse.Headers.RetryAfter = new RetryConditionHeaderValue(until!.Value);
+            addEndpointToFailed = false;
         }
-
-        logger.LogDebug(
-            "Rewritten URL from {OriginalUrl} to {NewUrl}.",
-            context.Request.GetEncodedUrl(),
-            newRequest.RequestUri!.AbsoluteUri
-        );
-
-        using var source = ActivitySource.AICentralRequestActivitySource.CreateActivity(
-            "Calling AI Service",
-            ActivityKind.Client,
-            Activity.Current!.Context
-        );
-        var now = dateTimeProvider.Now;
-        var sw = new Stopwatch();
-        
-        sw.Start();
-
-        var openAiResponse = await _iaiCentralDownstreamEndpointAdapter.DispatchRequest(context, newRequest, cancellationToken);
-
-        //this will retry the operation for retryable status codes. When we reach here we might not want
-        //to stream the response if it wasn't a 200.
-        sw.Stop();
-        var timeToResponse = sw.Elapsed;
-
-        if (openAiResponse.StatusCode == HttpStatusCode.TooManyRequests)
+        else
         {
-            rateLimitingTracker.RateLimiting(newRequest.RequestUri.Host,
-                openAiResponse.Headers.RetryAfter);
+            logger.LogDebug(
+                "Rewritten URL from {OriginalUrl} to {NewUrl}.",
+                context.Request.GetEncodedUrl(),
+                newRequest.RequestUri!.AbsoluteUri
+            );
+
+            using var source = ActivitySource.AICentralRequestActivitySource.CreateActivity(
+                "Calling AI Service",
+                ActivityKind.Client,
+                Activity.Current!.Context
+            );
+            var requestStopwatch = new Stopwatch();
+
+            requestStopwatch.Start();
+
+            openAiResponse = await _iaiCentralDownstreamEndpointAdapter.DispatchRequest(context, newRequest, cancellationToken);
+
+            //this will retry the operation for retryable status codes. When we reach here we might not want
+            //to stream the response if it wasn't a 200.
+            requestStopwatch.Stop();
+            timeToResponse = requestStopwatch.Elapsed;
+
+            if (openAiResponse.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                rateLimitingTracker.RateLimiting(newRequest.RequestUri.Host,
+                    openAiResponse.Headers.RetryAfter);
+            }
+
+
         }
 
         if (config.Value.EnableDiagnosticsHeaders)
@@ -99,7 +106,7 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
                 context.Response.Headers.TryAdd("x-aicentral-server",
                     new StringValues(_iaiCentralDownstreamEndpointAdapter.BaseUrl.Host));
             }
-            else
+            else if (addEndpointToFailed)
             {
                 context.Response.Headers.Remove("x-aicentral-failed-servers", out var header);
 
@@ -114,7 +121,7 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
             openAiResponse.EnsureSuccessStatusCode();
         }
 
-        sw.Restart();
+        var responseStopwatch = new Stopwatch();
         var preProcessResult = await _iaiCentralDownstreamEndpointAdapter.ExtractResponseMetadata(
             callInformation,
             context,
@@ -136,8 +143,8 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
             preProcessResult,
             cancellationToken);
 
-        sw.Stop();
-        var timeToRespondToConsumer = sw.Elapsed;
+        responseStopwatch.Stop();
+        var timeToRespondToConsumer = responseStopwatch.Elapsed;
         logger.LogDebug("AICentral took {DownstreamTime} to get initial response from AI Service and {ConsumerTime} to retransmit the response", timeToResponse, timeToRespondToConsumer);
 
         return pipelineResponse;
@@ -147,4 +154,16 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
     {
         return EndpointName == affinityHeaderValue;
     }
+
+    
+    private class LastChanceRateLimitResult(string retryAfter) : IResult
+    {
+        public Task ExecuteAsync(HttpContext httpContext)
+        {
+            httpContext.Response.StatusCode = 429;
+            httpContext.Response.Headers.RetryAfter = new StringValues(retryAfter);
+            return Task.CompletedTask;  
+        }
+    }
 }
+

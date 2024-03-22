@@ -33,7 +33,6 @@ public class PipelineExecutor : IResponseGenerator, IDisposable
         //If a step detects affinity then we need to honour it.
         _endpointSelector = _endpointSelectorChooser(requestDetails);
         
-        
         return _endpointSelector.Handle(context, requestDetails, true, this, cancellationToken);
     }
 

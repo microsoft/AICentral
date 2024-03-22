@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
+using System.Net;
 using AICentral.Core;
 using AICentral.EndpointSelectors;
+using AICentral.ResultHandlers;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -105,26 +107,37 @@ public class Pipeline
                 context.Response.DeclareTrailer(XAiCentralStreamingTokenHeader);
             }
 
-            var result = await executor.Next(context, requestDetails, cancellationToken);
-            sw.Stop();
-
-            logger.LogInformation("Executed Pipeline {PipelineName}", _name);
-
-            if (result.DownstreamUsageInformation.StreamingResponse.GetValueOrDefault() &&
-                result.DownstreamUsageInformation.EstimatedTokens?.Value.EstimatedCompletionTokens != null &&
-                context.Response.SupportsTrailers())
+            try
             {
-                var streamingTokenCount =
-                    result.DownstreamUsageInformation.EstimatedTokens!.Value.EstimatedCompletionTokens!.ToString();
+                var result = await executor.Next(context, requestDetails, cancellationToken);
 
-                context.Response.AppendTrailer(
-                    XAiCentralStreamingTokenHeader,
-                    streamingTokenCount);
+                sw.Stop();
+
+                logger.LogInformation("Executed Pipeline {PipelineName}", _name);
+
+                if (result.DownstreamUsageInformation.StreamingResponse.GetValueOrDefault() &&
+                    result.DownstreamUsageInformation.EstimatedTokens?.Value.EstimatedCompletionTokens != null &&
+                    context.Response.SupportsTrailers())
+                {
+                    var streamingTokenCount =
+                        result.DownstreamUsageInformation.EstimatedTokens!.Value.EstimatedCompletionTokens!.ToString();
+
+                    context.Response.AppendTrailer(
+                        XAiCentralStreamingTokenHeader,
+                        streamingTokenCount);
+                }
+
+                TransmitOtelTelemetry(context, result, sw, activity);
+
+                return result;
             }
-
-            TransmitOtelTelemetry(context, result, sw, activity);
-
-            return result;
+            catch (HttpRequestException e)
+            {
+                logger.LogError(e, "Failed to handle request");
+                return new AICentralResponse(
+                    DownstreamUsageInformation.Empty(context, requestDetails, null, null, null),
+                    Results.StatusCode(502));
+            }
         }
         finally
         {
