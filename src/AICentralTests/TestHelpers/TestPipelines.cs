@@ -63,6 +63,14 @@ public static class TestPipelines
             .WithSingleMappedEndpoint(AICentralFakeResponses.Endpoint200, "random", "mapped")
             .Assemble("azure-openai-to-azure-with-mapped-models.localtest.me");
 
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithInBuiltJwtAuth()
+    {
+        return new TestAICentralPipelineBuilder()
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200)
+            .WithCustomJwtProvider(["azure-openai-to-azure-with_custom_jwt.localtest.me-pipeline"])
+            .Assemble("azure-openai-to-azure-with_custom_jwt.localtest.me");
+    }
+
     public static AICentralPipelineAssembler AzureOpenAIServiceWith404Endpoint() =>
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint404)

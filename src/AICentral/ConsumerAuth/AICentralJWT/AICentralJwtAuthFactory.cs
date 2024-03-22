@@ -96,16 +96,16 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
                     IssuedAt = DateTime.UtcNow,
                     NotBefore = DateTime.UtcNow.AddSeconds(-10),
                 };
-                return new
+                return new AICentralApiKeyToken()
                 {
                     Client = x,
-                    Token = tokenHandler.WriteToken(tokenHandler.CreateJwtSecurityToken(tokenDescriptor))
+                    ApiKeyToken = tokenHandler.WriteToken(tokenHandler.CreateJwtSecurityToken(tokenDescriptor))
                 };
             });
 
-            return Results.Ok(new
+            return Results.Ok(new AICentralJwtProviderResponse
             {
-                Tokens = tokens
+                Tokens = tokens.ToArray()
             });
         });
 
@@ -139,14 +139,6 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
             //make a new x509certificate2
             var rsa = RSA.Create();
 
-            var csr = new CertificateRequest(new X500DistinguishedName("CN=AI-Central"), rsa,
-                HashAlgorithmName.SHA256,
-                RSASignaturePadding.Pkcs1);
-
-            var cert = csr.CreateSelfSigned(
-                DateTimeOffset.UtcNow,
-                DateTimeOffset.UtcNow.AddYears(10));
-
             aiCentralJwtAuthProviderConfig = new AICentralJwtAuthProviderConfig()
             {
                 AdminKey = aiCentralJwtAuthProviderConfig.AdminKey,
@@ -161,4 +153,15 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
     }
 
     public static string ConfigName => "AICentralJWT";
+}
+
+public class AICentralJwtProviderResponse
+{
+    public AICentralApiKeyToken[] Tokens { get; set; } = default!;
+}
+
+public class AICentralApiKeyToken
+{
+    public string Client { get; set; } = default!;
+    public string ApiKeyToken { get; set; } = default!;
 }

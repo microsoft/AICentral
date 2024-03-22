@@ -1,7 +1,10 @@
-﻿using AICentral;
+﻿using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using AICentral;
 using AICentral.Affinity;
 using AICentral.BulkHead;
 using AICentral.Configuration;
+using AICentral.ConsumerAuth.AICentralJWT;
 using AICentral.ConsumerAuth.AllowAnonymous;
 using AICentral.ConsumerAuth.ApiKey;
 using AICentral.Core;
@@ -48,6 +51,22 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
+    public TestAICentralPipelineBuilder WithCustomJwtProvider(string[] pipelines)
+    {
+        var rsa = RSA.Create();
+        _auth = new AICentralJwtAuthFactory(
+            Guid.NewGuid().ToString(),
+            new AICentralJwtAuthProviderConfig()
+            {
+                AdminKey = "fake-admin-key",
+                TokenIssuer = "fake-issuer",
+                ValidPipelines = pipelines,
+                PrivateKeyPem = rsa.ExportRSAPrivateKeyPem(),
+                PublicKeyPem = rsa.ExportRSAPublicKeyPem()
+            });
+        return this;
+    }
+
     public TestAICentralPipelineBuilder WithNoAuth()
     {
         _auth = new AllowAnonymousClientAuthFactory();
@@ -72,7 +91,7 @@ public class TestAICentralPipelineBuilder
 
         return this;
     }
-    
+
     public TestAICentralPipelineBuilder WithSingleMappedEndpoint(string hostname, string model, string mappedModel)
     {
         var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
@@ -83,7 +102,7 @@ public class TestAICentralPipelineBuilder
             new Dictionary<string, string>()
             {
                 [model] = mappedModel
-            }, 
+            },
             new Dictionary<string, string>());
 
         _endpointFactory =
@@ -93,7 +112,7 @@ public class TestAICentralPipelineBuilder
 
         return this;
     }
-    
+
     public TestAICentralPipelineBuilder WithRandomOpenAIEndpoints(
         (string name, string apiKey, string model, string mappedModel)[] endpoints)
     {
@@ -127,7 +146,7 @@ public class TestAICentralPipelineBuilder
                 "ignore-fake-key-456456",
                 new Dictionary<string, string>(),
                 new Dictionary<string, string>()
-                ))).ToArray();
+            ))).ToArray();
 
         IEndpointDispatcherFactory[] fallbackOpenAIEndpointDispatcherBuilder = fallbackEndpoints.Select(x =>
             new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
@@ -245,7 +264,7 @@ public class TestAICentralPipelineBuilder
             genericSteps[stepId] = new SingleNodeAffinityFactory(_endpointAffinityTimespan.Value);
             steps.Add(stepId);
         }
-        
+
         return new AICentralPipelineAssembler(
             HostNameMatchRouter.WithHostHeader,
             new Dictionary<string, IPipelineStepFactory>()
