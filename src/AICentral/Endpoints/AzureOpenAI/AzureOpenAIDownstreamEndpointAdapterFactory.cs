@@ -8,6 +8,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
     private readonly string _endpointName;
     private readonly string _languageUrl;
     private readonly Dictionary<string, string> _assistantMappings;
+    private readonly bool _enforceMappedModels;
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string _id;
     private readonly int? _maxConcurrency;
@@ -19,6 +20,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
         string? authenticationKey,
         Dictionary<string, string> modelMappings,
         Dictionary<string, string> assistantMappings,
+        bool enforceMappedModels = false,
         int? maxConcurrency = null)
     {
         _id = Guid.NewGuid().ToString();
@@ -27,6 +29,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
         _languageUrl = languageUrl;
         _modelMappings = modelMappings;
         _assistantMappings = assistantMappings;
+        _enforceMappedModels = enforceMappedModels;
         _maxConcurrency = maxConcurrency;
 
         _authHandler = authenticationType.ToLowerInvariant() switch
@@ -75,12 +78,13 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
             properties.ApiKey,
             properties.ModelMappings ?? new Dictionary<string, string>(),
             properties.AssistantMappings ?? new Dictionary<string, string>(),
+            properties.EnforceMappedModels ?? false,
             properties.MaxConcurrency);
     }
 
     public IDownstreamEndpointAdapter Build()
     {
-        return new AzureOpenAIDownstreamEndpointAdapter(_id, _languageUrl, _endpointName, _modelMappings, _assistantMappings, _authHandler);
+        return new AzureOpenAIDownstreamEndpointAdapter(_id, _languageUrl, _endpointName, _modelMappings, _assistantMappings, _authHandler, _enforceMappedModels);
     }
 
     public object WriteDebug()

@@ -9,16 +9,18 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
     protected override string[] HeadersToIgnore => ["x-aicentral-affinity-key", "host", "authorization", "api-key"];
     protected override string[] HeaderPrefixesToCopy => ["x-", "apim", "operation-location", "ms-azureml"];
     private readonly IEndpointAuthorisationHandler _authHandler;
+    private readonly bool _enforceMappedModels;
 
-    public AzureOpenAIDownstreamEndpointAdapter(
-        string id,
+    public AzureOpenAIDownstreamEndpointAdapter(string id,
         string languageUrl,
         string endpointName,
         Dictionary<string, string> modelMappings,
         Dictionary<string, string> assistantMappings,
-        IEndpointAuthorisationHandler authHandler): base(id, new Uri(languageUrl), endpointName, modelMappings, assistantMappings)
+        IEndpointAuthorisationHandler authHandler, 
+        bool enforceMappedModels): base(id, new Uri(languageUrl), endpointName, modelMappings, assistantMappings)
     {
         _authHandler = authHandler;
+        _enforceMappedModels = enforceMappedModels;
     }
 
     /// <summary>
@@ -45,6 +47,12 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
 
     protected override bool IsFixedModelName(AICallType callType, string? callInformationIncomingModelName, out string? fixedModelName)
     {
+        if (_enforceMappedModels)
+        {
+            fixedModelName = null;
+            return false;
+        }
+
         fixedModelName = callInformationIncomingModelName;
         return true;
     }

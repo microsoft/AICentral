@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.Json;
 using AICentral.Core;
 using Microsoft.IdentityModel.Tokens;
 
@@ -50,7 +51,7 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
 
     public IPipelineStep Build(IServiceProvider serviceProvider)
     {
-        return new AICentralJwtAuthProvider();
+        return new AICentralJwtAuthProvider(_config.ValidPipelines);
     }
 
     public object WriteDebug()
@@ -69,13 +70,44 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
 
         if (_builtTokenDispatchRoute) return;
 
-        app.MapPost("/aicentraljwt/{_stepName}/tokens", async (HttpContext context, TokenRequest request) =>
+        app.MapPost($"/aicentraljwt/{_stepName}/tokens", (HttpContext context, TokenRequest request) =>
         {
             var apiKey = context.Request.Headers.TryGetValue("api-key", out var key);
-            if (!apiKey) return Results.Unauthorized();
-            if (key.ToString() != _config.AdminKey) return Results.Unauthorized();
-            if (request.ValidPipelines.Any(x => !_config.ValidPipelines.Contains(x, StringComparer.InvariantCultureIgnoreCase))) return Results.BadRequest("This provider can only issue tokens for the following pipelines: " + string.Join(", ", _config.ValidPipelines));
+            if (!apiKey) return Task.FromResult(Results.Unauthorized());
+            if (key.ToString() != _config.AdminKey) return Task.FromResult(Results.Unauthorized());
 
+
+            if (request.ValidPipelines == null || request.ValidFor == null)
+            {
+                return Task.FromResult(Results.BadRequest("Invalid request"));
+            }
+
+            if (request.ValidPipelines.Count == 0 )
+            {
+                return Task.FromResult(Results.BadRequest("Invalid request"));
+            }
+            
+            if (request.ValidFor < TimeSpan.FromMinutes(5))
+            {
+                return Task.FromResult(Results.BadRequest("There is a minimum Valid timespan of 5 minutes for tokens"));
+            }
+            
+            //ensure the combination is valid
+            foreach (var requestedPipeline in request.ValidPipelines)
+            {
+                var valid = false;
+                if (_config.ValidPipelines.TryGetValue(requestedPipeline.Key, out var pipeline))
+                {
+                    valid = pipeline.Contains("*") || requestedPipeline.Value.All(p =>
+                        pipeline.Contains(p, StringComparer.InvariantCultureIgnoreCase));
+                    
+                }
+                if (!valid)
+                {
+                    return Task.FromResult(Results.BadRequest($"Unable to issue JWT for Pipeline {requestedPipeline.Key} / Deployments '{string.Join(", ", requestedPipeline.Value)}'"));
+                }
+            }
+            
             var issuer = _config.TokenIssuer;
             var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -87,9 +119,9 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
                     {
                         new Claim(ClaimTypes.Name, x),
                         new Claim(ClaimTypes.NameIdentifier, x),
-                        new Claim("pipelines", string.Join(' ', request.ValidPipelines)),
+                        new Claim("pipelines", JsonSerializer.Serialize(request.ValidPipelines)),
                     }),
-                    Expires = DateTime.UtcNow.Add(request.ValidFor),
+                    Expires = DateTime.UtcNow.Add(request.ValidFor.Value),
                     Issuer = issuer,
                     Audience = issuer,
                     SigningCredentials = _signingCredentials,
@@ -103,10 +135,10 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
                 };
             });
 
-            return Results.Ok(new AICentralJwtProviderResponse
+            return Task.FromResult(Results.Ok(new AICentralJwtProviderResponse
             {
                 Tokens = tokens.ToArray()
-            });
+            }));
         });
 
         _builtTokenDispatchRoute = true;
@@ -153,15 +185,4 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
     }
 
     public static string ConfigName => "AICentralJWT";
-}
-
-public class AICentralJwtProviderResponse
-{
-    public AICentralApiKeyToken[] Tokens { get; set; } = default!;
-}
-
-public class AICentralApiKeyToken
-{
-    public string Client { get; set; } = default!;
-    public string ApiKeyToken { get; set; } = default!;
 }

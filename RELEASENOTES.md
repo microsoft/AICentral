@@ -1,6 +1,10 @@
 Release Notes:
 
-0.17.0 (21/mar/2024)
+0.16.13 (23/mar/2024)
+Allowed JWT tokens to be restricted to specific Deployments as-well as Pipelines
+Allowed enforcement of Deployments for AOAI allowing a Pipeline to restrict the available Deployments
+
+0.16.12 (21/mar/2024)
 Added a inbuilt JWT Token Provider that can produce time-bound JWTs for use in pipelines. Perfect for Hackathons!
 
 0.16.11 (20/mar/2024)

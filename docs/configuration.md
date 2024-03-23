@@ -25,6 +25,7 @@ All endpoints are wrapped with a Polly Policy. We
             "incoming-model-name": "backend-model-name",
             "not-required": "default-to-pass-model-name-through"
         },
+        "EnforceMappedModels": true,
         "AuthenticationType": "ApiKey|Entra|EntraPassThrough",
         "AuthenticationKey": "required-when-using-ApiKey",
         "MaxConcurrency": 5
@@ -383,7 +384,11 @@ AI Central can act as a Token Provider. The tokens are bound to a Consumer, Pipe
         "Name": "hackathon",
         "Properties": {
           "TokenIssuer": "https://hackathon.auth.graeme.com",
-          "AdminKey": "<hard-to-guess-api-key>"
+          "AdminKey": "<hard-to-guess-api-key>",
+          "ValidPipelines": {
+            "MyPipeline": ["Deployment1", "Deployment2"],
+            "MyPipeline2": ["*"]
+          }
         }
       }
     ],
@@ -393,6 +398,12 @@ AI Central can act as a Token Provider. The tokens are bound to a Consumer, Pipe
         "Host": "<host-name-we-listen-for-requests-on>",
         "EndpointSelector": "name-from-above",
         "AuthProvider": "hackathon"
+      },
+      {
+        "Name": "MyPipeline2",
+        "Host": "<host-name-we-listen-for-requests-on>",
+        "EndpointSelector": "name-from-above",
+        "AuthProvider": "hackathon-2"
       }
     ]
   }

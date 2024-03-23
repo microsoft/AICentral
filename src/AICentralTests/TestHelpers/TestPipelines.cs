@@ -1,5 +1,4 @@
-﻿using AICentral;
-using AICentral.Configuration;
+﻿using AICentral.Configuration;
 using AICentral.RateLimiting;
 
 namespace AICentralTests.TestHelpers;
@@ -21,7 +20,7 @@ public static class TestPipelines
             .WithRateLimiting(60, 1)
             .Assemble("azure-with-rate-limiter.localtest.me");
 
-    
+
     public static AICentralPipelineAssembler AzureOpenAIServiceWithClientPartitionedRateLimiter() =>
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200)
@@ -37,7 +36,7 @@ public static class TestPipelines
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200)
             .WithTokenRateLimiting(60, 50, RateLimitingLimitType.PerAICentralEndpoint)
             .Assemble("azure-with-token-rate-limiter.localtest.me");
-    
+
     public static AICentralPipelineAssembler AzureOpenAIServiceWithClientPartitionedTokenRateLimiter() =>
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200)
@@ -60,15 +59,29 @@ public static class TestPipelines
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleAzureOpenAIEndpointWithMappedModel() =>
         new TestAICentralPipelineBuilder()
-            .WithSingleMappedEndpoint(AICentralFakeResponses.Endpoint200, "random", "mapped")
+            .WithSingleMappedEndpoint(AICentralFakeResponses.Endpoint200, "random", "mapped", true)
             .Assemble("azure-openai-to-azure-with-mapped-models.localtest.me");
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithInBuiltJwtAuth()
     {
         return new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200)
-            .WithCustomJwtProvider(["azure-openai-to-azure-with_custom_jwt.localtest.me-pipeline"])
+            .WithCustomJwtProvider("jwt1", new Dictionary<string, string[]>()
+            {
+                ["azure-openai-to-azure-with_custom_jwt.localtest.me-pipeline"] = ["random"]
+            })
             .Assemble("azure-openai-to-azure-with_custom_jwt.localtest.me");
+    }
+
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithInBuiltWildcardJwtAuth()
+    {
+        return new TestAICentralPipelineBuilder()
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200)
+            .WithCustomJwtProvider("jwt2", new Dictionary<string, string[]>()
+            {
+                ["azure-openai-to-azure-with_custom_jwt-wildcard.localtest.me-pipeline"] = ["*"],
+            })
+            .Assemble("azure-openai-to-azure-with_custom_jwt-wildcard.localtest.me");
     }
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWith404Endpoint() =>
@@ -85,13 +98,14 @@ public static class TestPipelines
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleOpenAIEndpoint() =>
         new TestAICentralPipelineBuilder()
-            .WithRandomOpenAIEndpoints(new [] {("openai-single", "ignore-fake-key-34523412", "openaimodel", "gpt-3.5-turbo")})
+            .WithRandomOpenAIEndpoints(new[]
+                { ("openai-single", "ignore-fake-key-34523412", "openaimodel", "gpt-3.5-turbo") })
             .Assemble("azure-openai-to-openai.localtest.me");
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithRandomOpenAIEndpoints() =>
         new TestAICentralPipelineBuilder()
             .WithRandomOpenAIEndpoints(
-                new []
+                new[]
                 {
                     ("openai-rnd1", "ignore-fake-key-4323431", "openaimodel", "gpt-3.5-turbo"),
                     ("openai-rnd2", "ignore-fake-key-4323431", "openaimodel", "gpt-3.5-turbo")
@@ -101,7 +115,7 @@ public static class TestPipelines
     public static AICentralPipelineAssembler AzureOpenAIServiceWithRandomOpenAIEndpointsDifferentModelMappings() =>
         new TestAICentralPipelineBuilder()
             .WithRandomOpenAIEndpoints(
-                new []
+                new[]
                 {
                     ("openai-rnd1", "ignore-fake-key-67098981", "openaimodel1", "gpt-3.5-turbo"),
                     ("openai-rnd2", "ignore-fake-key-67098982", "openaimodel2", "gpt-3.5-turbo")
@@ -140,7 +154,7 @@ public static class TestPipelines
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, 5)
             .Assemble("azure-with-bulkhead-on-endpoint.localtest.me");
-    
+
     public static AICentralPipelineAssembler AzureOpenAIServiceWithRandomAffinityBasedAzureOpenAIEndpoints() =>
         new TestAICentralPipelineBuilder()
             .WithEndpointAffinity(TimeSpan.FromMinutes(1))
@@ -152,5 +166,4 @@ public static class TestPipelines
                 ("client-2", "ignore-fake-key-345", "ignore-fake-key-456")
             )
             .Assemble("azure-to-azure-openai-random-with-affinity.localtest.me");
-
 }
