@@ -51,6 +51,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.AzureOpenAIServiceWith404Endpoint(),
                 TestPipelines.AzureOpenAIServiceWithRandomAffinityBasedAzureOpenAIEndpoints(),
                 TestPipelines.AzureOpenAIServiceWithSingleAzureOpenAIEndpointWithMappedModel(),
+                TestPipelines.AzureOpenAIServiceWithInBuiltJwtAuth(),
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));

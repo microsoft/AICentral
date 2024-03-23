@@ -1,12 +1,15 @@
 ﻿using System.Diagnostics;
+using System.Net;
 using AICentral.Core;
 using AICentral.EndpointSelectors;
+using AICentral.ResultHandlers;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace AICentral;
 
-public delegate Task<AICentralResponse> AIHandler(HttpContext context, string? deploymentName, string? assistantName, AICallType callType, CancellationToken cancellationToken);
+public delegate Task<AICentralResponse> AIHandler(HttpContext context, string? deploymentName, string? assistantName,
+    AICallType callType, CancellationToken cancellationToken);
 
 /// <summary>
 /// Represents a Pipeline. This class is the main entry path for a request after it's been matched by a route.
@@ -18,7 +21,7 @@ public class Pipeline
     private readonly string _name;
     private readonly HostNameMatchRouter _router;
     private readonly IPipelineStepFactory _clientAuthStep;
-    private readonly IList<IPipelineStepFactory> _pipelineSteps;
+    private readonly IPipelineStepFactory[] _pipelineSteps;
     private readonly IEndpointSelectorFactory _endpointSelector;
     private readonly OTelConfig _openTelemetryConfig;
 
@@ -35,7 +38,7 @@ public class Pipeline
         _name = name;
         _router = router;
         _clientAuthStep = clientAuthStep;
-        _pipelineSteps = pipelineSteps.Select(x => x).ToArray();
+        _pipelineSteps = new[] { _clientAuthStep }.Union(pipelineSteps.Select(x => x)).ToArray();
         _endpointSelector = endpointSelector;
         _openTelemetryConfig = openTelemetryConfig;
     }
@@ -54,7 +57,8 @@ public class Pipeline
     /// <param name="cancellationToken"></param>
     /// <param name="deploymentName"></param>
     /// <returns></returns>
-    private async Task<AICentralResponse> Execute(HttpContext context, string? deploymentName, string? assistantName, AICallType callType, CancellationToken cancellationToken)
+    private async Task<AICentralResponse> Execute(HttpContext context, string? deploymentName, string? assistantName,
+        AICallType callType, CancellationToken cancellationToken)
     {
         var sw = new Stopwatch();
         sw.Start();
@@ -76,12 +80,14 @@ public class Pipeline
 
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
 
-        var requestDetails = await new AzureOpenAIDetector().Detect(_name, deploymentName, assistantName, callType, context.Request, cancellationToken);
+        var requestDetails = await new AzureOpenAIDetector().Detect(_name, deploymentName, assistantName, callType,
+            context.Request, cancellationToken);
 
         logger.LogDebug("Detected {CallType} from incoming request",
             requestDetails.AICallType);
 
-        using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build(context.RequestServices)), FindEndpointSelectorOrAffinityServer);
+        using var executor = new PipelineExecutor(_pipelineSteps.Select(x => x.Build(context.RequestServices)),
+            FindEndpointSelectorOrAffinityServer);
 
         var requestTagList = new TagList
         {
@@ -95,30 +101,43 @@ public class Pipeline
 
         try
         {
-            if (requestDetails.AICallResponseType == AICallResponseType.Streaming && context.Response.SupportsTrailers())
+            if (requestDetails.AICallResponseType == AICallResponseType.Streaming &&
+                context.Response.SupportsTrailers())
             {
                 context.Response.DeclareTrailer(XAiCentralStreamingTokenHeader);
             }
 
-            var result = await executor.Next(context, requestDetails, cancellationToken);
-            sw.Stop();
-
-            logger.LogInformation("Executed Pipeline {PipelineName}", _name);
-
-            if (result.DownstreamUsageInformation.StreamingResponse.GetValueOrDefault() && 
-                result.DownstreamUsageInformation.EstimatedTokens?.Value.EstimatedCompletionTokens != null &&
-                context.Response.SupportsTrailers())
+            try
             {
-                var streamingTokenCount = result.DownstreamUsageInformation.EstimatedTokens!.Value.EstimatedCompletionTokens!.ToString();
+                var result = await executor.Next(context, requestDetails, cancellationToken);
 
-                context.Response.AppendTrailer(
-                    XAiCentralStreamingTokenHeader,
-                    streamingTokenCount);
+                sw.Stop();
+
+                logger.LogInformation("Executed Pipeline {PipelineName}", _name);
+
+                if (result.DownstreamUsageInformation.StreamingResponse.GetValueOrDefault() &&
+                    result.DownstreamUsageInformation.EstimatedTokens?.Value.EstimatedCompletionTokens != null &&
+                    context.Response.SupportsTrailers())
+                {
+                    var streamingTokenCount =
+                        result.DownstreamUsageInformation.EstimatedTokens!.Value.EstimatedCompletionTokens!.ToString();
+
+                    context.Response.AppendTrailer(
+                        XAiCentralStreamingTokenHeader,
+                        streamingTokenCount);
+                }
+
+                TransmitOtelTelemetry(context, result, sw, activity);
+
+                return result;
             }
-
-            TransmitOtelTelemetry(context, result, sw, activity);
-
-            return result;
+            catch (HttpRequestException e)
+            {
+                logger.LogError(e, "Failed to handle request");
+                return new AICentralResponse(
+                    DownstreamUsageInformation.Empty(context, requestDetails, null, null, null),
+                    Results.StatusCode(502));
+            }
         }
         finally
         {
@@ -132,7 +151,7 @@ public class Pipeline
     private void TransmitOtelTelemetry(HttpContext context, AICentralResponse result, Stopwatch sw, Activity? activity)
     {
         if (!_openTelemetryConfig.Transmit.GetValueOrDefault()) return;
-        
+
         var tagList = new TagList
         {
             { "Deployment", result.DownstreamUsageInformation.DeploymentName },

@@ -50,7 +50,7 @@ public class LowestLatencyEndpointSelector : IEndpointSelector
                 if (!toTry.Any())
                 {
                     logger.LogError(e, "Failed to handle request. Exhausted endpoints");
-                    throw new InvalidOperationException("No available Open AI hosts", e);
+                    throw;
                 }
 
                 logger.LogWarning(e, "Failed to handle request. Trying another endpoint");
