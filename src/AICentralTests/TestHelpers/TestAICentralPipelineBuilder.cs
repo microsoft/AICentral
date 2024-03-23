@@ -51,11 +51,11 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
-    public TestAICentralPipelineBuilder WithCustomJwtProvider(string[] pipelines)
+    public TestAICentralPipelineBuilder WithCustomJwtProvider(string jwtProviderStepName, Dictionary<string, string[]> pipelines)
     {
         var rsa = RSA.Create();
         _auth = new AICentralJwtAuthFactory(
-            Guid.NewGuid().ToString(),
+            jwtProviderStepName,
             new AICentralJwtAuthProviderConfig()
             {
                 AdminKey = "fake-admin-key",
