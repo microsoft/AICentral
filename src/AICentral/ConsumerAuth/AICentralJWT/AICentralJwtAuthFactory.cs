@@ -104,7 +104,7 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
                 }
                 if (!valid)
                 {
-                    return Task.FromResult(Results.BadRequest($"Unable to issue JWT for Pipeline {requestedPipeline} / Deployments {string.Join(", ", _config.ValidPipelines)}"));
+                    return Task.FromResult(Results.BadRequest($"Unable to issue JWT for Pipeline {requestedPipeline.Key} / Deployments '{string.Join(", ", requestedPipeline.Value)}'"));
                 }
             }
             

@@ -412,6 +412,35 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         result.GetRawResponse().Status.ShouldBe(200);
         await Verify(_factory.VerifyRequestsAndResponses(result.GetRawResponse(), true));
     }
+    
+    
+    [Fact]
+    public async Task can_enforce_mapped_models()
+    {
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "not-mapped",
+            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-azure-with-mapped-models.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            new OpenAIClientOptions()
+            {
+                Transport = new HttpClientTransport(_httpClient)
+            });
+
+        (await Should.ThrowAsync<RequestFailedException>(() => client.GetChatCompletionsAsync(
+            new ChatCompletionsOptions()
+            {
+                Messages =
+                {
+                    new ChatRequestUserMessage(
+                    [
+                        new ChatMessageTextContentItem("I am some text"),
+                    ]),
+                },
+                DeploymentName = "not-mapped"
+            }))).Status.ShouldBe(404);
+    }
 
 
     public void Dispose()

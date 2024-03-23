@@ -82,6 +82,7 @@ public class TestAICentralPipelineBuilder
             "ignore-fake-key-hr987345",
             new Dictionary<string, string>(),
             new Dictionary<string, string>(),
+            enforceMappedModels: false,
             maxConcurrencyToAllowThrough);
 
         _endpointFactory =
@@ -92,7 +93,7 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
-    public TestAICentralPipelineBuilder WithSingleMappedEndpoint(string hostname, string model, string mappedModel)
+    public TestAICentralPipelineBuilder WithSingleMappedEndpoint(string hostname, string model, string mappedModel, bool enforceMappedModels = false)
     {
         var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
             hostname,
@@ -103,7 +104,8 @@ public class TestAICentralPipelineBuilder
             {
                 [model] = mappedModel
             },
-            new Dictionary<string, string>());
+            new Dictionary<string, string>(),
+            enforceMappedModels);
 
         _endpointFactory =
             new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));

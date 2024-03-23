@@ -59,7 +59,7 @@ public static class TestPipelines
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleAzureOpenAIEndpointWithMappedModel() =>
         new TestAICentralPipelineBuilder()
-            .WithSingleMappedEndpoint(AICentralFakeResponses.Endpoint200, "random", "mapped")
+            .WithSingleMappedEndpoint(AICentralFakeResponses.Endpoint200, "random", "mapped", true)
             .Assemble("azure-openai-to-azure-with-mapped-models.localtest.me");
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithInBuiltJwtAuth()
