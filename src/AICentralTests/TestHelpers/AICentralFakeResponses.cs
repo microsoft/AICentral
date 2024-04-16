@@ -170,7 +170,7 @@ public class AICentralFakeResponses
         return response;
     }
 
-    public static async Task<HttpResponseMessage> FakeEmbeddingArrayResponse()
+    public static Task<HttpResponseMessage> FakeEmbeddingArrayResponse()
     {
         var response = new HttpResponseMessage();
         response.Content = new OneTimeStreamReadHttpContent(new
@@ -200,11 +200,11 @@ public class AICentralFakeResponses
             }
         });
 
-        return response;
+        return Task.FromResult(response);
     }
 
     
-    public static async Task<HttpResponseMessage> FakeEmbeddingResponse()
+    public static Task<HttpResponseMessage> FakeEmbeddingResponse()
     {
         var response = new HttpResponseMessage();
         response.Content = new OneTimeStreamReadHttpContent(new
@@ -228,7 +228,7 @@ public class AICentralFakeResponses
             }
         });
 
-        return response;
+        return Task.FromResult(response);
     }
 
     public static async Task<HttpResponseMessage> FakeStreamingChatCompletionsResponseMultipleChoices()

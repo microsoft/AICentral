@@ -34,7 +34,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
 
         var result = await _httpClient.PostAsync(
-            "http://azure-to-azure-openai.localtest.me/openai/deployments/Model1/chat/completions?api-version=2024-02-15-preview",
+            $"http://azure-to-azure-openai.localtest.me/openai/deployments/Model1/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -137,7 +137,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     public async Task can_proxy_embedding_requests_array()
     {
         _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/adatest/embeddings?api-version=2024-02-15-preview",
+            $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/adatest/embeddings?api-version={AICentralTestEx.OpenAIClientApiVersion}",
             AICentralFakeResponses.FakeEmbeddingArrayResponse);
 
         var client = new OpenAIClient(
@@ -307,7 +307,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             new Uri("http://azure-openai-to-404.localtest.me"),
             new AzureKeyCredential("ignore"),
             // ReSharper disable once RedundantArgumentDefaultValue
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview)
+            new OpenAIClientOptions()
             {
                 Transport = new HttpClientTransport(_httpClient),
             });
@@ -330,7 +330,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             new Uri("http://azure-openai-to-azure.localtest.me"),
             new AzureKeyCredential("ignore"),
             // ReSharper disable once RedundantArgumentDefaultValue
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview)
+            new OpenAIClientOptions
             {
                 Transport = new HttpClientTransport(_httpClient),
             });

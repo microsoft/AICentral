@@ -34,6 +34,7 @@
         "Enhancements": null
       }
     ],
+    "Model": "gpt-35-turbo",
     "PromptFilterResults": [],
     "SystemFingerprint": null,
     "Usage": {

@@ -51,7 +51,7 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
 
     public IPipelineStep Build(IServiceProvider serviceProvider)
     {
-        return new AICentralJwtAuthProvider(_config.ValidPipelines);
+        return new AICentralJwtAuthProvider(_config.ValidPipelines!);
     }
 
     public object WriteDebug()
@@ -70,6 +70,7 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
 
         if (_builtTokenDispatchRoute) return;
 
+        // ReSharper disable once RouteTemplates.SyntaxError
         app.MapPost($"/aicentraljwt/{_stepName}/tokens", (HttpContext context, TokenRequest request) =>
         {
             var apiKey = context.Request.Headers.TryGetValue("api-key", out var key);
@@ -96,7 +97,7 @@ public class AICentralJwtAuthFactory : IPipelineStepFactory
             foreach (var requestedPipeline in request.ValidPipelines)
             {
                 var valid = false;
-                if (_config.ValidPipelines.TryGetValue(requestedPipeline.Key, out var pipeline))
+                if (_config.ValidPipelines!.TryGetValue(requestedPipeline.Key, out var pipeline))
                 {
                     valid = pipeline.Contains("*") || requestedPipeline.Value.All(p =>
                         pipeline.Contains(p, StringComparer.InvariantCultureIgnoreCase));
