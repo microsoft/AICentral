@@ -17,7 +17,8 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
         Dictionary<string, string> modelMappings,
         Dictionary<string, string> assistantMappings,
         IEndpointAuthorisationHandler authHandler, 
-        bool enforceMappedModels): base(id, new Uri(languageUrl), endpointName, modelMappings, assistantMappings)
+        bool enforceMappedModels, 
+        bool autoPopulateEmptyUserId): base(id, new Uri(languageUrl), endpointName, modelMappings, assistantMappings, autoPopulateEmptyUserId)
     {
         _authHandler = authHandler;
         _enforceMappedModels = enforceMappedModels;

@@ -9,4 +9,5 @@ public class AzureOpenAIEndpointPropertiesConfig
     public Dictionary<string, string>? AssistantMappings { get; set; }
     public int? MaxConcurrency { get; set; }
     public bool? EnforceMappedModels { get; init; }
+    public bool? AutoPopulateEmptyUserId { get; init; }
 }

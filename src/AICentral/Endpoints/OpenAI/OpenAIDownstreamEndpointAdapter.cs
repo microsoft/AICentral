@@ -18,7 +18,8 @@ public class OpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpointAdapt
         Dictionary<string, string> modelMappings,
         Dictionary<string, string> assistantMappings,
         string apiKey,
-        string? organization) : base(id, OpenAIV1, endpointName, modelMappings, assistantMappings)
+        string? organization, 
+        bool autoPopulateEmptyUserId) : base(id, OpenAIV1, endpointName, modelMappings, assistantMappings, autoPopulateEmptyUserId)
     {
         _organization = organization;
         _apiKey = apiKey;

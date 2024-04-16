@@ -10,24 +10,26 @@ public class OpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAdapter
     private readonly int? _maxConcurrency;
     private readonly Lazy<IDownstreamEndpointAdapter> _endpointDispatcher;
     private readonly string _id;
+    private readonly bool _autoPopulateEmptyUserId;
 
-    public OpenAIDownstreamEndpointAdapterFactory(
-        string endpointName,
+    public OpenAIDownstreamEndpointAdapterFactory(string endpointName,
         Dictionary<string, string> modelMappings,
         Dictionary<string, string> assistantMappings,
         string apiKey,
         string? organization,
-        int? maxConcurrency = null)
+        int? maxConcurrency = null, 
+        bool autoPopulateEmptyUserId = false)
     {
         _id = Guid.NewGuid().ToString();
         _modelMappings = modelMappings;
         _assistantMappings = assistantMappings;
         _organization = organization;
         _maxConcurrency = maxConcurrency;
+        _autoPopulateEmptyUserId = autoPopulateEmptyUserId;
 
         _endpointDispatcher = new Lazy<IDownstreamEndpointAdapter>(() =>
             new OpenAIDownstreamEndpointAdapter(_id, endpointName, _modelMappings, _assistantMappings, apiKey,
-                _organization));
+                _organization, _autoPopulateEmptyUserId));
     }
 
     public void RegisterServices(HttpMessageHandler? httpMessageHandler, IServiceCollection services)
@@ -51,7 +53,8 @@ public class OpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAdapter
             properties.AssistantMappings ?? new Dictionary<string, string>(),
             Guard.NotNull(properties.ApiKey, nameof(properties.ApiKey)),
             properties.Organization,
-            properties.MaxConcurrency
+            properties.MaxConcurrency,
+            properties.AutoPopulateEmptyUserId ?? false
         );
     }
 
@@ -68,7 +71,8 @@ public class OpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAdapter
             Url = OpenAIDownstreamEndpointAdapter.OpenAIV1,
             Mappings = _modelMappings,
             AssistantMappings = _assistantMappings,
-            Organization = _organization
+            Organization = _organization,
+            AutoPopulateEmptyUserId = _autoPopulateEmptyUserId
         };
     }
 }
