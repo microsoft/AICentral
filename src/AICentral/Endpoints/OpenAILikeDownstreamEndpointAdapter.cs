@@ -16,12 +16,16 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
     protected abstract string[] HeaderPrefixesToCopy { get; }
     private readonly Dictionary<string, string> _modelMappings;
     private readonly Dictionary<string, string> _assistantMappings;
+    private readonly bool _autoPopulateEmptyUserId;
 
     protected OpenAILikeDownstreamEndpointAdapter(string id, Uri baseUrl, string endpointName,
-        Dictionary<string, string> modelMappings, Dictionary<string, string> assistantMappings)
+        Dictionary<string, string> modelMappings, Dictionary<string, string> assistantMappings,
+        bool autoPopulateEmptyUserId)
     {
         _modelMappings = modelMappings;
         _assistantMappings = assistantMappings;
+        _autoPopulateEmptyUserId = autoPopulateEmptyUserId;
+        
         Id = id;
         BaseUrl = baseUrl;
         EndpointName = endpointName;
@@ -186,15 +190,17 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
         }
 
         if (aiCallInformation.IncomingModelName != mappedModelName ||
-            aiCallInformation.IncomingAssistantName != mappedAssistantName)
+            aiCallInformation.IncomingAssistantName != mappedAssistantName ||
+            _autoPopulateEmptyUserId && incomingRequest.HttpContext.User.Identity?.Name != null)
         {
             return Task.FromResult<HttpContent?>(
                 new StringContent(
                     JsonSerializer.Serialize(
-                        AddModelAndAssistantName(
+                        AddModelAndAssistantNameAndUser(
                             aiCallInformation.RequestContent!.Deserialize<JsonNode>()!.DeepClone(),
                             mappedModelName,
-                            mappedAssistantName)),
+                            mappedAssistantName,
+                            incomingRequest.HttpContext.User.Identity?.Name)),
                     Encoding.UTF8, "application/json"));
         }
 
@@ -211,11 +217,13 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
     /// <param name="deepClone"></param>
     /// <param name="mappedModelName"></param>
     /// <param name="mappedAssistantName"></param>
+    /// <param name="userName"></param>
     /// <returns></returns>
-    private JsonNode AddModelAndAssistantName(
+    private JsonNode AddModelAndAssistantNameAndUser(
         JsonNode deepClone,
         string? mappedModelName,
-        string? mappedAssistantName)
+        string? mappedAssistantName,
+        string? userName)
     {
         if (mappedModelName != null)
         {
@@ -232,6 +240,11 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
         if (mappedAssistantName != null)
         {
             deepClone["assistant_id"] = mappedAssistantName;
+        }
+
+        if (userName != null && deepClone["user"] == null)
+        {
+            deepClone["user"] = userName;
         }
 
         return deepClone;

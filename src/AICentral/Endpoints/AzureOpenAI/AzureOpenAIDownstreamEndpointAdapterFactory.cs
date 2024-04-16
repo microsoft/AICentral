@@ -12,7 +12,8 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string _id;
     private readonly int? _maxConcurrency;
-    
+    private readonly bool _autoPopulateEmptyUserId;
+
     public AzureOpenAIDownstreamEndpointAdapterFactory(
         string endpointName,
         string languageUrl,
@@ -21,7 +22,8 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
         Dictionary<string, string> modelMappings,
         Dictionary<string, string> assistantMappings,
         bool enforceMappedModels = false,
-        int? maxConcurrency = null)
+        int? maxConcurrency = null, 
+        bool autoPopulateEmptyUserId = false)
     {
         _id = Guid.NewGuid().ToString();
 
@@ -31,6 +33,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
         _assistantMappings = assistantMappings;
         _enforceMappedModels = enforceMappedModels;
         _maxConcurrency = maxConcurrency;
+        _autoPopulateEmptyUserId = autoPopulateEmptyUserId;
 
         _authHandler = authenticationType.ToLowerInvariant() switch
         {
@@ -79,12 +82,21 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
             properties.ModelMappings ?? new Dictionary<string, string>(),
             properties.AssistantMappings ?? new Dictionary<string, string>(),
             properties.EnforceMappedModels ?? false,
-            properties.MaxConcurrency);
+            properties.MaxConcurrency,
+            properties.AutoPopulateEmptyUserId ?? false);
     }
 
     public IDownstreamEndpointAdapter Build()
     {
-        return new AzureOpenAIDownstreamEndpointAdapter(_id, _languageUrl, _endpointName, _modelMappings, _assistantMappings, _authHandler, _enforceMappedModels);
+        return new AzureOpenAIDownstreamEndpointAdapter(
+            _id, 
+            _languageUrl, 
+            _endpointName, 
+            _modelMappings, 
+            _assistantMappings, 
+            _authHandler, 
+            _enforceMappedModels,
+            _autoPopulateEmptyUserId);
     }
 
     public object WriteDebug()
@@ -95,7 +107,8 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
             Url = _languageUrl,
             Mappings = _modelMappings,
             AssistantMappings = _assistantMappings,
-            Auth = _authHandler.WriteDebug()
+            Auth = _authHandler.WriteDebug(),
+            AutoPopulateEmptyUserId = _autoPopulateEmptyUserId
         };
     }
 }

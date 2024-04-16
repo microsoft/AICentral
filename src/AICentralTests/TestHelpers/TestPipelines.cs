@@ -31,6 +31,15 @@ public static class TestPipelines
             )
             .Assemble("azure-with-client-partitioned-rate-limiter.localtest.me");
 
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithAutoUserPopulation() =>
+        new TestAICentralPipelineBuilder()
+            .WithSingleEndpoint(AICentralFakeResponses.Endpoint200, autoPopulateUser: true)
+            .WithApiKeyAuth(
+                ("client-1", "ignore-fake-key-123", "ignore-fake-key-234"),
+                ("client-2", "ignore-fake-key-345", "ignore-fake-key-456")
+            )
+            .Assemble("azure-with-auto-populate-user.localtest.me");
+
     public static AICentralPipelineAssembler AzureOpenAIServiceWithTokenRateLimitingAndSingleEndpoint() =>
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(AICentralFakeResponses.Endpoint200)

@@ -28,12 +28,26 @@ All endpoints are wrapped with a Polly Policy. We
         "EnforceMappedModels": true,
         "AuthenticationType": "ApiKey|Entra|EntraPassThrough",
         "AuthenticationKey": "required-when-using-ApiKey",
-        "MaxConcurrency": 5
+        "MaxConcurrency": 5,
+        "AutoPopulateEmptyUserId": true
     }
 }
 ```
 
 ### Open AI Endpoint
+
+| Property                | Description                                                                              |
+|-------------------------|------------------------------------------------------------------------------------------|
+| ModelMappings           | Maps incoming model names to backend model names.                                        |
+| EnforceMappedModels     | If true, only models in the ModelMappings will be allowed.                               |
+| AuthenticationType      | The type of authentication to use. ```apikey``` or ```entra``` or ```entrapassthrough``` |
+| AuthenticationKey       | The key to use for authentication (when AuthenticationType is apikey).                   |
+| MaxConcurrency          | The maximum number of concurrent requests to the endpoint.                               |
+| AutoPopulateEmptyUserId | If true, the UserId will be populated with a GUID if it is empty.                        |
+
+> If AuthenticationType is set to ```entra``` AICentral will use DefaultAzureCredential to obtain a JWT scoped to ```https://cognitiveservices.azure.com``` 
+
+> If AuthenticationType is set to ```entrapassthrough``` AICentral will expect, and forward the incoming JWT Bearer Token straight through to Azure Open AI
 
 ```json
 {
@@ -46,7 +60,8 @@ All endpoints are wrapped with a Polly Policy. We
         },
         "ApiKey": "required",
         "Organization": "optional",
-        "MaxConcurrency": 5
+        "MaxConcurrency": 5,
+        "AutoPopulateEmptyUserId": true
     }
 }
 ```

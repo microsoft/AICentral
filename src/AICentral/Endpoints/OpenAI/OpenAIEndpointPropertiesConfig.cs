@@ -7,4 +7,5 @@ public class OpenAIEndpointPropertiesConfig
     public string? ApiKey { get; set; }
     public string? Organization { get; set; }
     public int? MaxConcurrency { get; set; }
+    public bool? AutoPopulateEmptyUserId { get; init; }
 }

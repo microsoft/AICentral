@@ -73,7 +73,10 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
-    public TestAICentralPipelineBuilder WithSingleEndpoint(string hostname, int? maxConcurrencyToAllowThrough = null)
+    public TestAICentralPipelineBuilder WithSingleEndpoint(
+        string hostname, 
+        int? maxConcurrencyToAllowThrough = null,
+        bool autoPopulateUser = false)
     {
         var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
             hostname,
@@ -83,7 +86,8 @@ public class TestAICentralPipelineBuilder
             new Dictionary<string, string>(),
             new Dictionary<string, string>(),
             enforceMappedModels: false,
-            maxConcurrencyToAllowThrough);
+            maxConcurrencyToAllowThrough,
+            autoPopulateUser);
 
         _endpointFactory =
             new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
