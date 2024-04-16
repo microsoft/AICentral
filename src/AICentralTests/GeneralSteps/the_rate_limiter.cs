@@ -30,7 +30,7 @@ public class the_rate_limiter : IClassFixture<TestWebApplicationFactory<Program>
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
 
         Task<HttpResponseMessage> Call() => _httpClient.PostAsync(
-            "http://azure-with-rate-limiter.localtest.me/openai/deployments/Model1/chat/completions?api-version=2024-02-15-preview",
+            $"http://azure-with-rate-limiter.localtest.me/openai/deployments/Model1/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
             new StringContent(
                 JsonConvert.SerializeObject(new
                 {
@@ -62,7 +62,7 @@ public class the_rate_limiter : IClassFixture<TestWebApplicationFactory<Program>
 
         Task<HttpResponseMessage> Call(string apiKey) => _httpClient.SendAsync(
             new HttpRequestMessage(HttpMethod.Post,
-                "http://azure-with-client-partitioned-rate-limiter.localtest.me/openai/deployments/Model1/chat/completions?api-version=2024-02-15-preview")
+                $"http://azure-with-client-partitioned-rate-limiter.localtest.me/openai/deployments/Model1/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}")
             {
                 Headers = { { "api-key", apiKey } },
                 Content = new StringContent(

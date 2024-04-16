@@ -29,7 +29,7 @@ public class the_random_endpoint_picker : IClassFixture<TestWebApplicationFactor
         _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200Number2, "random",
             () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
 
-        var result = await _httpClient.PostAsync("http://azure-to-azure-openai.localtest.me/openai/deployments/random/chat/completions?api-version=2024-02-15-preview",
+        var result = await _httpClient.PostAsync($"http://azure-to-azure-openai.localtest.me/openai/deployments/random/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]

@@ -8,7 +8,7 @@ public static class AICentralTestEx
     public static Task<HttpResponseMessage> PostChatCompletions(this HttpClient client, string endpointName, string modelName = "Model1")
     {
         return client.PostAsync(
-            $"https://{endpointName}.localtest.me/openai/deployments/Model1/chat/completions?api-version=2024-02-15-preview",
+            $"https://{endpointName}.localtest.me/openai/deployments/Model1/chat/completions?api-version={OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -19,4 +19,6 @@ public static class AICentralTestEx
                 max_tokens = 5
             }), Encoding.UTF8, "application/json"));
     }
+    
+    public const string OpenAIClientApiVersion = "2024-04-01-preview";
 }

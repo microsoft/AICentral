@@ -2,7 +2,7 @@
   Requests:
 [
   {
-    "Uri": "/openai/deployments/mapped/chat/completions?api-version=2024-02-15-preview",
+    "Uri": "/openai/deployments/mapped/chat/completions?api-version=2024-04-01-preview",
     "Method": "POST",
     "Headers": {
       "Accept": "application/json",
