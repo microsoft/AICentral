@@ -6,7 +6,9 @@
 
 ![Alt text](./docs/AI%20Central.drawio.svg)
 
-AI Central gives you control over your AI services.
+## Take control of your AI services.
+
+### Features
 
 - Minimal overhead - written on Asp.Net Core, on dotnet 8. One of the fastest web-servers in the business.
 - Lightweight out-the-box token metrics surfaced through Open Telemetry
@@ -15,15 +17,15 @@ AI Central gives you control over your AI services.
   - Gain quick insights into who's using what, how much, and how often
   - Standard Open Telemetry format to surface Dashboards in you monitoring solution of choice
 - Prompt and usage logging to Azure Monitor
-  - **Works for streaming endpoints as-well as non streaming**
+  - **Works for streaming endpoints as-well as non-streaming**
 - Intelligent Routing
   - Random endpoint selector
   - Prioritised endpoint selector with fallback
   - Lowest Latency endpoint selector
 - Can proxy asynchronous requests such as Azure Open AI Image Generation across fleets of servers
 - Custom consumer OAuth2 authorisation
-- Can mint JWT time-bound and consumer-bound JWT tokens to make it easy to run events like Hackathons without blowing your budgets! 
-- Circuit breakers, and backoff-retry over downstream AI services
+- Can mint JWT time-bound and consumer-bound JWT tokens to make it easy to run events like Hackathons without blowing your budget 
+- Circuit breakers and backoff-retry over downstream AI services
 - Local token rate limiting
   - By consumer / by endpoint
   - By number of tokens (including streaming by estimated token count)
