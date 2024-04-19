@@ -15,6 +15,17 @@ All endpoints are wrapped with a Polly Policy. We
 
 ### Azure Open AI Endpoint
 
+
+| Property                | Description                                                                              |
+|-------------------------|------------------------------------------------------------------------------------------|
+| LanguageEndpoint        | Full URL to an Azure Open AI Endpoint                                                   |
+| ModelMappings           | Maps incoming model names to backend model names.                                        |
+| EnforceMappedModels     | If true, only models in the ModelMappings will be allowed.                               |
+| AuthenticationType      | The type of authentication to use. ```apikey``` or ```entra``` or ```entrapassthrough``` |
+| AuthenticationKey       | The key to use for authentication (when AuthenticationType is apikey).                   |
+| MaxConcurrency          | The maximum number of concurrent requests to the endpoint.                               |
+| AutoPopulateEmptyUserId | If true, the UserId will be populated with the incoming User Name if it is empty.        |
+
 ```json
 {
     "Type": "AzureOpenAIEndpoint",
@@ -36,14 +47,13 @@ All endpoints are wrapped with a Polly Policy. We
 
 ### Open AI Endpoint
 
-| Property                | Description                                                                              |
-|-------------------------|------------------------------------------------------------------------------------------|
-| ModelMappings           | Maps incoming model names to backend model names.                                        |
-| EnforceMappedModels     | If true, only models in the ModelMappings will be allowed.                               |
-| AuthenticationType      | The type of authentication to use. ```apikey``` or ```entra``` or ```entrapassthrough``` |
-| AuthenticationKey       | The key to use for authentication (when AuthenticationType is apikey).                   |
-| MaxConcurrency          | The maximum number of concurrent requests to the endpoint.                               |
-| AutoPopulateEmptyUserId | If true, the UserId will be populated with a GUID if it is empty.                        |
+| Property                | Description                                                                       |
+|-------------------------|-----------------------------------------------------------------------------------|
+| ModelMappings           | Maps incoming model names to backend model names.                                 |
+| EnforceMappedModels     | If true, only models in the ModelMappings will be allowed.                        |
+| ApiKey                  | Open AI API Key.                                                                  |
+| MaxConcurrency          | The maximum number of concurrent requests to the endpoint.                        |
+| AutoPopulateEmptyUserId | If true, the UserId will be populated with the incoming User Name if it is empty. |
 
 > If AuthenticationType is set to ```entra``` AICentral will use DefaultAzureCredential to obtain a JWT scoped to ```https://cognitiveservices.azure.com``` 
 

@@ -40,6 +40,8 @@ var logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog(logger);
 
+builder.Services.AddCors();
+
 builder.Services.AddAICentral(
     builder.Configuration,
     startupLogger: new SerilogLoggerProvider(logger).CreateLogger("AICentralStartup"),
@@ -61,6 +63,8 @@ if (enableSummaryPage)
 {
     app.MapRazorPages();
 }
+
+app.UseCors(corsPolicyBuilder => corsPolicyBuilder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 app.UseAICentral();
 
