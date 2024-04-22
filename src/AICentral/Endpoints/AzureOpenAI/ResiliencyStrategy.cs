@@ -31,7 +31,7 @@ public static class ResiliencyStrategy
                 MaxRetryAttempts = 3,
                 ShouldHandle = handler
             })
-            .AddTimeout(TimeSpan.FromSeconds(30))
+            .AddTimeout(OpenAILikeDownstreamEndpointAdapter.MaxTimeToWaitForOpenAIResponse)
             .Build()
             .AsAsyncPolicy();
 

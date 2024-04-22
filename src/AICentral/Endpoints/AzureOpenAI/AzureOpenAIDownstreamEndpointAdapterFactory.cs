@@ -50,6 +50,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
     public void RegisterServices(HttpMessageHandler? httpMessageHandler, IServiceCollection services)
     {
         services.AddHttpClient<HttpAIEndpointDispatcher>(_id)
+            .ConfigureHttpClient(x => x.Timeout = OpenAILikeDownstreamEndpointAdapter.MaxTimeToWaitForOpenAIResponse)
             .AddPolicyHandler(ResiliencyStrategy.Build(_maxConcurrency))
             .ConfigurePrimaryHttpMessageHandler(() => httpMessageHandler ?? new HttpClientHandler());
     }

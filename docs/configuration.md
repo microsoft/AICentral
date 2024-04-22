@@ -15,6 +15,22 @@ All endpoints are wrapped with a Polly Policy. We
 
 ### Azure Open AI Endpoint
 
+
+| Property                | Description                                                                              |
+|-------------------------|------------------------------------------------------------------------------------------|
+| LanguageEndpoint        | Full URL to an Azure Open AI Endpoint                                                    |
+| ModelMappings           | Maps incoming model names to backend model names.                                        |
+| EnforceMappedModels     | If true, only models in the ModelMappings will be allowed.                               |
+| AuthenticationType      | The type of authentication to use. ```apikey``` or ```entra``` or ```entrapassthrough``` |
+| AuthenticationKey       | The key to use for authentication (when AuthenticationType is apikey).                   |
+| MaxConcurrency          | The maximum number of concurrent requests to the endpoint.                               |
+| AutoPopulateEmptyUserId | If true, the UserId will be populated with the incoming User Name if it is empty.        |
+
+> If AuthenticationType is set to ```entra``` AICentral will use DefaultAzureCredential to obtain a JWT scoped to ```https://cognitiveservices.azure.com```
+
+> If AuthenticationType is set to ```entrapassthrough``` AICentral will expect, and forward the incoming JWT Bearer Token straight through to Azure Open AI
+
+
 ```json
 {
     "Type": "AzureOpenAIEndpoint",
@@ -36,18 +52,13 @@ All endpoints are wrapped with a Polly Policy. We
 
 ### Open AI Endpoint
 
-| Property                | Description                                                                              |
-|-------------------------|------------------------------------------------------------------------------------------|
-| ModelMappings           | Maps incoming model names to backend model names.                                        |
-| EnforceMappedModels     | If true, only models in the ModelMappings will be allowed.                               |
-| AuthenticationType      | The type of authentication to use. ```apikey``` or ```entra``` or ```entrapassthrough``` |
-| AuthenticationKey       | The key to use for authentication (when AuthenticationType is apikey).                   |
-| MaxConcurrency          | The maximum number of concurrent requests to the endpoint.                               |
-| AutoPopulateEmptyUserId | If true, the UserId will be populated with a GUID if it is empty.                        |
-
-> If AuthenticationType is set to ```entra``` AICentral will use DefaultAzureCredential to obtain a JWT scoped to ```https://cognitiveservices.azure.com``` 
-
-> If AuthenticationType is set to ```entrapassthrough``` AICentral will expect, and forward the incoming JWT Bearer Token straight through to Azure Open AI
+| Property                | Description                                                                       |
+|-------------------------|-----------------------------------------------------------------------------------|
+| ModelMappings           | Maps incoming model names to backend model names.                                 |
+| EnforceMappedModels     | If true, only models in the ModelMappings will be allowed.                        |
+| ApiKey                  | Open AI API Key.                                                                  |
+| MaxConcurrency          | The maximum number of concurrent requests to the endpoint.                        |
+| AutoPopulateEmptyUserId | If true, the UserId will be populated with the incoming User Name if it is empty. |
 
 ```json
 {
@@ -79,6 +90,10 @@ We ship 4 Endpoint Selectors:
 > This is the only endpoint selector for Azure Open AI that supports image generation. Azure Open AI uses an
 > asynchronous poll to wait for image generation so we must guarantee affinity to an Azure Open AI service. 
 
+| Property | Description                                                             |
+|----------|-------------------------------------------------------------------------|
+| Endpoint | An Endpoint name as declared in the Endpoint Configuration Collection . |
+
 ```json
 {
     "Type": "SingleEndpoint",
@@ -94,6 +109,10 @@ We ship 4 Endpoint Selectors:
 - Picks an endpoint at random and tries it.
 - If we fail, we pick from the remaining ones.
 - And so-on, until we get a response, or fail.
+
+| Property  | Description                                                                       |
+|-----------|-----------------------------------------------------------------------------------|
+| Endpoints | An array of Endpoint names as declared in the Endpoint Configuration Collection . |
 
 ```json
 {
@@ -117,6 +136,11 @@ We ship 4 Endpoint Selectors:
   - And so-on, until we get a response, or fail.
 - If we failed, repeat for the fallback services
 
+| Property          | Description                                                                                     |
+|-------------------|-------------------------------------------------------------------------------------------------|
+| PriorityEndpoints | An array of Endpoint names as declared in the Endpoint Configuration Collection to try.         |
+| FallbackEndpoints | An array of Endpoint names as declared in the Endpoint Configuration Collection to fallback to. |
+
 ```json
 {
   "Type": "Prioritised",
@@ -138,6 +162,12 @@ We ship 4 Endpoint Selectors:
 
 This runs a rolling average of the duration to call the downstream OpenAI endpoints. It will over time prioritise the fastest endpoints.
 The implementation maintains the duration of the last 10 requests to an endpoint, and executes your request trying the quickest first.
+
+> The strategy measures the overall response time. This works better when your Request and Response tokens are of a similar size.
+
+| Property  | Description                                                                             |
+|-----------|-----------------------------------------------------------------------------------------|
+| Endpoints | An array of Endpoint names as declared in the Endpoint Configuration Collection to try. |
 
 ```json
 {
@@ -200,11 +230,39 @@ The implementation relies on the order of your Selectors. You can only reference
 }
 ```
 
+## Pipeline Configuration
+
+| Property                             | Required | Description                                                                               |
+|--------------------------------------|----------|-------------------------------------------------------------------------------------------|
+| Name                                 | Yes      | Friendly Name of the pipeline                                                             |
+| Host                                 | Yes      | The HostName to listen to for incoming requests to this pipeline                          |
+| EndpointSelector                     | Yes      | The Endpoint Selector strategy to use as defined in your EndpointSelectors config section |
+| AuthProvider                         | Yes      | Auth strategy to protect the Pipeline, as defined in your AuthProviders config section    |
+| OpenTelemetryConfig.Transmit         | Yes      | True to emit additional Open Telemetry metrics (useful for scenarios such as ChargeBack)  |
+| OpenTelemetryConfig.AddClientNameTag | Yes      | True to add the Client Name tag to OTel telemetry                                         |
+| OpenTelemetryConfig.AddClientNameTag | Yes      | True to add the Client Name tag to OTel telemetry                                         |
+| Steps                                | No       | An array of Step names to run before the request is forwarded to the backend.             |
+
+```json
+{
+    "Name": "MyPipeline",
+    "Host": "<host-name-we-listen-for-requests-on>",
+    "EndpointSelector": "name-from-above",
+    "AuthProvider": "name-from-above",
+    "OpenTelemetryConfig": {
+        "Transmit": true,
+        "AddClientNameTag": true
+    },
+    "Steps": [
+        "step-name-from-earlier",
+        "another-step-name-from-earlier"
+    ]
+}
+```
+
 ## Minimal Pipeline configuration
 
 Using Endpoints and Endpoint Selectors we can create a pipeline like this:
-
-> Pipelines can detect the incoming service type using classes that implement ```IAIServiceDetector```. We support Azure Open AI, and Open AI endpoints. You can register your own implementation to support other AI services.
 
 ```json
 {
@@ -215,7 +273,8 @@ Using Endpoints and Endpoint Selectors we can create a pipeline like this:
             {
                 "Name": "MyPipeline",
                 "Host": "<host-name-we-listen-for-requests-on>",
-                "EndpointSelector": "name-from-above"
+                "EndpointSelector": "name-from-EndpointSelectors-config-section",
+                "AuthProvider": "name-from-AuthProviders-config-section"
             }
         ]
     }
@@ -286,6 +345,12 @@ We support adding authentication to incoming clients in 3 ways.
 
 No auth is applied to incoming requests. This is useful if we use EntraPassThrough for our backend endpoints. The user will present a token issued for an Azure Open AI service, which will be accepted or rejected by the backend service.
 
+| Property | Required | Description                               |
+|----------|----------|-------------------------------------------|
+| Name     | Yes      | Name to refer to the step from a Pipeline |
+| Type     | Yes      | AllowAnonymous                            |
+
+
 ```json
 {
   "AICentral": {
@@ -312,6 +377,13 @@ No auth is applied to incoming requests. This is useful if we use EntraPassThrou
 Uses standard Azure Active Directory Authentication to assert a valid JWT.
 
 > Currently we support authorisation using AAD Roles.
+
+| Property           | Required | Description                                                                                                    |
+|--------------------|----------|----------------------------------------------------------------------------------------------------------------|
+| Name               | Yes      | Name to refer to the step from a Pipeline                                                                      |
+| Type               | Yes      | Entra                                                                                                          |
+| Entra.xxx          | Yes      | Standard [Microsoft.Identity.Web](https://www.nuget.org/packages/Microsoft.Identity.Web) Configuration section |
+| Requirements.Roles | No       | Role claim to assert on the incoming validated JWT                                                             |
 
 ```json
 {
@@ -347,7 +419,17 @@ Uses standard Azure Active Directory Authentication to assert a valid JWT.
 
 ### Client-Keys
 
-You can specify clients, along with a pair of keys, and authenticate your pipelines using them.
+You can specify clients, along with a pair of keys, and authenticate your pipelines using them. The keys are sent in the api-key header and replace the provider's key.
+
+| Property          | Required | Description                                  |
+|-------------------|----------|----------------------------------------------|
+| Name              | Yes      | Name to refer to the step from a Pipeline    |
+| Type              | Yes      | ApiKey                                       |
+| Clients           | Yes      | Array of allowed Clients                     |
+| Client.ClientName | Yes      | Name to assign to the incoming callee        |
+| Client.Key1       | Yes      | ApiKey valid for the consumer to pass        |
+| Client.Key2       | Yes      | Second ApiKey valid for the consumer to pass |
+
 
 ```json
 {
@@ -389,6 +471,14 @@ You can specify clients, along with a pair of keys, and authenticate your pipeli
 AI Central can act as a Token Provider. The tokens are bound to a Consumer, Pipelines, and a time window. 
 
 > Use this to facilitate a Hackathon without blowing your budget!
+
+| Property       | Required | Description                                                                                                   |
+|----------------|----------|---------------------------------------------------------------------------------------------------------------|
+| Name           | Yes      | Name to refer to the step from a Pipeline                                                                     |
+| Type           | Yes      | AICentralJWT                                                                                                  |
+| TokenIssuer    | Yes      | Issuer to set / require on JWTs                                                                               |
+| AdminKey       | Yes      | A secret that can be provided to create JWTs                                                                  |
+| ValidPipelines | Yes      | Dictionary of Pipeline Names the token is valid for, with the Deployments it is valid for (can be a wildcard) |
 
 ```json
 {
@@ -442,6 +532,15 @@ A pipeline can run multiple steps. We currently provide steps for:
 - Token Based Rate Limiting
 
 ### Token and call based rate limiting
+
+| Property            | Required | Description                                                                                |
+|---------------------|----------|--------------------------------------------------------------------------------------------|
+| Name                | Yes      | Name to refer to the step from a Pipeline                                                  |
+| Type                | Yes      | TokenBasedRateLimiting                                                                     |
+| LimitType           | Yes      | PerConsumer to limit to each Consumer. PerAICentralEndpoint to protect the entire Endpoint |
+| MetricType          | Yes      | Tokens or Requests.                                                                        |
+| Options.Window      | Yes      | How long to count for before resetting the counter                                         |
+| Options.PermitLimit | Yes      | How high to let the counter go before returning 429's to the Consumer                      |
 
 ```json
 {
@@ -504,6 +603,16 @@ builder.Services.AddAICentral(
         typeof(AzureMonitorLoggerFactory).Assembly //AI Central Azure Monitor extension assembly  
     ]);
 ```
+
+
+| Property    | Required | Description                               |
+|-------------|----------|-------------------------------------------|
+| Name        | Yes      | Name to refer to the step from a Pipeline |
+| Type        | Yes      | TokenBasedRateLimiting                    |
+| WorkspaceId | Yes      | Id of the Workspace from Azure            |
+| Key         | Yes      | Key to post data to the Workspace.        |
+| LogPrompt   | Yes      | True to log the text from the prompt      |
+| LogResponse | Yes      | True to log the text from the response    |
 
 ```json
 {

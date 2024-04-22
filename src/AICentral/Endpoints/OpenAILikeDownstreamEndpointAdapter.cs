@@ -17,6 +17,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
     private readonly Dictionary<string, string> _modelMappings;
     private readonly Dictionary<string, string> _assistantMappings;
     private readonly bool _autoPopulateEmptyUserId;
+    public static readonly TimeSpan MaxTimeToWaitForOpenAIResponse = TimeSpan.FromMinutes(10);
 
     protected OpenAILikeDownstreamEndpointAdapter(string id, Uri baseUrl, string endpointName,
         Dictionary<string, string> modelMappings, Dictionary<string, string> assistantMappings,
