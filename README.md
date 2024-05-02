@@ -22,7 +22,7 @@
   - Random endpoint selector
   - Prioritised endpoint selector with fallback
   - Lowest Latency endpoint selector
-- Can proxy asynchronous requests such as Azure Open AI Image Generation across fleets of servers
+- Can proxy asynchronous requests such as Azure OpenAI Image Generation across fleets of servers
 - Custom consumer OAuth2 authorisation
 - Can mint JWT time-bound and consumer-bound JWT tokens to make it easy to run events like Hackathons without blowing your budget 
 - Circuit breakers and backoff-retry over downstream AI services
@@ -39,7 +39,7 @@
 
 See [Configuration](./docs/configuration.md) for more details.
 
-> The Azure Open AI SDK retries by default. As AI Central does this for you you can turn it off in the client by passing ```new Azure.AI.OpenAI.OpenAIClientOptions()  {
+> The Azure OpenAI SDK retries by default. As AI Central does this for you you can turn it off in the client by passing ```new Azure.AI.OpenAI.OpenAIClientOptions()  {
 RetryPolicy = new RetryPolicy(0) }``` when you create an OpenAIClient
 
 ## Minimal
@@ -162,10 +162,10 @@ See [advanced-otel](./docs/advanced-otel.md) for dashboard inspiration!
 
 This pipeline will:
 
-- Present an Azure Open AI, and an Open AI downstream as a single upstream endpoint
-  - maps the incoming deployment Name "GPT35Turbo0613" to the downstream Azure Open AI deployment "MyGptModel"
-  - maps incoming Azure Open AI deployments to Open AI models
-- Present it as an Azure Open AI style endpoint
+- Present an Azure OpenAI, and an Open AI downstream as a single upstream endpoint
+  - maps the incoming deployment Name "GPT35Turbo0613" to the downstream Azure OpenAI deployment "MyGptModel"
+  - maps incoming Azure OpenAI deployments to Open AI models
+- Present it as an Azure OpenAI style endpoint
 - Protect the front-end by requiring an AAD token issued for your own AAD application
 - Put a local Asp.Net core rate-limiting policy over the endpoint
 - Add logging to Azure monitor 
