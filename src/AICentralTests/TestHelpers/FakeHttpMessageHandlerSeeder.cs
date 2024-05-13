@@ -29,16 +29,17 @@ public class FakeHttpMessageHandlerSeeder
     }
 
     public void SeedChatCompletions(string endpoint, string modelName, Func<Task<HttpResponseMessage>> response,
-        string apiVersion = "2024-02-15-preview")
+        string apiVersion = AICentralTestEx.OpenAIClientApiVersion)
     {
         var url = $"https://{endpoint}/openai/deployments/{modelName}/chat/completions?api-version={apiVersion}";
         if (SeededResponses.ContainsKey(url)) SeededResponses.Remove(url, out _);
         SeededResponses.TryAdd(url, _ => response());
     }
 
-    public void SeedCompletions(string endpoint, string modelName, Func<Task<HttpResponseMessage>> response)
+    public void SeedCompletions(string endpoint, string modelName, Func<Task<HttpResponseMessage>> response,
+        string apiVersion = AICentralTestEx.OpenAIClientApiVersion)
     {
-        var url = $"https://{endpoint}/openai/deployments/{modelName}/completions?api-version=2024-02-15-preview";
+        var url = $"https://{endpoint}/openai/deployments/{modelName}/completions?api-version={apiVersion}";
         if (SeededResponses.ContainsKey(url)) SeededResponses.Remove(url, out _);
         SeededResponses.TryAdd(url, _ => response());
     }

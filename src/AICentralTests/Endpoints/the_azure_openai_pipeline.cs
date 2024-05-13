@@ -67,7 +67,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         var client = new OpenAIClient(
             new Uri("http://azure-to-azure-openai.localtest.me"),
             new AzureKeyCredential("ignore"),
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview)
+            new OpenAIClientOptions()
             {
                 Transport = new HttpClientTransport(_httpClient)
             });
@@ -235,7 +235,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             new Uri("http://azure-openai-to-azure.localtest.me"),
             new AzureKeyCredential("ignore"),
             // ReSharper disable once RedundantArgumentDefaultValue
-            new OpenAIClientOptions(OpenAIClientOptions.ServiceVersion.V2024_02_15_Preview)
+            new OpenAIClientOptions()
             {
                 Transport = new HttpClientTransport(_httpClient),
             });
