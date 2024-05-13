@@ -35,6 +35,7 @@ public static class ServerSideEventResponseHandler
 
         var model = string.Empty;
         var choices = new Dictionary<int, List<string>>();
+        JsonElement? usageProp = null;
         while (!openAiResponseReader.EndOfStream)
         {
             var line = await openAiResponseReader.ReadLineAsync(cancellationToken);
@@ -49,6 +50,11 @@ public static class ServerSideEventResponseHandler
                 {
                     var lineObject = JsonDocument.Parse(line.Substring(StreamingLinePrefixLength));
                     model = lineObject.RootElement.GetProperty("model").GetString();
+
+                    if (lineObject.RootElement.TryGetProperty("usage", out var usagePropTemp))
+                    {
+                        usageProp = usagePropTemp;
+                    }
 
                     if (requestInformation.CallType == AICallType.Chat)
                     {
@@ -145,6 +151,18 @@ public static class ServerSideEventResponseHandler
             requestInformation.Duration,
             openAiResponse.IsSuccessStatusCode);
 
+        if (usageProp != null && usageProp.Value.TryGetProperty("prompt_tokens", out var promptTokensElement) &&
+            usageProp.Value.TryGetProperty("completion_tokens", out var completionTokensElement))
+        {
+            var promptTokens = promptTokensElement.GetInt32();
+            var completionTokens = completionTokensElement.GetInt32();
+            chatRequestInformation = chatRequestInformation with
+            {
+                EstimatedTokens = null,
+                KnownTokens = (promptTokens, completionTokens, promptTokens + completionTokens)
+            };
+        }
+        
         return new AICentralResponse(chatRequestInformation, new StreamAlreadySentResultHandler());
     }
 }

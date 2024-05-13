@@ -261,6 +261,36 @@ public class AICentralFakeResponses
         return response;
     }
 
+    public static async Task<HttpResponseMessage> FakeStreamingChatCompletionsResponseWithTokenCounts()
+    {
+        using var stream =
+            new StreamReader(
+                typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
+                    "AICentralTests.Assets.FakeStreamingResponse.with-token-counts.txt")!);
+
+        var content = await stream.ReadToEndAsync();
+        var response = new HttpResponseMessage();
+        response.Content = new SSEResponse(content);
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
+        response.Headers.TransferEncodingChunked = true;
+        return response;
+    }
+    
+    public static async Task<HttpResponseMessage> FakeStreamingCompletionsResponseWithTokenCounts()
+    {
+        using var stream =
+            new StreamReader(
+                typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
+                    "AICentralTests.Assets.FakeStreamingResponse-completions.with-token-counts.txt")!);
+
+        var content = await stream.ReadToEndAsync();
+        var response = new HttpResponseMessage();
+        response.Content = new SSEResponse(content);
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
+        response.Headers.TransferEncodingChunked = true;
+        return response;
+    }
+
     public static async Task<HttpResponseMessage> FakeOpenAIStreamingCompletionsResponse()
     {
         using var stream =

@@ -46,7 +46,6 @@ public class the_streaming_endpoints : IClassFixture<TestWebApplicationFactory<P
         var trailer = result.TrailingHeaders.TryGetValues(Pipeline.XAiCentralStreamingTokenHeader, out var count);
         trailer.ShouldBeTrue();
         count!.Single().ShouldBe("73");
-        
     }
 
 
@@ -57,17 +56,66 @@ public class the_streaming_endpoints : IClassFixture<TestWebApplicationFactory<P
             AICentralFakeResponses.FakeStreamingCompletionsResponse);
 
         var result = await _httpClient.PostAsync(
-            "http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/completions?api-version=2024-02-15-preview",
+            $"http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
-                prompt =new[] {"You are a helpful assistant."},
+                prompt = new[] { "You are a helpful assistant." },
                 streaming = true
             }), Encoding.UTF8, "application/json"));
 
         var trailer = result.TrailingHeaders.TryGetValues(Pipeline.XAiCentralStreamingTokenHeader, out var count);
         trailer.ShouldBeTrue();
         count!.Single().ShouldBe("350");
-        
+    }
+
+    [Fact]
+    public async Task will_use_reported_token_counts_when_streaming()
+    {
+        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+            AICentralFakeResponses.FakeStreamingChatCompletionsResponseWithTokenCounts);
+
+        var result = await _httpClient.PostAsync(
+            $"http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
+            new StringContent(JsonConvert.SerializeObject(new
+            {
+                messages = new[]
+                {
+                    new { role = "system", content = "You are a helpful assistant." },
+                },
+                streaming = true,
+                stream_options = new
+                {
+                    include_usage = true
+                }
+            }), Encoding.UTF8, "application/json"));
+
+        result.StatusCode.ShouldBe(HttpStatusCode.OK);
+        await Verify(_factory.VerifyRequestsAndResponsesStreaming(result, true));
+    }
+
+    [Fact]
+    public async Task will_use_reported_token_counts_when_streaming_completions()
+    {
+        _factory.SeedCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+            AICentralFakeResponses.FakeStreamingCompletionsResponseWithTokenCounts);
+
+        var result = await _httpClient.PostAsync(
+            $"http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
+            new StringContent(JsonConvert.SerializeObject(new
+            {
+                prompt = new[]
+                {
+                    "You are a helpful assistant.",
+                },
+                streaming = true,
+                stream_options = new
+                {
+                    include_usage = true
+                }
+            }), Encoding.UTF8, "application/json"));
+
+        result.StatusCode.ShouldBe(HttpStatusCode.OK);
+        await Verify(_factory.VerifyRequestsAndResponsesStreaming(result, true));
     }
 
     public void Dispose()

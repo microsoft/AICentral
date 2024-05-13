@@ -132,6 +132,31 @@ public static class TestWebApplicationFactoryEx
         return validation;
     }
 
+    public static Dictionary<string, object> VerifyRequestsAndResponsesStreaming(
+        this TestWebApplicationFactory<Program> webApplicationFactory,
+        HttpResponseMessage response, bool validateResponseMetadata = false)
+    {
+        var validation = new Dictionary<string, object>()
+        {
+            ["Requests"] = JsonConvert.SerializeObject(webApplicationFactory.EndpointRequests(), Formatting.Indented),
+            ["Response"] = new
+            {
+                Headers = response.Headers.Where(x => !x.Key.StartsWith("x-ai")),
+                Content = response.Content.ReadAsStringAsync().Result
+            }
+        };
+
+        if (validateResponseMetadata)
+        {
+            response.Headers.TryGetValues("x-aicentral-test-diagnostics", out var key); 
+            var downstreamUsageInformation = webApplicationFactory.Services.GetRequiredService<DiagnosticsCollector>().DownstreamUsageInformation[key!.Single()];
+            var info = downstreamUsageInformation with { Duration = TimeSpan.Zero};
+            validation["ResponseMetadata"] =  info;
+        }
+        
+        return validation;
+    }
+
     public static Dictionary<string, object> VerifyRequestsAndResponses(
         this TestWebApplicationFactory<Program> webApplicationFactory,
         Azure.Response response, bool validateResponseMetadata = false)

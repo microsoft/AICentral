@@ -1,0 +1,68 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/openai/deployments/Model1/completions?api-version=2024-04-01-preview",
+    "Method": "POST",
+    "Headers": {
+      "api-key": "ignore-fake-key-hr987345"
+    },
+    "ContentType": "application/json",
+    "Content": "{\"prompt\":[\"You are a helpful assistant.\"],\"streaming\":true,\"stream_options\":{\"include_usage\":true}}"
+  }
+],
+  Response: {
+    Headers: [
+      {
+        Cache-Control: [
+          no-cache
+        ]
+      }
+    ],
+    Content:
+data: {"id":"cmpl-9OGSf3JmBuruKrI0ujOg1E2s4p0Of","object":"text_completion","created":1715570177,"choices":[{"text":",","index":0,"logprobs":null,"finish_reason":null}],"model":"gpt-3.5-turbo-instruct","usage":null}
+
+data: {"id":"cmpl-9OGSf3JmBuruKrI0ujOg1E2s4p0Of","object":"text_completion","created":1715570177,"choices":[{"text":"\n\n","index":1,"logprobs":null,"finish_reason":null}],"model":"gpt-3.5-turbo-instruct","usage":null}
+
+data: {"id":"cmpl-9OGSf3JmBuruKrI0ujOg1E2s4p0Of","object":"text_completion","created":1715570177,"choices":[{"text":" weaving","index":0,"logprobs":null,"finish_reason":null}],"model":"gpt-3.5-turbo-instruct","usage":null}
+
+data: {"id":"cmpl-9OGSf3JmBuruKrI0ujOg1E2s4p0Of","object":"text_completion","created":1715570177,"choices":[{"text":"The","index":1,"logprobs":null,"finish_reason":null}],"model":"gpt-3.5-turbo-instruct","usage":null}
+
+data: {"id":"cmpl-9OGSf3JmBuruKrI0ujOg1E2s4p0Of","object":"text_completion","created":1715570177,"model":"gpt-3.5-turbo-instruct","usage":{"prompt_tokens":22,"completion_tokens":101,"total_tokens":123},"choices":[]}
+
+data: [DONE]
+
+
+
+  },
+  ResponseMetadata: {
+    InternalEndpointName: Guid_1,
+    OpenAIHost: Guid_1,
+    ModelName: gpt-3.5-turbo-instruct,
+    DeploymentName: Model1,
+    Client: unknown,
+    CallType: Completions,
+    StreamingResponse: true,
+    Prompt: You are a helpful assistant.,
+    Response:
+Choice 0
+
+, weaving
+
+Choice 1
+
+
+
+The,
+    KnownTokens: {
+      Item1: 22,
+      Item2: 101,
+      Item3: 123
+    },
+    ResponseMetadata: {},
+    RemoteIpAddress: ,
+    StartDate: DateTimeOffset_1,
+    Success: true,
+    TotalTokens: 123
+  }
+}
