@@ -158,6 +158,7 @@ public static class ServerSideEventResponseHandler
             var completionTokens = completionTokensElement.GetInt32();
             chatRequestInformation = chatRequestInformation with
             {
+                EstimatedTokens = null,
                 KnownTokens = (promptTokens, completionTokens, promptTokens + completionTokens)
             };
         }
