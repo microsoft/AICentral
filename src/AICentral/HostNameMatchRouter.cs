@@ -105,7 +105,7 @@ public class HostNameMatchRouter
             .RequireHost(_hostNames);
 
         yield return application.MapMethods(
-                "{*:rest}",
+                "/openai/{*:rest}",
                 new[] { "Get", "Post", "Delete" },
                 async (HttpContext ctx, CancellationToken cancellationToken) =>
                     (await handler(ctx, null, null, AICallType.Other, cancellationToken)).ResultHandler)

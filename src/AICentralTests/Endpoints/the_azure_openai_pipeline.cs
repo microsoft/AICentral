@@ -442,6 +442,20 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             }))).Status.ShouldBe(404);
     }
 
+    [Fact]
+    public async Task do_not_proxy_calls_to_the_base_path()
+    {
+        _factory.Seed(
+            $"https://{AICentralFakeResponses.Endpoint200}/",
+            () => Task.FromResult(AICentralFakeResponses.FakeModelErrorResponse()));
+
+        var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, "http://azure-openai-to-azure.localtest.me/");
+        httpRequestMessage.Headers.Add("api-key", "ignore");
+        var response = await _httpClient.SendAsync(httpRequestMessage);
+        
+        response.StatusCode.ShouldNotBe(HttpStatusCode.InternalServerError);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
 
     public void Dispose()
     {
