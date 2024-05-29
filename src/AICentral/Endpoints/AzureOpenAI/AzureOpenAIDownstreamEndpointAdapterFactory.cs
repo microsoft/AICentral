@@ -22,7 +22,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
         Dictionary<string, string> modelMappings,
         Dictionary<string, string> assistantMappings,
         bool enforceMappedModels = false,
-        int? maxConcurrency = null, 
+        int? maxConcurrency = null,
         bool autoPopulateEmptyUserId = false)
     {
         _id = Guid.NewGuid().ToString();
@@ -38,13 +38,12 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
         _authHandler = authenticationType.ToLowerInvariant() switch
         {
             "apikey" => new KeyAuth(authenticationKey ??
-                                                     throw new ArgumentException(
-                                                         "Missing api-key for Authentication Type")),
+                                    throw new ArgumentException(
+                                        "Missing api-key for Authentication Type")),
             "entra" => new EntraAuth(),
             "entrapassthrough" => new BearerTokenPassThroughAuth(),
             _ => throw new ArgumentOutOfRangeException(nameof(authenticationType), authenticationType, null)
         };
-
     }
 
     public void RegisterServices(HttpMessageHandler? httpMessageHandler, IServiceCollection services)
@@ -62,7 +61,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
         TypeAndNameConfig config)
     {
         var properties = config.TypedProperties<AzureOpenAIEndpointPropertiesConfig>();
-        
+
         Guard.NotNull(properties, "Properties");
 
         var authenticationType = properties.AuthenticationType;
@@ -74,6 +73,14 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
                 config.Name);
             authenticationType = "EntraPassThrough";
         }
+
+        //Run a diagnostics check. Runs synchronously but will really help people who have issues getting connectivity, moving quicker. 
+        var diagnostics = new AzureOpenAIDownstreamEndpointDiagnostics(
+            logger,
+            config.Name!,
+            new Uri(Guard.NotNull(properties.LanguageEndpoint, nameof(properties.LanguageEndpoint)))
+        );
+        diagnostics.RunDiagnostics().Wait();
 
         return new AzureOpenAIDownstreamEndpointAdapterFactory(
             config.Name!,
@@ -90,12 +97,12 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
     public IDownstreamEndpointAdapter Build()
     {
         return new AzureOpenAIDownstreamEndpointAdapter(
-            _id, 
-            _languageUrl, 
-            _endpointName, 
-            _modelMappings, 
-            _assistantMappings, 
-            _authHandler, 
+            _id,
+            _languageUrl,
+            _endpointName,
+            _modelMappings,
+            _assistantMappings,
+            _authHandler,
             _enforceMappedModels,
             _autoPopulateEmptyUserId);
     }
