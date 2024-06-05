@@ -88,6 +88,37 @@ curl -X POST \
     "https://{your-web-url}/openai/deployments/Gpt35Turbo0613/chat/completions?api-version=2024-02-01"
 ```
 
+To test if everything works by running some code of your choice, e.g., this code with OpenAI Python SDK:
+
+```python
+    import json
+    import httpx
+    from openai import AzureOpenAI
+    
+    api_key = "<your-customer-key>"
+    
+    def event_hook(req: httpx.Request) -> None:
+        print(json.dumps(dict(req.headers), indent=2))
+    
+    client = AzureOpenAI(
+        azure_endpoint="https://app-[a]-[b].azurewebsites.net",  #if you deployed to Azure Web App app-[a]-[b].azurewebsites.net
+        api_key=api_key, 
+        api_version="2023-05-15",
+        http_client=httpx.Client(event_hooks={"request": [event_hook]})
+    )
+    
+    
+    response = client.chat.completions.create(
+        model="Gpt35Turbo0613",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "What is the first letter of the alphabet?"}
+        ]
+    )
+    print(response)
+```
+
+
 
 > Note: delete create resources az deployment group list --resource-group "your-resource-group-name" --query "[].{Name:name, Timestamp:properties.timestamp, State:properties.provisioningState}" --output table
 
