@@ -42,6 +42,55 @@ See [Configuration](./docs/configuration.md) for more details.
 > The Azure OpenAI SDK retries by default. As AI Central does this for you you can turn it off in the client by passing ```new Azure.AI.OpenAI.OpenAIClientOptions()  {
 RetryPolicy = new RetryPolicy(0) }``` when you create an OpenAIClient
 
+## Deployment
+
+1. [Install Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) if you haven't done so already.
+
+2. Install the Bicep CLI by running the following command in your terminal:
+
+```bash
+    az bicep install
+```
+
+3. Compile your Bicep file to an ARM template with the following command:
+
+```bash
+    az bicep build --file ./infra/main.bicep
+```
+
+This will create a file named `main.json` in the same directory as your [`main.bicep`](./infra/main.json) file.
+
+4. Deploy the generated ARM template using the Azure CLI. You'll need to login to your Azure account and select the subscription where you want to deploy the resources:
+
+```bash
+    az login
+    az account set --subscription "your-subscription-id"
+    az deployment sub create --template-file ./infra/main.json --location "your-location"
+```
+
+Replace `"your-subscription-id"` with your actual Azure subscription ID and `"your-location"` with the location where you want to deploy the resources (e.g., "westus2").
+
+![deployment](./docs/deployment.png)
+
+To test deployment retrieve url for the webapp and update the following `curl` command:
+
+```bash
+curl -X POST \
+    -H "Content-Type: application/json" \
+    -H "api-key: {your-customer-key}" \
+    -d '{
+          "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "what is .net core"}
+        ]
+
+    }' \
+    "https://{your-web-url}/openai/deployments/Gpt35Turbo0613/chat/completions?api-version=2024-02-01"
+```
+
+
+> Note: delete create resources az deployment group list --resource-group "your-resource-group-name" --query "[].{Name:name, Timestamp:properties.timestamp, State:properties.provisioningState}" --output table
+
 ## Minimal
 
 This sample produces a AI-Central proxy that
