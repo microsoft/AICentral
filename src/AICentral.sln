@@ -31,6 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{8B63898C-9
 		..\docs\AI Central.drawio.svg = ..\docs\AI Central.drawio.svg
 		..\docs\configuration.md = ..\docs\configuration.md
 		..\docs\advanced-otel.md = ..\docs\advanced-otel.md
+		..\docs\deployment.png = ..\docs\deployment.png
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.Core", "AICentral.Core\AICentral.Core.csproj", "{A61ABFAB-3E7F-400F-8F89-C3CC3705AA91}"
