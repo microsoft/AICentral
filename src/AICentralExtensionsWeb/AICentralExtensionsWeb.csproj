@@ -5,7 +5,8 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-        <UserSecretsId>058a2f37-f204-45d0-b224-ccaa79e5ed6f</UserSecretsId>
+        <UserSecretsId>eebb0b70-93be-4648-a8ec-8f67b7c5e665</UserSecretsId>
+        <RootNamespace>AICentralWeb</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -13,7 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AICentral.Logging.AzureMonitor\AICentral.Logging.AzureMonitor.csproj" />
+      <ProjectReference Include="..\AICentral.Logging.PIIStripping\AICentral.Logging.PIIStripping.csproj" />
+      <ProjectReference Include="..\AICentral.RateLimiting.DistributedRedis\AICentral.RateLimiting.DistributedRedis.csproj" />
       <ProjectReference Include="..\AICentral\AICentral.csproj" />
     </ItemGroup>
 

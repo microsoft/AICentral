@@ -42,6 +42,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		..\.github\workflows\build-aicentral-core.yaml = ..\.github\workflows\build-aicentral-core.yaml
 		..\.github\workflows\codeql.yml = ..\.github\workflows\codeql.yml
 		..\.github\workflows\docker.yaml = ..\.github\workflows\docker.yaml
+		..\.github\workflows\build-aicentral-azure-distributed-rate-limiter.yaml = ..\.github\workflows\build-aicentral-azure-distributed-rate-limiter.yaml
+		..\.github\workflows\build-aicentral-pii-stripping-logging.yaml = ..\.github\workflows\build-aicentral-pii-stripping-logging.yaml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.Logging.AzureMonitor", "AICentral.Logging.AzureMonitor\AICentral.Logging.AzureMonitor.csproj", "{D6C1FAC7-ABC6-49A4-A2A4-6FAD13A9B483}"
@@ -53,6 +55,16 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleOne", "..\samples\prioritised-endpoint-with-fallback-and-streaming-quota-logging\SampleOne.csproj", "{A670A0BF-7921-4F13-A926-B33573042730}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadTest", "..\samples\pre-canned-load-test\LoadTest\LoadTest.csproj", "{ED62EFA4-8E99-413F-880A-932373EDA72E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.RateLimiting.DistributedRedis", "AICentral.RateLimiting.DistributedRedis\AICentral.RateLimiting.DistributedRedis.csproj", "{A9124595-909C-41E6-8008-19A5AEA16A58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.Logging.PIIStripping", "AICentral.Logging.PIIStripping\AICentral.Logging.PIIStripping.csproj", "{46CF923B-9411-4B9D-A16F-BC56F90E82AD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentralAspireHost", "AICentralAspireHost\AICentralAspireHost.csproj", "{83D8B966-78DE-456D-8A7C-2CFEC219040D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentralExtensionsWeb", "AICentralExtensionsWeb\AICentralExtensionsWeb.csproj", "{6D85C816-7BD8-42CE-8390-60407C8688DC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aspire", "aspire", "{F9819AC6-DE12-4B91-8429-7CB53DC03E64}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -92,6 +104,22 @@ Global
 		{ED62EFA4-8E99-413F-880A-932373EDA72E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED62EFA4-8E99-413F-880A-932373EDA72E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED62EFA4-8E99-413F-880A-932373EDA72E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9124595-909C-41E6-8008-19A5AEA16A58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9124595-909C-41E6-8008-19A5AEA16A58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9124595-909C-41E6-8008-19A5AEA16A58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9124595-909C-41E6-8008-19A5AEA16A58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46CF923B-9411-4B9D-A16F-BC56F90E82AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46CF923B-9411-4B9D-A16F-BC56F90E82AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46CF923B-9411-4B9D-A16F-BC56F90E82AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46CF923B-9411-4B9D-A16F-BC56F90E82AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83D8B966-78DE-456D-8A7C-2CFEC219040D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83D8B966-78DE-456D-8A7C-2CFEC219040D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83D8B966-78DE-456D-8A7C-2CFEC219040D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83D8B966-78DE-456D-8A7C-2CFEC219040D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D85C816-7BD8-42CE-8390-60407C8688DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D85C816-7BD8-42CE-8390-60407C8688DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D85C816-7BD8-42CE-8390-60407C8688DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D85C816-7BD8-42CE-8390-60407C8688DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{087EA4B4-12E0-4517-B481-97ECE4F0FED9} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
@@ -104,5 +132,9 @@ Global
 		{0B378F87-C21D-4302-A56F-67687757664C} = {56E7C71B-7A4B-4A52-9CF9-E8F593C33D8A}
 		{A670A0BF-7921-4F13-A926-B33573042730} = {56E7C71B-7A4B-4A52-9CF9-E8F593C33D8A}
 		{ED62EFA4-8E99-413F-880A-932373EDA72E} = {56E7C71B-7A4B-4A52-9CF9-E8F593C33D8A}
+		{A9124595-909C-41E6-8008-19A5AEA16A58} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
+		{46CF923B-9411-4B9D-A16F-BC56F90E82AD} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
+		{6D85C816-7BD8-42CE-8390-60407C8688DC} = {F9819AC6-DE12-4B91-8429-7CB53DC03E64}
+		{83D8B966-78DE-456D-8A7C-2CFEC219040D} = {F9819AC6-DE12-4B91-8429-7CB53DC03E64}
 	EndGlobalSection
 EndGlobal
