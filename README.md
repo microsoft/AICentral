@@ -32,6 +32,8 @@
 - Local request rate limiting
   - By consumer / by endpoint
 - Bulkhead support for buffering requests to backend
+- Distributed token rate limiting (using Redis)
+  - Powered by an extension ``` graemefoster/aicentral.distributedratelimiter
 
 > Extensibility model makes it easy to build your own plugins
 
