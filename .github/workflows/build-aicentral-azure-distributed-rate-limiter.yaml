@@ -1,4 +1,4 @@
-﻿name: BuildAndPackageAzureMonitorLogger
+﻿name: BuildAndPackageDistributedRateLimiter
 
 on:
   push:

@@ -1,4 +1,4 @@
-﻿name: BuildAndPackageAzureMonitorLogger
+﻿name: BuildAndPackagePIIStrippingLogger
 
 on:
   push:
