@@ -1,8 +1,10 @@
 using System.Net;
 using System.Text;
+using AICentralOpenAIMock;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Newtonsoft.Json;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -44,12 +46,12 @@ public class the_client_api_key : IClassFixture<TestWebApplicationFactory<Progra
     [InlineData("ignore-fake-key-789", false)]
     public async Task succeeds_with_correct_api_key(string apiKey, bool isValidKey)
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "api-key-auth",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "api-key-auth",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
 
         var request = new HttpRequestMessage(
             HttpMethod.Post,
-            $"https://azure-with-auth.localtest.me/openai/deployments/api-key-auth/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}");
+            $"https://azure-with-auth.localtest.me/openai/deployments/api-key-auth/chat/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}");
         request.Content =
             new StringContent(JsonConvert.SerializeObject(new
             {

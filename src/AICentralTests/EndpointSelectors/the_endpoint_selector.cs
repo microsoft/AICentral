@@ -5,12 +5,14 @@ using AICentral.Configuration;
 using AICentral.Core;
 using AICentral.Endpoints.AzureOpenAI;
 using AICentral.EndpointSelectors.LowestLatency;
+using AICentralOpenAIMock;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -175,11 +177,11 @@ public class the_endpoint_selector : IClassFixture<TestWebApplicationFactory<Pro
     [Fact]
     public async Task can_use_hierarchical_selectors()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "random",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "random",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
 
         var result = await _httpClient.PostAsync(
-            $"https://azure-hierarchical-selector.localtest.me/openai/deployments/random/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
+            $"https://azure-hierarchical-selector.localtest.me/openai/deployments/random/chat/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]

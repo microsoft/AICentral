@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text;
+using AICentralOpenAIMock;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Argon;
@@ -7,6 +8,7 @@ using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -29,11 +31,11 @@ public class multiple_choice_responses : IClassFixture<TestWebApplicationFactory
     [Fact]
     public async Task are_handled_correctly()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponseMultipleChoices()));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "Model1",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponseMultipleChoices()));
 
         var result = await _httpClient.PostAsync(
-            $"http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
+            $"http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/chat/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -45,7 +47,7 @@ public class multiple_choice_responses : IClassFixture<TestWebApplicationFactory
 
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        await Verify(_factory.VerifyRequestsAndResponses(result, true));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(result, true));
 
         result.Headers.GetValues("x-aicentral-pipeline").Single().ShouldBe("azure-openai-to-azure.localtest.me-pipeline");
     }
@@ -54,8 +56,8 @@ public class multiple_choice_responses : IClassFixture<TestWebApplicationFactory
     [Fact]
     public async Task are_handled_correctly_for_chats()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "ModelStream",
-            AICentralFakeResponses.FakeStreamingChatCompletionsResponseMultipleChoices, "2024-02-15-preview");
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "ModelStream",
+            OpenAIFakeResponses.FakeStreamingChatCompletionsResponseMultipleChoices, "2024-02-15-preview");
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-azure.localtest.me"),
@@ -81,13 +83,13 @@ public class multiple_choice_responses : IClassFixture<TestWebApplicationFactory
 
         completions.GetRawResponse().Headers.TryGetValue("x-aicentral-test-diagnostics", out var key); 
         await Task.Yield(); //give asp.net time to finish up
-        await Verify(_factory.VerifyRequestsAndResponses(completions.GetRawResponse(), true));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(completions.GetRawResponse(), true));
     }
     
  
     public void Dispose()
     {
-        _factory.Clear();
+        _factory.Services.ClearSeededMessages();
     }
     
 }

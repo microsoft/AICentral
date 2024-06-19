@@ -1,8 +1,10 @@
 using System.Net;
 using System.Text;
+using AICentralOpenAIMock;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Newtonsoft.Json;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -24,11 +26,11 @@ public class the_token_rate_limiter : IClassFixture<TestWebApplicationFactory<Pr
     [Fact]
     public async Task rate_limits()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "random",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse(50)));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "random",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse(50)));
 
         Task<HttpResponseMessage> Call() => _httpClient.PostAsync(
-            $"http://azure-with-token-rate-limiter.localtest.me/openai/deployments/random/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
+            $"http://azure-with-token-rate-limiter.localtest.me/openai/deployments/random/chat/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}",
             new StringContent(
                 JsonConvert.SerializeObject(new
                 {
@@ -49,12 +51,12 @@ public class the_token_rate_limiter : IClassFixture<TestWebApplicationFactory<Pr
     [Fact]
     public async Task rate_limits_by_consumer()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "random",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "random",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
 
         Task<HttpResponseMessage> Call(string apiKey) => _httpClient.SendAsync(
             new HttpRequestMessage(HttpMethod.Post,
-                $"http://azure-with-client-partitioned-token-rate-limiter.localtest.me/openai/deployments/random/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}")
+                $"http://azure-with-client-partitioned-token-rate-limiter.localtest.me/openai/deployments/random/chat/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}")
             {
                 Headers = { { "api-key", apiKey } },
                 Content = new StringContent(

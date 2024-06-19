@@ -29,6 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\OpenAIMockServer\OpenAIMockServer.csproj" />
       <ProjectReference Include="..\AICentralWeb\AICentralWeb.csproj" />
       <ProjectReference Include="..\AICentral\AICentral.csproj" />
     </ItemGroup>
@@ -52,12 +53,9 @@
 
     <ItemGroup>
       <None Remove="Assets\Recording.m4a" />
-        <EmbeddedResource Include="Assets\FakeOpenAIStreamingResponse.testcontent.txt" />
-        <EmbeddedResource Include="Assets\FakeOpenAIStreamingResponseMultipleChoices.testcontent.txt" />
-        <EmbeddedResource Include="Assets\FakeStreamingCompletionsResponse.testcontent.txt" />
-        <EmbeddedResource Include="Assets\FakeStreamingResponse-completions.with-token-counts.txt" />
-        <EmbeddedResource Include="Assets\FakeStreamingResponse.testcontent.txt" />
-        <EmbeddedResource Include="Assets\FakeStreamingResponse.with-token-counts.txt" />
+    </ItemGroup>
+
+    <ItemGroup>
       <EmbeddedResource Include="Assets\Recording.m4a" />
     </ItemGroup>
 

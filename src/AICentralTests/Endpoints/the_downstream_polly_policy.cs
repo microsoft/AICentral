@@ -1,7 +1,9 @@
 ﻿using System.Net;
+using AICentralOpenAIMock;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Microsoft.Extensions.DependencyInjection;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -9,6 +11,8 @@ namespace AICentralTests.Endpoints;
 
 public class the_downstream_polly_policy : IClassFixture<TestWebApplicationFactory<Program>>
 {
+
+    
     private readonly TestWebApplicationFactory<Program> _factory;
     private readonly HttpClient _httpClient;
 
@@ -22,11 +26,11 @@ public class the_downstream_polly_policy : IClassFixture<TestWebApplicationFacto
     [Fact]
     public async Task will_not_retry_429_until_retry_after_has_passed()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
-            () => Task.FromResult(AICentralFakeResponses.RateLimitResponse(TimeSpan.FromSeconds(5))));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "Model1",
+            () => Task.FromResult(OpenAIFakeResponses.RateLimitResponse(TimeSpan.FromSeconds(5))));
 
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200Number2, "Model1",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200Number2, "Model1",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
 
         var fakeDateTimeProvider = _factory.Services.GetRequiredService<FakeDateTimeProvider>();
 
@@ -35,6 +39,8 @@ public class the_downstream_polly_policy : IClassFixture<TestWebApplicationFacto
         for (var i = 0; i < 10; i++)
         {
             var responseStart = await _httpClient.PostChatCompletions("azure-to-azure-openai");
+
+            
             responseStart.StatusCode.ShouldBe(HttpStatusCode.OK); //should always succeed
             hitBadServer = responseStart.Headers.Contains("x-aicentral-failed-servers");
             if (hitBadServer) break;
@@ -46,7 +52,7 @@ public class the_downstream_polly_policy : IClassFixture<TestWebApplicationFacto
         var responseWhenLimited = await _httpClient.PostChatCompletions("azure-to-azure-openai");
         responseWhenLimited.StatusCode.ShouldBe(HttpStatusCode.OK); //should always succeed
         responseWhenLimited.Headers.GetValues("x-aicentral-server").Single()
-            .ShouldBe(AICentralFakeResponses.Endpoint200Number2);
+            .ShouldBe(TestPipelines.Endpoint200Number2);
         responseWhenLimited.Headers.Contains("x-aicentral-failed-servers").ShouldBeFalse();
 
         //advance past the rate-limit

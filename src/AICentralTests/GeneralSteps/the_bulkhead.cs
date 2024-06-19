@@ -1,8 +1,10 @@
 using System.Net;
 using System.Text;
+using AICentralOpenAIMock;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Newtonsoft.Json;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -25,7 +27,7 @@ public class the_bulkhead : IClassFixture<TestWebApplicationFactory<Program>>
         Interlocked.Increment(ref _bulkHeadCount);
         await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
         Interlocked.Decrement(ref _bulkHeadCount);
-        return AICentralFakeResponses.FakeCompletionsResponse();
+        return OpenAIFakeResponses.FakeCompletionsResponse();
     }
 
     public the_bulkhead(TestWebApplicationFactory<Program> factory, ITestOutputHelper testOutputHelper)
@@ -38,11 +40,11 @@ public class the_bulkhead : IClassFixture<TestWebApplicationFactory<Program>>
     [Fact]
     public async Task can_buffer_requests_at_the_pipeline_layer_to_reduce_endpoint_pressure()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "Model1",
             () => BulkheadResponse(new CancellationToken()));
 
         var allResponses = await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => _httpClient.PostAsync(
-            $"https://azure-with-bulkhead.localtest.me/openai/deployments/Model1/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
+            $"https://azure-with-bulkhead.localtest.me/openai/deployments/Model1/chat/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -59,11 +61,11 @@ public class the_bulkhead : IClassFixture<TestWebApplicationFactory<Program>>
     [Fact]
     public async Task can_buffer_requests_at_the_endpoint_layer_to_reduce_endpoint_pressure()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "Model1",
             () => BulkheadResponse(new CancellationToken()));
 
         var allResponses = await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => _httpClient.PostAsync(
-            $"https://azure-with-bulkhead-on-endpoint.localtest.me/openai/deployments/Model1/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
+            $"https://azure-with-bulkhead-on-endpoint.localtest.me/openai/deployments/Model1/chat/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]

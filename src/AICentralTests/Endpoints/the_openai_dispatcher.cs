@@ -1,11 +1,13 @@
 ﻿using System.Net;
 using System.Text;
+using AICentralOpenAIMock;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
 using Newtonsoft.Json;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -28,8 +30,8 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
     [Fact]
     public async Task can_proxy_a_azure_dall_e_2_request_to_openai()
     {
-        _factory.Seed("https://api.openai.com/v1/images/generations",
-            () => Task.FromResult(AICentralFakeResponses.FakeOpenAIDALLE3ImageResponse()));
+        _factory.Services.Seed("https://api.openai.com/v1/images/generations",
+            () => Task.FromResult(OpenAIFakeResponses.FakeOpenAIDALLE3ImageResponse()));
 
         //DALLE-2 is no longer reachable with the latest SDK!
         var response = await _httpClient.PostAsync(
@@ -39,14 +41,14 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
                 "application/json"));
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        await Verify(_factory.VerifyRequestsAndResponses(response));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(response));
     }
 
     [Fact]
     public async Task can_dispatch_chat_completions_to_an_openai_pipeline()
     {
-        _factory.Seed("https://api.openai.com/v1/chat/completions",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        _factory.Services.Seed("https://api.openai.com/v1/chat/completions",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-openai.localtest.me"),
@@ -61,14 +63,14 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
             new ChatRequestAssistantMessage("")
         }));
 
-        await Verify(_factory.VerifyRequestsAndResponses(response));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(response));
     }
 
     [Fact]
     public async Task will_forward_whisper_transcription_requests_to_openai()
     {
-        _factory.Seed($"https://api.openai.com/v1/audio/transcriptions",
-            () => Task.FromResult(AICentralFakeResponses.FakeOpenAIAudioTranscriptionResponse()));
+        _factory.Services.Seed($"https://api.openai.com/v1/audio/transcriptions",
+            () => Task.FromResult(OpenAIFakeResponses.FakeOpenAIAudioTranscriptionResponse()));
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-openai.localtest.me"),
@@ -90,16 +92,16 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
                 AudioData = await BinaryData.FromStreamAsync(stream)
             });
 
-        await Verify(_factory.VerifyRequestsAndResponses(result));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(result));
     }
 
     [Fact]
     public async Task will_forward_whisper_transcription_requests_to_openai_with_a_failed_endpoints()
     {
-        _factory.Seed($"https://api.openai.com/v1/audio/transcriptions",
+        _factory.Services.Seed($"https://api.openai.com/v1/audio/transcriptions",
             req => req.Headers.Authorization?.Parameter == "ignore-fake-key-4323431"
-                ? Task.FromResult(AICentralFakeResponses.FakeOpenAIAudioTranscriptionResponse())
-                : Task.FromResult(AICentralFakeResponses.NotFoundResponse()));
+                ? Task.FromResult(OpenAIFakeResponses.FakeOpenAIAudioTranscriptionResponse())
+                : Task.FromResult(OpenAIFakeResponses.NotFoundResponse()));
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-multiple-openai.localtest.me"),
@@ -121,14 +123,14 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
                 AudioData = await BinaryData.FromStreamAsync(stream)
             });
 
-        await Verify(_factory.VerifyRequestsAndResponses(result));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(result));
     }
 
     [Fact]
     public async Task will_forward_whisper_translation_requests_to_openai()
     {
-        _factory.Seed($"https://api.openai.com/v1/audio/translations",
-            () => Task.FromResult(AICentralFakeResponses.FakeOpenAIAudioTranslationResponse()));
+        _factory.Services.Seed($"https://api.openai.com/v1/audio/translations",
+            () => Task.FromResult(OpenAIFakeResponses.FakeOpenAIAudioTranslationResponse()));
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-openai.localtest.me"),
@@ -157,8 +159,8 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
     [Fact]
     public async Task will_forward_dalle3_requests_to_openai()
     {
-        _factory.Seed($"https://api.openai.com/v1/images/generations",
-            () => Task.FromResult(AICentralFakeResponses.FakeOpenAIDALLE3ImageResponse()));
+        _factory.Services.Seed($"https://api.openai.com/v1/images/generations",
+            () => Task.FromResult(OpenAIFakeResponses.FakeOpenAIDALLE3ImageResponse()));
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-openai.localtest.me"),
@@ -176,13 +178,13 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
                 DeploymentName = "random"
             });
 
-        await Verify(_factory.VerifyRequestsAndResponses(result));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(result));
     }
     
     [Fact]
     public async Task can_handle_streaming_calls()
     {
-        _factory.Seed("https://api.openai.com/v1/chat/completions", AICentralFakeResponses.FakeOpenAIStreamingCompletionsResponse);
+        _factory.Services.Seed("https://api.openai.com/v1/chat/completions", OpenAIFakeResponses.FakeOpenAIStreamingCompletionsResponse);
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-openai.localtest.me"),
@@ -205,13 +207,13 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
             output.Append(completion.ContentUpdate);
         }
 
-        await Verify(_factory.VerifyRequestsAndResponses(output));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(output));
     }
 
     [Fact]
     public async Task will_return_a_second_endpoint_when_no_model_mapping_on_the_first()
     {
-        _factory.Seed("https://api.openai.com/v1/chat/completions", () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        _factory.Services.Seed("https://api.openai.com/v1/chat/completions", () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
         
  
         var client = new OpenAIClient(
@@ -227,12 +229,12 @@ public class the_openai_dispatcher : IClassFixture<TestWebApplicationFactory<Pro
             new ChatRequestAssistantMessage("")
         }));
 
-        await Verify(_factory.VerifyRequestsAndResponses(response.Value));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(response.Value));
         
     }
 
     public void Dispose()
     {
-        _factory.Clear();
+        _factory.Services.ClearSeededMessages();
     }
 }

@@ -1,8 +1,10 @@
 using System.Net;
 using System.Text;
+using AICentralOpenAIMock;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Newtonsoft.Json;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -24,15 +26,15 @@ public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationF
     [Fact]
     public async Task fails_over_to_a_successful_endpoint()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint500, "Model1",
-            () => Task.FromResult(AICentralFakeResponses.InternalServerErrorResponse()));
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint404, "Model1",
-            () => Task.FromResult(AICentralFakeResponses.NotFoundResponse()));
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint500, "Model1",
+            () => Task.FromResult(OpenAIFakeResponses.InternalServerErrorResponse()));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint404, "Model1",
+            () => Task.FromResult(OpenAIFakeResponses.NotFoundResponse()));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "Model1",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
 
         var result = await _httpClient
-            .PostAsync($"http://azure-noauth-priority.localtest.me/openai/deployments/Model1/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
+            .PostAsync($"http://azure-noauth-priority.localtest.me/openai/deployments/Model1/chat/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -47,14 +49,14 @@ public class the_prioritised_endpoint_picker : IClassFixture<TestWebApplicationF
         
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
         
-        result.Headers.GetValues("x-aicentral-failed-servers").ShouldContain(AICentralFakeResponses.Endpoint404);
-        result.Headers.GetValues("x-aicentral-failed-servers").ShouldContain(AICentralFakeResponses.Endpoint500);
+        result.Headers.GetValues("x-aicentral-failed-servers").ShouldContain(TestPipelines.Endpoint404);
+        result.Headers.GetValues("x-aicentral-failed-servers").ShouldContain(TestPipelines.Endpoint500);
 
-        result.Headers.GetValues("x-aicentral-server").Single().ShouldBe(AICentralFakeResponses.Endpoint200);
+        result.Headers.GetValues("x-aicentral-server").Single().ShouldBe(TestPipelines.Endpoint200);
     }
 
     public void Dispose()
     {
-        _factory.Clear();
+        _factory.Services.ClearSeededMessages();
     }
 }

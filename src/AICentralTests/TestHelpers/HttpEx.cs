@@ -1,14 +1,15 @@
 ﻿using System.Text;
 using Newtonsoft.Json;
+using OpenAIMock;
 
 namespace AICentralTests.TestHelpers;
 
-public static class AICentralTestEx
+internal static class HttpEx
 {
     public static Task<HttpResponseMessage> PostChatCompletions(this HttpClient client, string endpointName, string modelName = "Model1")
     {
         return client.PostAsync(
-            $"https://{endpointName}.localtest.me/openai/deployments/Model1/chat/completions?api-version={OpenAIClientApiVersion}",
+            $"https://{endpointName}.localtest.me/openai/deployments/{modelName}/chat/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -19,6 +20,4 @@ public static class AICentralTestEx
                 max_tokens = 5
             }), Encoding.UTF8, "application/json"));
     }
-    
-    public const string OpenAIClientApiVersion = "2024-04-01-preview";
 }
