@@ -29,7 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AICentralOpenAITestExtensions\AICentralOpenAITestExtensions.csproj" />
+      <ProjectReference Include="..\AICentral.OpenAITestExtensions\AICentral.OpenAITestExtensions.csproj" />
       <ProjectReference Include="..\AICentralWeb\AICentralWeb.csproj" />
       <ProjectReference Include="..\AICentral\AICentral.csproj" />
     </ItemGroup>

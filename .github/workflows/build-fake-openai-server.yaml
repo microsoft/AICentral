@@ -5,12 +5,12 @@ on:
     branches:
       - main
     paths:
-      - 'src/AICentralOpenAITestExtensions/**'
+      - 'src/AICentral.OpenAITestExtensions/**'
   pull_request:
     branches:
       - main
     paths:
-      - 'src/AICentralOpenAITestExtensions/**'
+      - 'src/AICentral.OpenAITestExtensions/**'
   workflow_dispatch:
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
           useConfigFile: true
 
       - name: Pack Nuget
-        run: dotnet pack ./src/AICentralOpenAITestExtensions/AICentralOpenAITestExtensions.csproj -p:Version=${{ steps.gitversion.outputs.NuGetVersionV2 }} --output ./publish/
+        run: dotnet pack ./src/AICentral.OpenAITestExtensions/AICentral.OpenAITestExtensions.csproj -p:Version=${{ steps.gitversion.outputs.NuGetVersionV2 }} --output ./publish/
       
       - name: Publish to Nuget ${{ steps.gitversion.outputs.NuGetVersionV2 }}
-        run: dotnet nuget push ./publish/AICentralOpenAITestExtensions.${{ steps.gitversion.outputs.NuGetVersionV2 }}.nupkg  --api-key ${{ secrets.NUGET_PUBLISH_KEY }} --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./publish/AICentral.OpenAITestExtensions.${{ steps.gitversion.outputs.NuGetVersionV2 }}.nupkg  --api-key ${{ secrets.NUGET_PUBLISH_KEY }} --source https://api.nuget.org/v3/index.json

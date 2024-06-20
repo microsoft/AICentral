@@ -4,6 +4,8 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AssemblyName>AICentral.OpenAITestExtensions</AssemblyName>
+        <RootNamespace>AICentral.OpenAITestExtensions</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

@@ -241,7 +241,7 @@ public static class OpenAIFakeResponses
         using var stream =
             new StreamReader(
                 typeof(OpenAIFakeResponses).Assembly.GetManifestResourceStream(
-                    "AICentralOpenAITestExtensions.Assets.FakeStreamingResponse.testcontent.txt")!);
+                    "AICentral.OpenAITestExtensions.Assets.FakeStreamingResponse.testcontent.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
@@ -317,7 +317,7 @@ public static class OpenAIFakeResponses
         using var stream =
             new StreamReader(
                 typeof(OpenAIFakeResponses).Assembly.GetManifestResourceStream(
-                    "AICentralOpenAITestExtensions.Assets.FakeOpenAIStreamingResponseMultipleChoices.testcontent.txt")!);
+                    "AICentral.OpenAITestExtensions.Assets.FakeOpenAIStreamingResponseMultipleChoices.testcontent.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
@@ -332,7 +332,7 @@ public static class OpenAIFakeResponses
         using var stream =
             new StreamReader(
                 typeof(OpenAIFakeResponses).Assembly.GetManifestResourceStream(
-                    "AICentralOpenAITestExtensions.Assets.FakeStreamingCompletionsResponse.testcontent.txt")!);
+                    "AICentral.OpenAITestExtensions.Assets.FakeStreamingCompletionsResponse.testcontent.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
@@ -347,7 +347,7 @@ public static class OpenAIFakeResponses
         using var stream =
             new StreamReader(
                 typeof(OpenAIFakeResponses).Assembly.GetManifestResourceStream(
-                    "AICentralOpenAITestExtensions.Assets.FakeStreamingResponse.with-token-counts.txt")!);
+                    "AICentral.OpenAITestExtensions.Assets.FakeStreamingResponse.with-token-counts.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
@@ -362,7 +362,7 @@ public static class OpenAIFakeResponses
         using var stream =
             new StreamReader(
                 typeof(OpenAIFakeResponses).Assembly.GetManifestResourceStream(
-                    "AICentralOpenAITestExtensions.Assets.FakeStreamingResponse-completions.with-token-counts.txt")!);
+                    "AICentral.OpenAITestExtensions.Assets.FakeStreamingResponse-completions.with-token-counts.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
@@ -377,7 +377,7 @@ public static class OpenAIFakeResponses
         using var stream =
             new StreamReader(
                 typeof(OpenAIFakeResponses).Assembly.GetManifestResourceStream(
-                    "AICentralOpenAITestExtensions.Assets.FakeOpenAIStreamingResponse.testcontent.txt")!);
+                    "AICentral.OpenAITestExtensions.Assets.FakeOpenAIStreamingResponse.testcontent.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
