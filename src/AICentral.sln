@@ -66,7 +66,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentralExtensionsWeb", "A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aspire", "aspire", "{F9819AC6-DE12-4B91-8429-7CB53DC03E64}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenAIMockServer", "OpenAIMockServer\OpenAIMockServer.csproj", "{70430FEE-5DE2-42EA-A6CC-780BB1873E34}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentralOpenAITestExtensions", "AICentralOpenAITestExtensions\AICentralOpenAITestExtensions.csproj", "{70430FEE-5DE2-42EA-A6CC-780BB1873E34}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
