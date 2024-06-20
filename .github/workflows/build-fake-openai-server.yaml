@@ -39,4 +39,4 @@ jobs:
         run: dotnet pack ./src/AICentralOpenAITestExtensions/AICentralOpenAITestExtensions.csproj -p:Version=${{ steps.gitversion.outputs.NuGetVersionV2 }} --output ./publish/
       
       - name: Publish to Nuget ${{ steps.gitversion.outputs.NuGetVersionV2 }}
-        run: dotnet nuget push ./publish/AzureOpenAITestExtensions.${{ steps.gitversion.outputs.NuGetVersionV2 }}.nupkg  --api-key ${{ secrets.NUGET_PUBLISH_KEY }} --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./publish/AICentralOpenAITestExtensions.${{ steps.gitversion.outputs.NuGetVersionV2 }}.nupkg  --api-key ${{ secrets.NUGET_PUBLISH_KEY }} --source https://api.nuget.org/v3/index.json
