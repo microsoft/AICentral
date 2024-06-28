@@ -1,6 +1,5 @@
 using System.Net;
 using System.Text;
-using AICentralOpenAIMock;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Azure;

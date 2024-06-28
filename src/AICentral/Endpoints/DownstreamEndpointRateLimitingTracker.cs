@@ -20,7 +20,16 @@ internal class DownstreamEndpointRateLimitingTracker
         DateTimeOffset retryAt = _dateTimeProvider.Now.AddSeconds(15);
         if (until != null && (until.Date != null || until.Delta != null))
         {
-            retryAt = until.Date ?? _dateTimeProvider.Now.Add(until.Delta!.Value);
+            var timeBeforeRetry = until.Date == null ? until.Delta!.Value : until.Date!.Value - _dateTimeProvider.Now;
+            if (timeBeforeRetry > TimeSpan.FromHours(1))
+            {
+                //sometimes we get wobbly responses back with extremely large retry times. Ignore this and wait for something more sensible!
+                return;
+            }
+            else
+            {
+                retryAt = until.Date ?? _dateTimeProvider.Now.Add(until.Delta!.Value);
+            }
         }
 
         _rateLimiters.AddOrUpdate(serverName, retryAt, (_, lastUpdate) => lastUpdate > retryAt ? lastUpdate : retryAt);
