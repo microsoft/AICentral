@@ -1,8 +1,10 @@
 using System.Net;
 using System.Text;
+using AICentralOpenAIMock;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Newtonsoft.Json;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -24,12 +26,12 @@ public class the_random_endpoint_picker : IClassFixture<TestWebApplicationFactor
     [Fact]
     public async Task works_with_a_single_endpoint()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "random",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200Number2, "random",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "random",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200Number2, "random",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
 
-        var result = await _httpClient.PostAsync($"http://azure-to-azure-openai.localtest.me/openai/deployments/random/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
+        var result = await _httpClient.PostAsync($"http://azure-to-azure-openai.localtest.me/openai/deployments/random/chat/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]

@@ -1,9 +1,11 @@
-﻿using AICentralTests.TestHelpers;
+﻿using AICentralOpenAIMock;
+using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.AI.OpenAI.Assistants;
 using Azure.Core.Pipeline;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -25,21 +27,21 @@ public class the_affinity_step : IClassFixture<TestWebApplicationFactory<Program
     [Fact]
     public async Task can_add_affinity_to_requests_to_allow_stateful_services_like_assistants()
     {
-        _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200}/openai/assistants/ass-assistant-123-out?api-version=2024-02-15-preview",
-            () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIAssistantResponse("ass-assistant-123-out")));
+        _factory.Services.Seed(
+            $"https://{TestPipelines.Endpoint200}/openai/assistants/ass-assistant-123-out?api-version=2024-02-15-preview",
+            () => Task.FromResult(OpenAIFakeResponses.FakeAzureOpenAIAssistantResponse("ass-assistant-123-out")));
 
-        _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/assistants/ass-assistant-123-out?api-version=2024-02-15-preview",
-            () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIAssistantResponse("ass-assistant-123-out")));
+        _factory.Services.Seed(
+            $"https://{TestPipelines.Endpoint200Number2}/openai/assistants/ass-assistant-123-out?api-version=2024-02-15-preview",
+            () => Task.FromResult(OpenAIFakeResponses.FakeAzureOpenAIAssistantResponse("ass-assistant-123-out")));
 
-        _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200}/openai/threads/thread-1/messages?api-version=2024-02-15-preview",
-            () => Task.FromResult(AICentralFakeResponses.FakeMessageResponse("thread-123")));
+        _factory.Services.Seed(
+            $"https://{TestPipelines.Endpoint200}/openai/threads/thread-1/messages?api-version=2024-02-15-preview",
+            () => Task.FromResult(OpenAIFakeResponses.FakeMessageResponse("thread-123")));
 
-        _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/threads/thread-1/messages?api-version=2024-02-15-preview",
-            () => Task.FromResult(AICentralFakeResponses.FakeMessageResponse("thread-123")));
+        _factory.Services.Seed(
+            $"https://{TestPipelines.Endpoint200Number2}/openai/threads/thread-1/messages?api-version=2024-02-15-preview",
+            () => Task.FromResult(OpenAIFakeResponses.FakeMessageResponse("thread-123")));
 
         _httpClient.DefaultRequestHeaders.Add("x-aicentral-affinity-key", "asdfasdfasd");
         

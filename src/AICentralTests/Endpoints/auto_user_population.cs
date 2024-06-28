@@ -1,8 +1,10 @@
-﻿using AICentralTests.TestHelpers;
+﻿using AICentralOpenAIMock;
+using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -25,8 +27,8 @@ public class auto_user_population : IClassFixture<TestWebApplicationFactory<Prog
     [Fact]
     public async Task can_add_user_id()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "mapped",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "mapped",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
 
         var client = new OpenAIClient(
             new Uri("http://azure-with-auto-populate-user.localtest.me"),
@@ -44,14 +46,14 @@ public class auto_user_population : IClassFixture<TestWebApplicationFactory<Prog
             });
 
         result.GetRawResponse().Status.ShouldBe(200);
-        await Verify(_factory.VerifyRequestsAndResponses(result.GetRawResponse(), true));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(result.GetRawResponse(), true));
     }
 
     [Fact]
     public async Task will_not_overwrite_existing_user_id()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "mapped",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "mapped",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
 
         var client = new OpenAIClient(
             new Uri("http://azure-with-auto-populate-user.localtest.me"),
@@ -70,11 +72,11 @@ public class auto_user_population : IClassFixture<TestWebApplicationFactory<Prog
             });
 
         result.GetRawResponse().Status.ShouldBe(200);
-        await Verify(_factory.VerifyRequestsAndResponses(result.GetRawResponse(), true));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(result.GetRawResponse(), true));
     }
 
     public void Dispose()
     {
-        _factory.Clear();
+        _factory.Services.ClearSeededMessages();
     }
 }

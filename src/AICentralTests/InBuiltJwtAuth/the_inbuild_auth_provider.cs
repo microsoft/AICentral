@@ -1,11 +1,13 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using AICentral.ConsumerAuth.AICentralJWT;
+using AICentralOpenAIMock;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -47,8 +49,8 @@ public class the_inbuild_auth_provider : IClassFixture<TestWebApplicationFactory
         var tokens = (await tokensResponse.Content.ReadFromJsonAsync<AICentralJwtProviderResponse>())!;
         tokens.Tokens.Length.ShouldBe(4);
 
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "random",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "random",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
 
         var client = new OpenAIClient(
             new Uri("http://azure-openai-to-azure-with_custom_jwt.localtest.me"),
@@ -103,8 +105,8 @@ public class the_inbuild_auth_provider : IClassFixture<TestWebApplicationFactory
     [Fact]
     public async Task will_generate_tokens_based_on_wildcard()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "random",
-            () => Task.FromResult(AICentralFakeResponses.FakeChatCompletionsResponse()));
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "random",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
 
         var request = new HttpRequestMessage(HttpMethod.Post,
             "https://not-used-for-tokens/aicentraljwt/jwt2/tokens")

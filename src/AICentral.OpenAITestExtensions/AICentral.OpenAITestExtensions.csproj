@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AssemblyName>AICentral.OpenAITestExtensions</AssemblyName>
+        <RootNamespace>AICentral.OpenAITestExtensions</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+      <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Include="Assets\FakeOpenAIStreamingResponse.testcontent.txt" />
+      <EmbeddedResource Include="Assets\FakeOpenAIStreamingResponseMultipleChoices.testcontent.txt" />
+      <EmbeddedResource Include="Assets\FakeStreamingCompletionsResponse.testcontent.txt" />
+      <EmbeddedResource Include="Assets\FakeStreamingResponse-completions.with-token-counts.txt" />
+      <EmbeddedResource Include="Assets\FakeStreamingResponse.testcontent.txt" />
+      <EmbeddedResource Include="Assets\FakeStreamingResponse.with-token-counts.txt" />
+    </ItemGroup>
+
+</Project>

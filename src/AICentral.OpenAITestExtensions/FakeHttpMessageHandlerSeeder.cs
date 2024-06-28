@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace AICentralTests.TestHelpers;
+namespace OpenAIMock;
 
 public class FakeHttpMessageHandlerSeeder
 {
@@ -29,7 +29,7 @@ public class FakeHttpMessageHandlerSeeder
     }
 
     public void SeedChatCompletions(string endpoint, string modelName, Func<Task<HttpResponseMessage>> response,
-        string apiVersion = AICentralTestEx.OpenAIClientApiVersion)
+        string apiVersion = OpenAITestEx.OpenAIClientApiVersion)
     {
         var url = $"https://{endpoint}/openai/deployments/{modelName}/chat/completions?api-version={apiVersion}";
         if (SeededResponses.ContainsKey(url)) SeededResponses.Remove(url, out _);
@@ -37,7 +37,7 @@ public class FakeHttpMessageHandlerSeeder
     }
 
     public void SeedCompletions(string endpoint, string modelName, Func<Task<HttpResponseMessage>> response,
-        string apiVersion = AICentralTestEx.OpenAIClientApiVersion)
+        string apiVersion = OpenAITestEx.OpenAIClientApiVersion)
     {
         var url = $"https://{endpoint}/openai/deployments/{modelName}/completions?api-version={apiVersion}";
         if (SeededResponses.ContainsKey(url)) SeededResponses.Remove(url, out _);

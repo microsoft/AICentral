@@ -1,9 +1,11 @@
 ﻿using System.Net;
 using System.Text;
 using AICentral;
+using AICentralOpenAIMock;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Argon;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -28,11 +30,11 @@ public class the_streaming_endpoints : IClassFixture<TestWebApplicationFactory<P
     [Fact]
     public async Task report_tokens_as_trailer_for_chat_completions()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
-            AICentralFakeResponses.FakeStreamingChatCompletionsResponse);
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "Model1",
+            OpenAIFakeResponses.FakeStreamingChatCompletionsResponse);
 
         var result = await _httpClient.PostAsync(
-            $"http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
+            $"http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/chat/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -52,11 +54,11 @@ public class the_streaming_endpoints : IClassFixture<TestWebApplicationFactory<P
     [Fact]
     public async Task report_tokens_as_trailer_for_completions()
     {
-        _factory.SeedCompletions(AICentralFakeResponses.Endpoint200, "Model1",
-            AICentralFakeResponses.FakeStreamingCompletionsResponse);
+        _factory.Services.SeedCompletions(TestPipelines.Endpoint200, "Model1",
+            OpenAIFakeResponses.FakeStreamingCompletionsResponse);
 
         var result = await _httpClient.PostAsync(
-            $"http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
+            $"http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 prompt = new[] { "You are a helpful assistant." },
@@ -71,11 +73,11 @@ public class the_streaming_endpoints : IClassFixture<TestWebApplicationFactory<P
     [Fact]
     public async Task will_use_reported_token_counts_when_streaming()
     {
-        _factory.SeedChatCompletions(AICentralFakeResponses.Endpoint200, "Model1",
-            AICentralFakeResponses.FakeStreamingChatCompletionsResponseWithTokenCounts);
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "Model1",
+            OpenAIFakeResponses.FakeStreamingChatCompletionsResponseWithTokenCounts);
 
         var result = await _httpClient.PostAsync(
-            $"http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
+            $"http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/chat/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 messages = new[]
@@ -90,17 +92,17 @@ public class the_streaming_endpoints : IClassFixture<TestWebApplicationFactory<P
             }), Encoding.UTF8, "application/json"));
 
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
-        await Verify(_factory.VerifyRequestsAndResponsesStreaming(result, true));
+        await Verify(_factory.Services.VerifyRequestsAndResponsesStreaming(result, true));
     }
 
     [Fact]
     public async Task will_use_reported_token_counts_when_streaming_completions()
     {
-        _factory.SeedCompletions(AICentralFakeResponses.Endpoint200, "Model1",
-            AICentralFakeResponses.FakeStreamingCompletionsResponseWithTokenCounts);
+        _factory.Services.SeedCompletions(TestPipelines.Endpoint200, "Model1",
+            OpenAIFakeResponses.FakeStreamingCompletionsResponseWithTokenCounts);
 
         var result = await _httpClient.PostAsync(
-            $"http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
+            $"http://azure-openai-to-azure.localtest.me/openai/deployments/Model1/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}",
             new StringContent(JsonConvert.SerializeObject(new
             {
                 prompt = new[]
@@ -115,11 +117,11 @@ public class the_streaming_endpoints : IClassFixture<TestWebApplicationFactory<P
             }), Encoding.UTF8, "application/json"));
 
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
-        await Verify(_factory.VerifyRequestsAndResponsesStreaming(result, true));
+        await Verify(_factory.Services.VerifyRequestsAndResponsesStreaming(result, true));
     }
 
     public void Dispose()
     {
-        _factory.Clear();
+        _factory.Services.ClearSeededMessages();
     }
 }

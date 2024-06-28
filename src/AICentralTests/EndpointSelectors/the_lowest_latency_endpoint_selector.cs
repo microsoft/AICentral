@@ -1,7 +1,9 @@
 ﻿using System.Text;
+using AICentralOpenAIMock;
 using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Newtonsoft.Json;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -23,22 +25,22 @@ public class the_lowest_latency_endpoint_selector : IClassFixture<TestWebApplica
     public async Task finds_the_lowest_latency_endpoint()
     {
         var rnd = new Random(Environment.TickCount);
-        _factory.SeedChatCompletions(AICentralFakeResponses.FastEndpoint, "random", async () =>
+        _factory.Services.SeedChatCompletions(TestPipelines.FastEndpoint, "random", async () =>
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(0, 5)));
-                return AICentralFakeResponses.FakeChatCompletionsResponse();
+                return OpenAIFakeResponses.FakeChatCompletionsResponse();
             });
-        _factory.SeedChatCompletions(AICentralFakeResponses.SlowEndpoint, "random", async () =>
+        _factory.Services.SeedChatCompletions(TestPipelines.SlowEndpoint, "random", async () =>
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(25, 60)));
-                return AICentralFakeResponses.FakeChatCompletionsResponse();
+                return OpenAIFakeResponses.FakeChatCompletionsResponse();
             });
 
         var results = await Task.WhenAll(Enumerable.Range(0, 100).Select(async _ =>
         {
             await Task.Delay(rnd.Next(0, 25));
             return await _httpClient.PostAsync(
-                $"http://lowest-latency-tester.localtest.me/openai/deployments/random/chat/completions?api-version={AICentralTestEx.OpenAIClientApiVersion}",
+                $"http://lowest-latency-tester.localtest.me/openai/deployments/random/chat/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}",
                 new StringContent(JsonConvert.SerializeObject(new
                 {
                     messages = new[]
@@ -49,8 +51,8 @@ public class the_lowest_latency_endpoint_selector : IClassFixture<TestWebApplica
                 }), Encoding.UTF8, "application/json"));
         }));
 
-        var slowEndpointCount = results.Count(x => x.Headers.GetValues("x-aicentral-server").Single().EndsWith(AICentralFakeResponses.SlowEndpoint));
-        var fastEndpointCount = results.Count(x => x.Headers.GetValues("x-aicentral-server").Single().EndsWith(AICentralFakeResponses.FastEndpoint));
+        var slowEndpointCount = results.Count(x => x.Headers.GetValues("x-aicentral-server").Single().EndsWith(TestPipelines.SlowEndpoint));
+        var fastEndpointCount = results.Count(x => x.Headers.GetValues("x-aicentral-server").Single().EndsWith(TestPipelines.FastEndpoint));
 
         fastEndpointCount.ShouldBeInRange(70, 100);
         slowEndpointCount.ShouldBeInRange(0, 30);

@@ -1,8 +1,10 @@
-﻿using AICentralTests.TestHelpers;
+﻿using AICentralOpenAIMock;
+using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Azure;
 using Azure.AI.OpenAI.Assistants;
 using Azure.Core.Pipeline;
+using OpenAIMock;
 using Xunit.Abstractions;
 
 namespace AICentralTests.Assistants;
@@ -24,13 +26,13 @@ public class open_ai_assistants : IClassFixture<TestWebApplicationFactory<Progra
     [Fact]
     public async Task can_be_mapped_to_allow_load_balancing()
     {
-        _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200}/openai/assistants/ass-assistant-123-out?api-version=2024-02-15-preview",
-            () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIAssistantResponse("ass-assistant-123-out")));
+        _factory.Services.Seed(
+            $"https://{TestPipelines.Endpoint200}/openai/assistants/ass-assistant-123-out?api-version=2024-02-15-preview",
+            () => Task.FromResult(OpenAIFakeResponses.FakeAzureOpenAIAssistantResponse("ass-assistant-123-out")));
 
-        _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/assistants/ass-assistant-123-out?api-version=2024-02-15-preview",
-            () => Task.FromResult(AICentralFakeResponses.FakeAzureOpenAIAssistantResponse("ass-assistant-123-out")));
+        _factory.Services.Seed(
+            $"https://{TestPipelines.Endpoint200Number2}/openai/assistants/ass-assistant-123-out?api-version=2024-02-15-preview",
+            () => Task.FromResult(OpenAIFakeResponses.FakeAzureOpenAIAssistantResponse("ass-assistant-123-out")));
 
         _httpClient.DefaultRequestHeaders.Add("x-aicentral-affinity-key", Guid.NewGuid().ToString());  
         var client = new AssistantsClient(
@@ -43,12 +45,12 @@ public class open_ai_assistants : IClassFixture<TestWebApplicationFactory<Progra
 
         var assistant = await client.GetAssistantAsync("assistant-in");
         
-        await Verify(_factory.VerifyRequestsAndResponses(assistant));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(assistant));
         
     }
     
     public void Dispose()
     {
-        _factory.Clear();
+        _factory.Services.ClearSeededMessages();
     }
 }

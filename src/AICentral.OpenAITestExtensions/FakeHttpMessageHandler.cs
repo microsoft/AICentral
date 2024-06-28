@@ -1,4 +1,6 @@
-﻿namespace AICentralTests.TestHelpers;
+﻿using OpenAIMock;
+
+namespace AICentralOpenAIMock;
 
 public class FakeHttpMessageHandler : HttpMessageHandler
 {

@@ -1,8 +1,10 @@
-﻿using AICentralTests.TestHelpers;
+﻿using AICentralOpenAIMock;
+using AICentralTests.TestHelpers;
 using AICentralWeb;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
+using OpenAIMock;
 using Shouldly;
 using Xunit.Abstractions;
 
@@ -12,7 +14,7 @@ public class the_pipelines_that_read_the_input_stream : IClassFixture<TestWebApp
 {
     public void Dispose()
     {
-        _factory.Clear();
+        _factory.Services.ClearSeededMessages();
     }
 
     private readonly TestWebApplicationFactory<Program> _factory;
@@ -31,13 +33,13 @@ public class the_pipelines_that_read_the_input_stream : IClassFixture<TestWebApp
     [Fact]
     public async Task can_handle_failed_downstreams()
     {
-        _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200}/openai/deployments/whisper/audio/transcriptions?api-version=2024-02-15-preview",
-            () => Task.FromResult(AICentralFakeResponses.FakeOpenAIAudioTranscriptionResponse()));
+        _factory.Services.Seed(
+            $"https://{TestPipelines.Endpoint200}/openai/deployments/whisper/audio/transcriptions?api-version=2024-02-15-preview",
+            () => Task.FromResult(OpenAIFakeResponses.FakeOpenAIAudioTranscriptionResponse()));
 
-        _factory.Seed(
-            $"https://{AICentralFakeResponses.Endpoint200Number2}/openai/deployments/whisper/audio/transcriptions?api-version=2024-02-15-preview",
-            () => Task.FromResult(AICentralFakeResponses.NotFoundResponse()));
+        _factory.Services.Seed(
+            $"https://{TestPipelines.Endpoint200Number2}/openai/deployments/whisper/audio/transcriptions?api-version=2024-02-15-preview",
+            () => Task.FromResult(OpenAIFakeResponses.NotFoundResponse()));
 
         var client = new OpenAIClient(
             new Uri("http://azure-to-azure-openai.localtest.me"),
@@ -61,6 +63,6 @@ public class the_pipelines_that_read_the_input_stream : IClassFixture<TestWebApp
         });
 
         response.Value.ShouldNotBeNull();
-        await Verify(_factory.VerifyRequestsAndResponses(response));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(response));
     }
 }

@@ -1,20 +1,101 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
-using AICentralTests.Endpoints;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
-namespace AICentralTests.TestHelpers;
+namespace OpenAIMock;
 
-public class AICentralFakeResponses
+public static class OpenAIFakeResponses
 {
-    public static readonly string Endpoint500 = Guid.NewGuid().ToString();
-    public static readonly string Endpoint404 = Guid.NewGuid().ToString();
-    public static readonly string Endpoint200 = Guid.Parse("47bae1ca-d2f0-4584-b2ac-9897e7088919").ToString();
-    public static readonly string Endpoint200Number2 = Guid.Parse("84bae1ca-d2f0-4584-b2ac-9897e708891a").ToString();
-    public static readonly string FastEndpoint = Guid.NewGuid().ToString();
-    public static readonly string SlowEndpoint = Guid.NewGuid().ToString();
     public static readonly string FakeResponseId = "chatcmpl-6v7mkQj980V1yBec6ETrKPRqFjNw9";
+
+    public static void SeedChatCompletions(
+        this IServiceProvider services,
+        string endpoint,
+        string modelName,
+        Func<Task<HttpResponseMessage>> response,
+        string apiVersion = "2024-04-01-preview")
+    {
+        services.GetRequiredService<FakeHttpMessageHandlerSeeder>()
+            .SeedChatCompletions(endpoint, modelName, response, apiVersion);
+    }
+
+    public static void SeedCompletions(
+        this IServiceProvider services,
+        string endpoint,
+        string modelName,
+        Func<Task<HttpResponseMessage>> response)
+    {
+        services.GetRequiredService<FakeHttpMessageHandlerSeeder>()
+            .SeedCompletions(endpoint, modelName, response);
+    }
+
+    public static void Seed(this IServiceProvider services, string url,
+        Func<Task<HttpResponseMessage>> response)
+    {
+        services.GetRequiredService<FakeHttpMessageHandlerSeeder>()
+            .Seed(url, _ => response());
+    }
+
+    public static void Seed(this IServiceProvider services, string url,
+        Func<HttpRequestMessage, Task<HttpResponseMessage>> response)
+    {
+        services.GetRequiredService<FakeHttpMessageHandlerSeeder>()
+            .Seed(url, response);
+    }
+
+    public static JObject[] EndpointRequests(this IServiceProvider services)
+    {
+        return services
+            .GetRequiredService<FakeHttpMessageHandlerSeeder>()
+            .IncomingRequests
+            .Select(x =>
+            {
+                var streamBytes = x.Item2;
+
+                var contentInformation = x.Item1.Content?.Headers.ContentType?.MediaType == "application/json" ||
+                                         x.Item1.Content?.Headers.ContentType?.MediaType == "text/plain"
+                    ? (object)Encoding.UTF8.GetString(streamBytes)
+                    : new
+                    {
+                        Type = x.Item1.Content?.Headers.ContentType?.MediaType, 
+                        streamBytes.Length
+                    };
+
+                return JObject.FromObject(new
+                {
+                    Uri = x.Item1.RequestUri!.PathAndQuery,
+                    Method = x.Item1.Method.ToString(),
+                    Headers = x.Item1.Headers.Where
+                        (kvp => kvp.Key != "x-ms-client-request-id" && kvp.Key != "User-Agent" &&
+                              kvp.Key != "Authorization" && kvp.Key != "OpenAI-Organization")
+                        .ToDictionary(h => h.Key, h => string.Join(';', h.Value)),
+                    ContentType = x.Item1.Content?.Headers.ContentType?.MediaType,
+                    Content = contentInformation,
+                });
+            }).ToArray();
+    }
+
+
+    public static Dictionary<string, object> VerifyRequestsAndResponses(
+        this IServiceProvider services,
+        object response)
+    {
+        var validation = new Dictionary<string, object>()
+        {
+            ["Requests"] = JsonConvert.SerializeObject(services.EndpointRequests(), Formatting.Indented),
+            ["Response"] = JsonConvert.SerializeObject(response, Formatting.Indented)
+        };
+        return validation;
+    }
+
+    public static void ClearSeededMessages(this IServiceProvider services)
+    {
+        services.GetRequiredService<FakeHttpMessageHandlerSeeder>().Clear();
+    }
+
 
     public static HttpResponseMessage FakeModelErrorResponse()
     {
@@ -159,12 +240,12 @@ public class AICentralFakeResponses
     {
         using var stream =
             new StreamReader(
-                typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
-                    "AICentralTests.Assets.FakeStreamingResponse.testcontent.txt")!);
+                typeof(OpenAIFakeResponses).Assembly.GetManifestResourceStream(
+                    "AICentral.OpenAITestExtensions.Assets.FakeStreamingResponse.testcontent.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
-        response.Content = new SSEResponse(content);
+        response.Content = new ServerSideEventResponse(content);
         response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
         response.Headers.TransferEncodingChunked = true;
         return response;
@@ -183,17 +264,17 @@ public class AICentralFakeResponses
                 prompt_tokens = 58,
                 total_tokens = 126
             },
-            data = new []
+            data = new[]
             {
-                new             
+                new
                 {
-                    embedding = new float[] { 0.1f, 0.2f, 0.3f },
+                    embedding = new [] { 0.1f, 0.2f, 0.3f },
                     index = 0,
                     @object = "embedding"
                 },
-                new             
+                new
                 {
-                    embedding = new float[] { 0.4f, 0.5f, 0.6f },
+                    embedding = new [] { 0.4f, 0.5f, 0.6f },
                     index = 1,
                     @object = "embedding"
                 }
@@ -203,7 +284,7 @@ public class AICentralFakeResponses
         return Task.FromResult(response);
     }
 
-    
+
     public static Task<HttpResponseMessage> FakeEmbeddingResponse()
     {
         var response = new HttpResponseMessage();
@@ -217,11 +298,11 @@ public class AICentralFakeResponses
                 prompt_tokens = 58,
                 total_tokens = 126
             },
-            data = new []
+            data = new[]
             {
-                new             
+                new
                 {
-                    embedding = new float[] { 0.1f, 0.2f, 0.3f },
+                    embedding = new [] { 0.1f, 0.2f, 0.3f },
                     index = 0,
                     @object = "embedding"
                 }
@@ -235,12 +316,12 @@ public class AICentralFakeResponses
     {
         using var stream =
             new StreamReader(
-                typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
-                    "AICentralTests.Assets.FakeOpenAIStreamingResponseMultipleChoices.testcontent.txt")!);
+                typeof(OpenAIFakeResponses).Assembly.GetManifestResourceStream(
+                    "AICentral.OpenAITestExtensions.Assets.FakeOpenAIStreamingResponseMultipleChoices.testcontent.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
-        response.Content = new SSEResponse(content);
+        response.Content = new ServerSideEventResponse(content);
         response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
         response.Headers.TransferEncodingChunked = true;
         return response;
@@ -250,12 +331,12 @@ public class AICentralFakeResponses
     {
         using var stream =
             new StreamReader(
-                typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
-                    "AICentralTests.Assets.FakeStreamingCompletionsResponse.testcontent.txt")!);
+                typeof(OpenAIFakeResponses).Assembly.GetManifestResourceStream(
+                    "AICentral.OpenAITestExtensions.Assets.FakeStreamingCompletionsResponse.testcontent.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
-        response.Content = new SSEResponse(content);
+        response.Content = new ServerSideEventResponse(content);
         response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
         response.Headers.TransferEncodingChunked = true;
         return response;
@@ -265,27 +346,27 @@ public class AICentralFakeResponses
     {
         using var stream =
             new StreamReader(
-                typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
-                    "AICentralTests.Assets.FakeStreamingResponse.with-token-counts.txt")!);
+                typeof(OpenAIFakeResponses).Assembly.GetManifestResourceStream(
+                    "AICentral.OpenAITestExtensions.Assets.FakeStreamingResponse.with-token-counts.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
-        response.Content = new SSEResponse(content);
+        response.Content = new ServerSideEventResponse(content);
         response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
         response.Headers.TransferEncodingChunked = true;
         return response;
     }
-    
+
     public static async Task<HttpResponseMessage> FakeStreamingCompletionsResponseWithTokenCounts()
     {
         using var stream =
             new StreamReader(
-                typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
-                    "AICentralTests.Assets.FakeStreamingResponse-completions.with-token-counts.txt")!);
+                typeof(OpenAIFakeResponses).Assembly.GetManifestResourceStream(
+                    "AICentral.OpenAITestExtensions.Assets.FakeStreamingResponse-completions.with-token-counts.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
-        response.Content = new SSEResponse(content);
+        response.Content = new ServerSideEventResponse(content);
         response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
         response.Headers.TransferEncodingChunked = true;
         return response;
@@ -295,21 +376,21 @@ public class AICentralFakeResponses
     {
         using var stream =
             new StreamReader(
-                typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
-                    "AICentralTests.Assets.FakeOpenAIStreamingResponse.testcontent.txt")!);
+                typeof(OpenAIFakeResponses).Assembly.GetManifestResourceStream(
+                    "AICentral.OpenAITestExtensions.Assets.FakeOpenAIStreamingResponse.testcontent.txt")!);
 
         var content = await stream.ReadToEndAsync();
         var response = new HttpResponseMessage();
-        response.Content = new SSEResponse(content);
+        response.Content = new ServerSideEventResponse(content);
         response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
         return response;
     }
 
-    public static HttpResponseMessage FakeAzureOpenAIImageResponse()
+    public static HttpResponseMessage FakeAzureOpenAIImageResponse(string openAiUrl)
     {
         var response = new HttpResponseMessage(HttpStatusCode.Accepted);
         response.Headers.Add("operation-location",
-            $"https://{Endpoint200}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2024-02-15-preview");
+            $"https://{openAiUrl}/openai/operations/images/f508bcf2-e651-4b4b-85a7-58ad77981ffa?api-version=2024-02-15-preview");
         response.Content = new OneTimeStreamReadHttpContent(new
         {
             id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
@@ -412,11 +493,11 @@ public class AICentralFakeResponses
         response.Content = new OneTimeStreamReadHttpContent(new
         {
             id = "f508bcf2-e651-4b4b-85a7-58ad77981ffa",
-            created = created,
+            created,
             status = "succeeded",
             result = new
             {
-                created = created,
+                created,
                 data = new[]
                 {
                     new
@@ -495,15 +576,9 @@ public class AICentralFakeResponses
         return response;
     }
 
-    private class SSEResponse : HttpContent
+    private class ServerSideEventResponse(string knownContent) : HttpContent
     {
-        private readonly string[] _knownContentLines;
-
-        public SSEResponse(string knownContent)
-        {
-            _knownContentLines = knownContent.ReplaceLineEndings("\n").Split("\n");
-            //_length = Encoding.UTF8.GetBytes(knownContent).LongLength;
-        }
+        private readonly string[] _knownContentLines = knownContent.ReplaceLineEndings("\n").Split("\n");
 
         protected override async Task SerializeToStreamAsync(Stream stream, TransportContext? context)
         {
