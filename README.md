@@ -11,6 +11,7 @@
 ### Features
 
 - Minimal overhead - written on Asp.Net Core, on dotnet 8. One of the fastest web-servers in the business.
+- Enable advanced Azure APIm scenarios such as passing a Subscription Key, and a JWT from libraries like PromptFlow that don't support that out-of-the-box.
 - Lightweight out-the-box token metrics surfaced through Open Telemetry
   - **Does not buffer and block streaming** 
   - Use for PTU Chargeback scenarios

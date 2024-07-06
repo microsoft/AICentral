@@ -30,7 +30,8 @@ All endpoints are wrapped with a Polly Policy. We
 
 > If AuthenticationType is set to ```entrapassthrough``` AICentral will expect, and forward the incoming JWT Bearer Token straight through to Azure Open AI
 
-
+> To provide a custom Authenticator, set AuthenticationType to the name of a 'BackendAuthorisers'
+ 
 ```json
 {
     "Type": "AzureOpenAIEndpoint",
@@ -76,6 +77,41 @@ All endpoints are wrapped with a Polly Policy. We
     }
 }
 ```
+
+## Backend Authorisers
+
+These allow more control over the downstream request to an Azure Open AI service.
+
+We ship with one named 'BearerPlusKey' that enables a claim on an incoming JWT to be matched to an additional piece of data.
+
+This enables out-of-the-box support for PromptFlow to use an Open AI JWT matched by AI Central, and propagated to Azure APIm along with a configured Subscription Key for the calling Identity.
+
+APIm can then apply policy at a Product level, authorise the caller using the JWT, and then use its own Identity to call Azure Open AI.
+
+> This works because Entra will provide you a token for the Azure Open AI scope (https://cognitiveservices.azure.com) regardless if you have permissions to call any Azure Open AI resources. The authorisation check is made by Azure Open AI. Not Entra.
+
+| Property             | Description                                                |
+|----------------------|------------------------------------------------------------|
+| IncomingClaimName    | Claim to use to match against the SubjectToKeyMappings.    |
+| KeyHeaderName        | Header to attach to the call to the downstream service.    |
+| SubjectToKeyMappings | Dictionary mapping incoming identities to downstream keys. |
+
+```json
+{
+    "Type": "BearerPlusKey",
+    "Name": "name-to-set-authentication-type-in-endpoint",
+    "Properties": {
+        "IncomingClaimName": "",
+        "KeyHeaderName": "backend-api-key",
+        "SubjectToKeyMappings": {
+          "<entra-identity-representing-caller-1>": "<apim-subscription-key-1>",
+          "<entra-identity-representing-caller-2>": "<apim-subscription-key-2>"
+        }
+    }
+}
+```
+
+
 
 ## Endpoint Selectors
 
