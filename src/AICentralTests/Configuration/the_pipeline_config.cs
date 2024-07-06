@@ -29,11 +29,30 @@ public class the_pipeline_config
                             Name = "test-endpoint",
                             Properties = new AzureOpenAIEndpointPropertiesConfig()
                             {
-                                ApiKey = "1234",
-                                AuthenticationType = "ApiKey",
+                                AuthenticationType = "BearerPlusKeyName",
                                 LanguageEndpoint = "https://somehere.com",
                             }
                         }
+                    },
+                    BackendAuthorisers = new []
+                    {
+                        new
+                        {
+                            Type="BearerPlusKey",
+                            Name = "BearerPlusKeyName",
+                            Properties = new
+                            {
+                                IncomingClaimName = "test",
+                                KeyHeaderName = "api-key",
+                                SubjectToKeyMappings = new
+                                {
+                                    User1 = "Key1",
+                                    User2 = "Key2",
+                                }
+                                
+                            }
+                        }
+                        
                     },
                     EndpointSelectors = new[]
                     {

@@ -57,6 +57,10 @@
 
     <ItemGroup>
       <EmbeddedResource Include="Assets\Recording.m4a" />
+      <None Remove="TestHelpers\FakeIdp\openid-configuration.json" />
+      <EmbeddedResource Include="TestHelpers\FakeIdp\openid-configuration.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
     </ItemGroup>
 
 </Project>

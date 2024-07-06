@@ -12,14 +12,21 @@ public static class TestPipelines
      public static readonly string FastEndpoint = Guid.NewGuid().ToString();
      public static readonly string SlowEndpoint = Guid.NewGuid().ToString();
 
-    public static AICentralPipelineAssembler AzureOpenAILowestLatencyEndpoint() =>
-        new TestAICentralPipelineBuilder()
-            .WithLowestLatencyEndpoints(
-                (FastEndpoint, "random", "Model1"),
-                (SlowEndpoint, "random", "Model1")
-            )
-            .WithBulkHead(5)
-            .Assemble("lowest-latency-tester.localtest.me");
+     public static AICentralPipelineAssembler TokenPlusKeyEndpoiont() =>
+         new TestAICentralPipelineBuilder()
+             .WithFakeEntraClientAuth()
+             .WithSingleEndpointBearerPlusKey(Endpoint200)
+             .WithBulkHead(5)
+             .Assemble("bearer-plus-key.localtest.me");
+
+     public static AICentralPipelineAssembler AzureOpenAILowestLatencyEndpoint() =>
+         new TestAICentralPipelineBuilder()
+             .WithLowestLatencyEndpoints(
+                 (FastEndpoint, "random", "Model1"),
+                 (SlowEndpoint, "random", "Model1")
+             )
+             .WithBulkHead(5)
+             .Assemble("lowest-latency-tester.localtest.me");
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithRateLimitingAndSingleEndpoint() =>
         new TestAICentralPipelineBuilder()

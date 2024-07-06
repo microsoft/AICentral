@@ -6,10 +6,6 @@ public class BearerTokenPassThroughAuthFactory : IEndpointAuthorisationHandlerFa
 {
     public static string ConfigName => "entrapassthrough";
 
-    public void RegisterServices(IServiceCollection services)
-    {
-    }
-
     public IEndpointAuthorisationHandler Build()
     {
         return new BearerTokenPassThroughAuth();

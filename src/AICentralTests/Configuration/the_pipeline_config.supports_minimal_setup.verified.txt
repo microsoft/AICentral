@@ -21,7 +21,13 @@
           Type: AzureOpenAI,
           Url: https://somehere.com,
           Auth: {
-            Type: ApiKey
+            Type: BearerPlusKey,
+            IncomingClaim: test,
+            BackendHeader: api-key,
+            MatchedUsers: [
+              Key1,
+              Key2
+            ]
           },
           AutoPopulateEmptyUserId: false
         }

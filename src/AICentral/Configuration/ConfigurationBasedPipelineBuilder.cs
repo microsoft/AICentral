@@ -157,7 +157,6 @@ public class ConfigurationBasedPipelineBuilder
             endpoints,
             endpointSelectors,
             genericSteps,
-            backendAuthorisers,
             configuration.Pipelines ?? Array.Empty<PipelineConfig>()
         );
 

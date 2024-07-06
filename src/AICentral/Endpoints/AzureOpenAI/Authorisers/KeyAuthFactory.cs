@@ -13,10 +13,6 @@ public class KeyAuthFactory : IEndpointAuthorisationHandlerFactory
 
     public static string ConfigName => "apikey";
 
-    public void RegisterServices(IServiceCollection services)
-    {
-    }
-
     public IEndpointAuthorisationHandler Build()
     {
         return new KeyAuth(_apiKey);

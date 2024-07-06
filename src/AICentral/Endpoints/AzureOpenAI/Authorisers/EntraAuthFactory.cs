@@ -6,10 +6,6 @@ public class EntraAuthFactory : IEndpointAuthorisationHandlerFactory
 {
     public static string ConfigName => "entra";
 
-    public void RegisterServices(IServiceCollection services)
-    {
-    }
-
     public IEndpointAuthorisationHandler Build()
     {
         return new EntraAuth();

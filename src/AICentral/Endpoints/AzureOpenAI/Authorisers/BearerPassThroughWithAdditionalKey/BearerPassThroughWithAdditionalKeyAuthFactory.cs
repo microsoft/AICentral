@@ -5,10 +5,12 @@ namespace AICentral.Endpoints.AzureOpenAI.Authorisers.BearerPassThroughWithAddit
 public class BearerPassThroughWithAdditionalKeyAuthFactory: IEndpointAuthorisationHandlerFactory
 {
     private readonly BearerPassThroughWithAdditionalKeyAuth _provider;
+    private BearerPassThroughWithAdditionalKeyAuthFactoryConfig _config;
 
     public BearerPassThroughWithAdditionalKeyAuthFactory(BearerPassThroughWithAdditionalKeyAuthFactoryConfig config)
     {
-        _provider = new BearerPassThroughWithAdditionalKeyAuth(config);
+        _config = config;
+        _provider = new BearerPassThroughWithAdditionalKeyAuth(_config);
     }
     
     public static string ConfigName => "BearerPlusKey";
@@ -19,10 +21,6 @@ public class BearerPassThroughWithAdditionalKeyAuthFactory: IEndpointAuthorisati
         return new BearerPassThroughWithAdditionalKeyAuthFactory(typed);
     }
 
-    public void RegisterServices(IServiceCollection services)
-    {
-    }
-
     public IEndpointAuthorisationHandler Build()
     {
         return _provider;
@@ -30,6 +28,12 @@ public class BearerPassThroughWithAdditionalKeyAuthFactory: IEndpointAuthorisati
 
     public object WriteDebug()
     {
-        throw new NotImplementedException();
+        return new
+        {
+            Type = "BearerPlusKey",
+            IncomingClaim = _config.IncomingClaimName,
+            BackendHeader = _config.KeyHeaderName,
+            MatchedUsers = _config.SubjectToKeyMappings.Values
+        };
     }
 }

@@ -1,5 +1,5 @@
-﻿using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Security.Claims;
+using System.Security.Cryptography;
 using AICentral;
 using AICentral.Affinity;
 using AICentral.BulkHead;
@@ -7,16 +7,20 @@ using AICentral.Configuration;
 using AICentral.ConsumerAuth.AICentralJWT;
 using AICentral.ConsumerAuth.AllowAnonymous;
 using AICentral.ConsumerAuth.ApiKey;
+using AICentral.ConsumerAuth.Entra;
 using AICentral.Core;
 using AICentral.Endpoints;
 using AICentral.Endpoints.AzureOpenAI;
 using AICentral.Endpoints.AzureOpenAI.Authorisers;
+using AICentral.Endpoints.AzureOpenAI.Authorisers.BearerPassThroughWithAdditionalKey;
 using AICentral.Endpoints.OpenAI;
 using AICentral.EndpointSelectors.LowestLatency;
 using AICentral.EndpointSelectors.Priority;
 using AICentral.EndpointSelectors.Random;
 using AICentral.EndpointSelectors.Single;
 using AICentral.RateLimiting;
+using AICentralTests.TestHelpers.FakeIdp;
+using Microsoft.Identity.Web;
 using FixedWindowRateLimiterOptions = AICentral.RateLimiting.FixedWindowRateLimiterOptions;
 
 namespace AICentralTests.TestHelpers;
@@ -26,7 +30,6 @@ public class TestAICentralPipelineBuilder
     private IPipelineStepFactory? _auth;
     private IEndpointSelectorFactory? _endpointFactory;
     private IEndpointDispatcherFactory[]? _openAiEndpointDispatcherBuilders;
-    private IEndpointAuthorisationHandlerFactory[]? _backendAuthorisers;
     private int? _windowInSeconds;
     private int? _requestsPerWindow;
     private int? _tokensPerWindow;
@@ -93,6 +96,34 @@ public class TestAICentralPipelineBuilder
         _endpointFactory =
             new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
         _openAiEndpointDispatcherBuilders = new[]
+            { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
+
+        return this;
+    }
+
+    public TestAICentralPipelineBuilder WithSingleEndpointBearerPlusKey(
+        string hostname)
+    {
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
+            hostname,
+            $"https://{hostname}",
+            new BearerPassThroughWithAdditionalKeyAuthFactory(new BearerPassThroughWithAdditionalKeyAuthFactoryConfig()
+            {
+                IncomingClaimName = ClaimTypes.Name,
+                KeyHeaderName = "new-api-key",
+                SubjectToKeyMappings = new Dictionary<string, string>()
+                {
+                    ["user1"] = "key-1",
+                    ["user2"] = "key-2",
+                }
+            }),
+            new Dictionary<string, string>(),
+            new Dictionary<string, string>(),
+            enforceMappedModels: false);
+
+        _endpointFactory =
+            new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
+        _openAiEndpointDispatcherBuilders = new IEndpointDispatcherFactory[]
             { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
 
         return this;
@@ -279,7 +310,6 @@ public class TestAICentralPipelineBuilder
                 [id] = _endpointFactory!
             },
             genericSteps,
-            (_backendAuthorisers ?? []).ToDictionary(x => Guid.NewGuid().ToString(), x => x),
             new[]
             {
                 new PipelineConfig()
@@ -334,6 +364,27 @@ public class TestAICentralPipelineBuilder
     public TestAICentralPipelineBuilder WithEndpointAffinity(TimeSpan affinityTimespan)
     {
         _endpointAffinityTimespan = affinityTimespan;
+        return this;
+    }
+
+    public TestAICentralPipelineBuilder WithFakeEntraClientAuth()
+    {
+        _auth = new EntraClientAuthFactory(
+            new EntraClientAuthConfig(),
+            (builder, id) =>
+                builder.AddMicrosoftIdentityWebApi(options =>
+                {
+                    options.Audience = "https://cognitiveservices.azure.com";
+                    options.TokenValidationParameters.ValidateIssuer = false;
+                    options.BackchannelHttpHandler = new FakeIdpMessageHandler();
+                }, options =>
+                {
+                    options.Instance = "https://login.microsoftonline.com/";
+                    options.ClientId = FakeIdpMessageHandler.FakeAppId;
+                    options.TenantId = FakeIdpMessageHandler.TenantId;
+                    options.BackchannelHttpHandler = new FakeIdpMessageHandler();
+                }, id));
+        
         return this;
     }
 }

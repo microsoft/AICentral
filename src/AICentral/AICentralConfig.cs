@@ -58,6 +58,7 @@ public class AICentralConfig
         EndpointSelectors = FillCollection(nameof(EndpointSelectors), configurationSection).ToArray();
         AuthProviders = FillCollection(nameof(AuthProviders), configurationSection).ToArray();
         GenericSteps = FillCollection(nameof(GenericSteps), configurationSection).ToArray();
+        BackendAuthorisers = FillCollection(nameof(BackendAuthorisers), configurationSection).ToArray();
     }
 
     private List<TypeAndNameConfig> FillCollection(
