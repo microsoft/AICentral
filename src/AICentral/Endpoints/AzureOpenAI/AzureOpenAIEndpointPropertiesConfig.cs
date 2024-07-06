@@ -4,6 +4,7 @@ public class AzureOpenAIEndpointPropertiesConfig
 {
     public string? LanguageEndpoint { get; init; }
     public string? AuthenticationType { get; init; }
+    public string? CustomAuthorisationHandlerName { get; set; }
     public string? ApiKey { get; set; }
     public Dictionary<string, string>? ModelMappings { get; init; }
     public Dictionary<string, string>? AssistantMappings { get; set; }

@@ -21,9 +21,8 @@ public interface IEndpointAuthorisationHandlerFactory
     /// When a pipeline is executed you need to provide an instance of your authoriser. If you need to store state within an execution then
     /// you should provide a new instance of your authoriser every time. You may use the standard Asp.Net IServiceProvider to build your step if it helps.
     /// </summary>
-    /// <param name="serviceProvider"></param>
     /// <returns></returns>
-    IEndpointAuthorisationHandler Build(IServiceProvider serviceProvider);
+    IEndpointAuthorisationHandler Build();
     
     static virtual IEndpointAuthorisationHandlerFactory BuildFromConfig(ILogger logger, TypeAndNameConfig config) => throw new NotImplementedException();
 

@@ -105,7 +105,7 @@ public class AzureOpenAIDownstreamEndpointDiagnostics
 
             return true;
         }
-        catch (Exception e)
+        catch (Exception)
         {
             _logger.LogError(
                 "Failed to resolve {Endpoint} at HostName {HostName} to an IP Address. Check if this Azure Open AI service exists as there are no DNS entries pointing to it.",

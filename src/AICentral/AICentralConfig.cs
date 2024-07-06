@@ -37,6 +37,12 @@ public class AICentralConfig
     /// </summary>
     public TypeAndNameConfig[]? GenericSteps { get; set; }
     
+    
+    /// <summary>
+    /// A set of backend authorisers to provide custom auth for backend services
+    /// </summary>
+    public TypeAndNameConfig[]? BackendAuthorisers { get; set; }
+
     /// <summary>
     /// Optional Message Handler to use when making downstream requests. This can be used to add custom headers, or to add a proxy, etc.
     /// </summary>

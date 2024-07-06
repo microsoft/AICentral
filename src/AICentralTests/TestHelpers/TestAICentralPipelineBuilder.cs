@@ -25,6 +25,7 @@ public class TestAICentralPipelineBuilder
     private IPipelineStepFactory? _auth;
     private IEndpointSelectorFactory? _endpointFactory;
     private IEndpointDispatcherFactory[]? _openAiEndpointDispatcherBuilders;
+    private IEndpointAuthorisationHandlerFactory[]? _backendAuthorisers;
     private int? _windowInSeconds;
     private int? _requestsPerWindow;
     private int? _tokensPerWindow;
@@ -81,8 +82,7 @@ public class TestAICentralPipelineBuilder
         var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
             hostname,
             $"https://{hostname}",
-            "ApiKey",
-            "ignore-fake-key-hr987345",
+            new KeyAuthFactory("ignore-fake-key-hr987345"),
             new Dictionary<string, string>(),
             new Dictionary<string, string>(),
             enforceMappedModels: false,
@@ -102,8 +102,7 @@ public class TestAICentralPipelineBuilder
         var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
             hostname,
             $"https://{hostname}",
-            "ApiKey",
-            "ignore-fake-key-hr987345",
+            new KeyAuthFactory("ignore-fake-key-hr987345"),
             new Dictionary<string, string>()
             {
                 [model] = mappedModel
@@ -148,8 +147,7 @@ public class TestAICentralPipelineBuilder
             new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
                 $"https://{x.hostname}",
-                "ApiKey",
-                "ignore-fake-key-456456",
+                new KeyAuthFactory("ignore-fake-key-456456"),
                 new Dictionary<string, string>(),
                 new Dictionary<string, string>()
             ))).ToArray();
@@ -158,8 +156,7 @@ public class TestAICentralPipelineBuilder
             new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
                 $"https://{x.hostname}",
-                "ApiKey",
-                "ignore-fake-key-sdfsdf",
+                new KeyAuthFactory("ignore-fake-key-sdfsdf"),
                 new Dictionary<string, string>(),
                 new Dictionary<string, string>()))).ToArray();
 
@@ -181,8 +178,7 @@ public class TestAICentralPipelineBuilder
             new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
                 $"https://{x.hostname}",
-                "ApiKey",
-                "ignore-fake-key-12345678",
+                new KeyAuthFactory("ignore-fake-key-12345678"),
                 new Dictionary<string, string>(),
                 new Dictionary<string, string>()
                 {
@@ -201,8 +197,7 @@ public class TestAICentralPipelineBuilder
             new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
                 $"https://{x.hostname}",
-                "ApiKey",
-                "fake-dfjiud",
+                new KeyAuthFactory("fake-dfjiud"),
                 new Dictionary<string, string>(),
                 new Dictionary<string, string>()))).ToArray();
 
@@ -283,6 +278,7 @@ public class TestAICentralPipelineBuilder
                 [id] = _endpointFactory!
             },
             genericSteps,
+            (_backendAuthorisers ?? []).ToDictionary(x => Guid.NewGuid().ToString(), x => x),
             new[]
             {
                 new PipelineConfig()
@@ -321,8 +317,7 @@ public class TestAICentralPipelineBuilder
         var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
             endpoint200,
             $"https://{endpoint200}",
-            "ApiKey",
-            "bacca18e-f471-4eca-9ea3-c8ee7155dacb",
+            new KeyAuthFactory("fake-key-23324"),
             new Dictionary<string, string>(),
             new Dictionary<string, string>());
 
@@ -330,8 +325,7 @@ public class TestAICentralPipelineBuilder
             new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
         _endpointFactory =
             new SingleEndpointSelectorFactory(new EndpointSelectorAdapterDispatcherFactory(endpointFactory));
-        _openAiEndpointDispatcherBuilders = new[]
-            { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
+        _openAiEndpointDispatcherBuilders = [new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder)];
 
         return this;
     }

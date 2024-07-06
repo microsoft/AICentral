@@ -15,6 +15,7 @@ public class AICentralPipelineAssembler
     private readonly Dictionary<string, IEndpointDispatcherFactory> _endpoints;
     private readonly Dictionary<string, IEndpointSelectorFactory> _endpointSelectors;
     private readonly Dictionary<string, IPipelineStepFactory> _genericSteps;
+    private readonly Dictionary<string, IEndpointAuthorisationHandlerFactory> _backendAuthorisers;
     private readonly PipelineConfig[] _pipelines;
 
     private bool _servicesAdded;
@@ -25,6 +26,7 @@ public class AICentralPipelineAssembler
         Dictionary<string, IEndpointDispatcherFactory> endpoints,
         Dictionary<string, IEndpointSelectorFactory> endpointSelectors,
         Dictionary<string, IPipelineStepFactory> genericSteps,
+        Dictionary<string, IEndpointAuthorisationHandlerFactory> backendAuthorisers,
         PipelineConfig[] pipelines)
     {
         _routeBuilder = routeBuilder;
@@ -32,6 +34,7 @@ public class AICentralPipelineAssembler
         _endpoints = endpoints;
         _endpointSelectors = endpointSelectors;
         _genericSteps = genericSteps;
+        _backendAuthorisers = backendAuthorisers;
         _pipelines = pipelines;
     }
 
@@ -49,6 +52,7 @@ public class AICentralPipelineAssembler
         foreach (var endpoint in _endpoints) endpoint.Value.RegisterServices(optionalHandler, services);
         foreach (var endpointSelector in _endpointSelectors) endpointSelector.Value.RegisterServices(services);
         foreach (var step in _genericSteps) step.Value.RegisterServices(services);
+        foreach (var backendAuthoriser in _backendAuthorisers) backendAuthoriser.Value.RegisterServices(services);
 
         var pipelines = BuildPipelines(startupLogger);
         services.AddSingleton(pipelines);
@@ -133,6 +137,7 @@ public class AICentralPipelineAssembler
             otherAssembler._endpoints.Union(_endpoints).ToDictionary(x => x.Key, x => x.Value),
             otherAssembler._endpointSelectors.Union(_endpointSelectors).ToDictionary(x => x.Key, x => x.Value),
             otherAssembler._genericSteps.Union(_genericSteps).ToDictionary(x => x.Key, x => x.Value),
+            otherAssembler._backendAuthorisers.Union(_backendAuthorisers).ToDictionary(x => x.Key, x => x.Value),
             otherAssembler._pipelines.Union(_pipelines).ToArray()
         );
     }

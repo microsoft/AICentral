@@ -13,7 +13,7 @@ namespace AICentral.Configuration;
 public class ConfigurationBasedPipelineBuilder
 {
     private readonly Dictionary<string,
-            Func<ILogger, TypeAndNameConfig, IDownstreamEndpointAdapterFactory>>
+            Func<ILogger, TypeAndNameConfig, IDictionary<string, IEndpointAuthorisationHandlerFactory>, IDownstreamEndpointAdapterFactory>>
         _endpointConfigurationBuilders = new();
 
     private readonly
@@ -22,7 +22,7 @@ public class ConfigurationBasedPipelineBuilder
             IEndpointSelectorFactory>> _endpointSelectorConfigurations = new();
 
     private readonly Dictionary<string,
-            Func<ILogger, TypeAndNameConfig, IEndpointAuthorisationHandler>>
+            Func<ILogger, TypeAndNameConfig, IEndpointAuthorisationHandlerFactory>>
         _backendAuthorisers = new();
 
     private readonly Dictionary<string,
@@ -46,17 +46,35 @@ public class ConfigurationBasedPipelineBuilder
     private void RegisterGenericStep<T>() where T : IPipelineStepFactory =>
         _genericStepBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
+    private void RegisterBackendEndpointAuthoriser<T>() where T : IEndpointAuthorisationHandlerFactory =>
+        _backendAuthorisers.Add(T.ConfigName, T.BuildFromConfig);
+
     public AICentralPipelineAssembler BuildPipelinesFromConfig(
         AICentralConfig configuration,
         ILogger startupLogger,
         params Assembly[] additionalAssembliesToScan)
     {
-        RegisterBuilders<IEndpointSelectorFactory>(additionalAssembliesToScan,
-            nameof(RegisterEndpointSelector));
+        RegisterBuilders<IEndpointSelectorFactory>(additionalAssembliesToScan, nameof(RegisterEndpointSelector));
         RegisterBuilders<IDownstreamEndpointAdapterFactory>(additionalAssembliesToScan, nameof(RegisterEndpoint));
-        RegisterBuilders<IPipelineStepFactory>(additionalAssembliesToScan,
-            nameof(RegisterGenericStep));
+        RegisterBuilders<IPipelineStepFactory>(additionalAssembliesToScan, nameof(RegisterGenericStep));
         RegisterBuilders<IPipelineStepFactory>(additionalAssembliesToScan, nameof(RegisterAuthProvider));
+        RegisterBuilders<IEndpointAuthorisationHandlerFactory>(additionalAssembliesToScan, nameof(RegisterBackendEndpointAuthoriser));
+
+        var backendAuthorisers =
+            (configuration
+                .BackendAuthorisers ?? [])
+                .ToDictionary(
+                    x => Guard.NotNull(x.Name, "Name"),
+                    x =>
+                    {
+                        startupLogger.LogInformation("Configuring Backend Authoriser {Name}", x.Name);
+                        return _backendAuthorisers[
+                            Guard.NotNull(x.Type, "Type") ??
+                            throw new ArgumentException("No Type specified for Backend Authoriser")](
+                            startupLogger,
+                            x
+                        );
+                    });
 
         var endpoints =
             configuration
@@ -71,7 +89,8 @@ public class ConfigurationBasedPipelineBuilder
                                 Guard.NotNull(x.Type, "Type") ??
                                 throw new ArgumentException("No Type specified for Endpoint")](
                                 startupLogger,
-                                x));
+                                x,
+                                backendAuthorisers));
                     });
 
         var endpointSelectors = new Dictionary<string, IEndpointSelectorFactory>();
@@ -81,7 +100,7 @@ public class ConfigurationBasedPipelineBuilder
             startupLogger.LogInformation("Configuring Endpoint Selector {Name}", x.Name);
             var aiCentralEndpointSelectorFactory = _endpointSelectorConfigurations[
                 Guard.NotNull(x.Type, "Type") ??
-                throw new ArgumentException("No Type specified for Endpoint")](
+                throw new ArgumentException("No Type specified for Endpoint Selector")](
                 startupLogger,
                 x,
                 endpoints);
@@ -109,7 +128,7 @@ public class ConfigurationBasedPipelineBuilder
                         startupLogger.LogInformation("Configuring AuthProviders {Name}", x.Name);
                         return _authProviderBuilders[
                             Guard.NotNull(x.Type, "Type") ??
-                            throw new ArgumentException("No Type specified for Endpoint")](
+                            throw new ArgumentException("No Type specified for AuthProvider")](
                             startupLogger,
                             x
                         );
@@ -122,15 +141,15 @@ public class ConfigurationBasedPipelineBuilder
                     x => Guard.NotNull(x.Name, "Name"),
                     x =>
                     {
-                        startupLogger.LogInformation("Configuring AuthProviders {Name}", x.Name);
+                        startupLogger.LogInformation("Configuring Generic Step {Name}", x.Name);
                         return _genericStepBuilders[
                             Guard.NotNull(x.Type, "Type") ??
-                            throw new ArgumentException("No Type specified for Endpoint")](
+                            throw new ArgumentException("No Type specified for Generic Step")](
                             startupLogger,
                             x
                         );
                     });
-
+        
         //create an object that can wire all this together
         var builder = new AICentralPipelineAssembler(
             HostNameMatchRouter.WithHostHeader,
@@ -138,6 +157,7 @@ public class ConfigurationBasedPipelineBuilder
             endpoints,
             endpointSelectors,
             genericSteps,
+            backendAuthorisers,
             configuration.Pipelines ?? Array.Empty<PipelineConfig>()
         );
 
