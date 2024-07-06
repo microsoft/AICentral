@@ -1,4 +1,5 @@
 ﻿using AICentral.Core;
+using AICentral.Endpoints.AzureOpenAI.Authorisers;
 
 namespace AICentral.Endpoints.AzureOpenAI;
 

@@ -1,10 +1,10 @@
 using AICentral.Core;
 
-namespace AICentral.Endpoints.AzureOpenAI;
+namespace AICentral.Endpoints.AzureOpenAI.Authorisers;
 
 public class EntraAuthFactory : IEndpointAuthorisationHandlerFactory
 {
-    public static string ConfigName => "apikey";
+    public static string ConfigName => "entra";
 
     public void RegisterServices(IServiceCollection services)
     {

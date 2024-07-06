@@ -10,6 +10,7 @@ using AICentral.ConsumerAuth.ApiKey;
 using AICentral.Core;
 using AICentral.Endpoints;
 using AICentral.Endpoints.AzureOpenAI;
+using AICentral.Endpoints.AzureOpenAI.Authorisers;
 using AICentral.Endpoints.OpenAI;
 using AICentral.EndpointSelectors.LowestLatency;
 using AICentral.EndpointSelectors.Priority;

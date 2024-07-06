@@ -1,32 +1,6 @@
 ﻿using AICentral.Core;
 
-namespace AICentral.Endpoints.AzureOpenAI;
-
-public class KeyAuthFactory : IEndpointAuthorisationHandlerFactory
-{
-    private string _apiKey;
-
-    public KeyAuthFactory(string apiKey)
-    {
-        _apiKey = apiKey;
-    }
-
-    public static string ConfigName => "entra";
-
-    public void RegisterServices(IServiceCollection services)
-    {
-    }
-
-    public IEndpointAuthorisationHandler Build()
-    {
-        return new KeyAuth(_apiKey);
-    }
-
-    public object WriteDebug()
-    {
-        return new { Type = "ApiKey" };
-    }}
-
+namespace AICentral.Endpoints.AzureOpenAI.Authorisers;
 
 public class KeyAuth : IEndpointAuthorisationHandler
 {
