@@ -43,7 +43,8 @@ public class OpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAdapter
     public static string ConfigName => "OpenAIEndpoint";
 
     public static IDownstreamEndpointAdapterFactory BuildFromConfig(ILogger logger,
-        TypeAndNameConfig config)
+        TypeAndNameConfig config,
+        IDictionary<string, IEndpointAuthorisationHandlerFactory> authorisationHandlerFactories)
     {
         var properties = config.TypedProperties<OpenAIEndpointPropertiesConfig>();
         Guard.NotNull(properties, "Properties");

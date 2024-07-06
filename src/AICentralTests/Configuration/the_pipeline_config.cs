@@ -3,6 +3,7 @@ using AICentral;
 using AICentral.Configuration;
 using AICentral.Core;
 using AICentral.Endpoints.AzureOpenAI;
+using AICentral.Endpoints.OpenAI;
 using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -21,7 +22,7 @@ public class the_pipeline_config
             {
                 AICentral = new
                 {
-                    Endpoints = new[]
+                    Endpoints = new object []
                     {
                         new
                         {
@@ -31,6 +32,19 @@ public class the_pipeline_config
                             {
                                 AuthenticationType = "BearerPlusKeyName",
                                 LanguageEndpoint = "https://somehere.com",
+                            }
+                        },
+                        new
+                        {
+                            Type = "OpenAIEndpoint",
+                            Name = "test-endpoint-1",
+                            Properties = new OpenAIEndpointPropertiesConfig()
+                            {
+                                ApiKey = "fake-key",
+                                ModelMappings = new Dictionary<string, string>()
+                                {
+                                    ["Test"] = "TestMap" 
+                                }
                             }
                         }
                     },

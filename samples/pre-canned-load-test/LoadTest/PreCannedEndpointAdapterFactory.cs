@@ -71,7 +71,8 @@ public class PreCannedEndpointAdapterFactory : IDownstreamEndpointAdapter, IDown
 
     public static string ConfigName => "PreCannedEndpoint";
 
-    public static IDownstreamEndpointAdapterFactory BuildFromConfig(ILogger logger, TypeAndNameConfig config)
+    public static IDownstreamEndpointAdapterFactory BuildFromConfig(ILogger logger, TypeAndNameConfig config,
+        IDictionary<string, IEndpointAuthorisationHandlerFactory> authorisationHandlerFactories)
     {
         return new PreCannedEndpointAdapterFactory(config.Name!);
     }
