@@ -22,6 +22,10 @@ public class ConfigurationBasedPipelineBuilder
             IEndpointSelectorFactory>> _endpointSelectorConfigurations = new();
 
     private readonly Dictionary<string,
+            Func<ILogger, TypeAndNameConfig, IEndpointAuthorisationHandler>>
+        _backendAuthorisers = new();
+
+    private readonly Dictionary<string,
             Func<ILogger, TypeAndNameConfig, IPipelineStepFactory>>
         _genericStepBuilders = new();
 

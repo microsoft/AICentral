@@ -8,9 +8,6 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral;
 
-public delegate Task<AICentralResponse> AIHandler(HttpContext context, string? deploymentName, string? assistantName,
-    AICallType callType, CancellationToken cancellationToken);
-
 /// <summary>
 /// Represents a Pipeline. This class is the main entry path for a request after it's been matched by a route.
 /// It's a stateless class which emits telemetry, but the main work of executing steps is performed by the
