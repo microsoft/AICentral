@@ -27,7 +27,7 @@ if (builder.Environment.EnvironmentName != "tests")
 
             tracing.AddSource(ActivitySource.AICentralTelemetryName);
         })
-        .UseAzureMonitor();
+        .UseAzureMonitor(options => options.SamplingRatio = 0.1f);
 }
 
 var logger = new LoggerConfiguration()
