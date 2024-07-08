@@ -1,6 +1,6 @@
 ﻿using AICentral.Core;
 
-namespace AICentral.Endpoints.AzureOpenAI;
+namespace AICentral.Endpoints.AzureOpenAI.Authorisers;
 
 public class KeyAuth : IEndpointAuthorisationHandler
 {

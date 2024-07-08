@@ -9,7 +9,6 @@ on:
 jobs:
   build-and-publish-docker-container:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     permissions: 
       packages: write
     
@@ -38,7 +37,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-          
+
       - name: Build and push ${{ needs.build-and-package-app.outputs.version }}
         uses: docker/build-push-action@v2
         with:
@@ -46,5 +45,14 @@ jobs:
           push: true
           build-args: NUGET_VERSION=${{ steps.gitversion.outputs.NuGetVersionV2 }}
           tags: |
-            graemefoster/aicentral:latest
             graemefoster/aicentral:${{ steps.gitversion.outputs.NuGetVersionV2 }}
+
+      - name: Build and push latest tag
+        if: github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          build-args: NUGET_VERSION=${{ steps.gitversion.outputs.NuGetVersionV2 }}
+          tags: |
+            graemefoster/aicentral:latest

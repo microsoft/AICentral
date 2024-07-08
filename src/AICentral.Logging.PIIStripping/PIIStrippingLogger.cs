@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
-namespace AICentral.DistributedTokenLimits;
+namespace AICentral.Logging.PIIStripping;
 
 public class PIIStrippingLogger(
     string stepName,

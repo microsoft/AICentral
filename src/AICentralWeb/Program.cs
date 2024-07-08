@@ -1,7 +1,9 @@
 using AICentral;
 using AICentral.Configuration;
-using AICentral.Core;
+using AICentral.DistributedTokenLimits;
 using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
+using AICentral.RateLimiting.DistributedRedis;
+using AICentralWeb.QuickStartConfigs;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -14,10 +16,7 @@ if (builder.Environment.EnvironmentName != "tests")
 {
     builder.Services
         .AddOpenTelemetry()
-        .WithMetrics(metrics =>
-        {
-            metrics.AddMeter(ActivitySource.AICentralTelemetryName);
-        })
+        .WithMetrics(metrics => { metrics.AddMeter(ActivitySource.AICentralTelemetryName); })
         .WithTracing(tracing =>
         {
             if (builder.Environment.IsDevelopment())
@@ -28,7 +27,7 @@ if (builder.Environment.EnvironmentName != "tests")
 
             tracing.AddSource(ActivitySource.AICentralTelemetryName);
         })
-        .UseAzureMonitor();
+        .UseAzureMonitor(options => options.SamplingRatio = 0.1f);
 }
 
 var logger = new LoggerConfiguration()
@@ -38,17 +37,34 @@ var logger = new LoggerConfiguration()
     .Console()
     .CreateLogger();
 
-builder.Host.UseSerilog(logger);
+builder.Logging.ClearProviders();
+builder.Logging.AddOpenTelemetry().AddSerilog(logger);
 
 builder.Services.AddCors();
 
-builder.Services.AddAICentral(
-    builder.Configuration,
-    startupLogger: new SerilogLoggerProvider(logger).CreateLogger("AICentralStartup"),
-    additionalComponentAssemblies:
-    [
-        typeof(AzureMonitorLoggerFactory).Assembly,
-    ]);
+if (builder.Environment.EnvironmentName == "APImProxyWithCosmosLogging")
+{
+    var config = new APImProxyWithCosmosLogging.Config();
+    builder.Configuration.Bind("AICentral", config);
+    var assembler = APImProxyWithCosmosLogging.BuildAssembler(config);
+
+    assembler.AddServices(
+        builder.Services,
+        startupLogger: new SerilogLoggerProvider(logger).CreateLogger("AICentralStartup"),
+        optionalHandler: null);
+}
+else
+{
+    builder.Services.AddAICentral(
+        builder.Configuration,
+        startupLogger: new SerilogLoggerProvider(logger).CreateLogger("AICentralStartup"),
+        additionalComponentAssemblies:
+        [
+            typeof(AzureMonitorLoggerFactory).Assembly,
+            typeof(PIIStrippingLogger).Assembly,
+            typeof(DistributedRateLimiter).Assembly,
+        ]);
+}
 
 var enableSummaryPage = builder.Configuration.GetValue<bool>("EnableAICentralSummaryWebPage");
 

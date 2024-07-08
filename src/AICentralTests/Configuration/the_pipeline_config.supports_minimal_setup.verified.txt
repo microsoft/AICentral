@@ -9,11 +9,7 @@
     ClientAuth: {
       auth: No Consumer Auth
     },
-    Steps: [
-      {
-        auth: No Consumer Auth
-      }
-    ],
+    Steps: [],
     EndpointSelector: {
       Type: SingleEndpoint,
       Endpoints: [
@@ -21,7 +17,13 @@
           Type: AzureOpenAI,
           Url: https://somehere.com,
           Auth: {
-            Type: ApiKey
+            Type: BearerPlusKey,
+            IncomingClaim: test,
+            BackendHeader: api-key,
+            MatchedUsers: [
+              User...,
+              User...
+            ]
           },
           AutoPopulateEmptyUserId: false
         }

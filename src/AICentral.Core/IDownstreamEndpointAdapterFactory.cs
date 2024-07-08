@@ -8,7 +8,10 @@ public interface IDownstreamEndpointAdapterFactory
         HttpMessageHandler? httpMessageHandler, 
         IServiceCollection services);
 
-    static virtual IDownstreamEndpointAdapterFactory BuildFromConfig(ILogger logger, TypeAndNameConfig config)
+    static virtual IDownstreamEndpointAdapterFactory BuildFromConfig(
+        ILogger logger, 
+        TypeAndNameConfig config,
+        IDictionary<string, IEndpointAuthorisationHandlerFactory> authorisationHandlerFactories)
     {
         throw new NotImplementedException();
     }

@@ -202,7 +202,7 @@ resource app 'Microsoft.Web/sites@2022-09-01' = {
         }
         {
           name: 'EnableAICentralSummaryWebPage'
-          value: 'false'
+          value: 'true'
         }
       ]
     }

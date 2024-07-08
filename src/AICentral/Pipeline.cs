@@ -8,9 +8,6 @@ using Microsoft.Extensions.Primitives;
 
 namespace AICentral;
 
-public delegate Task<AICentralResponse> AIHandler(HttpContext context, string? deploymentName, string? assistantName,
-    AICallType callType, CancellationToken cancellationToken);
-
 /// <summary>
 /// Represents a Pipeline. This class is the main entry path for a request after it's been matched by a route.
 /// It's a stateless class which emits telemetry, but the main work of executing steps is performed by the
@@ -64,7 +61,7 @@ public class Pipeline
         sw.Start();
 
         // Create a new Activity scoped to the method
-        using var activity = ActivitySource.AICentralRequestActivitySource.StartActivity("AICentalRequest");
+        using var activity = ActivitySource.AICentralRequestActivitySource.StartActivity("AICentralRequest");
         var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
 
         if (config.Value.EnableDiagnosticsHeaders)
@@ -244,7 +241,7 @@ public class Pipeline
             Name = _name,
             RouteMatch = _router.WriteDebug(),
             ClientAuth = _clientAuthStep.WriteDebug(),
-            Steps = _pipelineSteps.Select(x => x.WriteDebug()),
+            Steps = _pipelineSteps.Except([_clientAuthStep]).Select(x => x.WriteDebug()),
             EndpointSelector = _endpointSelector.WriteDebug(),
             OpenTelemetryConfig = _openTelemetryConfig
         };

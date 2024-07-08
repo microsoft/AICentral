@@ -3,9 +3,8 @@ using Azure.Storage.Queues;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
-namespace AICentral.DistributedTokenLimits;
+namespace AICentral.Logging.PIIStripping;
 
 internal class PIIStrippingLoggerQueueConsumer(
     QueueClient queueClient,

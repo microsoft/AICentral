@@ -1,12 +1,13 @@
 ﻿using AICentral.Core;
+using AICentral.Endpoints.AzureOpenAI.Authorisers;
 
 namespace AICentral.Endpoints.AzureOpenAI;
 
 public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAdapterFactory
 {
-    private readonly IEndpointAuthorisationHandler _authHandler;
     private readonly string _endpointName;
     private readonly string _languageUrl;
+    private readonly IEndpointAuthorisationHandlerFactory _authorisationHandlerFactory;
     private readonly Dictionary<string, string> _assistantMappings;
     private readonly bool _enforceMappedModels;
     private readonly Dictionary<string, string> _modelMappings;
@@ -17,8 +18,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
     public AzureOpenAIDownstreamEndpointAdapterFactory(
         string endpointName,
         string languageUrl,
-        string authenticationType,
-        string? authenticationKey,
+        IEndpointAuthorisationHandlerFactory authorisationHandlerFactory,
         Dictionary<string, string> modelMappings,
         Dictionary<string, string> assistantMappings,
         bool enforceMappedModels = false,
@@ -29,21 +29,12 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
 
         _endpointName = endpointName;
         _languageUrl = languageUrl;
+        _authorisationHandlerFactory = authorisationHandlerFactory;
         _modelMappings = modelMappings;
         _assistantMappings = assistantMappings;
         _enforceMappedModels = enforceMappedModels;
         _maxConcurrency = maxConcurrency;
         _autoPopulateEmptyUserId = autoPopulateEmptyUserId;
-
-        _authHandler = authenticationType.ToLowerInvariant() switch
-        {
-            "apikey" => new KeyAuth(authenticationKey ??
-                                    throw new ArgumentException(
-                                        "Missing api-key for Authentication Type")),
-            "entra" => new EntraAuth(),
-            "entrapassthrough" => new BearerTokenPassThroughAuth(),
-            _ => throw new ArgumentOutOfRangeException(nameof(authenticationType), authenticationType, null)
-        };
     }
 
     public void RegisterServices(HttpMessageHandler? httpMessageHandler, IServiceCollection services)
@@ -58,7 +49,8 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
 
     public static IDownstreamEndpointAdapterFactory BuildFromConfig(
         ILogger logger,
-        TypeAndNameConfig config)
+        TypeAndNameConfig config,
+        IDictionary<string, IEndpointAuthorisationHandlerFactory> authorisationHandlerFactories)
     {
         var properties = config.TypedProperties<AzureOpenAIEndpointPropertiesConfig>();
 
@@ -81,12 +73,19 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
             new Uri(Guard.NotNull(properties.LanguageEndpoint, nameof(properties.LanguageEndpoint)))
         );
         diagnostics.RunDiagnostics().Wait();
+        
+        var authHandler = Guard.NotNullOrEmptyOrWhitespace(authenticationType, nameof(config.Type)).ToLowerInvariant() switch
+        {
+            "apikey" => new KeyAuthFactory(properties.ApiKey!),
+            "entra" => new EntraAuthFactory(),
+            "entrapassthrough" => new BearerTokenPassThroughAuthFactory(),
+            _ => authorisationHandlerFactories.TryGetValue(authenticationType!, out var factory) ? factory : throw new ArgumentException("Missing Backend Authenticator named {Name}", authenticationType)
+        };
 
         return new AzureOpenAIDownstreamEndpointAdapterFactory(
             config.Name!,
             Guard.NotNull(properties.LanguageEndpoint, nameof(properties.LanguageEndpoint)),
-            authenticationType,
-            properties.ApiKey,
+            authHandler,
             properties.ModelMappings ?? new Dictionary<string, string>(),
             properties.AssistantMappings ?? new Dictionary<string, string>(),
             properties.EnforceMappedModels ?? false,
@@ -102,7 +101,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
             _endpointName,
             _modelMappings,
             _assistantMappings,
-            _authHandler,
+            _authorisationHandlerFactory.Build(),
             _enforceMappedModels,
             _autoPopulateEmptyUserId);
     }
@@ -115,7 +114,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
             Url = _languageUrl,
             Mappings = _modelMappings,
             AssistantMappings = _assistantMappings,
-            Auth = _authHandler.WriteDebug(),
+            Auth = _authorisationHandlerFactory.WriteDebug(),
             AutoPopulateEmptyUserId = _autoPopulateEmptyUserId
         };
     }

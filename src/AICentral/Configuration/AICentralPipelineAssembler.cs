@@ -1,5 +1,4 @@
-﻿using AICentral.ConsumerAuth;
-using AICentral.Core;
+﻿using AICentral.Core;
 using AICentral.Endpoints;
 
 namespace AICentral.Configuration;

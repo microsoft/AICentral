@@ -1,5 +1,5 @@
-﻿using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Security.Claims;
+using System.Security.Cryptography;
 using AICentral;
 using AICentral.Affinity;
 using AICentral.BulkHead;
@@ -7,15 +7,20 @@ using AICentral.Configuration;
 using AICentral.ConsumerAuth.AICentralJWT;
 using AICentral.ConsumerAuth.AllowAnonymous;
 using AICentral.ConsumerAuth.ApiKey;
+using AICentral.ConsumerAuth.Entra;
 using AICentral.Core;
 using AICentral.Endpoints;
 using AICentral.Endpoints.AzureOpenAI;
+using AICentral.Endpoints.AzureOpenAI.Authorisers;
+using AICentral.Endpoints.AzureOpenAI.Authorisers.BearerPassThroughWithAdditionalKey;
 using AICentral.Endpoints.OpenAI;
 using AICentral.EndpointSelectors.LowestLatency;
 using AICentral.EndpointSelectors.Priority;
 using AICentral.EndpointSelectors.Random;
 using AICentral.EndpointSelectors.Single;
 using AICentral.RateLimiting;
+using AICentralTests.TestHelpers.FakeIdp;
+using Microsoft.Identity.Web;
 using FixedWindowRateLimiterOptions = AICentral.RateLimiting.FixedWindowRateLimiterOptions;
 
 namespace AICentralTests.TestHelpers;
@@ -81,8 +86,7 @@ public class TestAICentralPipelineBuilder
         var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
             hostname,
             $"https://{hostname}",
-            "ApiKey",
-            "ignore-fake-key-hr987345",
+            new KeyAuthFactory("ignore-fake-key-hr987345"),
             new Dictionary<string, string>(),
             new Dictionary<string, string>(),
             enforceMappedModels: false,
@@ -97,13 +101,39 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
+    public TestAICentralPipelineBuilder WithSingleEndpointBearerPlusKey(
+        string hostname)
+    {
+        var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
+            hostname,
+            $"https://{hostname}",
+            new BearerPassThroughWithAdditionalKeyAuthFactory(new BearerPassThroughWithAdditionalKeyAuthFactoryConfig()
+            {
+                IncomingClaimName = ClaimTypes.Name,
+                KeyHeaderName = "new-api-key",
+                ClaimsToKeys = [
+                    new ClaimValueToSubscriptionKey {ClaimValue = "user1", SubscriptionKey = "key-1"},
+                    new ClaimValueToSubscriptionKey {ClaimValue = "user2", SubscriptionKey = "key-2"},
+                ]
+            }),
+            new Dictionary<string, string>(),
+            new Dictionary<string, string>(),
+            enforceMappedModels: false);
+
+        _endpointFactory =
+            new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
+        _openAiEndpointDispatcherBuilders = new IEndpointDispatcherFactory[]
+            { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
+
+        return this;
+    }
+
     public TestAICentralPipelineBuilder WithSingleMappedEndpoint(string hostname, string model, string mappedModel, bool enforceMappedModels = false)
     {
         var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
             hostname,
             $"https://{hostname}",
-            "ApiKey",
-            "ignore-fake-key-hr987345",
+            new KeyAuthFactory("ignore-fake-key-hr987345"),
             new Dictionary<string, string>()
             {
                 [model] = mappedModel
@@ -148,8 +178,7 @@ public class TestAICentralPipelineBuilder
             new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
                 $"https://{x.hostname}",
-                "ApiKey",
-                "ignore-fake-key-456456",
+                new KeyAuthFactory("ignore-fake-key-456456"),
                 new Dictionary<string, string>(),
                 new Dictionary<string, string>()
             ))).ToArray();
@@ -158,8 +187,7 @@ public class TestAICentralPipelineBuilder
             new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
                 $"https://{x.hostname}",
-                "ApiKey",
-                "ignore-fake-key-sdfsdf",
+                new KeyAuthFactory("ignore-fake-key-sdfsdf"),
                 new Dictionary<string, string>(),
                 new Dictionary<string, string>()))).ToArray();
 
@@ -181,8 +209,7 @@ public class TestAICentralPipelineBuilder
             new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
                 $"https://{x.hostname}",
-                "ApiKey",
-                "ignore-fake-key-12345678",
+                new KeyAuthFactory("ignore-fake-key-12345678"),
                 new Dictionary<string, string>(),
                 new Dictionary<string, string>()
                 {
@@ -201,8 +228,7 @@ public class TestAICentralPipelineBuilder
             new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
                 x.hostname,
                 $"https://{x.hostname}",
-                "ApiKey",
-                "fake-dfjiud",
+                new KeyAuthFactory("fake-dfjiud"),
                 new Dictionary<string, string>(),
                 new Dictionary<string, string>()))).ToArray();
 
@@ -321,8 +347,7 @@ public class TestAICentralPipelineBuilder
         var openAiEndpointDispatcherBuilder = new AzureOpenAIDownstreamEndpointAdapterFactory(
             endpoint200,
             $"https://{endpoint200}",
-            "ApiKey",
-            "bacca18e-f471-4eca-9ea3-c8ee7155dacb",
+            new KeyAuthFactory("fake-key-23324"),
             new Dictionary<string, string>(),
             new Dictionary<string, string>());
 
@@ -330,8 +355,7 @@ public class TestAICentralPipelineBuilder
             new SingleEndpointSelectorFactory(new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder));
         _endpointFactory =
             new SingleEndpointSelectorFactory(new EndpointSelectorAdapterDispatcherFactory(endpointFactory));
-        _openAiEndpointDispatcherBuilders = new[]
-            { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
+        _openAiEndpointDispatcherBuilders = [new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder)];
 
         return this;
     }
@@ -339,6 +363,27 @@ public class TestAICentralPipelineBuilder
     public TestAICentralPipelineBuilder WithEndpointAffinity(TimeSpan affinityTimespan)
     {
         _endpointAffinityTimespan = affinityTimespan;
+        return this;
+    }
+
+    public TestAICentralPipelineBuilder WithFakeEntraClientAuth()
+    {
+        _auth = new EntraClientAuthFactory(
+            new EntraClientAuthConfig(),
+            (builder, id) =>
+                builder.AddMicrosoftIdentityWebApi(options =>
+                {
+                    options.Audience = "https://cognitiveservices.azure.com";
+                    options.TokenValidationParameters.ValidateIssuer = false;
+                    options.BackchannelHttpHandler = new FakeIdpMessageHandler();
+                }, options =>
+                {
+                    options.Instance = "https://login.microsoftonline.com/";
+                    options.ClientId = "https://cognitiveservices.azure.com";
+                    options.TenantId = FakeIdpMessageHandler.TenantId;
+                    options.BackchannelHttpHandler = new FakeIdpMessageHandler();
+                }, id));
+        
         return this;
     }
 }

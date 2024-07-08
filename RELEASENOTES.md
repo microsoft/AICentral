@@ -1,5 +1,8 @@
 Release Notes:
 
+0.17.0 (06/jul/2024)
+New backend authenticator that can add a header, as-well as pass through a Bearer token. Helps with Azure APIm AI Gateway that has the concept of Subscriptions and products, but also can authorise using a JWT.
+
 0.16.18 (13/may/2024)
 Support the Streaming Token counts if returned
 

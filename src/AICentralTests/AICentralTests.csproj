@@ -12,13 +12,13 @@
     <ItemGroup>
         <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.16" />
         <PackageReference Include="Azure.AI.OpenAI.Assistants" Version="1.0.0-beta.3" />
-        <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.3.0" />
+        <PackageReference Include="MartinCostello.Logging.XUnit" Version="0.4.0" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.6" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
         <PackageReference Include="Shouldly" Version="4.2.1" />
-        <PackageReference Include="Verify.Xunit" Version="23.2.3" />
+        <PackageReference Include="Verify.Xunit" Version="25.3.0" />
         <PackageReference Include="xunit" Version="2.8.1" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.5.8">
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.8.1">
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
@@ -57,6 +57,10 @@
 
     <ItemGroup>
       <EmbeddedResource Include="Assets\Recording.m4a" />
+      <None Remove="TestHelpers\FakeIdp\openid-configuration.json" />
+      <EmbeddedResource Include="TestHelpers\FakeIdp\openid-configuration.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
     </ItemGroup>
 
 </Project>

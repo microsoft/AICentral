@@ -1,4 +1,6 @@
 ﻿using AICentral.Core;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 
@@ -6,13 +8,15 @@ namespace AICentral.ConsumerAuth.Entra;
 
 public class EntraClientAuthFactory : IPipelineStepFactory
 {
-    private readonly TypeAndNameConfig _configSection;
-    private readonly string _id;
+    private readonly EntraClientAuthConfig _config;
+    private readonly Action<AuthenticationBuilder, string> _registerAuthentication;
     private readonly Lazy<EntraClientAuthProvider> _provider;
+    private readonly string _id;
 
-    public EntraClientAuthFactory(TypeAndNameConfig configSection)
+    public EntraClientAuthFactory(EntraClientAuthConfig config, Action<AuthenticationBuilder, string> registerAuthentication)
     {
-        _configSection = configSection;
+        _config = config;
+        _registerAuthentication = registerAuthentication;
         _id = Guid.NewGuid().ToString();
         _provider = new Lazy<EntraClientAuthProvider>(() => new EntraClientAuthProvider());
     }
@@ -22,16 +26,14 @@ public class EntraClientAuthFactory : IPipelineStepFactory
     /// </summary>
     public void RegisterServices(IServiceCollection services)
     {
-        var section = _configSection.ConfigurationSection!.GetSection("Properties");
-        var customSection = _configSection.TypedProperties<EntraClientAuthConfig>();
-
-        services.AddAuthentication().AddMicrosoftIdentityWebApi(section, "Entra", _id);
+        _registerAuthentication(services.AddAuthentication(), _id);
+        
         services.AddAuthorizationBuilder().AddPolicy(_id, policyBuilder =>
         {
             var builder=  policyBuilder.RequireAuthenticatedUser();
-            if (customSection.Requirements?.Roles != null)
+            if (_config.Requirements?.Roles != null)
             {
-                builder.RequireRole(customSection.Requirements.Roles);
+                builder.RequireRole(_config.Requirements.Roles);
             }
 
             builder.AddAuthenticationSchemes(_id);
@@ -49,16 +51,36 @@ public class EntraClientAuthFactory : IPipelineStepFactory
         ILogger logger, 
         TypeAndNameConfig config)
     {
-
         var customSection = config.TypedProperties<EntraClientAuthConfig>();
-        if (customSection.Requirements == null || customSection.Requirements.Roles.IsNullOrEmpty())
+        Guard.NotNull(customSection.Entra, nameof(customSection.Entra));
+
+        if (customSection.Requirements == null || customSection.Requirements.Roles.IsNullOrEmpty() || customSection.Requirements.DisableScopeAndRoleCheck == true)
         {
             logger.LogWarning("Entra auth is configured but no roles are specified. Unless the Application is configured for specific user-assignment, this will allow all users and applications to access the endpoint.");
         }
 
-        return new EntraClientAuthFactory(config);
+        var section = config.ConfigurationSection!.GetSection("Properties");
+
+        return new EntraClientAuthFactory(customSection, (builder, schemeId) =>
+        {
+            builder.AddMicrosoftIdentityWebApi(section, "Entra", schemeId);
+            DisableScopeAndRoleCheckForManagedIdentityTokensDestinedForAzureOpenAI(customSection, builder, schemeId);
+        });
     }
-    
+
+    private static void DisableScopeAndRoleCheckForManagedIdentityTokensDestinedForAzureOpenAI(
+        EntraClientAuthConfig customSection, AuthenticationBuilder builder, string schemeId)
+    {
+        //To support scenarios such as passing through managed identity tokens deemed for Azure Open AI, where there won't be a scope or role in the token...
+        if (customSection.Requirements?.DisableScopeAndRoleCheck ?? false)
+        {
+            builder.Services.Configure<JwtBearerOptions>(schemeId, options =>
+            {
+                options.Events.OnTokenValidated = _ => Task.CompletedTask;
+            });
+        }
+    }
+
     /// <summary>
     /// Entra Auth is provided at the route scope. The runtime step is a no-op.
     /// </summary>

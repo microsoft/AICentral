@@ -18,6 +18,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
     protected override IHost CreateHost(IHostBuilder builder)
     {
         builder.UseEnvironment("tests");
+        
         builder.ConfigureServices(services =>
         {
             services.AddSingleton<ILoggerFactory>(new LoggerFactory(new[]
@@ -55,7 +56,8 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.AzureOpenAIServiceWithSingleAzureOpenAIEndpointWithMappedModel(),
                 TestPipelines.AzureOpenAIServiceWithInBuiltJwtAuth(),
                 TestPipelines.AzureOpenAIServiceWithInBuiltWildcardJwtAuth(),
-                TestPipelines.AzureOpenAIServiceWithAutoUserPopulation()
+                TestPipelines.AzureOpenAIServiceWithAutoUserPopulation(),
+                TestPipelines.TokenPlusKeyEndpoiont()
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));
@@ -66,6 +68,7 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
             var fakeDateTimeProvider = new FakeDateTimeProvider();
             services.AddSingleton<IDateTimeProvider>(fakeDateTimeProvider);
             services.AddSingleton(fakeDateTimeProvider);
+            
         });
 
         return base.CreateHost(builder);

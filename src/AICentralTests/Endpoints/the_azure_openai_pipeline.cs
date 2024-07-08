@@ -57,6 +57,28 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
             .ShouldBe("azure-to-azure-openai.localtest.me-pipeline");
     }
 
+    [Fact]
+    public async Task handles_single_prompt_completions()
+    {
+        _factory.Services.SeedCompletions(TestPipelines.Endpoint200, "Model1",
+            () => Task.FromResult(OpenAIFakeResponses.FakeCompletionsResponse()));
+        
+        _factory.Services.SeedCompletions(TestPipelines.Endpoint200Number2, "Model1",
+            () => Task.FromResult(OpenAIFakeResponses.FakeCompletionsResponse()));
+
+        var result = await _httpClient.PostAsync(
+            $"http://azure-to-azure-openai.localtest.me/openai/deployments/Model1/completions?api-version={OpenAITestEx.OpenAIClientApiVersion}",
+            new StringContent(JsonConvert.SerializeObject(new
+            {
+                prompt = "Hello world",
+                max_tokens = 5
+            }), Encoding.UTF8, "application/json"));
+
+        result.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+        await Verify(_factory.Services.VerifyRequestsAndResponses(result));
+    }
+
 
     [Fact]
     public async Task works_with_the_azure_sdk_completions()
