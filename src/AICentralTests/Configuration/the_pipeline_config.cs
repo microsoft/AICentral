@@ -3,6 +3,7 @@ using AICentral;
 using AICentral.Configuration;
 using AICentral.Core;
 using AICentral.Endpoints.AzureOpenAI;
+using AICentral.Endpoints.AzureOpenAI.Authorisers.BearerPassThroughWithAdditionalKey;
 using AICentral.Endpoints.OpenAI;
 using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 using Microsoft.AspNetCore.Builder;
@@ -58,10 +59,18 @@ public class the_pipeline_config
                             {
                                 IncomingClaimName = "test",
                                 KeyHeaderName = "api-key",
-                                SubjectToKeyMappings = new
+                                ClaimsToKeys = new ClaimValueToSubscriptionKey[]
                                 {
-                                    User1 = "Key1",
-                                    User2 = "Key2",
+                                    new ()
+                                    {
+                                        ClaimValue = "User1",
+                                        SubscriptionKey = "Key1"
+                                    },
+                                    new ()
+                                    {
+                                        ClaimValue = "User2",
+                                        SubscriptionKey = "Key2"
+                                    },
                                 }
                             }
                         }
@@ -78,7 +87,7 @@ public class the_pipeline_config
                             }
                         }
                     },
-                    AuthProviders = new object []
+                    AuthProviders = new object[]
                     {
                         new
                         {
