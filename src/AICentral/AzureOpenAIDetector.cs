@@ -75,15 +75,19 @@ public class AzureOpenAIDetector
     private async Task<IncomingCallDetails> DetectCompletions(string pipelineName, string deploymentName, HttpRequest request, CancellationToken cancellationToken)
     {
         var requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+        var prompt = requestContent.RootElement.GetProperty("prompt");
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Completions,
-            requestContent.RootElement.TryGetProperty("stream", out var stream) ? 
-                stream.GetBoolean() 
-                    ? AICallResponseType.Streaming 
-                    : AICallResponseType.NonStreaming 
+            requestContent.RootElement.TryGetProperty("stream", out var stream)
+                ? stream.GetBoolean()
+                    ? AICallResponseType.Streaming
+                    : AICallResponseType.NonStreaming
                 : AICallResponseType.NonStreaming,
-            string.Join('\n', requestContent.RootElement.GetProperty("prompt").EnumerateArray().Select(x => x.GetString())),
+            prompt.ValueKind == JsonValueKind.Array
+                ? string.Join('\n',
+                    requestContent.RootElement.GetProperty("prompt").EnumerateArray().Select(x => x.GetString()))
+                : prompt.GetString(),
             deploymentName,
             null,
             requestContent,
