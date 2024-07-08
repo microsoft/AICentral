@@ -241,7 +241,7 @@ public class Pipeline
             Name = _name,
             RouteMatch = _router.WriteDebug(),
             ClientAuth = _clientAuthStep.WriteDebug(),
-            Steps = _pipelineSteps.Select(x => x.WriteDebug()),
+            Steps = _pipelineSteps.Except([_clientAuthStep]).Select(x => x.WriteDebug()),
             EndpointSelector = _endpointSelector.WriteDebug(),
             OpenTelemetryConfig = _openTelemetryConfig
         };
