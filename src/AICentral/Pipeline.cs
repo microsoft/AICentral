@@ -61,7 +61,7 @@ public class Pipeline
         sw.Start();
 
         // Create a new Activity scoped to the method
-        using var activity = ActivitySource.AICentralRequestActivitySource.StartActivity("AICentalRequest");
+        using var activity = ActivitySource.AICentralRequestActivitySource.StartActivity("AICentralRequest");
         var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
 
         if (config.Value.EnableDiagnosticsHeaders)

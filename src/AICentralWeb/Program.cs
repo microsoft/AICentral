@@ -37,7 +37,8 @@ var logger = new LoggerConfiguration()
     .Console()
     .CreateLogger();
 
-builder.Host.UseSerilog(logger);
+builder.Logging.ClearProviders();
+builder.Logging.AddOpenTelemetry().AddSerilog(logger);
 
 builder.Services.AddCors();
 

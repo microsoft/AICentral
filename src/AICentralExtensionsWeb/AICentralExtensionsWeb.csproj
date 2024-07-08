@@ -22,8 +22,6 @@
     <ItemGroup>
       <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.1.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-      <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.7.0" />
-      <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.8.1" />
       <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
     </ItemGroup>
 
