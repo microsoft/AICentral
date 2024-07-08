@@ -9,11 +9,7 @@
     ClientAuth: {
       auth: No Consumer Auth
     },
-    Steps: [
-      {
-        auth: No Consumer Auth
-      }
-    ],
+    Steps: [],
     EndpointSelector: {
       Type: SingleEndpoint,
       Endpoints: [
