@@ -380,7 +380,7 @@ public class TestAICentralPipelineBuilder
                 }, options =>
                 {
                     options.Instance = "https://login.microsoftonline.com/";
-                    options.ClientId = FakeIdpMessageHandler.FakeAppId;
+                    options.ClientId = "https://cognitiveservices.azure.com";
                     options.TenantId = FakeIdpMessageHandler.TenantId;
                     options.BackchannelHttpHandler = new FakeIdpMessageHandler();
                 }, id));

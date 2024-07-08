@@ -235,7 +235,7 @@ riderModule.iml
 /_ReSharper.Caches/
 
 
-appsettings.*.json
+appsettings.Development.json
 [Oo]bj/
 [Dd]ebug/
 

@@ -50,17 +50,17 @@ public class EntraClientAuthFactory : IPipelineStepFactory
         ILogger logger, 
         TypeAndNameConfig config)
     {
-
         var customSection = config.TypedProperties<EntraClientAuthConfig>();
+        Guard.NotNull(customSection.Entra, nameof(customSection.Entra));
+
         if (customSection.Requirements == null || customSection.Requirements.Roles.IsNullOrEmpty())
         {
             logger.LogWarning("Entra auth is configured but no roles are specified. Unless the Application is configured for specific user-assignment, this will allow all users and applications to access the endpoint.");
         }
 
-        return new EntraClientAuthFactory(customSection, (builder, id) => 
-            builder.AddMicrosoftIdentityWebApi(
-                config.ConfigurationSection!.GetSection("Properties"),
-                id));
+        var section = config.ConfigurationSection!.GetSection("Properties");
+        return new EntraClientAuthFactory(customSection, (builder, id) =>
+            builder.AddMicrosoftIdentityWebApi(section, "Entra", id));
     }
     
     /// <summary>

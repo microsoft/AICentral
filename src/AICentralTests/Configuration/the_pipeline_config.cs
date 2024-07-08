@@ -22,7 +22,7 @@ public class the_pipeline_config
             {
                 AICentral = new
                 {
-                    Endpoints = new object []
+                    Endpoints = new object[]
                     {
                         new
                         {
@@ -43,16 +43,16 @@ public class the_pipeline_config
                                 ApiKey = "fake-key",
                                 ModelMappings = new Dictionary<string, string>()
                                 {
-                                    ["Test"] = "TestMap" 
+                                    ["Test"] = "TestMap"
                                 }
                             }
                         }
                     },
-                    BackendAuthorisers = new []
+                    BackendAuthorisers = new[]
                     {
                         new
                         {
-                            Type="BearerPlusKey",
+                            Type = "BearerPlusKey",
                             Name = "BearerPlusKeyName",
                             Properties = new
                             {
@@ -63,10 +63,8 @@ public class the_pipeline_config
                                     User1 = "Key1",
                                     User2 = "Key2",
                                 }
-                                
                             }
                         }
-                        
                     },
                     EndpointSelectors = new[]
                     {
@@ -80,12 +78,27 @@ public class the_pipeline_config
                             }
                         }
                     },
-                    AuthProviders = new[]
+                    AuthProviders = new object []
                     {
                         new
                         {
                             Type = "AllowAnonymous",
                             Name = "anonymous"
+                        },
+                        new
+                        {
+                            Type = "Entra",
+                            Name = "azure-open-ai-token-checker",
+                            Properties = new
+                            {
+                                Entra = new
+                                {
+                                    ClientId = "https://cognitiveservices.azure.com",
+                                    TenantId = "16b3c013-d300-468d-ac64-7eda0820b6d3",
+                                    Instance = "https://login.microsoftonline.com/",
+                                    Audience = "https://cognitiveservices.azure.com"
+                                }
+                            }
                         }
                     },
                     Pipelines = new[]
@@ -102,7 +115,7 @@ public class the_pipeline_config
             }))
         );
 
-        var host = WebApplication.CreateBuilder(new WebApplicationOptions() {EnvironmentName = "test"});
+        var host = WebApplication.CreateBuilder(new WebApplicationOptions() { EnvironmentName = "test" });
         host.Configuration.AddJsonStream(stream);
         host.Services.AddAICentral(host.Configuration,
             additionalComponentAssemblies: typeof(AzureMonitorLogger).Assembly);
