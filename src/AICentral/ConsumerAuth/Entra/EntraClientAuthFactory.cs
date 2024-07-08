@@ -1,5 +1,6 @@
 ﻿using AICentral.Core;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 
@@ -53,16 +54,33 @@ public class EntraClientAuthFactory : IPipelineStepFactory
         var customSection = config.TypedProperties<EntraClientAuthConfig>();
         Guard.NotNull(customSection.Entra, nameof(customSection.Entra));
 
-        if (customSection.Requirements == null || customSection.Requirements.Roles.IsNullOrEmpty())
+        if (customSection.Requirements == null || customSection.Requirements.Roles.IsNullOrEmpty() || customSection.Requirements.DisableScopeAndRoleCheck == true)
         {
             logger.LogWarning("Entra auth is configured but no roles are specified. Unless the Application is configured for specific user-assignment, this will allow all users and applications to access the endpoint.");
         }
 
         var section = config.ConfigurationSection!.GetSection("Properties");
-        return new EntraClientAuthFactory(customSection, (builder, id) =>
-            builder.AddMicrosoftIdentityWebApi(section, "Entra", id));
+
+        return new EntraClientAuthFactory(customSection, (builder, schemeId) =>
+        {
+            builder.AddMicrosoftIdentityWebApi(section, "Entra", schemeId);
+            DisableScopeAndRoleCheckForManagedIdentityTokensDestinedForAzureOpenAI(customSection, builder, schemeId);
+        });
     }
-    
+
+    private static void DisableScopeAndRoleCheckForManagedIdentityTokensDestinedForAzureOpenAI(
+        EntraClientAuthConfig customSection, AuthenticationBuilder builder, string schemeId)
+    {
+        //To support scenarios such as passing through managed identity tokens deemed for Azure Open AI, where there won't be a scope or role in the token...
+        if (customSection.Requirements?.DisableScopeAndRoleCheck ?? false)
+        {
+            builder.Services.Configure<JwtBearerOptions>(schemeId, options =>
+            {
+                options.Events.OnTokenValidated = _ => Task.CompletedTask;
+            });
+        }
+    }
+
     /// <summary>
     /// Entra Auth is provided at the route scope. The runtime step is a no-op.
     /// </summary>
