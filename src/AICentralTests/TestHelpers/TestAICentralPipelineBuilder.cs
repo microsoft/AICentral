@@ -111,11 +111,10 @@ public class TestAICentralPipelineBuilder
             {
                 IncomingClaimName = ClaimTypes.Name,
                 KeyHeaderName = "new-api-key",
-                SubjectToKeyMappings = new Dictionary<string, string>()
-                {
-                    ["user1"] = "key-1",
-                    ["user2"] = "key-2",
-                }
+                ClaimsToKeys = [
+                    new ClaimValueToSubscriptionKey {ClaimValue = "user1", SubscriptionKey = "key-1"},
+                    new ClaimValueToSubscriptionKey {ClaimValue = "user2", SubscriptionKey = "key-2"},
+                ]
             }),
             new Dictionary<string, string>(),
             new Dictionary<string, string>(),

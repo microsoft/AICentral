@@ -6,6 +6,7 @@ using AICentral.Endpoints;
 using AICentral.Endpoints.AzureOpenAI;
 using AICentral.Endpoints.AzureOpenAI.Authorisers.BearerPassThroughWithAdditionalKey;
 using AICentral.EndpointSelectors.Single;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
@@ -18,16 +19,15 @@ public static class APImProxyWithCosmosLogging
     {
         public string? TenantId { get; init; }
         public string? ApimEndpointName { get; init; }
-        public Dictionary<string, string>? EntraIdsToSubscriptionKeys { get; init; }
+        public ClaimValueToSubscriptionKey[]? ClaimsToKeys { get; init; }
     }
 
     public static AICentralPipelineAssembler BuildAssembler(Config config)
     {
         Guard.NotNull(config.TenantId, nameof(config.TenantId));
-        Guard.NotNull(config.ApimEndpointName, nameof(config.TenantId));
-        Guard.NotNull(config.EntraIdsToSubscriptionKeys, nameof(config.TenantId));
+        Guard.NotNull(config.ApimEndpointName, nameof(config.ApimEndpointName));
+        Guard.NotNull(config.ClaimsToKeys, nameof(config.ClaimsToKeys));
 
-        
         var downstreamEndpointDispatcherFactory = new DownstreamEndpointDispatcherFactory(
             new AzureOpenAIDownstreamEndpointAdapterFactory(
                 "apim",
@@ -37,7 +37,7 @@ public static class APImProxyWithCosmosLogging
                     {
                         IncomingClaimName = "appid",
                         KeyHeaderName = "api-key",
-                        SubjectToKeyMappings = config.EntraIdsToSubscriptionKeys!
+                        ClaimsToKeys = config.ClaimsToKeys!
                     }),
                 new Dictionary<string, string>(),
                 new Dictionary<string, string>(),
@@ -53,23 +53,34 @@ public static class APImProxyWithCosmosLogging
                     {
                         ClientId = "https://cognitiveservices.azure.com",
                         TenantId = config.TenantId,
-                        Audience = "https://cognitiveservices.azure.com"
+                        Audience = "https://cognitiveservices.azure.com",
                     }
-                }, (builder, id) => builder
-                    .AddMicrosoftIdentityWebApi(options =>
-                    {
-                        options.Audience = "https://cognitiveservices.azure.com";
-                        options.TokenValidationParameters = new TokenValidationParameters()
+                }, (builder, schemeId) =>
+                {
+                    builder
+                        .AddMicrosoftIdentityWebApi(options =>
                         {
-                            ValidateIssuer = true,
-                            ValidAudiences = new[] { "https://cognitiveservices.azure.com" }
-                        };
-                    }, options =>
-                    {
-                        options.TenantId = config.TenantId;
-                        options.Instance = "https://login.microsoftonline.com/";
-                        options.ClientId = "https://cognitiveservices.azure.com";
-                    }, id))
+                            options.Audience = "https://cognitiveservices.azure.com";
+                            options.TokenValidationParameters = new TokenValidationParameters()
+                            {
+                                ValidateIssuer = true,
+                                ValidAudiences = new[] { "https://cognitiveservices.azure.com" }
+                            };
+                        }, options =>
+                        {
+                            options.TenantId = config.TenantId;
+                            options.Instance = "https://login.microsoftonline.com/";
+                            options.ClientId = "https://cognitiveservices.azure.com";
+                        }, schemeId);
+                    
+                    builder.Services.Configure<JwtBearerOptions>(
+                        schemeId,
+                        jwtBearerOptions =>
+                        {
+                            jwtBearerOptions.Events.OnTokenValidated = _ => Task.CompletedTask;
+                        });
+
+                })
             },
             new Dictionary<string, IEndpointDispatcherFactory>()
             {

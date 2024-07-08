@@ -5,10 +5,12 @@ namespace AICentral.Endpoints.AzureOpenAI.Authorisers.BearerPassThroughWithAddit
 public class BearerPassThroughWithAdditionalKeyAuth: BearerTokenPassThroughAuth
 {
     private readonly BearerPassThroughWithAdditionalKeyAuthFactoryConfig _config;
+    private readonly Dictionary<string,string> _mappings;
 
     public BearerPassThroughWithAdditionalKeyAuth(BearerPassThroughWithAdditionalKeyAuthFactoryConfig config)
     {
         _config = config;
+        _mappings = _config.ClaimsToKeys!.ToDictionary(x => x.ClaimValue!, x => x.SubscriptionKey!);
     }
 
     public override async Task ApplyAuthorisationToRequest(HttpRequest incomingRequest, HttpRequestMessage outgoingRequest)
@@ -22,7 +24,7 @@ public class BearerPassThroughWithAdditionalKeyAuth: BearerTokenPassThroughAuth
         var incomingClaim = incomingRequest.HttpContext.User.FindFirstValue(_config.IncomingClaimName);
         if (incomingClaim != null)
         {
-            if (_config.SubjectToKeyMappings.TryGetValue(incomingClaim, out var key))
+            if (_mappings.TryGetValue(incomingClaim, out var key))
             {
                 logger.LogDebug("Matched Claim. Claim Value: {ClaimValue}...",
                     incomingClaim.Substring(0, Math.Max(incomingClaim.Length, 4)));

@@ -33,7 +33,7 @@ public class BearerPassThroughWithAdditionalKeyAuthFactory: IEndpointAuthorisati
             Type = "BearerPlusKey",
             IncomingClaim = _config.IncomingClaimName,
             BackendHeader = _config.KeyHeaderName,
-            MatchedUsers = _config.SubjectToKeyMappings.Values
+            MatchedUsers = _config.ClaimsToKeys!.Select(x => x.ClaimValue!.Substring(0, Math.Min(x.ClaimValue!.Length, 4)))
         };
     }
 }

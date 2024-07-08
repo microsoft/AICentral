@@ -13,7 +13,13 @@ public class BearerPassThroughWithAdditionalKeyAuthFactoryConfig
     public string KeyHeaderName { get; init; } = default!;
 
     /// <summary>
-    /// Mapping of incoming claims to outgoing keys
+    /// List of incoming claims to outgoing keys
     /// </summary>
-    public Dictionary<string, string> SubjectToKeyMappings { get; init; } = default!;
+    public ClaimValueToSubscriptionKey[]? ClaimsToKeys { get; init; }
+}
+
+public class ClaimValueToSubscriptionKey
+{
+    public string? ClaimValue { get; init; }
+    public string? SubscriptionKey { get; init; }
 }
