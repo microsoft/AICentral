@@ -1,14 +1,13 @@
 ﻿using AICentral.Core;
 using Azure;
 using Azure.AI.TextAnalytics;
-using Azure.Identity;
 using Azure.Storage.Queues;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace AICentral.DistributedTokenLimits;
+namespace AICentral.Logging.PIIStripping;
 
 public class PIIStrippingLoggerFactory : IPipelineStepFactory
 {

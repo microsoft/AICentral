@@ -1,7 +1,8 @@
 using AICentral;
 using AICentral.Configuration;
-using AICentral.Core;
+using AICentral.DistributedTokenLimits;
 using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
+using AICentral.RateLimiting.DistributedRedis;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -48,6 +49,8 @@ builder.Services.AddAICentral(
     additionalComponentAssemblies:
     [
         typeof(AzureMonitorLoggerFactory).Assembly,
+        typeof(PIIStrippingLogger).Assembly,
+        typeof(DistributedRateLimiter).Assembly,
     ]);
 
 var enableSummaryPage = builder.Configuration.GetValue<bool>("EnableAICentralSummaryWebPage");

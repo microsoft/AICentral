@@ -1,6 +1,6 @@
 using AICentral;
 using AICentral.Configuration;
-using AICentral.DistributedTokenLimits;
+using AICentral.Logging.PIIStripping;
 using AICentral.RateLimiting.DistributedRedis;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using OpenTelemetry.Trace;

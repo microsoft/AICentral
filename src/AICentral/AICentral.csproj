@@ -15,7 +15,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AICentral.Core" Version="0.17.0-pullrequest0123-0007" />
+        <PackageReference Include="AICentral.Core" Version="0.17.0-pullrequest0123-0009" />
+        <PackageReference Include="AICentral.Logging.AzureMonitor" Version="0.17.0-pullrequest0123-0009" />
+        <PackageReference Include="AICentral.Logging.PIIStripping" Version="0.17.0-pullrequest0123-0009" />
+        <PackageReference Include="AICentral.RateLimiting.DistributedRedis" Version="0.17.0-pullrequest0123-0009" />
         <PackageReference Include="Azure.Identity" Version="1.11.4" />
         <PackageReference Include="Microsoft.AspNetCore.RateLimiting" Version="7.0.0-rc.2.22476.2"/>
         <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.6" />

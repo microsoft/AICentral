@@ -98,16 +98,20 @@ APIm can then apply policy at a Product level, authorise the caller using the JW
 
 ```json
 {
-    "Type": "BearerPlusKey",
-    "Name": "name-to-set-authentication-type-in-endpoint",
-    "Properties": {
+  BackendAuthorisers: [
+    {
+      "Type": "BearerPlusKey",
+      "Name": "name-to-set-authentication-type-in-endpoint",
+      "Properties": {
         "IncomingClaimName": "",
         "KeyHeaderName": "backend-api-key",
         "SubjectToKeyMappings": {
           "<entra-identity-representing-caller-1>": "<apim-subscription-key-1>",
           "<entra-identity-representing-caller-2>": "<apim-subscription-key-2>"
         }
+      }
     }
+  ]
 }
 ```
 

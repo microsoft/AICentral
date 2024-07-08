@@ -1,6 +1,6 @@
 ﻿using AICentral.Core;
 
-namespace AICentral.DistributedTokenLimits;
+namespace AICentral.Logging.PIIStripping;
 
 internal record LogEntry(
     // ReSharper disable once InconsistentNaming

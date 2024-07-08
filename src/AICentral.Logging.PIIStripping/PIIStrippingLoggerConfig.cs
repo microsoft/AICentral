@@ -1,4 +1,4 @@
-namespace AICentral.DistributedTokenLimits;
+namespace AICentral.Logging.PIIStripping;
 
 public class PIIStrippingLoggerConfig
 {
