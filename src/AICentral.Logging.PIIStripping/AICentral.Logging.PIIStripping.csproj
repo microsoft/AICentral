@@ -4,6 +4,8 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AssemblyName>AICentral.Logging.PIIStripping</AssemblyName>
+        <RootNamespace>AICentral.Logging.PIIStripping</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
