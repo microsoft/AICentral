@@ -100,7 +100,7 @@ APIm can then apply policy at a Product level, authorise the caller using the JW
 
 ```json
 {
-  "BackendAuth": [
+  "BackendAuths": [
     {
       "Type": "BearerPlusKey",
       "Name": "name-to-set-authentication-type-in-endpoint",
