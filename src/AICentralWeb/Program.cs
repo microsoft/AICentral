@@ -5,10 +5,8 @@ using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 using AICentral.RateLimiting.DistributedRedis;
 using AICentralWeb.QuickStartConfigs;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
+using Microsoft.Extensions.Logging.Console;
 using OpenTelemetry.Trace;
-using Serilog;
-using Serilog.Events;
-using Serilog.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,15 +28,12 @@ if (builder.Environment.EnvironmentName != "tests")
         .UseAzureMonitor(options => options.SamplingRatio = 0.1f);
 }
 
-var logger = new LoggerConfiguration()
-    .MinimumLevel.Verbose()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-    .WriteTo
-    .Console()
-    .CreateLogger();
-
-builder.Logging.ClearProviders();
-builder.Logging.AddOpenTelemetry().AddSerilog(logger);
+using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSimpleConsole(options =>
+{
+    options.ColorBehavior = LoggerColorBehavior.Default;
+    options.SingleLine = true;
+}));
+var startupLogger = loggerFactory.CreateLogger("AICentral.Startup");
 
 builder.Services.AddCors();
 
@@ -50,14 +45,14 @@ if (builder.Environment.EnvironmentName == "APImProxyWithCosmosLogging")
 
     assembler.AddServices(
         builder.Services,
-        startupLogger: new SerilogLoggerProvider(logger).CreateLogger("AICentralStartup"),
+        startupLogger: startupLogger,
         optionalHandler: null);
 }
 else
 {
     builder.Services.AddAICentral(
         builder.Configuration,
-        startupLogger: new SerilogLoggerProvider(logger).CreateLogger("AICentralStartup"),
+        startupLogger: startupLogger,
         additionalComponentAssemblies:
         [
             typeof(AzureMonitorLoggerFactory).Assembly,
