@@ -23,7 +23,7 @@ public class ConfigurationBasedPipelineBuilder
 
     private readonly Dictionary<string,
             Func<ILogger, TypeAndNameConfig, IEndpointAuthorisationHandlerFactory>>
-        _backendAuthorisers = new();
+        _backendAuths = new();
 
     private readonly Dictionary<string,
             Func<ILogger, TypeAndNameConfig, IPipelineStepFactory>>
@@ -47,7 +47,7 @@ public class ConfigurationBasedPipelineBuilder
         _genericStepBuilders.Add(T.ConfigName, T.BuildFromConfig);
 
     private void RegisterBackendEndpointAuthoriser<T>() where T : IEndpointAuthorisationHandlerFactory =>
-        _backendAuthorisers.Add(T.ConfigName, T.BuildFromConfig);
+        _backendAuths.Add(T.ConfigName, T.BuildFromConfig);
 
     public AICentralPipelineAssembler BuildPipelinesFromConfig(
         AICentralConfig configuration,
@@ -60,15 +60,15 @@ public class ConfigurationBasedPipelineBuilder
         RegisterBuilders<IPipelineStepFactory>(additionalAssembliesToScan, nameof(RegisterAuthProvider));
         RegisterBuilders<IEndpointAuthorisationHandlerFactory>(additionalAssembliesToScan, nameof(RegisterBackendEndpointAuthoriser));
 
-        var backendAuthorisers =
+        var backendAuths =
             (configuration
-                .BackendAuthorisers ?? [])
+                .BackendAuths ?? [])
                 .ToDictionary(
                     x => Guard.NotNull(x.Name, "Name"),
                     x =>
                     {
                         startupLogger.LogInformation("Configuring Backend Authoriser {Name}", x.Name);
-                        return _backendAuthorisers[
+                        return _backendAuths[
                             Guard.NotNull(x.Type, "Type") ??
                             throw new ArgumentException("No Type specified for Backend Authoriser")](
                             startupLogger,
@@ -90,7 +90,7 @@ public class ConfigurationBasedPipelineBuilder
                                 throw new ArgumentException("No Type specified for Endpoint")](
                                 startupLogger,
                                 x,
-                                backendAuthorisers));
+                                backendAuths));
                     });
 
         var endpointSelectors = new Dictionary<string, IEndpointSelectorFactory>();

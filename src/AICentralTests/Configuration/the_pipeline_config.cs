@@ -49,7 +49,7 @@ public class the_pipeline_config
                             }
                         }
                     },
-                    BackendAuthorisers = new[]
+                    BackendAuths = new[]
                     {
                         new
                         {

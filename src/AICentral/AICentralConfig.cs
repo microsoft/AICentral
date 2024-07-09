@@ -41,7 +41,7 @@ public class AICentralConfig
     /// <summary>
     /// A set of backend authorisers to provide custom auth for backend services
     /// </summary>
-    public TypeAndNameConfig[]? BackendAuthorisers { get; set; }
+    public TypeAndNameConfig[]? BackendAuths { get; set; }
 
     /// <summary>
     /// Optional Message Handler to use when making downstream requests. This can be used to add custom headers, or to add a proxy, etc.
@@ -58,7 +58,7 @@ public class AICentralConfig
         EndpointSelectors = FillCollection(nameof(EndpointSelectors), configurationSection).ToArray();
         AuthProviders = FillCollection(nameof(AuthProviders), configurationSection).ToArray();
         GenericSteps = FillCollection(nameof(GenericSteps), configurationSection).ToArray();
-        BackendAuthorisers = FillCollection(nameof(BackendAuthorisers), configurationSection).ToArray();
+        BackendAuths = FillCollection(nameof(BackendAuths), configurationSection).ToArray();
     }
 
     private List<TypeAndNameConfig> FillCollection(
