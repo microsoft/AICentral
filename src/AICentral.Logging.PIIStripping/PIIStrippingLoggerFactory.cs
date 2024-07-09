@@ -15,7 +15,7 @@ public class PIIStrippingLoggerFactory : IPipelineStepFactory
     private readonly PIIStrippingLoggerConfig _config;
     private readonly string _id;
 
-    private PIIStrippingLoggerFactory(string stepName, PIIStrippingLoggerConfig config)
+    public PIIStrippingLoggerFactory(string stepName, PIIStrippingLoggerConfig config)
     {
         _stepName = stepName;
         _config = config;
