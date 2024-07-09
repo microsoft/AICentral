@@ -30,7 +30,7 @@ All endpoints are wrapped with a Polly Policy. We
 
 > If AuthenticationType is set to ```entrapassthrough``` AICentral will expect, and forward the incoming JWT Bearer Token straight through to Azure Open AI
 
-> To provide a custom Authenticator, set AuthenticationType to the name of a 'BackendAuthorisers'
+> To provide a custom Authenticator, set AuthenticationType to the name of a 'BackendAuths' entry
  
 ```json
 {
@@ -78,7 +78,7 @@ All endpoints are wrapped with a Polly Policy. We
 }
 ```
 
-## Backend Authorisers
+## Backend Auths
 
 These allow more control over the downstream request to an Azure Open AI service.
 
@@ -88,27 +88,35 @@ This enables out-of-the-box support for PromptFlow to use an Open AI JWT matched
 
 APIm can then apply policy at a Product level, authorise the caller using the JWT, and then use its own Identity to call Azure Open AI.
 
+> This requires an incoming Entra / JWT client auth step to work.
+
 > This works because Entra will provide you a token for the Azure Open AI scope (https://cognitiveservices.azure.com) regardless if you have permissions to call any Azure Open AI resources. The authorisation check is made by Azure Open AI. Not Entra.
 
-| Property             | Description                                                |
-|----------------------|------------------------------------------------------------|
-| IncomingClaimName    | Claim to use to match against the SubjectToKeyMappings.    |
-| KeyHeaderName        | Header to attach to the call to the downstream service.    |
-| SubjectToKeyMappings | Dictionary mapping incoming identities to downstream keys. |
+| Property          | Description                                             |
+|-------------------|---------------------------------------------------------|
+| IncomingClaimName | Claim to use to match against the SubjectToKeyMappings. |
+| KeyHeaderName     | Header to attach to the call to the downstream service. |
+| ClaimsToKeys      | Array mapping incoming identities to downstream keys.   |
 
 ```json
 {
-  BackendAuthorisers: [
+  "BackendAuths": [
     {
       "Type": "BearerPlusKey",
       "Name": "name-to-set-authentication-type-in-endpoint",
       "Properties": {
-        "IncomingClaimName": "",
+        "IncomingClaimName": "appid",
         "KeyHeaderName": "backend-api-key",
-        "SubjectToKeyMappings": {
-          "<entra-identity-representing-caller-1>": "<apim-subscription-key-1>",
-          "<entra-identity-representing-caller-2>": "<apim-subscription-key-2>"
-        }
+        "ClaimsToKeys": [
+          {
+            "ClaimValue": "app-1",
+            "SubscriptionKey": "key-1"
+          },
+          {
+            "ClaimValue": "app-2",
+            "SubscriptionKey": "key-2"
+          }
+        ]
       }
     }
   ]

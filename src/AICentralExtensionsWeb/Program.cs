@@ -4,9 +4,6 @@ using AICentral.Logging.PIIStripping;
 using AICentral.RateLimiting.DistributedRedis;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using OpenTelemetry.Trace;
-using Serilog;
-using Serilog.Events;
-using Serilog.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,20 +28,14 @@ if (builder.Environment.EnvironmentName != "tests")
         .UseAzureMonitor();
 }
 
-var logger = new LoggerConfiguration()
-    .MinimumLevel.Verbose()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-    .WriteTo
-    .Console()
-    .CreateLogger();
-
-builder.Host.UseSerilog(logger);
+using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddConsole());
+var startupLogger = loggerFactory.CreateLogger("AICentral.Startup");
 
 builder.Services.AddCors();
 
 builder.Services.AddAICentral(
     builder.Configuration,
-    startupLogger: new SerilogLoggerProvider(logger).CreateLogger("AICentralStartup"),
+    startupLogger: startupLogger,
     additionalComponentAssemblies:
     [
         typeof(PIIStrippingLogger).Assembly,
