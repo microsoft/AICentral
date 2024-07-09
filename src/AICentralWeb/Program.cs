@@ -10,6 +10,11 @@ using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders().AddSimpleConsole(options =>
+{
+    options.SingleLine = true;
+});
+
 if (builder.Environment.EnvironmentName != "tests")
 {
     builder.Services
