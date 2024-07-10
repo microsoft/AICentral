@@ -34,6 +34,7 @@ Set the following environment variables
 | TextAnalyticsKey                     | Key for text analytics service                                            |
 | ClaimsToKeys__{idx}__ClaimValue      | Value of claim                                                            |
 | ClaimsToKeys__{idx}__SubscriptionKey | APIm subscription key                                                     |
+| AllowedChatImageUriHostNames__{idx}  | Hostname to allow images to be retrieved by AOAI, e.g. www.flickr.com     |
 
 ### Architecture Diagram
 

@@ -69,8 +69,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aspire", "aspire", "{F9819A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.OpenAITestExtensions", "AICentral.OpenAITestExtensions\AICentral.OpenAITestExtensions.csproj", "{70430FEE-5DE2-42EA-A6CC-780BB1873E34}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QuickStarts", "QuickStarts", "{D4324A47-4347-43CA-A656-593F6C165201}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
