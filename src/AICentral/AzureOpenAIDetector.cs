@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using AICentral.Core;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
@@ -29,19 +30,19 @@ public class AzureOpenAIDetector
 
     private async Task<IncomingCallDetails> DetectChat(string pipelineName, string deploymentName, HttpRequest request, CancellationToken cancellationToken)
     {
-        var requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+        var requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Chat,
-            requestContent.RootElement.TryGetProperty("stream", out var stream) ? 
-                stream.GetBoolean()
+            requestContent.TryGetProperty("stream", out var stream) ? 
+                stream.GetValue<bool>()
                     ? AICallResponseType.Streaming 
                     : AICallResponseType.NonStreaming 
                 : AICallResponseType.NonStreaming,
             string.Join(
                 '\n',
-                requestContent.RootElement.GetProperty("messages").EnumerateArray()
-                    .Select(x => GetTextContent(x.GetProperty("content")))),
+                requestContent["messages"]!.AsArray()
+                    .Select(x => GetTextContent(x!["content"]!))),
             deploymentName,
             null,
             requestContent,
@@ -49,19 +50,19 @@ public class AzureOpenAIDetector
             null);
     }
 
-    private string? GetTextContent(JsonElement contentProperty)
+    private string GetTextContent(JsonNode contentProperty)
     {
-        if (contentProperty.ValueKind == JsonValueKind.Array)
+        if (contentProperty.GetValueKind() == JsonValueKind.Array)
         {
             var arrayContent = new StringBuilder();
-            foreach(var item in contentProperty.EnumerateArray())
+            foreach(var item in contentProperty.AsArray())
             {
-                if (item.TryGetProperty("type", out var typeElement))
+                if (item!.TryGetProperty("type", out var typeElement))
                 {
-                    if (typeElement.GetString() == "text")
+                    if (typeElement.GetValue<string>() == "text")
                     {
-                        arrayContent.Append(item.GetProperty("text").GetString());
-                        arrayContent.Append(" ");
+                        arrayContent.Append(item!["text"]!.GetValue<string>());
+                        arrayContent.Append(' ');
                     }
                 }
             }
@@ -69,25 +70,25 @@ public class AzureOpenAIDetector
             return arrayContent.ToString();
         }
 
-        return contentProperty.GetString();
+        return contentProperty.GetValue<string>();
     }
     
     private async Task<IncomingCallDetails> DetectCompletions(string pipelineName, string deploymentName, HttpRequest request, CancellationToken cancellationToken)
     {
-        var requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
-        var prompt = requestContent.RootElement.GetProperty("prompt");
+        var requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
+        var prompt = requestContent["prompt"]!;
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Completions,
-            requestContent.RootElement.TryGetProperty("stream", out var stream)
-                ? stream.GetBoolean()
+            requestContent.TryGetProperty("stream", out var stream)
+                ? stream.GetValue<bool>()
                     ? AICallResponseType.Streaming
                     : AICallResponseType.NonStreaming
                 : AICallResponseType.NonStreaming,
-            prompt.ValueKind == JsonValueKind.Array
+            prompt.GetValueKind() == JsonValueKind.Array
                 ? string.Join('\n',
-                    requestContent.RootElement.GetProperty("prompt").EnumerateArray().Select(x => x.GetString()))
-                : prompt.GetString(),
+                    requestContent["prompt"]!.AsArray().Select(x => x!.GetValue<string>()))
+                : prompt.GetValue<string>(),
             deploymentName,
             null,
             requestContent,
@@ -97,12 +98,12 @@ public class AzureOpenAIDetector
 
     private async Task<IncomingCallDetails> DetectEmbeddings(string pipelineName, string deploymentName, HttpRequest request, CancellationToken cancellationToken)
     {
-        var requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+        var requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Embeddings,
             AICallResponseType.NonStreaming,
-            GetEmbeddingContent(requestContent.RootElement.GetProperty("input")),
+            GetEmbeddingContent(requestContent["input"]!),
             deploymentName,
             null,
             requestContent,
@@ -110,21 +111,21 @@ public class AzureOpenAIDetector
             null);
     }
 
-    private string? GetEmbeddingContent(JsonElement contentProperty)
+    private string GetEmbeddingContent(JsonNode contentProperty)
     {
-        if (contentProperty.ValueKind == JsonValueKind.Array)
+        if (contentProperty.GetValueKind() == JsonValueKind.Array)
         {
             var arrayContent = new StringBuilder();
-            foreach(var item in contentProperty.EnumerateArray())
+            foreach(var item in contentProperty.AsArray())
             {
-                arrayContent.Append(item.GetString());
+                arrayContent.Append(item!.GetValue<string>());
                 arrayContent.Append(" ");
             }
 
             return arrayContent.ToString();
         }
 
-        return contentProperty.GetString();
+        return contentProperty.GetValue<string>();
     }
 
     private IncomingCallDetails DetectTranscription(string pipelineName, string deploymentName, HttpRequest request)
@@ -171,7 +172,7 @@ public class AzureOpenAIDetector
     
     private async Task<IncomingCallDetails> DetectDalle2(string pipelineName, HttpRequest request, CancellationToken cancellationToken)
     {
-        var requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+        var requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
         return new IncomingCallDetails(
             pipelineName,
             AICallType.DALLE2,
@@ -203,7 +204,7 @@ public class AzureOpenAIDetector
     
     private async Task<IncomingCallDetails> DetectDalle3(string pipelineName, string deploymentName, HttpRequest request, CancellationToken cancellationToken)
     {
-        var requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+        var requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
         return new IncomingCallDetails(
             pipelineName,
             AICallType.DALLE3,
@@ -218,10 +219,10 @@ public class AzureOpenAIDetector
     
     private async Task<IncomingCallDetails> DetectAssistant(string pipelineName, string? assistantName, HttpRequest request, CancellationToken cancellationToken)
     {
-        JsonDocument? requestContent = null;
+        JsonNode? requestContent = null;
         if (request.HasJsonContentType() && (request.Method.Equals("post", StringComparison.InvariantCultureIgnoreCase)  || request.Method.Equals("put", StringComparison.InvariantCultureIgnoreCase)))
         {
-            requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
+            requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
         }
 
         return new IncomingCallDetails(
@@ -238,13 +239,13 @@ public class AzureOpenAIDetector
     
     private async Task<IncomingCallDetails> DetectThread(string pipelineName, HttpRequest request, CancellationToken cancellationToken)
     {
-        JsonDocument? requestContent = null;
+        JsonNode? requestContent = null;
         string? assistantId = null;
         if (request.HasJsonContentType() && (request.Method.Equals("post", StringComparison.InvariantCultureIgnoreCase)  || request.Method.Equals("put", StringComparison.InvariantCultureIgnoreCase)))
         {
-            requestContent = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
-            assistantId = requestContent.RootElement.TryGetProperty("assistant_id", out var elem)
-                ? elem.GetString()
+            requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
+            assistantId = requestContent.TryGetProperty("assistant_id", out var elem)
+                ? elem.GetValue<string>()
                 : null;
         }
         

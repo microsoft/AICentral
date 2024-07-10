@@ -15,7 +15,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AICentral.Core" Version="0.17.0-pullrequest0123-0009" />
         <PackageReference Include="AICentral.Logging.AzureMonitor" Version="0.17.0-pullrequest0123-0009" />
         <PackageReference Include="AICentral.Logging.PIIStripping" Version="0.17.2-pullrequest0125-0002" />
         <PackageReference Include="AICentral.RateLimiting.DistributedRedis" Version="0.17.0-pullrequest0123-0009" />
@@ -34,6 +33,10 @@
 
     <ItemGroup>
         <None Include="readme.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AICentral.Core\AICentral.Core.csproj" />
     </ItemGroup>
 
 </Project>

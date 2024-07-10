@@ -57,7 +57,8 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.AzureOpenAIServiceWithInBuiltJwtAuth(),
                 TestPipelines.AzureOpenAIServiceWithInBuiltWildcardJwtAuth(),
                 TestPipelines.AzureOpenAIServiceWithAutoUserPopulation(),
-                TestPipelines.TokenPlusKeyEndpoiont()
+                TestPipelines.TokenPlusKeyEndpoint(),
+                TestPipelines.AzureOpenAIServiceWithChatImageFiltering()
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));

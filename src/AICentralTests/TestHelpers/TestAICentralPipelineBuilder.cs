@@ -19,6 +19,7 @@ using AICentral.EndpointSelectors.Priority;
 using AICentral.EndpointSelectors.Random;
 using AICentral.EndpointSelectors.Single;
 using AICentral.RateLimiting;
+using AICentral.RequestFiltering;
 using AICentralTests.TestHelpers.FakeIdp;
 using Microsoft.Identity.Web;
 using FixedWindowRateLimiterOptions = AICentral.RateLimiting.FixedWindowRateLimiterOptions;
@@ -39,6 +40,7 @@ public class TestAICentralPipelineBuilder
     private TimeSpan? _endpointAffinityTimespan;
     private static readonly DiagnosticsCollectorFactory DiagnosticsCollectorFactory = new();
     private static readonly string DiagnosticsCollectorFactoryId = Guid.NewGuid().ToString();
+    private string[]? _allowedChatImageHostNames;
 
     public TestAICentralPipelineBuilder WithApiKeyAuth(params (string clientName, string key1, string key2)[] clients)
     {
@@ -290,6 +292,14 @@ public class TestAICentralPipelineBuilder
             steps.Add(stepId);
         }
 
+        if (_allowedChatImageHostNames != null)
+        {
+            var stepId = Guid.NewGuid().ToString();
+            genericSteps[stepId] = new RequestFilteringProviderFactory(new RequestFilteringConfiguration()
+                { AllowedHostNames = _allowedChatImageHostNames });
+            steps.Add(stepId);
+        }
+
         if (_endpointAffinityTimespan != null)
         {
             var stepId = Guid.NewGuid().ToString();
@@ -338,6 +348,12 @@ public class TestAICentralPipelineBuilder
         _windowInSeconds = windowSize;
         _tokensPerWindow = completionTokensPerWindow;
         _tokenLimitType = limitType;
+        return this;
+    }
+    
+    public TestAICentralPipelineBuilder WithChatFiltering()
+    {
+        _allowedChatImageHostNames = ["somewheregood.com"];
         return this;
     }
 
