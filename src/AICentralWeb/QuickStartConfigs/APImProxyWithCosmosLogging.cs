@@ -46,7 +46,7 @@ public static class APImProxyWithCosmosLogging
         {
             CosmosContainer = "aoaiLogContainer",
             CosmosDatabase = "aoaiLogs",
-            QueueName = "promptResponseQueue",
+            QueueName = "prompt-and-response-queue",
             CosmosConnectionString = cosmosConnectionString,
             TextAnalyticsEndpoint = textAnalyticsEndpoint,
             StorageQueueConnectionString = storageConnectionString,
