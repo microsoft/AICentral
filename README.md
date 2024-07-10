@@ -38,6 +38,14 @@
 
 > Extensibility model makes it easy to build your own plugins
 
+## Quickstarts
+
+To make it easy to get up and running, we are creating QuickStart configurations. Simply pull the docker container, set a few environment variables, and you're away.
+
+| Quickstart                                                         | Features                                                                            |
+|--------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| [APImProxyWithCosmosLogging](./docs/apimproxywithcosmoslogging.md) | Run in-front of Azure APIm AI Gateway for easy PromptFlow and PII stripped logging. | 
+
 ## Configuration
 
 See [Configuration](./docs/configuration.md) for more details.

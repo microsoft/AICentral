@@ -32,6 +32,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{8B63898C-9
 		..\docs\configuration.md = ..\docs\configuration.md
 		..\docs\advanced-otel.md = ..\docs\advanced-otel.md
 		..\docs\deployment.png = ..\docs\deployment.png
+		..\docs\apimproxywithcosmoslogging.md = ..\docs\apimproxywithcosmoslogging.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.Core", "AICentral.Core\AICentral.Core.csproj", "{A61ABFAB-3E7F-400F-8F89-C3CC3705AA91}"
@@ -67,8 +68,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aspire", "aspire", "{F9819AC6-DE12-4B91-8429-7CB53DC03E64}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.OpenAITestExtensions", "AICentral.OpenAITestExtensions\AICentral.OpenAITestExtensions.csproj", "{70430FEE-5DE2-42EA-A6CC-780BB1873E34}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QuickStarts", "QuickStarts", "{D4324A47-4347-43CA-A656-593F6C165201}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

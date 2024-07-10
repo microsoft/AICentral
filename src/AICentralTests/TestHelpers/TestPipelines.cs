@@ -12,7 +12,7 @@ public static class TestPipelines
      public static readonly string FastEndpoint = Guid.NewGuid().ToString();
      public static readonly string SlowEndpoint = Guid.NewGuid().ToString();
 
-     public static AICentralPipelineAssembler TokenPlusKeyEndpoiont() =>
+     public static AICentralPipelineAssembler TokenPlusKeyEndpoint() =>
          new TestAICentralPipelineBuilder()
              .WithFakeEntraClientAuth()
              .WithSingleEndpointBearerPlusKey(Endpoint200)
@@ -79,6 +79,12 @@ public static class TestPipelines
         new TestAICentralPipelineBuilder()
             .WithSingleEndpoint(Endpoint200)
             .Assemble("azure-openai-to-azure.localtest.me");
+
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithChatImageFiltering() =>
+        new TestAICentralPipelineBuilder()
+            .WithSingleEndpoint(Endpoint200)
+            .WithChatFiltering()
+            .Assemble("azure-openai-to-azure-filter-chats.localtest.me");
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleAzureOpenAIEndpointWithMappedModel() =>
         new TestAICentralPipelineBuilder()

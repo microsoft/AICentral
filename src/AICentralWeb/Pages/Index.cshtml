@@ -1,4 +1,5 @@
 ﻿@page
+@using System.Reflection
 @using AICentral
 @using Newtonsoft.Json
 @model AICentralWeb.Pages.Index
@@ -12,7 +13,7 @@
 
 <html>
 <head>
-    <title>AICentral Pipelines Information</title>
+    <title>AICentral:@(typeof(AICentralConfig).Assembly.GetCustomAttribute<AssemblyVersionAttribute>()?.Version) Pipelines Information</title>
 </head>
 <body>
 <div>

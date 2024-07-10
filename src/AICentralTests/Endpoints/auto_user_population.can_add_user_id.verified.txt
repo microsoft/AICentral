@@ -36,7 +36,10 @@
     DeploymentName: mapped,
     Client: client-1,
     StreamingResponse: false,
-    Prompt: Hello,
+    Prompt:
+system:
+   text: Hello
+,
     Response:
 Choice 0
 

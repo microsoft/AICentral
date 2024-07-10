@@ -7,10 +7,10 @@
     "Headers": {
       "Accept": "application/json",
       "x-ms-return-client-request-id": "true",
-      "new-api-key": "key-1"
+      "api-key": "ignore-fake-key-hr987345"
     },
     "ContentType": "application/json",
-    "Content": "{\"messages\":[{\"content\":\"Hello\",\"role\":\"system\"}],\"model\":\"model\"}"
+    "Content": "{\"messages\":[{\"content\":\"You are an assistant\",\"role\":\"system\"},{\"content\":[{\"text\":\"Normal text\",\"type\":\"text\"}],\"role\":\"user\"},{\"content\":[{\"image_url\":{\"url\":\"http://somewheregood.com/myimage.jpeg\"},\"type\":\"image_url\"}],\"role\":\"user\"}],\"model\":\"model\"}"
   }
 ],
   Response: {
@@ -34,11 +34,19 @@
     OpenAIHost: Guid_1,
     ModelName: gpt-35-turbo,
     DeploymentName: model,
-    Client: user1,
+    Client: ,
     StreamingResponse: false,
     Prompt:
 system:
-   text: Hello
+   text: You are an assistant
+
+user:
+   text: Normal text
+
+user:
+   image: http://somewherebad.com/myimage.jpeg
+   image: http://somewheregood.com/myimage.jpeg
+   image: data data
 ,
     Response:
 Choice 0
