@@ -33,28 +33,25 @@ public static class APImProxyWithCosmosLogging
         var tenantId = Guard.NotNull(config.TenantId, nameof(config.TenantId));
         var apimEndpointUri = Guard.NotNull(config.ApimEndpointUri, nameof(config.ApimEndpointUri));
         var textAnalyticsEndpoint = Guard.NotNull(config.TextAnalyticsEndpoint, nameof(config.TextAnalyticsEndpoint));
-        var storageConnectionString = Guard.NotNull(config.StorageConnectionString, nameof(config.StorageConnectionString));
+        var storageConnectionString =
+            Guard.NotNull(config.StorageConnectionString, nameof(config.StorageConnectionString));
         var incomingClaimName = Guard.NotNull(config.IncomingClaimName, nameof(config.IncomingClaimName));
-        var cosmosConnectionString = Guard.NotNull(config.CosmosConnectionString, nameof(config.CosmosConnectionString));
+        var cosmosConnectionString =
+            Guard.NotNull(config.CosmosConnectionString, nameof(config.CosmosConnectionString));
         var textAnalyticsKey = Guard.NotNull(config.TextAnalyticsKey, nameof(config.TextAnalyticsKey));
         var claimsToKeys = Guard.NotNull(config.ClaimsToKeys, nameof(config.ClaimsToKeys));
 
-        var steps = new List<IPipelineStepFactory>();
-        if (config.CosmosConnectionString != null)
+        var cosmosLoggerStepName = "cosmosLogger";
+        var cosmosLoggerConfig = new PIIStrippingLoggerConfig()
         {
-            var cosmosLoggerStepName = "cosmosLogger";
-            steps.Add(new PIIStrippingLoggerFactory(
-                cosmosLoggerStepName, new PIIStrippingLoggerConfig()
-                {
-                    CosmosContainer = "aoaiLogContainer",
-                    CosmosDatabase = "aoaiLogs",
-                    QueueName = "promptResponseQueue",
-                    CosmosConnectionString = cosmosConnectionString,
-                    TextAnalyticsEndpoint = textAnalyticsEndpoint,
-                    StorageQueueConnectionString = storageConnectionString,
-                    TextAnalyticsKey = textAnalyticsKey
-                }));
-        }
+            CosmosContainer = "aoaiLogContainer",
+            CosmosDatabase = "aoaiLogs",
+            QueueName = "promptResponseQueue",
+            CosmosConnectionString = cosmosConnectionString,
+            TextAnalyticsEndpoint = textAnalyticsEndpoint,
+            StorageQueueConnectionString = storageConnectionString,
+            TextAnalyticsKey = textAnalyticsKey
+        };
 
         var downstreamEndpointDispatcherFactory = new DownstreamEndpointDispatcherFactory(
             new AzureOpenAIDownstreamEndpointAdapterFactory(
@@ -103,11 +100,7 @@ public static class APImProxyWithCosmosLogging
 
                     builder.Services.Configure<JwtBearerOptions>(
                         schemeId,
-                        jwtBearerOptions =>
-                        {
-                            jwtBearerOptions.Events.OnTokenValidated = _ => Task.CompletedTask;
-                        });
-
+                        jwtBearerOptions => { jwtBearerOptions.Events.OnTokenValidated = _ => Task.CompletedTask; });
                 })
             },
             new Dictionary<string, IEndpointDispatcherFactory>()
@@ -118,7 +111,10 @@ public static class APImProxyWithCosmosLogging
             {
                 ["default-endpoint-selector"] = new SingleEndpointSelectorFactory(downstreamEndpointDispatcherFactory)
             },
-            new Dictionary<string, IPipelineStepFactory>(),
+            new Dictionary<string, IPipelineStepFactory>()
+            {
+                [cosmosLoggerStepName] = new PIIStrippingLoggerFactory(cosmosLoggerStepName, cosmosLoggerConfig)
+            },
             [
                 new PipelineConfig()
                 {
@@ -131,8 +127,9 @@ public static class APImProxyWithCosmosLogging
                         AddClientNameTag = true,
                         Transmit = true
                     },
-                    Steps = [
-                        "cosmosLogger"
+                    Steps =
+                    [
+                        cosmosLoggerStepName
                     ]
                 }
             ]
