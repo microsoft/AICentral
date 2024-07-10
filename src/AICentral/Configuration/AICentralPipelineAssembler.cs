@@ -42,7 +42,7 @@ public class AICentralPipelineAssembler
         _servicesAdded = _servicesAdded ? throw new InvalidOperationException("AICentral is already built") : true;
 
         services.AddSingleton<DateTimeProvider>();
-        services.AddSingleton<DownstreamEndpointRateLimitingTracker>();
+        services.AddSingleton<DownstreamEndpointResponseDataTracker>();
 
         foreach (var authProvider in _authProviders) authProvider.Value.RegisterServices(services);
         foreach (var endpoint in _endpoints) endpoint.Value.RegisterServices(optionalHandler, services);

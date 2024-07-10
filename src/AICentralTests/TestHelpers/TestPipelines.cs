@@ -125,6 +125,14 @@ public static class TestPipelines
                 (Endpoint200Number2, "random", "Model1"))
             .Assemble("azure-to-azure-openai.localtest.me");
 
+
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithCapacityBasedAzureOpenAIEndpoints() =>
+        new TestAICentralPipelineBuilder()
+            .WithMetricsBasedEndpoints(
+                (Endpoint200, "random", "Model1"),
+                (Endpoint200Number2, "random", "Model1"))
+            .Assemble("azure-to-azure-openai-capacity-based.localtest.me");
+
     public static AICentralPipelineAssembler AzureOpenAIServiceWithSingleOpenAIEndpoint() =>
         new TestAICentralPipelineBuilder()
             .WithRandomOpenAIEndpoints(new[]

@@ -164,13 +164,43 @@ We ship 4 Endpoint Selectors:
 
 ```json
 {
-    "Type": "RandomCluster",
+  "Type": "RandomCluster",
+  "Name": "my-name",
+  "Properties": {
+    "Endpoints": [
+      "endpoint-name-from-earlier",
+      "another-endpoint-name-from-earlier",
+      "yet-another-endpoint-name-from-earlier",
+      "or-another-endpoint-selector"
+    ]
+  }
+}
+```
+
+
+### Highest Capacity Endpoint Selector
+
+- Picks endpoints based on how much capacity (tokens, followed by requests) they advertise are remaining.
+- If we fail, we pick the next.
+- And so-on, until we get a response, or fail.
+
+> This uses headers like ```x-ratelimit-remaining-requests``` and ```x-ratelimit-remaining-tokens``` to track available capacity.
+
+***This selector cannot combine other Endpoint Selectors in its Endpoints Array***
+
+| Property  | Description                                                                       |
+|-----------|-----------------------------------------------------------------------------------|
+| Endpoints | An array of Endpoint names as declared in the Endpoint Configuration Collection . |
+
+```json
+{
+    "Type": "HighestCapacity",
     "Name": "my-name",
     "Properties": {
         "Endpoints": [
             "endpoint-name-from-earlier",
             "another-endpoint-name-from-earlier",
-            "yet-another-endpoint-name-from-earlier"
+            "cannot-be-an-endpoint-selector-name"
           ]
     }
 }
@@ -196,11 +226,13 @@ We ship 4 Endpoint Selectors:
   "Properties": {
     "PriorityEndpoints": [
       "endpoint-name-from-earlier",
-      "another-endpoint-name-from-earlier"
+      "another-endpoint-name-from-earlier",
+      "or-another-endpoint-selector"
     ],
     "FallbackEndpoints": [
       "yet-another-endpoint-name-from-earlier",
-      "and-yet-another-endpoint-name-from-earlier"
+      "and-yet-another-endpoint-name-from-earlier",
+      "or-another-endpoint-selector"
     ]
   }
 }
@@ -224,7 +256,8 @@ The implementation maintains the duration of the last 10 requests to an endpoint
     "Properties": {
         "Endpoints": [
             "endpoint-name-from-earlier",
-            "another-endpoint-name-from-earlier"
+            "another-endpoint-name-from-earlier",
+            "or-another-endpoint-selector"
           ]
     }
 }

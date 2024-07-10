@@ -121,7 +121,7 @@ public static class OpenAIFakeResponses
         return response;
     }
 
-    public static HttpResponseMessage FakeChatCompletionsResponse(int? totalTokens = 126)
+    public static HttpResponseMessage FakeChatCompletionsResponse(int? totalTokens = 126, int remainingRequests = 12, int remainingTokens = 234)
     {
         var response = new HttpResponseMessage();
         response.Content = new OneTimeStreamReadHttpContent(new
@@ -152,8 +152,8 @@ public static class OpenAIFakeResponses
             },
         });
 
-        response.Headers.Add("x-ratelimit-remaining-requests", "12");
-        response.Headers.Add("x-ratelimit-remaining-tokens", "234");
+        response.Headers.Add("x-ratelimit-remaining-requests", remainingRequests.ToString());
+        response.Headers.Add("x-ratelimit-remaining-tokens", remainingTokens.ToString());
 
         return response;
     }
