@@ -132,7 +132,7 @@ public static class APImProxyWithCosmosLogging
                         Transmit = true
                     },
                     Steps = [
-                        "cosmosLoggerStepName"
+                        "cosmosLogger"
                     ]
                 }
             ]
