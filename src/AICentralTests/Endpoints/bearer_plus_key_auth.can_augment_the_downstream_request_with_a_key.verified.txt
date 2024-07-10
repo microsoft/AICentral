@@ -36,7 +36,10 @@
     DeploymentName: model,
     Client: user1,
     StreamingResponse: false,
-    Prompt: Hello,
+    Prompt:
+system:
+   text: Hello
+,
     Response:
 Choice 0
 

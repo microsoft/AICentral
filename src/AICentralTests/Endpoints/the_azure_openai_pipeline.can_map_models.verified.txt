@@ -36,7 +36,10 @@
     DeploymentName: random,
     Client: ,
     StreamingResponse: false,
-    Prompt: I am some text ,
+    Prompt:
+user:
+   text: I am some text
+,
     Response:
 Choice 0
 

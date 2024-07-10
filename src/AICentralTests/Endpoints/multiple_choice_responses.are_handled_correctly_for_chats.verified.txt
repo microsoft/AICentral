@@ -36,7 +36,10 @@
     DeploymentName: ModelStream,
     Client: unknown,
     StreamingResponse: true,
-    Prompt: You are a helpful assistant.,
+    Prompt:
+system:
+   text: You are a helpful assistant.
+,
     Response:
 Choice 0
 

@@ -28,21 +28,24 @@ public class AzureOpenAIDetector
         };
     }
 
-    private async Task<IncomingCallDetails> DetectChat(string pipelineName, string deploymentName, HttpRequest request, CancellationToken cancellationToken)
+    private async Task<IncomingCallDetails> DetectChat(string pipelineName, string deploymentName, HttpRequest request,
+        CancellationToken cancellationToken)
     {
         var requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
+
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Chat,
-            requestContent.TryGetProperty("stream", out var stream) ? 
-                stream.GetValue<bool>()
-                    ? AICallResponseType.Streaming 
-                    : AICallResponseType.NonStreaming 
+            requestContent.TryGetProperty("stream", out var stream)
+                ? stream.GetValue<bool>()
+                    ? AICallResponseType.Streaming
+                    : AICallResponseType.NonStreaming
                 : AICallResponseType.NonStreaming,
             string.Join(
                 '\n',
-                requestContent["messages"]!.AsArray()
-                    .Select(x => GetTextContent(x!["content"]!))),
+                (requestContent["messages"]?.AsArray() ?? [])
+                .Where(x => x != null)
+                .Select(x => x!["role"]!.GetValue<string>() + ":" + Environment.NewLine + GetTextContent(x))),
             deploymentName,
             null,
             requestContent,
@@ -50,29 +53,56 @@ public class AzureOpenAIDetector
             null);
     }
 
-    private string GetTextContent(JsonNode contentProperty)
+    private string GetTextContent(JsonNode? messageProperty)
     {
-        if (contentProperty.GetValueKind() == JsonValueKind.Array)
+        if (messageProperty == null) return string.Empty;
+
+        var arrayContent = new StringBuilder();
+        var contentProperty = messageProperty["content"];
+        if (contentProperty != null)
         {
-            var arrayContent = new StringBuilder();
-            foreach(var item in contentProperty.AsArray())
+            if (contentProperty.GetValueKind() == JsonValueKind.Array)
             {
-                if (item!.TryGetProperty("type", out var typeElement))
+                foreach (var item in contentProperty.AsArray())
                 {
-                    if (typeElement.GetValue<string>() == "text")
+                    if (item != null)
                     {
-                        arrayContent.Append(item!["text"]!.GetValue<string>());
-                        arrayContent.Append(' ');
+                        if (item.TryGetProperty("type", out var typeElement))
+                        {
+                            if (typeElement.GetValue<string>() == "text")
+                            {
+                                arrayContent.AppendLine($"   text: {item["text"]!.GetValue<string>()}");
+                            }
+                            else if (typeElement.GetValue<string>() == "image_url")
+                            {
+                                var imageContent = item["image_url"];
+                                if (imageContent != null)
+                                {
+                                    var uriNode = imageContent["url"];
+                                    if (uriNode != null)
+                                    {
+                                        var uriString = uriNode.GetValue<string>();
+                                        var uri = new Uri(uriString);
+                                        var uriValue = uri.Scheme.StartsWith("http")
+                                            ? $"   image: {uriString}"
+                                            : $"   image: {uri.Scheme} data";
+                                        arrayContent.AppendLine($"{uriValue}");
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
-
-            return arrayContent.ToString();
+            else
+            {
+                arrayContent.AppendLine($"   text: {contentProperty.GetValue<string>()}");
+            }
         }
 
-        return contentProperty.GetValue<string>();
+        return arrayContent.ToString();
     }
-    
+
     private async Task<IncomingCallDetails> DetectCompletions(string pipelineName, string deploymentName, HttpRequest request, CancellationToken cancellationToken)
     {
         var requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;

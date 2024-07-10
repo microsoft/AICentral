@@ -37,10 +37,22 @@
     Client: ,
     StreamingResponse: false,
     Prompt:
-I am some text And so am I! 
-I am function output
-Assistant Message
-System content,
+user:
+   text: I am some text
+   image: http://image.localtest.me/1234
+   image: http://image.localtest.me/1234
+   image: http://image.localtest.me/1234
+   text: And so am I!
+
+function:
+   text: I am function output
+
+assistant:
+   text: Assistant Message
+
+system:
+   text: System content
+,
     Response:
 Choice 0
 

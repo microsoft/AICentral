@@ -37,8 +37,16 @@
     Client: ,
     StreamingResponse: false,
     Prompt:
-You are an assistant
-Normal text 
+system:
+   text: You are an assistant
+
+user:
+   text: Normal text
+
+user:
+   image: http://somewherebad.com/myimage.jpeg
+   image: http://somewheregood.com/myimage.jpeg
+   image: data data
 ,
     Response:
 Choice 0

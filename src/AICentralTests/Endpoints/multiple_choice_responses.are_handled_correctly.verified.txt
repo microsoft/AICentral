@@ -62,7 +62,10 @@
     DeploymentName: Model1,
     Client: ,
     StreamingResponse: false,
-    Prompt: Do other Azure AI services support this too?,
+    Prompt:
+user:
+   text: Do other Azure AI services support this too?
+,
     Response:
 Choice 0
 
