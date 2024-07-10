@@ -1,6 +1,6 @@
 Release Notes:
 
-0.18.2 (10/jul/2024)
+0.18.1 (10/jul/2024)
 - Capacity Based Endpoint selector. Reduces chance of 429 providing better overall latency.
 
 0.18.0 (10/jul/2024)
