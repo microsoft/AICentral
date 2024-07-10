@@ -12,6 +12,8 @@
 
 - Minimal overhead - written on Asp.Net Core, on dotnet 8. One of the fastest web-servers in the business.
 - Enable advanced Azure APIm scenarios such as passing a Subscription Key, and a JWT from libraries like PromptFlow that don't support that out-of-the-box.
+- PII Stripping logging to Cosmos DB
+  - Powered by ```graemefoster/aicentral.logging.piistripping``` 
 - Lightweight out-the-box token metrics surfaced through Open Telemetry
   - **Does not buffer and block streaming** 
   - Use for PTU Chargeback scenarios
@@ -20,10 +22,11 @@
 - Prompt and usage logging to Azure Monitor
   - **Works for streaming endpoints as-well as non-streaming**
 - Intelligent Routing
+  - Endpoint Selector that favours endpoints reporting higher available capacity
   - Random endpoint selector
   - Prioritised endpoint selector with fallback
   - Lowest Latency endpoint selector
-- Can proxy asynchronous requests such as Azure OpenAI Image Generation across fleets of servers
+- Can proxy asynchronous requests such as Azure OpenAI DALLE2 Image Generation across fleets of servers
 - Custom consumer OAuth2 authorisation
 - Can mint JWT time-bound and consumer-bound JWT tokens to make it easy to run events like Hackathons without blowing your budget 
 - Circuit breakers and backoff-retry over downstream AI services
@@ -34,7 +37,7 @@
   - By consumer / by endpoint
 - Bulkhead support for buffering requests to backend
 - Distributed token rate limiting (using Redis)
-  - Powered by an extension ``` graemefoster/aicentral.distributedratelimiter
+  - Powered by an extension ```graemefoster/aicentral.ratelimiting.distributedredis```
 
 > Extensibility model makes it easy to build your own plugins
 
