@@ -1,7 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 using AICentral.Core;
-using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Primitives;
 
 namespace AICentral.RequestFiltering;
@@ -9,10 +8,12 @@ namespace AICentral.RequestFiltering;
 public class RequestFilteringProvider : IPipelineStep
 {
     private readonly string[] _whiteList;
+    private readonly bool _allowDataUris;
 
     public RequestFilteringProvider(RequestFilteringConfiguration properties)
     {
         _whiteList = (properties.AllowedHostNames ?? []).Select(x => x.ToLowerInvariant()).ToArray();
+        _allowDataUris = properties.AllowDataUris ?? true;
     }
 
     public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
@@ -26,7 +27,7 @@ public class RequestFilteringProvider : IPipelineStep
             var logger = context.RequestServices.GetRequiredService<ILogger<RequestFilteringProvider>>();
             foreach (var message in messages.AsArray())
             {
-                RemoveImageUrls(logger, message);
+                RemoveImageUrls(logger, message!);
             }
         }
 
@@ -74,6 +75,14 @@ public class RequestFilteringProvider : IPipelineStep
                         asUrl.Host);
                     return false;
                 }
+            }
+
+            if (asUrl.Scheme.StartsWith("data") && !_allowDataUris)
+            {
+                logger.LogWarning("Detected chat request with data-uri: {DatUri} which is not allowed",
+                    asUrl.Scheme);
+
+                return false;
             }
 
             return true;

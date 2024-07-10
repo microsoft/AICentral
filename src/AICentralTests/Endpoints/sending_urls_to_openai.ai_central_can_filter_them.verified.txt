@@ -10,7 +10,7 @@
       "api-key": "ignore-fake-key-hr987345"
     },
     "ContentType": "application/json",
-    "Content": "{\"messages\":[{\"content\":\"You are an assistant\",\"role\":\"system\"},{\"content\":[{\"text\":\"Normal text\",\"type\":\"text\"}],\"role\":\"user\"},{\"content\":[{\"image_url\":{\"url\":\"http://somewheregood.com/myimage.jpeg\"},\"type\":\"image_url\"},{\"image_url\":{\"url\":\"data:image/jpeg;base64,Tm90IGEgcGljdHVyZSE=\"},\"type\":\"image_url\"}],\"role\":\"user\"}],\"model\":\"model\"}"
+    "Content": "{\"messages\":[{\"content\":\"You are an assistant\",\"role\":\"system\"},{\"content\":[{\"text\":\"Normal text\",\"type\":\"text\"}],\"role\":\"user\"},{\"content\":[{\"image_url\":{\"url\":\"http://somewheregood.com/myimage.jpeg\"},\"type\":\"image_url\"}],\"role\":\"user\"}],\"model\":\"model\"}"
   }
 ],
   Response: {

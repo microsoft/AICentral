@@ -7,6 +7,7 @@ using AICentral.Endpoints.AzureOpenAI;
 using AICentral.Endpoints.AzureOpenAI.Authorisers.BearerPassThroughWithAdditionalKey;
 using AICentral.EndpointSelectors.Single;
 using AICentral.Logging.PIIStripping;
+using AICentral.RequestFiltering;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
@@ -26,6 +27,7 @@ public static class APImProxyWithCosmosLogging
         public string? TextAnalyticsEndpoint { get; init; }
         public string? TextAnalyticsKey { get; init; }
         public ClaimValueToSubscriptionKey[]? ClaimsToKeys { get; init; }
+        public string[]? AllowedChatImageUriHostNames { get; init; }
     }
 
     public static AICentralPipelineAssembler BuildAssembler(Config config)
@@ -40,6 +42,7 @@ public static class APImProxyWithCosmosLogging
             Guard.NotNull(config.CosmosConnectionString, nameof(config.CosmosConnectionString));
         var textAnalyticsKey = Guard.NotNull(config.TextAnalyticsKey, nameof(config.TextAnalyticsKey));
         var claimsToKeys = Guard.NotNull(config.ClaimsToKeys, nameof(config.ClaimsToKeys));
+        var allowedChatImageHostNames = Guard.NotNull(config.AllowedChatImageUriHostNames, nameof(config.AllowedChatImageUriHostNames));
 
         var cosmosLoggerStepName = "cosmosLogger";
         var cosmosLoggerConfig = new PIIStrippingLoggerConfig()
@@ -67,6 +70,13 @@ public static class APImProxyWithCosmosLogging
                 new Dictionary<string, string>(),
                 new Dictionary<string, string>(),
                 false));
+
+        var chatImageFilterStepName = "chatImageFilter";
+        var chatImageFilter = new RequestFilteringProviderFactory(new RequestFilteringConfiguration()
+        {
+            AllowedHostNames = allowedChatImageHostNames,
+            AllowDataUris = true
+        });
 
         return new AICentralPipelineAssembler(
             _ => new HostNameMatchRouter("*"),
@@ -113,7 +123,8 @@ public static class APImProxyWithCosmosLogging
             },
             new Dictionary<string, IPipelineStepFactory>()
             {
-                [cosmosLoggerStepName] = new PIIStrippingLoggerFactory(cosmosLoggerStepName, cosmosLoggerConfig)
+                [cosmosLoggerStepName] = new PIIStrippingLoggerFactory(cosmosLoggerStepName, cosmosLoggerConfig),
+                [chatImageFilterStepName] = chatImageFilter
             },
             [
                 new PipelineConfig()
@@ -129,6 +140,7 @@ public static class APImProxyWithCosmosLogging
                     },
                     Steps =
                     [
+                        chatImageFilterStepName,
                         cosmosLoggerStepName
                     ]
                 }

@@ -296,7 +296,10 @@ public class TestAICentralPipelineBuilder
         {
             var stepId = Guid.NewGuid().ToString();
             genericSteps[stepId] = new RequestFilteringProviderFactory(new RequestFilteringConfiguration()
-                { AllowedHostNames = _allowedChatImageHostNames });
+            {
+                AllowedHostNames = _allowedChatImageHostNames,
+                AllowDataUris = false
+            });
             steps.Add(stepId);
         }
 
