@@ -42,8 +42,9 @@ public static class APImProxyWithCosmosLogging
         var steps = new List<IPipelineStepFactory>();
         if (config.CosmosConnectionString != null)
         {
+            var cosmosLoggerStepName = "cosmosLogger";
             steps.Add(new PIIStrippingLoggerFactory(
-                "cosmosLogger", new PIIStrippingLoggerConfig()
+                cosmosLoggerStepName, new PIIStrippingLoggerConfig()
                 {
                     CosmosContainer = "aoaiLogContainer",
                     CosmosDatabase = "aoaiLogs",
@@ -130,7 +131,9 @@ public static class APImProxyWithCosmosLogging
                         AddClientNameTag = true,
                         Transmit = true
                     },
-                    Steps = []
+                    Steps = [
+                        "cosmosLoggerStepName"
+                    ]
                 }
             ]
         );
