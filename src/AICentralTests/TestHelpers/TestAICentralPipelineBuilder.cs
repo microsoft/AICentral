@@ -14,6 +14,7 @@ using AICentral.Endpoints.AzureOpenAI;
 using AICentral.Endpoints.AzureOpenAI.Authorisers;
 using AICentral.Endpoints.AzureOpenAI.Authorisers.BearerPassThroughWithAdditionalKey;
 using AICentral.Endpoints.OpenAI;
+using AICentral.EndpointSelectors.HighestCapacity;
 using AICentral.EndpointSelectors.LowestLatency;
 using AICentral.EndpointSelectors.Priority;
 using AICentral.EndpointSelectors.Random;
@@ -219,6 +220,25 @@ public class TestAICentralPipelineBuilder
                 }))).ToArray();
 
         _endpointFactory = new RandomEndpointSelectorFactory(_openAiEndpointDispatcherBuilders!);
+
+        return this;
+    }
+
+    public TestAICentralPipelineBuilder WithMetricsBasedEndpoints(
+        params (string hostname, string assistant, string mappedAssistant)[] endpoints)
+    {
+        _openAiEndpointDispatcherBuilders = endpoints.Select(x =>
+            new DownstreamEndpointDispatcherFactory(new AzureOpenAIDownstreamEndpointAdapterFactory(
+                x.hostname,
+                $"https://{x.hostname}",
+                new KeyAuthFactory("ignore-fake-key-12345678"),
+                new Dictionary<string, string>(),
+                new Dictionary<string, string>()
+                {
+                    [x.assistant] = x.mappedAssistant
+                }))).ToArray();
+
+        _endpointFactory = new HighestCapacitySelectorFactory(_openAiEndpointDispatcherBuilders!);
 
         return this;
     }

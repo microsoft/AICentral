@@ -13,6 +13,7 @@ namespace AICentral.Endpoints;
 internal class DownstreamEndpointDispatcher : IEndpointDispatcher
 {
     private string EndpointName { get; }
+    public string HostName => _iaiCentralDownstreamEndpointAdapter.BaseUrl.Host.ToLowerInvariant();
     private readonly string _id;
     private readonly IDownstreamEndpointAdapter _iaiCentralDownstreamEndpointAdapter;
 
@@ -31,7 +32,7 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<DownstreamEndpointDispatcher>>();
-        var rateLimitingTracker = context.RequestServices.GetRequiredService<DownstreamEndpointRateLimitingTracker>();
+        var rateLimitingTracker = context.RequestServices.GetRequiredService<DownstreamEndpointResponseDataTracker>();
         var dateTimeProvider = context.RequestServices.GetRequiredService<IDateTimeProvider>();
         var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
 
@@ -127,6 +128,10 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
             context,
             openAiResponse);
 
+        rateLimitingTracker.RecordMetrics(
+            newRequest.RequestUri.Host, 
+            preProcessResult.RemainingTokens,
+            preProcessResult.RemainingRequests);
 
         var pipelineResponse = await responseGenerator.BuildResponse(
             new DownstreamRequestInformation(

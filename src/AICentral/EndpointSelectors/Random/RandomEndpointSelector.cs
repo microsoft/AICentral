@@ -20,24 +20,24 @@ public class RandomEndpointSelector : IEndpointSelector
         CancellationToken cancellationToken)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelector>>();
-        var toTry = _openAiServers.ToList();
         logger.LogDebug("Random Endpoint selector is handling request");
-        do
+        var count = 0;
+        foreach (var chosen in NextEndpointEnumerator(context))
         {
-            var chosen = toTry.ElementAt(_rnd.Next(0, toTry.Count));
-            toTry.Remove(chosen);
+            count++;
+            var isLast = count == _openAiServers.Length;
             try
             {
                 return await chosen.Handle(
                     context,
                     aiCallInformation,
-                    isLastChance && !toTry.Any(),
+                    isLastChance && isLast,
                     responseGenerator,
                     cancellationToken); //awaiting to unwrap any Aggregate Exceptions
             }
             catch (HttpRequestException e)
             {
-                if (!toTry.Any())
+                if (isLast)
                 {
                     logger.LogError(e, "Failed to handle request. Exhausted endpoints");
                     throw;
@@ -45,9 +45,21 @@ public class RandomEndpointSelector : IEndpointSelector
 
                 logger.LogWarning(e, "Failed to handle request. Trying another endpoint");
             }
-        } while (toTry.Count > 0);
+        }
 
         throw new InvalidOperationException("Failed to satisfy request");
+    }
+
+    protected virtual IEnumerable<IEndpointDispatcher> NextEndpointEnumerator(HttpContext context)
+    {
+        var toTry = _openAiServers.ToList();
+        var allServersCount = toTry.Count;
+        for (var counter = 0; counter < allServersCount; counter++)
+        {
+            var chosen = toTry.ElementAt(_rnd.Next(0, toTry.Count));
+            toTry.Remove(chosen);
+            yield return chosen;
+        }
     }
 
     public IEnumerable<IEndpointDispatcher> ContainedEndpoints()
