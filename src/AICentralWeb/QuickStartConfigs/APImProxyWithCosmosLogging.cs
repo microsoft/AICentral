@@ -41,8 +41,9 @@ public static class APImProxyWithCosmosLogging
         var cosmosConnectionString =
             Guard.NotNull(config.CosmosConnectionString, nameof(config.CosmosConnectionString));
         var textAnalyticsKey = Guard.NotNull(config.TextAnalyticsKey, nameof(config.TextAnalyticsKey));
-        var claimsToKeys = Guard.NotNull(config.ClaimsToKeys, nameof(config.ClaimsToKeys));
-        var allowedChatImageHostNames = Guard.NotNull(config.AllowedChatImageUriHostNames, nameof(config.AllowedChatImageUriHostNames));
+
+        var claimsToKeys = config.ClaimsToKeys ?? [];
+        var allowedChatImageHostNames = config.AllowedChatImageUriHostNames ?? [];
 
         var cosmosLoggerStepName = "cosmosLogger";
         var cosmosLoggerConfig = new PIIStrippingLoggerConfig()
