@@ -413,6 +413,9 @@ public class TestAICentralPipelineBuilder
                 builder.AddMicrosoftIdentityWebApi(options =>
                 {
                     options.Audience = "https://cognitiveservices.azure.com";
+
+                    //Test code... There's a bit inside Microsoft.Identity.Web that doesn't use the Backchannel
+                    //handler for fetching a discovery document. 
                     options.TokenValidationParameters.ValidateIssuer = false;
                     options.BackchannelHttpHandler = new FakeIdpMessageHandler();
                 }, options =>
