@@ -23,6 +23,7 @@ public class PIIStrippingLogger(
         CancellationToken cancellationToken)
     {
         var response = await next(context, aiCallInformation, cancellationToken);
+        
         if (response.DownstreamUsageInformation.Success.GetValueOrDefault())
         {
             if (!_doesQueueExist)

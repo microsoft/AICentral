@@ -1,6 +1,7 @@
 ﻿using AICentral.Core;
 using Azure;
 using Azure.AI.TextAnalytics;
+using Azure.Identity;
 using Azure.Storage.Queues;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Azure.Cosmos;
@@ -32,17 +33,23 @@ public class PIIStrippingLoggerFactory : IPipelineStepFactory
     public void RegisterServices(IServiceCollection services)
     {
         services.AddKeyedSingleton<QueueClient>(_id,
-            (_, _) => new QueueClient(
-                _config.StorageQueueConnectionString,
-                _config.QueueName));
+            (_, _) =>
+                _config.UseManagedIdentities
+                    ? new QueueClient(new Uri(_config.StorageUri!), new DefaultAzureCredential())
+                    : new QueueClient(_config.StorageQueueConnectionString, _config.QueueName));
 
         services.AddKeyedSingleton<TextAnalyticsClient>(_id,
-            (_, _) => new TextAnalyticsClient(
-                new Uri(_config.TextAnalyticsEndpoint),
-                new AzureKeyCredential(_config.TextAnalyticsKey)));
+            (_, _) =>
+                _config.UseManagedIdentities
+                    ? new TextAnalyticsClient(new Uri(_config.TextAnalyticsEndpoint), new DefaultAzureCredential())
+                    : new TextAnalyticsClient(new Uri(_config.TextAnalyticsEndpoint),
+                        new AzureKeyCredential(_config.TextAnalyticsKey!)));
 
         services.AddKeyedSingleton<CosmosClient>(_id,
-            (_, _) => new CosmosClient(_config.CosmosConnectionString)
+            (_, _) =>
+                _config.UseManagedIdentities
+                    ? new CosmosClient(_config.CosmosAccountEndpoint, new DefaultAzureCredential())
+                    : new CosmosClient(_config.CosmosAccountEndpoint)
         );
 
         services.AddKeyedSingleton<PIIStrippingLogger>(
@@ -66,11 +73,19 @@ public class PIIStrippingLoggerFactory : IPipelineStepFactory
     public static IPipelineStepFactory BuildFromConfig(ILogger logger, TypeAndNameConfig config)
     {
         var typedConfig = config.TypedProperties<PIIStrippingLoggerConfig>();
+        Guard.NotNull(typedConfig.CosmosAccountEndpoint, nameof(typedConfig.CosmosAccountEndpoint));
         Guard.NotNull(typedConfig.TextAnalyticsEndpoint, nameof(typedConfig.TextAnalyticsEndpoint));
-        Guard.NotNull(typedConfig.TextAnalyticsKey, nameof(typedConfig.TextAnalyticsKey));
-        Guard.NotNull(typedConfig.CosmosConnectionString, nameof(typedConfig.CosmosConnectionString));
-        Guard.NotNull(typedConfig.StorageQueueConnectionString, nameof(typedConfig.StorageQueueConnectionString));
         Guard.NotNull(typedConfig.QueueName, nameof(typedConfig.QueueName));
+
+        if (typedConfig.UseManagedIdentities)
+        {
+            Guard.NotNull(typedConfig.StorageUri, nameof(typedConfig.StorageUri));
+        }
+        else
+        {
+            Guard.NotNull(typedConfig.TextAnalyticsKey, nameof(typedConfig.TextAnalyticsKey));
+            Guard.NotNull(typedConfig.StorageQueueConnectionString, nameof(typedConfig.StorageQueueConnectionString));
+        }
 
         return new PIIStrippingLoggerFactory(
             config.Name!,

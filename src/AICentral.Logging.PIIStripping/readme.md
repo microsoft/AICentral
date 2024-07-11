@@ -31,13 +31,15 @@ builder.Services.AddAICentral(
         "Type": "PIIStrippingLogger",
         "Name": "pii-stripping-logger",
         "Properties": {
+          "UseManagedIdentities": "true|false",
           "StorageQueueConnectionString": "<storage-connection-string>",
           "QueueName": "queue-to-write-to",
           "TextAnalyticsEndpoint": "<text-analytics-uri>",
           "TextAnalyticsKey": "<text-analytics-key-if-use-default-credential-false>",
           "CosmosDatabase": "cosmos-database-to-log-to",
           "CosmosContainer": "container-to-log-to",
-          "CosmosConnectionString": "<text-analytics-key-if-use-default-credential-false>"
+          "CosmosConnectionString": "<text-analytics-key-if-use-default-credential-false>",
+          "StorageUri": "<uri-to-storage-if-using-managed-identities>"
         }
       }
     ]    
