@@ -35,10 +35,10 @@ builder.Services.AddAICentral(
           "StorageQueueConnectionString": "<storage-connection-string>",
           "QueueName": "queue-to-write-to",
           "TextAnalyticsEndpoint": "<text-analytics-uri>",
-          "TextAnalyticsKey": "<text-analytics-key-if-use-default-credential-false>",
+          "TextAnalyticsKey": "<text-analytics-key-if-if-not-using-managed-identities>",
           "CosmosDatabase": "cosmos-database-to-log-to",
           "CosmosContainer": "container-to-log-to",
-          "CosmosConnectionString": "<text-analytics-key-if-use-default-credential-false>",
+          "CosmosConnectionString": "<cosmos-connection-string-if-not-using-managed-identities>",
           "StorageUri": "<uri-to-storage-if-using-managed-identities>"
         }
       }

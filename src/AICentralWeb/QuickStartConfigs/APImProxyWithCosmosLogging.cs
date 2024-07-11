@@ -22,10 +22,9 @@ public static class APImProxyWithCosmosLogging
         public string? TenantId { get; init; }
         public string? ApimEndpointUri { get; init; }
         public string? IncomingClaimName { get; init; }
-        public string? CosmosConnectionString { get; init; }
-        public string? StorageConnectionString { get; init; }
+        public string? CosmosAccountEndpoint { get; init; }
         public string? TextAnalyticsEndpoint { get; init; }
-        public string? TextAnalyticsKey { get; init; }
+        public string? StorageUri { get; init; }
         public ClaimValueToSubscriptionKey[]? ClaimsToKeys { get; init; }
         public string[]? AllowedChatImageUriHostNames { get; init; }
     }
@@ -35,12 +34,9 @@ public static class APImProxyWithCosmosLogging
         var tenantId = Guard.NotNull(config.TenantId, nameof(config.TenantId));
         var apimEndpointUri = Guard.NotNull(config.ApimEndpointUri, nameof(config.ApimEndpointUri));
         var textAnalyticsEndpoint = Guard.NotNull(config.TextAnalyticsEndpoint, nameof(config.TextAnalyticsEndpoint));
-        var storageConnectionString =
-            Guard.NotNull(config.StorageConnectionString, nameof(config.StorageConnectionString));
         var incomingClaimName = Guard.NotNull(config.IncomingClaimName, nameof(config.IncomingClaimName));
-        var cosmosConnectionString =
-            Guard.NotNull(config.CosmosConnectionString, nameof(config.CosmosConnectionString));
-        var textAnalyticsKey = Guard.NotNull(config.TextAnalyticsKey, nameof(config.TextAnalyticsKey));
+        var cosmosAccountEndpoint = Guard.NotNull(config.CosmosAccountEndpoint, nameof(config.CosmosAccountEndpoint));
+        var storageUri = Guard.NotNull(config.StorageUri, nameof(config.StorageUri));
 
         var claimsToKeys = config.ClaimsToKeys ?? [];
         var allowedChatImageHostNames = config.AllowedChatImageUriHostNames ?? [];
@@ -51,10 +47,11 @@ public static class APImProxyWithCosmosLogging
             CosmosContainer = "aoaiLogContainer",
             CosmosDatabase = "aoaiLogs",
             QueueName = "prompt-and-response-queue",
-            CosmosConnectionString = cosmosConnectionString,
+            CosmosAccountEndpoint = cosmosAccountEndpoint,
             TextAnalyticsEndpoint = textAnalyticsEndpoint,
-            StorageQueueConnectionString = storageConnectionString,
-            TextAnalyticsKey = textAnalyticsKey
+            UseManagedIdentities = true,
+            StorageUri = storageUri,
+            StorageQueueConnectionString = ""
         };
 
         var downstreamEndpointDispatcherFactory = new DownstreamEndpointDispatcherFactory(

@@ -9,16 +9,19 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <AdditionalFiles Include="Pages\Index.cshtml" />
+        <AdditionalFiles Include="Pages\Index.cshtml"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AICentral\AICentral.csproj" />
+        <ProjectReference Include="..\AICentral\AICentral.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.1.0" />
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.1.0"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="AICentral.Logging.AzureMonitor" Version="0.18.0"/>
+        <PackageReference Include="AICentral.Logging.PIIStripping" Version="0.18.2-pullrequest0130-0002"/>
+        <PackageReference Include="AICentral.RateLimiting.DistributedRedis" Version="0.18.0"/>
     </ItemGroup>
 
 </Project>

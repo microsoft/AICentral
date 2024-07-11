@@ -49,7 +49,7 @@ public class PIIStrippingLoggerFactory : IPipelineStepFactory
             (_, _) =>
                 _config.UseManagedIdentities
                     ? new CosmosClient(_config.CosmosAccountEndpoint, new DefaultAzureCredential())
-                    : new CosmosClient(_config.CosmosAccountEndpoint)
+                    : new CosmosClient(_config.CosmosConnectionString)
         );
 
         services.AddKeyedSingleton<PIIStrippingLogger>(
@@ -73,17 +73,17 @@ public class PIIStrippingLoggerFactory : IPipelineStepFactory
     public static IPipelineStepFactory BuildFromConfig(ILogger logger, TypeAndNameConfig config)
     {
         var typedConfig = config.TypedProperties<PIIStrippingLoggerConfig>();
-        Guard.NotNull(typedConfig.CosmosAccountEndpoint, nameof(typedConfig.CosmosAccountEndpoint));
         Guard.NotNull(typedConfig.TextAnalyticsEndpoint, nameof(typedConfig.TextAnalyticsEndpoint));
         Guard.NotNull(typedConfig.QueueName, nameof(typedConfig.QueueName));
 
         if (typedConfig.UseManagedIdentities)
         {
             Guard.NotNull(typedConfig.StorageUri, nameof(typedConfig.StorageUri));
+            Guard.NotNull(typedConfig.CosmosAccountEndpoint, nameof(typedConfig.CosmosAccountEndpoint));
         }
         else
         {
-            Guard.NotNull(typedConfig.TextAnalyticsKey, nameof(typedConfig.TextAnalyticsKey));
+            Guard.NotNull(typedConfig.CosmosConnectionString, nameof(typedConfig.CosmosConnectionString));
             Guard.NotNull(typedConfig.StorageQueueConnectionString, nameof(typedConfig.StorageQueueConnectionString));
         }
 
