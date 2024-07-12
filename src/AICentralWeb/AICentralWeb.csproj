@@ -13,6 +13,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\AICentral.Logging.AzureMonitor\AICentral.Logging.AzureMonitor.csproj" />
+      <ProjectReference Include="..\AICentral.Logging.PIIStripping\AICentral.Logging.PIIStripping.csproj" />
+      <ProjectReference Include="..\AICentral.RateLimiting.DistributedRedis\AICentral.RateLimiting.DistributedRedis.csproj" />
       <ProjectReference Include="..\AICentral\AICentral.csproj" />
     </ItemGroup>
 
