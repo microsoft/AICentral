@@ -1,5 +1,9 @@
 Release Notes:
 
+0.18.2 (12/jul/2024)
+- HealthCheck bundled into docker container
+- Improved resiliency and error handling of PII Stripping consumer loop
+
 0.18.1 (10/jul/2024)
 - Capacity Based Endpoint selector. Reduces chance of 429 providing better overall latency.
 
