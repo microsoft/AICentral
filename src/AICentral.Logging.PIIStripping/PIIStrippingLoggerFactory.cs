@@ -59,7 +59,8 @@ public class PIIStrippingLoggerFactory : IPipelineStepFactory
             sp.GetRequiredKeyedService<TextAnalyticsClient>(_id),
             sp.GetRequiredKeyedService<CosmosClient>(_id),
             _config,
-            sp.GetRequiredService<ILogger<PIIStrippingLoggerQueueConsumer>>()
+            sp.GetRequiredService<ILogger<PIIStrippingLoggerQueueConsumer>>(),
+            sp.GetRequiredService<IDateTimeProvider>()
         ));
     }
 
