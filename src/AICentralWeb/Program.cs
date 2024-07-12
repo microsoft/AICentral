@@ -41,6 +41,7 @@ using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.
 var startupLogger = loggerFactory.CreateLogger("AICentral.Startup");
 
 builder.Services.AddCors();
+builder.Services.AddHealthChecks();
 
 if (builder.Environment.EnvironmentName == "APImProxyWithCosmosLogging")
 {
@@ -79,6 +80,8 @@ if (enableSummaryPage)
 {
     app.MapRazorPages();
 }
+
+app.MapHealthChecks("/healthz");
 
 app.UseCors(corsPolicyBuilder => corsPolicyBuilder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
