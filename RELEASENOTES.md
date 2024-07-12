@@ -1,6 +1,6 @@
 Release Notes:
 
-0.18.2 (12/jul/2024)
+0.18.3 (12/jul/2024)
 - HealthCheck bundled into docker container
 - Improved resiliency and error handling of PII Stripping consumer loop
 
