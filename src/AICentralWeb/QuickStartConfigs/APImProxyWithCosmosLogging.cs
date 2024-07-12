@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Validators;
 
 namespace AICentralWeb.QuickStartConfigs;
 
@@ -102,6 +103,7 @@ public static class APImProxyWithCosmosLogging
                                 ValidateIssuer = true,
                                 ValidAudiences = new[] { "https://cognitiveservices.azure.com" }
                             };
+                            options.TokenValidationParameters.EnableAadSigningKeyIssuerValidation();
                         }, options =>
                         {
                             options.TenantId = tenantId;

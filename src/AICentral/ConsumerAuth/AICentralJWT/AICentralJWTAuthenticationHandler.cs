@@ -5,6 +5,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Validators;
 
 namespace AICentral.ConsumerAuth.AICentralJWT;
 
@@ -32,17 +33,20 @@ internal class AICentralJwtAuthenticationHandler(
         if (Request.Headers.TryGetValue("api-key", out var key))
         {
             var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenValidationParameters = new TokenValidationParameters()
+            {
+                IssuerSigningKey = _key!,
+                ValidateAudience = true,
+                ValidAudience = Options.TokenIssuer,
+                RequireExpirationTime = true,
+                ValidateLifetime = true,
+                ValidIssuer = Options.TokenIssuer
+            };
+            tokenValidationParameters.EnableAadSigningKeyIssuerValidation();
+            
             var result = await tokenHandler.ValidateTokenAsync(
                 key.ToString(),
-                new TokenValidationParameters()
-                {
-                    IssuerSigningKey = _key!,
-                    ValidateAudience = true,
-                    ValidAudience = Options.TokenIssuer,
-                    RequireExpirationTime = true,
-                    ValidateLifetime = true,
-                    ValidIssuer = Options.TokenIssuer
-                });
+                tokenValidationParameters);
 
             if (result.IsValid)
             {
