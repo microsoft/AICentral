@@ -62,7 +62,7 @@ internal class PIIStrippingLoggerQueueConsumer(
                         //save the message
                         await container.Container.CreateItemAsync(
                             redactedMessage,
-                            new PartitionKey(redactedMessage.id),
+                            new PartitionKey(redactedMessage.DeploymentName ?? "<n/a>"),
                             cancellationToken: cancellationToken);
 
                         //delete the message
