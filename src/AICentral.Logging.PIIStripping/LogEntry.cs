@@ -5,6 +5,7 @@ namespace AICentral.Logging.PIIStripping;
 internal record LogEntry(
     // ReSharper disable once InconsistentNaming
     string id,
+    string LogId,
     string? InternalEndpointName,
     string? OpenAIHost,
     string? ModelName,
@@ -23,4 +24,7 @@ internal record LogEntry(
     DateTimeOffset StartDate,
     TimeSpan Duration,
     bool? Success
-);
+)
+{
+    public string LogId { get; set; }
+}

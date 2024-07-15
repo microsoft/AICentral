@@ -49,6 +49,7 @@ public class PIIStrippingLogger(
                 var sendReceipt = await queueClient.SendMessageAsync(new BinaryData(
                     new LogEntry(
                         Guid.NewGuid().ToString(),
+                        $"${response.DownstreamUsageInformation.DeploymentName}_${response.DownstreamUsageInformation.Client}_${response.DownstreamUsageInformation.StartDate:yyyy-MM-dd}",
                         response.DownstreamUsageInformation.InternalEndpointName,
                         response.DownstreamUsageInformation.OpenAIHost,
                         response.DownstreamUsageInformation.ModelName,
