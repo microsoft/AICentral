@@ -21,6 +21,10 @@
       <EmbeddedResource Include="Assets\FakeStreamingResponse-completions.with-token-counts.txt" />
       <EmbeddedResource Include="Assets\FakeStreamingResponse.testcontent.txt" />
       <EmbeddedResource Include="Assets\FakeStreamingResponse.with-token-counts.txt" />
+      <None Remove="Assets\FakeContentFilterTrigger.txt" />
+      <EmbeddedResource Include="Assets\FakeContentFilterTrigger.txt" />
+      <None Remove="Assets\FakeContentFilterJailbreak.txt" />
+      <EmbeddedResource Include="Assets\FakeContentFilterJailbreak.txt" />
     </ItemGroup>
 
 </Project>

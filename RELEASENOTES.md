@@ -1,5 +1,11 @@
 Release Notes:
 
+0.18.5 (15/jul/2024)
+- Stopped retrying 400's against different servers. 400's are badly formed requests, content-filter triggers, etc, and should not be retried.
+
+0.18.4 (15/jul/2024)
+- Better partition key on Cosmos database logger.
+
 0.18.3 (12/jul/2024)
 - HealthCheck bundled into docker container
 - Improved resiliency and error handling of PII Stripping consumer loop

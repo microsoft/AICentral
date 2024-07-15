@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Net;
 
 namespace OpenAIMock;
 
@@ -13,7 +14,7 @@ public class FakeHttpMessageHandlerSeeder
         if (SeededResponses.TryGetValue(key, out var responseFunction))
         {
             var response = await responseFunction(request);
-            if (response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.BadRequest)
             {
                 IncomingRequests.Add((request, request.Content?.ReadAsByteArrayAsync().Result ?? Array.Empty<byte>()));
             }

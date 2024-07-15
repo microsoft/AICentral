@@ -1,4 +1,5 @@
 ﻿using AICentralOpenAIMock;
+using Azure.AI.OpenAI;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -110,6 +111,5 @@ public static class AICentralTestVerificationEx
         return validation;
 
     }
-
 
 }

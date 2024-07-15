@@ -1,0 +1,39 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/openai/deployments/Model/chat/completions?api-version=2024-04-01-preview",
+    "Method": "POST",
+    "Headers": {
+      "Accept": "application/json",
+      "x-ms-return-client-request-id": "true",
+      "api-key": "ignore-fake-key-12345678"
+    },
+    "ContentType": "application/json",
+    "Content": "{\"messages\":[{\"content\":\"You are a helpful assistant.\",\"role\":\"system\"}],\"model\":\"Model\"}"
+  }
+],
+  Response: {
+    Headers: [
+      {
+        Name: Content-Type,
+        Value: application/json
+      }
+    ]
+  },
+  ResponseMetadata: {
+    InternalEndpointName: Guid_1,
+    OpenAIHost: Guid_1,
+    DeploymentName: Model,
+    Client: ,
+    StreamingResponse: false,
+    Prompt:
+system:
+   text: You are a helpful assistant.
+,
+    ResponseMetadata: {},
+    RemoteIpAddress: ,
+    StartDate: DateTimeOffset_1,
+    Success: false
+  }
+}
