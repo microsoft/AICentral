@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 using AICentral.Core;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using SharpToken;
 
@@ -146,7 +147,7 @@ public static class ServerSideEventResponseHandler
             estimatedTokens,
             null,
             responseMetadata,
-            context.Connection.RemoteIpAddress?.ToString() ?? "",
+            context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString() ?? context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
             requestInformation.StartDate,
             requestInformation.Duration,
             openAiResponse.IsSuccessStatusCode);
