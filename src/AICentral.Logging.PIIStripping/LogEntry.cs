@@ -26,5 +26,4 @@ internal record LogEntry(
     bool? Success
 )
 {
-    public string LogId { get; set; }
 }
