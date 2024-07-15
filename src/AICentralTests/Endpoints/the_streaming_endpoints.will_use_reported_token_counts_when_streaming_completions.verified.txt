@@ -40,7 +40,7 @@ data: [DONE]
     OpenAIHost: Guid_1,
     ModelName: gpt-3.5-turbo-instruct,
     DeploymentName: Model1,
-    Client: unknown,
+    Client: ,
     CallType: Completions,
     StreamingResponse: true,
     Prompt: You are a helpful assistant.,

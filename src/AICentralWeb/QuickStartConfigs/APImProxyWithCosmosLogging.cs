@@ -108,7 +108,7 @@ public static class APImProxyWithCosmosLogging
                         {
                             options.TenantId = tenantId;
                             options.Instance = "https://login.microsoftonline.com/";
-                            options.ClientId = "https://cognitiveservices.azure.com";
+                            options.ClientId = "ignored-as-not-exchaning-codes-for-tokens";
                         }, schemeId);
 
                     builder.Services.Configure<JwtBearerOptions>(

@@ -138,7 +138,7 @@ public static class ServerSideEventResponseHandler
             requestInformation.InternalEndpointName,
             model,
             requestInformation.DeploymentName,
-            context.User.Identity?.Name ?? "unknown",
+            context.GetClientForLoggingPurposes(),
             requestInformation.CallType,
             true,
             requestInformation.Prompt,

@@ -24,7 +24,7 @@ public class StreamResponseHandler
             requestInformation.InternalEndpointName,
             null,
             requestInformation.DeploymentName,
-            context.User.Identity?.Name ?? "unknown",
+            context.GetClientForLoggingPurposes(),
             requestInformation.CallType,
             null,
             requestInformation.Prompt,

@@ -421,7 +421,7 @@ public class TestAICentralPipelineBuilder
                 }, options =>
                 {
                     options.Instance = "https://login.microsoftonline.com/";
-                    options.ClientId = "https://cognitiveservices.azure.com";
+                    options.ClientId = "ignored-as-not-exchaning-codes-for-tokens";
                     options.TenantId = FakeIdpMessageHandler.TenantId;
                     options.BackchannelHttpHandler = new FakeIdpMessageHandler();
                 }, id));

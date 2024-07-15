@@ -63,7 +63,7 @@ public static class JsonResponseHandler
                 requestInformation.InternalEndpointName,
                 model,
                 requestInformation.DeploymentName,
-                context.User.Identity?.Name ?? string.Empty,
+                context.GetClientForLoggingPurposes(),
                 requestInformation.CallType,
                 false,
                 requestInformation.Prompt,
