@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -88,6 +89,7 @@ public static class OpenAIFakeResponses
             ["Requests"] = JsonConvert.SerializeObject(services.EndpointRequests(), Formatting.Indented),
             ["Response"] = JsonConvert.SerializeObject(response, Formatting.Indented)
         };
+        
         return validation;
     }
 
@@ -324,6 +326,36 @@ public static class OpenAIFakeResponses
         response.Content = new ServerSideEventResponse(content);
         response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
         response.Headers.TransferEncodingChunked = true;
+        return response;
+    }
+
+    public static async Task<HttpResponseMessage> FakeStreamingChatCompletionsResponseContentFilter()
+    {
+        using var stream =
+            new StreamReader(
+                typeof(OpenAIFakeResponses).Assembly.GetManifestResourceStream(
+                    "AICentral.OpenAITestExtensions.Assets.FakeContentFilterTrigger.txt")!);
+
+        var content = await stream.ReadToEndAsync();
+        var response = new HttpResponseMessage();
+        response.Content = new ServerSideEventResponse(content);
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/event-stream");
+        response.Headers.TransferEncodingChunked = true;
+        return response;
+    }
+
+    public static async Task<HttpResponseMessage> FakeContentFilterJailbreakAttempt()
+    {
+        using var stream =
+            new StreamReader(
+                typeof(OpenAIFakeResponses).Assembly.GetManifestResourceStream(
+                    "AICentral.OpenAITestExtensions.Assets.FakeContentFilterJailbreak.txt")!);
+
+        var content = await stream.ReadToEndAsync();
+        var response = new HttpResponseMessage();
+        response.StatusCode = HttpStatusCode.BadRequest;
+        response.Content = new StringContent(content);
+        response.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         return response;
     }
 

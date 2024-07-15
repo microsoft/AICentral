@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using AICentral.Core;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Options;
@@ -96,13 +97,12 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
                 rateLimitingTracker.RateLimiting(newRequest.RequestUri.Host,
                     openAiResponse.Headers.RetryAfter);
             }
-
-
         }
 
+        var isBadRequest = openAiResponse.StatusCode == HttpStatusCode.BadRequest;
         if (config.Value.EnableDiagnosticsHeaders)
         {
-            if (openAiResponse.StatusCode == HttpStatusCode.OK)
+            if (openAiResponse.StatusCode == HttpStatusCode.OK || isBadRequest)
             {
                 context.Response.Headers.TryAdd("x-aicentral-server",
                     new StringValues(_iaiCentralDownstreamEndpointAdapter.BaseUrl.Host));
@@ -117,7 +117,8 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
         }
 
         //Blow up now if we didn't succeed and we _do_ have another option. We'll let the endpoint dispatcher catch this and deal with it (by choosing another endpoint) 
-        if (!isLastChance)
+        //Make an exception for 400's. These come back for reasons like content safety triggers. I don't think we should retry these against other servers.
+        if (!isLastChance && !isBadRequest)
         {
             openAiResponse.EnsureSuccessStatusCode();
         }
@@ -154,12 +155,11 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
 
         return pipelineResponse;
     }
-
+    
     public bool IsAffinityRequestToMe(string affinityHeaderValue)
     {
         return EndpointName == affinityHeaderValue;
     }
-
     
     private class LastChanceRateLimitResult(string retryAfter) : IResult
     {
