@@ -88,8 +88,8 @@ public static class APImProxyWithCosmosLogging
                 {
                     Entra = new MicrosoftIdentityApplicationOptions()
                     {
-                        ClientId = "https://cognitiveservices.azure.com",
                         TenantId = tenantId,
+                        ClientId = "ignored-as-not-exchanging-codes-for-tokens",
                         Audience = "https://cognitiveservices.azure.com",
                     }
                 }, (builder, schemeId) =>
@@ -108,7 +108,7 @@ public static class APImProxyWithCosmosLogging
                         {
                             options.TenantId = tenantId;
                             options.Instance = "https://login.microsoftonline.com/";
-                            options.ClientId = "https://cognitiveservices.azure.com";
+                            options.ClientId = "ignored-as-not-exchanging-codes-for-tokens";
                         }, schemeId);
 
                     builder.Services.Configure<JwtBearerOptions>(

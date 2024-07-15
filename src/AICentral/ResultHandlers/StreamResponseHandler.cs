@@ -1,4 +1,5 @@
 using AICentral.Core;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace AICentral.ResultHandlers;
 
@@ -24,7 +25,7 @@ public class StreamResponseHandler
             requestInformation.InternalEndpointName,
             null,
             requestInformation.DeploymentName,
-            context.User.Identity?.Name ?? "unknown",
+            context.GetClientForLoggingPurposes(),
             requestInformation.CallType,
             null,
             requestInformation.Prompt,
@@ -32,7 +33,7 @@ public class StreamResponseHandler
             null,
             null,
             responseMetadata,
-            context.Connection.RemoteIpAddress?.ToString() ?? "",
+            context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString() ?? context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
             requestInformation.StartDate,
             requestInformation.Duration,
             openAiResponse.IsSuccessStatusCode);

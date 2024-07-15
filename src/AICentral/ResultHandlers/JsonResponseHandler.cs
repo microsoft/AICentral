@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using AICentral.Core;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace AICentral.ResultHandlers;
 
@@ -63,7 +64,7 @@ public static class JsonResponseHandler
                 requestInformation.InternalEndpointName,
                 model,
                 requestInformation.DeploymentName,
-                context.User.Identity?.Name ?? string.Empty,
+                context.GetClientForLoggingPurposes(),
                 requestInformation.CallType,
                 false,
                 requestInformation.Prompt,
@@ -71,7 +72,7 @@ public static class JsonResponseHandler
                 null,
                 (promptTokens, completionTokens, totalTokens),
                 responseMetadata,
-                context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+                context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString() ?? context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
                 requestInformation.StartDate,
                 requestInformation.Duration,
                 true);

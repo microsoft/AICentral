@@ -39,7 +39,7 @@ data: [DONE]
     OpenAIHost: Guid_1,
     ModelName: gpt-35-turbo,
     DeploymentName: Model1,
-    Client: unknown,
+    Client: ,
     StreamingResponse: true,
     Prompt:
 system:

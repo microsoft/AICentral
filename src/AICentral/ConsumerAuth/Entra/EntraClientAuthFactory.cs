@@ -77,6 +77,7 @@ public class EntraClientAuthFactory : IPipelineStepFactory
             builder.Services.Configure<JwtBearerOptions>(schemeId, options =>
             {
                 options.Events.OnTokenValidated = _ => Task.CompletedTask;
+                options.MapInboundClaims = true;
             });
         }
     }

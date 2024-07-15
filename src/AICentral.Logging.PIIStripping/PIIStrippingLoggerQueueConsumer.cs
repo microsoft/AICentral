@@ -32,7 +32,7 @@ internal class PIIStrippingLoggerQueueConsumer(
     {
         await queueClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
         var database = cosmosClient.GetDatabase(config.CosmosDatabase);
-        var container = await database.CreateContainerIfNotExistsAsync(config.CosmosContainer, "/id",
+        var container = await database.CreateContainerIfNotExistsAsync(config.CosmosContainer, "/LogId",
             cancellationToken: cancellationToken);
         var failCount = 0;
 
@@ -62,7 +62,7 @@ internal class PIIStrippingLoggerQueueConsumer(
                         //save the message
                         await container.Container.CreateItemAsync(
                             redactedMessage,
-                            new PartitionKey(redactedMessage.id),
+                            new PartitionKey(redactedMessage.LogId),
                             cancellationToken: cancellationToken);
 
                         //delete the message
