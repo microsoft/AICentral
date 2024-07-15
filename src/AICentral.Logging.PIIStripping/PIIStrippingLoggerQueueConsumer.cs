@@ -32,7 +32,7 @@ internal class PIIStrippingLoggerQueueConsumer(
     {
         await queueClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
         var database = cosmosClient.GetDatabase(config.CosmosDatabase);
-        var container = await database.CreateContainerIfNotExistsAsync(config.CosmosContainer, "/id",
+        var container = await database.CreateContainerIfNotExistsAsync(config.CosmosContainer, "/DeploymentName",
             cancellationToken: cancellationToken);
         var failCount = 0;
 
