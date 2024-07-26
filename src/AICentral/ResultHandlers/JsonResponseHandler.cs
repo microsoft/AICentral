@@ -9,7 +9,7 @@ namespace AICentral.ResultHandlers;
 public static class JsonResponseHandler
 {
     public static async Task<AICentralResponse> Handle(
-        HttpContext context,
+        IRequestContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
         DownstreamRequestInformation requestInformation,
@@ -72,7 +72,7 @@ public static class JsonResponseHandler
                 null,
                 (promptTokens, completionTokens, totalTokens),
                 responseMetadata,
-                context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString() ?? context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+                context.RemoteIpAddress,
                 requestInformation.StartDate,
                 requestInformation.Duration,
                 true);
@@ -88,7 +88,7 @@ public static class JsonResponseHandler
                 requestInformation.InternalEndpointName,
                 null,
                 requestInformation.DeploymentName,
-                context.User.Identity?.Name ?? string.Empty,
+                context.UserName ?? string.Empty,
                 requestInformation.CallType,
                 false,
                 requestInformation.Prompt,
@@ -96,7 +96,7 @@ public static class JsonResponseHandler
                 null,
                 null,
                 responseMetadata,
-                context.Connection.RemoteIpAddress?.ToString() ?? "",
+                context.RemoteIpAddress?.ToString() ?? "",
                 requestInformation.StartDate,
                 requestInformation.Duration,
                 false);

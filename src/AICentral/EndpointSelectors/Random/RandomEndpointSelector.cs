@@ -13,7 +13,8 @@ public class RandomEndpointSelector : IEndpointSelector
         _openAiServers = openAiServers;
     }
 
-    public async Task<AICentralResponse> Handle(HttpContext context,
+    public async Task<AICentralResponse> Handle(
+        IRequestContext context,
         IncomingCallDetails aiCallInformation,
         bool isLastChance,
         IResponseGenerator responseGenerator,
@@ -50,7 +51,7 @@ public class RandomEndpointSelector : IEndpointSelector
         throw new InvalidOperationException("Failed to satisfy request");
     }
 
-    protected virtual IEnumerable<IEndpointDispatcher> NextEndpointEnumerator(HttpContext context)
+    protected virtual IEnumerable<IEndpointDispatcher> NextEndpointEnumerator(IRequestContext context)
     {
         var toTry = _openAiServers.ToList();
         var allServersCount = toTry.Count;
@@ -67,7 +68,7 @@ public class RandomEndpointSelector : IEndpointSelector
         return _openAiServers;
     }
     
-    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
+    public Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
     {
         rawHeaders.Remove("x-ratelimit-remaining-tokens");
         rawHeaders.Remove("x-ratelimit-remaining-requests");

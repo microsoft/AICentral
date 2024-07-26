@@ -33,7 +33,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
     }
 
     public async Task<Either<HttpRequestMessage, IResult>> BuildRequest(IncomingCallDetails callInformation,
-        HttpContext context)
+        IRequestContext context)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<OpenAILikeDownstreamEndpointAdapter>>();
         
@@ -80,7 +80,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
         }
     }
 
-    public async Task<HttpResponseMessage> DispatchRequest(HttpContext context, HttpRequestMessage requestMessage,
+    public async Task<HttpResponseMessage> DispatchRequest(IRequestContext context, HttpRequestMessage requestMessage,
         CancellationToken cancellationToken)
     {
         var typedDispatcher = context.RequestServices
@@ -95,7 +95,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
 
     public Task<ResponseMetadata> ExtractResponseMetadata(
         IncomingCallDetails callInformationIncomingCallDetails,
-        HttpContext context,
+        IRequestContext context,
         HttpResponseMessage openAiResponse)
     {
         openAiResponse.Headers.TryGetValues("x-ratelimit-remaining-requests", out var remainingRequestHeaderValues);
@@ -111,7 +111,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
             didHaveRequestLimitHeader ? remainingRequests : null));
     }
 
-    private Dictionary<string, StringValues> SanitiseHeaders(HttpContext context, HttpResponseMessage openAiResponse)
+    private Dictionary<string, StringValues> SanitiseHeaders(IRequestContext context, HttpResponseMessage openAiResponse)
     {
         var proxiedHeaders = new Dictionary<string, StringValues>();
         foreach (var header in openAiResponse.Headers)
@@ -128,7 +128,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
     }
 
     protected virtual void CustomSanitiseHeaders(
-        HttpContext context,
+        IRequestContext context,
         HttpResponseMessage openAiResponse,
         Dictionary<string, StringValues> proxiedHeaders)
     {
@@ -144,16 +144,16 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
         out string? fixedModelName);
 
     private async Task<HttpRequestMessage> BuildNewRequest(
-        HttpContext context,
+        IRequestContext context,
         IncomingCallDetails callInformation,
         string? mappedModelName,
         string? mappedAssistantName)
     {
-        var newRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method),
+        var newRequest = new HttpRequestMessage(new HttpMethod(context.RequestMethod),
             BuildUri(context, callInformation, callInformation.IncomingAssistantName, mappedAssistantName,
                 callInformation.IncomingModelName, mappedModelName));
 
-        foreach (var header in context.Request.Headers)
+        foreach (var header in context.RequestHeaders)
         {
             if (HeadersToIgnore.Contains(header.Key.ToLowerInvariant())) continue;
 
@@ -172,7 +172,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
 
     private Task<HttpContent?> CopyRequestWithMappedModelAndAssistantName(
         IncomingCallDetails aiCallInformation,
-        HttpRequest incomingRequest,
+        IRequestContext incomingRequest,
         string? mappedModelName,
         string? mappedAssistantName
     )
@@ -192,7 +192,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
 
         if (aiCallInformation.IncomingModelName != mappedModelName ||
             aiCallInformation.IncomingAssistantName != mappedAssistantName ||
-            _autoPopulateEmptyUserId && incomingRequest.HttpContext.User.Identity?.Name != null)
+            _autoPopulateEmptyUserId && incomingRequest.UserName != null)
         {
             return Task.FromResult<HttpContent?>(
                 new StringContent(
@@ -201,7 +201,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
                             aiCallInformation.RequestContent!.Deserialize<JsonNode>()!.DeepClone(),
                             mappedModelName,
                             mappedAssistantName,
-                            incomingRequest.HttpContext.User.Identity?.Name)),
+                            incomingRequest.UserName)),
                     Encoding.UTF8, "application/json"));
         }
 
@@ -252,7 +252,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
     }
 
     private async Task CustomiseRequest(
-        HttpContext context,
+        IRequestContext context,
         IncomingCallDetails aiCallInformation,
         HttpRequestMessage newRequest,
         string? mappedModelName,
@@ -261,16 +261,16 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
         if (aiCallInformation.AICallType == AICallType.Other)
         {
             //Byte for byte copy as we don't know enough to get any smarter
-            newRequest.Content = new StreamContent(context.Request.Body);
-            if (context.Request.Headers.ContentType.Count != 0)
+            newRequest.Content = new StreamContent(context.RequestBody);
+            if (context.RequestHeaders.ContentType.Count != 0)
             {
-                newRequest.Content.Headers.Add("Content-Type", context.Request.Headers.ContentType.ToString());
+                newRequest.Content.Headers.Add("Content-Type", context.RequestHeaders.ContentType.ToString());
             }
         }
         else
         {
             newRequest.Content = await CopyRequestWithMappedModelAndAssistantName(
-                aiCallInformation, context.Request,
+                aiCallInformation, context,
                 mappedModelName, mappedAssistantName);
         }
 
@@ -279,10 +279,10 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
 
     protected virtual bool ForceAddModelNameToBody() => false;
 
-    protected abstract Task ApplyAuthorisation(HttpContext context, HttpRequestMessage newRequest);
+    protected abstract Task ApplyAuthorisation(IRequestContext context, HttpRequestMessage newRequest);
 
     protected abstract string BuildUri(
-        HttpContext context,
+        IRequestContext context,
         IncomingCallDetails aiCallInformation,
         string? incomingAssistantName,
         string? mappedAssistantName,

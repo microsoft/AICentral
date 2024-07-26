@@ -27,7 +27,7 @@ public class AzureMonitorLogger : IPipelineStep
     }
 
     public async Task<AICentralResponse> Handle(
-        HttpContext context,
+        IRequestContext context,
         IncomingCallDetails aiCallInformation,
         NextPipelineStep next,
         CancellationToken cancellationToken)
@@ -57,7 +57,7 @@ public class AzureMonitorLogger : IPipelineStep
         return result;
     }
 
-    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse,
+    public Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse,
         Dictionary<string, StringValues> rawHeaders)
     {
         return Task.CompletedTask;

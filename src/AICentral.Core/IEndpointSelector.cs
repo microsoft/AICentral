@@ -14,7 +14,7 @@ public interface IEndpointSelector
     /// <param name="cancellationToken"></param>
     /// <returns>AICentralResponse containing metadata about the call that steps can use.</returns>
     Task<AICentralResponse> Handle(
-        HttpContext context,
+        IRequestContext context,
         IncomingCallDetails aiCallInformation,
         bool isLastChance,
         IResponseGenerator responseGenerator,
@@ -22,5 +22,5 @@ public interface IEndpointSelector
 
     IEnumerable<IEndpointDispatcher> ContainedEndpoints();
 
-    Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders);
+    Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders);
 }

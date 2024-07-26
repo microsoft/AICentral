@@ -54,7 +54,7 @@ public class Pipeline
     /// <param name="cancellationToken"></param>
     /// <param name="deploymentName"></param>
     /// <returns></returns>
-    private async Task<AICentralResponse> Execute(HttpContext context, string? deploymentName, string? assistantName,
+    private async Task<AICentralResponse> Execute(IRequestContext context, string? deploymentName, string? assistantName,
         AICallType callType, CancellationToken cancellationToken)
     {
         var sw = new Stopwatch();
@@ -62,14 +62,14 @@ public class Pipeline
 
         // Create a new Activity scoped to the method
         using var activity = ActivitySource.AICentralRequestActivitySource.StartActivity("AICentralRequest");
-        var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
+        var config = context.GetRequiredService<IOptions<AICentralConfig>>();
 
         if (config.Value.EnableDiagnosticsHeaders)
         {
-            context.Response.Headers.TryAdd("x-aicentral-pipeline", new StringValues(_name));
+            context.ResponseHeaders.TryAdd("x-aicentral-pipeline", new StringValues(_name));
         }
 
-        var logger = context.RequestServices.GetRequiredService<ILogger<Pipeline>>();
+        var logger = context.GetRequiredService<ILogger<Pipeline>>();
         using var scope = logger.BeginScope(new
         {
             TraceId = Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString()
@@ -78,7 +78,7 @@ public class Pipeline
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
 
         var requestDetails = await new AzureOpenAIDetector().Detect(_name, deploymentName, assistantName, callType,
-            context.Request, cancellationToken);
+            context, cancellationToken);
 
         logger.LogDebug("Detected {CallType} from incoming request",
             requestDetails.AICallType);
@@ -99,9 +99,9 @@ public class Pipeline
         try
         {
             if (requestDetails.AICallResponseType == AICallResponseType.Streaming &&
-                context.Response.SupportsTrailers())
+                context.SupportsTrailers())
             {
-                context.Response.DeclareTrailer(XAiCentralStreamingTokenHeader);
+                context.DeclareTrailer(XAiCentralStreamingTokenHeader);
             }
 
             try
@@ -114,14 +114,14 @@ public class Pipeline
 
                 if (result.DownstreamUsageInformation.StreamingResponse.GetValueOrDefault() &&
                     result.DownstreamUsageInformation.EstimatedTokens?.Value.EstimatedCompletionTokens != null &&
-                    context.Response.SupportsTrailers())
+                    context.SupportsTrailers())
                 {
                     var streamingTokenCount =
                         result.DownstreamUsageInformation.EstimatedTokens!.Value.EstimatedCompletionTokens!.ToString();
 
-                    context.Response.AppendTrailer(
+                    context.AppendTrailer(
                         XAiCentralStreamingTokenHeader,
-                        streamingTokenCount);
+                        streamingTokenCount!);
                 }
 
                 TransmitOtelTelemetry(context, result, sw, activity);
@@ -132,7 +132,7 @@ public class Pipeline
             {
                 logger.LogError(e, "Failed to handle request");
                 return new AICentralResponse(
-                    DownstreamUsageInformation.Empty(context, requestDetails, null, null, null),
+                    DownstreamUsageInformation.Empty(context, requestDetails, null, null),
                     Results.StatusCode(502));
             }
         }
@@ -145,7 +145,7 @@ public class Pipeline
         }
     }
 
-    private void TransmitOtelTelemetry(HttpContext context, AICentralResponse result, Stopwatch sw, Activity? activity)
+    private void TransmitOtelTelemetry(IRequestContext context, AICentralResponse result, Stopwatch sw, Activity? activity)
     {
         if (!_openTelemetryConfig.Transmit.GetValueOrDefault()) return;
 
@@ -161,7 +161,7 @@ public class Pipeline
 
         if (_openTelemetryConfig.AddClientNameTag.GetValueOrDefault())
         {
-            tagList.Add("ClientName", context.User.Identity?.Name ?? "unknown");
+            tagList.Add("ClientName", context.UserName ?? "unknown");
         }
 
         ActivitySources.RecordHistogram(

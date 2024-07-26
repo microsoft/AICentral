@@ -14,7 +14,7 @@ public class DiagnosticsCollector:  IPipelineStep
         return this;
     }
 
-    public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation, NextPipelineStep next,
+    public async Task<AICentralResponse> Handle(IRequestContext context, IncomingCallDetails aiCallInformation, NextPipelineStep next,
         CancellationToken cancellationToken)
     {
         var id = Guid.NewGuid().ToString();
@@ -24,7 +24,7 @@ public class DiagnosticsCollector:  IPipelineStep
         return response;
     }
 
-    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
+    public Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
     {
         return Task.CompletedTask;
     }

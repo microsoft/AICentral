@@ -11,7 +11,7 @@ public class KeyAuth : IEndpointAuthorisationHandler
         _authenticationKey = authenticationKey;
     }
 
-    public Task ApplyAuthorisationToRequest(HttpRequest incomingRequest,
+    public Task ApplyAuthorisationToRequest(IRequestContext incomingRequest,
         HttpRequestMessage outgoingRequest)
     {
         outgoingRequest.Headers.Add("api-key", new[] { _authenticationKey });

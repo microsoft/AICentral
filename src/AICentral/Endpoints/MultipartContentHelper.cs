@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using AICentral.Core;
 using Microsoft.AspNetCore.Http.Extensions;
 
 namespace AICentral.Endpoints;
@@ -11,7 +12,7 @@ public static class MultipartContentHelper
     /// So hopefully it doesn't buffer the incoming request into RAM...
     /// </summary>
     public static MultipartFormDataContent CopyMultipartContent(
-        HttpRequest incomingRequest,
+        IRequestContext incomingRequest,
         string? mappedModelName)
     {
         var newContent = new MultipartFormDataContent(incomingRequest.GetMultipartBoundary());

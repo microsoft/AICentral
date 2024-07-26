@@ -32,7 +32,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
     /// <param name="openAiResponse"></param>
     /// <param name="proxiedHeaders"></param>
     /// <returns></returns>
-    protected override void CustomSanitiseHeaders(HttpContext context, HttpResponseMessage openAiResponse, Dictionary<string, StringValues> proxiedHeaders)
+    protected override void CustomSanitiseHeaders(IRequestContext context, HttpResponseMessage openAiResponse, Dictionary<string, StringValues> proxiedHeaders)
     {
         foreach (var header in openAiResponse.Headers)
         {
@@ -59,7 +59,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
     }
 
     private string AdjustAzureOpenAILocationToAICentralHost(
-        HttpContext context,
+        IRequestContext context,
         KeyValuePair<string, IEnumerable<string>> header)
     {
         var locationRaw = header.Value.Single();
@@ -68,22 +68,22 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
         queryParts.Add(QueryPartNames.AzureOpenAIHostAffinityQueryStringName, EndpointName);
 
         var builder = new UriBuilder(
-            context.Request.Scheme,
-            context.Request.Host.Host,
-            context.Request.Host.Port ?? 443,
+            context.RequestScheme,
+            context.RequestHost.Host,
+            context.RequestHost.Port ?? 443,
             location.AbsolutePath
         );
         return QueryHelpers.AddQueryString(builder.ToString(), queryParts);
     }
 
-    protected override Task ApplyAuthorisation(HttpContext context, HttpRequestMessage newRequest)
+    protected override Task ApplyAuthorisation(IRequestContext context, HttpRequestMessage newRequest)
     {
-        return _authHandler.ApplyAuthorisationToRequest(context.Request, newRequest);
+        return _authHandler.ApplyAuthorisationToRequest(context, newRequest);
     }
     
     
     protected override string BuildUri(
-        HttpContext context, 
+        IRequestContext context, 
         IncomingCallDetails aiCallInformation, 
         string? incomingAssistantName, 
         string? mappedAssistantName,
@@ -92,10 +92,10 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
     {
         var pathPiece = aiCallInformation.AICallType switch
         {
-            AICallType.Files => context.Request.Path.Value!, //affinity will ensure the request is going to the right place
-            AICallType.Threads => context.Request.Path.Value!, //affinity will ensure the request is going to the right place
-            AICallType.Assistants => context.Request.Path.Value!.Replace(incomingAssistantName ?? string.Empty, mappedAssistantName),
-            _ => incomingModelName != null && mappedModelName != null ? context.Request.Path.Value!.Replace($"/{incomingModelName}/", $"/{mappedModelName}/") : context.Request.Path
+            AICallType.Files => context.RequestPath.Value!, //affinity will ensure the request is going to the right place
+            AICallType.Threads => context.RequestPath.Value!, //affinity will ensure the request is going to the right place
+            AICallType.Assistants => context.RequestPath.Value!.Replace(incomingAssistantName ?? string.Empty, mappedAssistantName),
+            _ => incomingModelName != null && mappedModelName != null ? context.RequestPath.Value!.Replace($"/{incomingModelName}/", $"/{mappedModelName}/") : context.RequestPath
         };
 
         var newRequestString = new Uri(BaseUrl, pathPiece).AbsoluteUri;

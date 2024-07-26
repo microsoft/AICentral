@@ -23,9 +23,8 @@ public record DownstreamUsageInformation(
 {
     
     public static DownstreamUsageInformation Empty(
-        HttpContext context, 
+        IRequestContext context, 
         IncomingCallDetails incomingCallDetails,
-        ResponseMetadata? responseMetadata,
         string? hostUriBase,
         string? internalEndpointName)
         =>
@@ -34,7 +33,7 @@ public record DownstreamUsageInformation(
                 hostUriBase,
                 string.Empty,
                 string.Empty,
-                context.User.Identity?.Name ?? string.Empty,
+                context.UserName ?? string.Empty,
                 incomingCallDetails.AICallType,
                 null,
                 incomingCallDetails.PromptText,
@@ -42,7 +41,7 @@ public record DownstreamUsageInformation(
                 null,
                 null,
                 null,
-                context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+                context.RemoteIpAddress,
                 context.RequestServices.GetRequiredService<IDateTimeProvider>().Now, 
                 TimeSpan.Zero, 
                 null);

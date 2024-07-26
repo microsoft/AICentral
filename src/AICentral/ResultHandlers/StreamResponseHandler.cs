@@ -1,12 +1,11 @@
 using AICentral.Core;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace AICentral.ResultHandlers;
 
 public class StreamResponseHandler
 {
     public static async Task<AICentralResponse> Handle(
-        HttpContext context,
+        IRequestContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
         DownstreamRequestInformation requestInformation,
@@ -33,7 +32,7 @@ public class StreamResponseHandler
             null,
             null,
             responseMetadata,
-            context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString() ?? context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+            context.RemoteIpAddress,
             requestInformation.StartDate,
             requestInformation.Duration,
             openAiResponse.IsSuccessStatusCode);

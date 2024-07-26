@@ -20,7 +20,7 @@ public class LowestLatencyEndpointSelector : IEndpointSelector
     }
 
     public async Task<AICentralResponse> Handle(
-        HttpContext context,
+        IRequestContext context,
         IncomingCallDetails aiCallInformation,
         bool isLastChance,
         IResponseGenerator responseGenerator,
@@ -69,7 +69,7 @@ public class LowestLatencyEndpointSelector : IEndpointSelector
         return _openAiServers;
     }
 
-    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
+    public Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
     {
         rawHeaders.Remove("x-ratelimit-remaining-tokens");
         rawHeaders.Remove("x-ratelimit-remaining-requests");

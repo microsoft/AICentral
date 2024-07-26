@@ -7,7 +7,7 @@ namespace AICentral.Endpoints.AzureOpenAI.Authorisers;
 
 public class EntraAuth : IEndpointAuthorisationHandler
 {
-    public async Task ApplyAuthorisationToRequest(HttpRequest incomingRequest,
+    public async Task ApplyAuthorisationToRequest(IRequestContext incomingRequest,
         HttpRequestMessage outgoingRequest)
     {
         var token = (await new DefaultAzureCredential().GetTokenAsync(

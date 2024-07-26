@@ -31,7 +31,7 @@ public class DistributedRateLimiter : IPipelineStep
         _metricType = metricType;
     }
 
-    public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
+    public async Task<AICentralResponse> Handle(IRequestContext context, IncomingCallDetails aiCallInformation,
         NextPipelineStep next,
         CancellationToken cancellationToken)
     {
@@ -70,7 +70,6 @@ public class DistributedRateLimiter : IPipelineStep
                 DownstreamUsageInformation.Empty(
                     context,
                     aiCallInformation,
-                    null,
                     string.Empty,
                     null
                 ), resultHandler);
@@ -120,7 +119,7 @@ public class DistributedRateLimiter : IPipelineStep
     /// <param name="rawResponse"></param>
     /// <param name="rawHeaders"></param>
     /// <returns></returns>
-    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse,
+    public Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse,
         Dictionary<string, StringValues> rawHeaders)
     {
         return Task.CompletedTask;

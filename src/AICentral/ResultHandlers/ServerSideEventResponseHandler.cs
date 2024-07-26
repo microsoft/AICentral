@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Text;
 using System.Text.Json;
 using AICentral.Core;
 using Microsoft.AspNetCore.Http.Features;
@@ -16,7 +15,7 @@ public static class ServerSideEventResponseHandler
 
 
     public static async Task<AICentralResponse> Handle(
-        HttpContext context,
+        IRequestContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
         DownstreamRequestInformation requestInformation,
@@ -147,7 +146,7 @@ public static class ServerSideEventResponseHandler
             estimatedTokens,
             null,
             responseMetadata,
-            context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString() ?? context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+            context.RemoteIpAddress,
             requestInformation.StartDate,
             requestInformation.Duration,
             openAiResponse.IsSuccessStatusCode);

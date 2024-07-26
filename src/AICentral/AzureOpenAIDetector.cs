@@ -9,7 +9,7 @@ namespace AICentral;
 
 public class AzureOpenAIDetector
 {
-    public async Task<IncomingCallDetails> Detect(string pipelineName, string? deploymentName, string? assistantName, AICallType callType, HttpRequest request, CancellationToken cancellationToken)
+    public async Task<IncomingCallDetails> Detect(string pipelineName, string? deploymentName, string? assistantName, AICallType callType, IRequestContext request, CancellationToken cancellationToken)
     {
         return callType switch
         {
@@ -28,10 +28,10 @@ public class AzureOpenAIDetector
         };
     }
 
-    private async Task<IncomingCallDetails> DetectChat(string pipelineName, string deploymentName, HttpRequest request,
+    private async Task<IncomingCallDetails> DetectChat(string pipelineName, string deploymentName, IRequestContext request,
         CancellationToken cancellationToken)
     {
-        var requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
+        var requestContent = (await JsonNode.ParseAsync(request.RequestBody, cancellationToken: cancellationToken))!;
 
         return new IncomingCallDetails(
             pipelineName,
@@ -103,9 +103,9 @@ public class AzureOpenAIDetector
         return arrayContent.ToString();
     }
 
-    private async Task<IncomingCallDetails> DetectCompletions(string pipelineName, string deploymentName, HttpRequest request, CancellationToken cancellationToken)
+    private async Task<IncomingCallDetails> DetectCompletions(string pipelineName, string deploymentName, IRequestContext request, CancellationToken cancellationToken)
     {
-        var requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
+        var requestContent = (await JsonNode.ParseAsync(request.RequestBody, cancellationToken: cancellationToken))!;
         var prompt = requestContent["prompt"]!;
         return new IncomingCallDetails(
             pipelineName,
@@ -126,9 +126,9 @@ public class AzureOpenAIDetector
             null);
     }
 
-    private async Task<IncomingCallDetails> DetectEmbeddings(string pipelineName, string deploymentName, HttpRequest request, CancellationToken cancellationToken)
+    private async Task<IncomingCallDetails> DetectEmbeddings(string pipelineName, string deploymentName, IRequestContext request, CancellationToken cancellationToken)
     {
-        var requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
+        var requestContent = (await JsonNode.ParseAsync(request.RequestBody, cancellationToken: cancellationToken))!;
         return new IncomingCallDetails(
             pipelineName,
             AICallType.Embeddings,
@@ -158,7 +158,7 @@ public class AzureOpenAIDetector
         return contentProperty.GetValue<string>();
     }
 
-    private IncomingCallDetails DetectTranscription(string pipelineName, string deploymentName, HttpRequest request)
+    private IncomingCallDetails DetectTranscription(string pipelineName, string deploymentName, IRequestContext request)
     {
         return new IncomingCallDetails(
             pipelineName,
@@ -172,7 +172,7 @@ public class AzureOpenAIDetector
             null);
     }
 
-    private IncomingCallDetails DetectFile(string pipelineName, HttpRequest request)
+    private IncomingCallDetails DetectFile(string pipelineName, IRequestContext request)
     {
         return new IncomingCallDetails(
             pipelineName,
@@ -186,7 +186,7 @@ public class AzureOpenAIDetector
             null);
     }
 
-    private IncomingCallDetails DetectTranslation(string pipelineName, string deploymentName, HttpRequest request)
+    private IncomingCallDetails DetectTranslation(string pipelineName, string deploymentName, IRequestContext request)
     {
         return new IncomingCallDetails(
             pipelineName,
@@ -200,9 +200,9 @@ public class AzureOpenAIDetector
             null);
     }
     
-    private async Task<IncomingCallDetails> DetectDalle2(string pipelineName, HttpRequest request, CancellationToken cancellationToken)
+    private async Task<IncomingCallDetails> DetectDalle2(string pipelineName, IRequestContext request, CancellationToken cancellationToken)
     {
-        var requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
+        var requestContent = (await JsonNode.ParseAsync(request.RequestBody, cancellationToken: cancellationToken))!;
         return new IncomingCallDetails(
             pipelineName,
             AICallType.DALLE2,
@@ -215,7 +215,7 @@ public class AzureOpenAIDetector
             null);
     }
     
-    private IncomingCallDetails DetectOperations(string pipelineName, HttpRequest request)
+    private IncomingCallDetails DetectOperations(string pipelineName, IRequestContext request)
     {
         var queryString = QueryHelpers.ParseQuery(request.QueryString.Value);
         var endpointAffinity = LookForAffinityOnRequest(queryString);
@@ -232,9 +232,9 @@ public class AzureOpenAIDetector
             endpointAffinity);
     }
     
-    private async Task<IncomingCallDetails> DetectDalle3(string pipelineName, string deploymentName, HttpRequest request, CancellationToken cancellationToken)
+    private async Task<IncomingCallDetails> DetectDalle3(string pipelineName, string deploymentName, IRequestContext request, CancellationToken cancellationToken)
     {
-        var requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
+        var requestContent = (await JsonNode.ParseAsync(request.RequestBody, cancellationToken: cancellationToken))!;
         return new IncomingCallDetails(
             pipelineName,
             AICallType.DALLE3,
@@ -247,12 +247,12 @@ public class AzureOpenAIDetector
             null);
     }
     
-    private async Task<IncomingCallDetails> DetectAssistant(string pipelineName, string? assistantName, HttpRequest request, CancellationToken cancellationToken)
+    private async Task<IncomingCallDetails> DetectAssistant(string pipelineName, string? assistantName, IRequestContext request, CancellationToken cancellationToken)
     {
         JsonNode? requestContent = null;
-        if (request.HasJsonContentType() && (request.Method.Equals("post", StringComparison.InvariantCultureIgnoreCase)  || request.Method.Equals("put", StringComparison.InvariantCultureIgnoreCase)))
+        if (request.HasJsonContentType() && (request.RequestMethod.Equals("post", StringComparison.InvariantCultureIgnoreCase)  || request.RequestMethod.Equals("put", StringComparison.InvariantCultureIgnoreCase)))
         {
-            requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
+            requestContent = (await JsonNode.ParseAsync(request.RequestBody, cancellationToken: cancellationToken))!;
         }
 
         return new IncomingCallDetails(
@@ -267,13 +267,13 @@ public class AzureOpenAIDetector
             null);
     }
     
-    private async Task<IncomingCallDetails> DetectThread(string pipelineName, HttpRequest request, CancellationToken cancellationToken)
+    private async Task<IncomingCallDetails> DetectThread(string pipelineName, IRequestContext request, CancellationToken cancellationToken)
     {
         JsonNode? requestContent = null;
         string? assistantId = null;
-        if (request.HasJsonContentType() && (request.Method.Equals("post", StringComparison.InvariantCultureIgnoreCase)  || request.Method.Equals("put", StringComparison.InvariantCultureIgnoreCase)))
+        if (request.HasJsonContentType() && (request.RequestMethod.Equals("post", StringComparison.InvariantCultureIgnoreCase)  || request.RequestMethod.Equals("put", StringComparison.InvariantCultureIgnoreCase)))
         {
-            requestContent = (await JsonNode.ParseAsync(request.Body, cancellationToken: cancellationToken))!;
+            requestContent = (await JsonNode.ParseAsync(request.RequestBody, cancellationToken: cancellationToken))!;
             assistantId = requestContent.TryGetProperty("assistant_id", out var elem)
                 ? elem.GetValue<string>()
                 : null;

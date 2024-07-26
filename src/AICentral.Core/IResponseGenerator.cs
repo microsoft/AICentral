@@ -4,7 +4,7 @@ public interface IResponseGenerator
 {
     Task<AICentralResponse> BuildResponse(
         DownstreamRequestInformation downstreamRequestInformation,
-        HttpContext context,
+        IRequestContext context,
         HttpResponseMessage rawResponse,
         ResponseMetadata responseMetadata,
         CancellationToken cancellationToken);

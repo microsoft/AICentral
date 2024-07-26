@@ -19,7 +19,7 @@ public class PipelineExecutor : IResponseGenerator, IDisposable
         _pipelineEnumerator = steps.GetEnumerator();
     }
 
-    public Task<AICentralResponse> Next(HttpContext context, IncomingCallDetails requestDetails,
+    public Task<AICentralResponse> Next(IRequestContext context, IncomingCallDetails requestDetails,
         CancellationToken cancellationToken)
     {
 
@@ -52,7 +52,8 @@ public class PipelineExecutor : IResponseGenerator, IDisposable
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     async Task<AICentralResponse> IResponseGenerator.BuildResponse(
-        DownstreamRequestInformation requestInformation, HttpContext context,
+        DownstreamRequestInformation requestInformation, 
+        IRequestContext context,
         HttpResponseMessage rawResponse, 
         ResponseMetadata responseMetadata,
         CancellationToken cancellationToken)
@@ -69,7 +70,7 @@ public class PipelineExecutor : IResponseGenerator, IDisposable
 
     private Task<AICentralResponse> HandleResponse(
         DownstreamRequestInformation requestInformation,
-        HttpContext context, 
+        IRequestContext context, 
         HttpResponseMessage openAiResponse,
         ResponseMetadata responseMetadata, 
         CancellationToken cancellationToken)
@@ -79,7 +80,7 @@ public class PipelineExecutor : IResponseGenerator, IDisposable
         //decision point... If this is a streaming request, then we should start streaming the result now.
         logger.LogDebug("Received Azure Open AI Response. Status Code: {StatusCode}", openAiResponse.StatusCode);
         
-        CopyHeadersToResponse(context.Response, responseMetadata.SanitisedHeaders);
+        CopyHeadersToResponse(context.ResponseHeaders, responseMetadata.SanitisedHeaders);
 
         if (openAiResponse.Content.Headers.ContentType?.MediaType?.Equals("text/event-stream") ?? false)
         {
@@ -111,11 +112,11 @@ public class PipelineExecutor : IResponseGenerator, IDisposable
             responseMetadata);
     }
     
-    private static void CopyHeadersToResponse(HttpResponse response, Dictionary<string, StringValues> headersToProxy)
+    private static void CopyHeadersToResponse(IHeaderDictionary responseHeaders, Dictionary<string, StringValues> headersToProxy)
     {
         foreach (var header in headersToProxy)
         {
-            response.Headers.TryAdd(header.Key, header.Value);
+            responseHeaders.TryAdd(header.Key, header.Value);
         }
     }
 

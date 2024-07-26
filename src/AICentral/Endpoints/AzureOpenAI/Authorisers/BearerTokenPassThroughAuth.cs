@@ -5,10 +5,10 @@ namespace AICentral.Endpoints.AzureOpenAI.Authorisers;
 
 public class BearerTokenPassThroughAuth : IEndpointAuthorisationHandler
 {
-    public virtual Task ApplyAuthorisationToRequest(HttpRequest incomingRequest,
+    public virtual Task ApplyAuthorisationToRequest(IRequestContext incomingRequest,
         HttpRequestMessage outgoingRequest)
     {
-        var authHeader = incomingRequest.Headers.Authorization.FirstOrDefault();
+        var authHeader = incomingRequest.RequestHeaders.Authorization.FirstOrDefault();
 
         authHeader = string.IsNullOrWhiteSpace(authHeader)
             ? throw new ArgumentException("Bearer Token Pass Through. Could not find auth header on incoming request") : authHeader;

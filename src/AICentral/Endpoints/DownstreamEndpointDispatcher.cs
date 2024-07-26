@@ -26,7 +26,7 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
     }
 
     public async Task<AICentralResponse> Handle(
-        HttpContext context,
+        IRequestContext context,
         IncomingCallDetails callInformation,
         bool isLastChance,
         IResponseGenerator responseGenerator,
@@ -46,7 +46,6 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
                     DownstreamUsageInformation.Empty(
                         context,
                         callInformation,
-                        null,
                         _iaiCentralDownstreamEndpointAdapter.BaseUrl.Host,
                         EndpointName
                     ),
@@ -72,7 +71,7 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
         {
             logger.LogDebug(
                 "Rewritten URL from {OriginalUrl} to {NewUrl}.",
-                context.Request.GetEncodedUrl(),
+                context.RequestEncodedUrl,
                 newRequest.RequestUri!.AbsoluteUri
             );
 
@@ -104,14 +103,14 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
         {
             if (openAiResponse.StatusCode == HttpStatusCode.OK || isBadRequest)
             {
-                context.Response.Headers.TryAdd("x-aicentral-server",
+                context.ResponseHeaders.TryAdd("x-aicentral-server",
                     new StringValues(_iaiCentralDownstreamEndpointAdapter.BaseUrl.Host));
             }
             else if (addEndpointToFailed)
             {
-                context.Response.Headers.Remove("x-aicentral-failed-servers", out var header);
+                context.ResponseHeaders.Remove("x-aicentral-failed-servers", out var header);
 
-                context.Response.Headers.TryAdd("x-aicentral-failed-servers",
+                context.ResponseHeaders.TryAdd("x-aicentral-failed-servers",
                     StringValues.Concat(header, _iaiCentralDownstreamEndpointAdapter.BaseUrl.Host));
             }
         }

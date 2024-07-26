@@ -2,5 +2,5 @@
 
 public interface IEndpointAuthorisationHandler
 {
-    Task ApplyAuthorisationToRequest(HttpRequest incomingRequest, HttpRequestMessage outgoingRequest);
+    Task ApplyAuthorisationToRequest(IRequestContext incomingRequest, HttpRequestMessage outgoingRequest);
 }

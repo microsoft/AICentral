@@ -13,7 +13,7 @@ public class HighestCapacitySelector : RandomEndpointSelector
         _endpointDictionary = openAiServers.ToDictionary(x => ((DownstreamEndpointDispatcher)x).HostName, x => x);
     }
 
-    protected override IEnumerable<IEndpointDispatcher> NextEndpointEnumerator(HttpContext context)
+    protected override IEnumerable<IEndpointDispatcher> NextEndpointEnumerator(IRequestContext context)
     {
         var rateLimitingTracker = context.RequestServices.GetRequiredService<DownstreamEndpointResponseDataTracker>();
         var now = context.RequestServices.GetRequiredService<IDateTimeProvider>().Now;
