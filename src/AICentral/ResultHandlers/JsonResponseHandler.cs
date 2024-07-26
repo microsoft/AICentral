@@ -2,18 +2,30 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using AICentral.Core;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace AICentral.ResultHandlers;
 
-public static class JsonResponseHandler
+public interface IAdaptJsonDocuments
 {
-    public static async Task<AICentralResponse> Handle(
+    JsonDocument Adapt(JsonDocument input);
+}
+
+public class JsonResponseHandler: IResponseHandler
+{
+    private readonly IAdaptJsonDocuments? _adapter;
+
+    public JsonResponseHandler(IAdaptJsonDocuments? adapter = null)
+    {
+        _adapter = adapter;
+    }
+    
+    public async Task<AICentralResponse> Handle(
         IRequestContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
         DownstreamRequestInformation requestInformation,
-        ResponseMetadata responseMetadata)
+        ResponseMetadata responseMetadata
+        )
     {
         var response = await JsonDocument.ParseAsync(
             await openAiResponse.Content.ReadAsStreamAsync(cancellationToken),
@@ -59,7 +71,7 @@ public static class JsonResponseHandler
                 }
             }
 
-            var chatRequestInformation = new DownstreamUsageInformation(
+            var downstreamUsageInformation = new DownstreamUsageInformation(
                 requestInformation.LanguageUrl,
                 requestInformation.InternalEndpointName,
                 model,
@@ -78,31 +90,43 @@ public static class JsonResponseHandler
                 true);
 
             return new AICentralResponse(
-                chatRequestInformation,
-                new JsonResultHandler(openAiResponse, response));
+                downstreamUsageInformation,
+                BuildJsonResultHandler(openAiResponse.StatusCode, response));
         }
-        else
-        {
-            var chatRequestInformation = new DownstreamUsageInformation(
-                requestInformation.LanguageUrl,
-                requestInformation.InternalEndpointName,
-                null,
-                requestInformation.DeploymentName,
-                context.UserName ?? string.Empty,
-                requestInformation.CallType,
-                false,
-                requestInformation.Prompt,
-                null,
-                null,
-                null,
-                responseMetadata,
-                context.RemoteIpAddress?.ToString() ?? "",
-                requestInformation.StartDate,
-                requestInformation.Duration,
-                false);
 
+        var chatRequestInformation = new DownstreamUsageInformation(
+            requestInformation.LanguageUrl,
+            requestInformation.InternalEndpointName,
+            null,
+            requestInformation.DeploymentName,
+            context.UserName ?? string.Empty,
+            requestInformation.CallType,
+            false,
+            requestInformation.Prompt,
+            null,
+            null,
+            null,
+            responseMetadata,
+            context.RemoteIpAddress?.ToString() ?? "",
+            requestInformation.StartDate,
+            requestInformation.Duration,
+            false);
+
+        if (_adapter == null)
+        {
             return new AICentralResponse(chatRequestInformation,
-                new JsonResultHandler(openAiResponse, response));
+                BuildJsonResultHandler(openAiResponse.StatusCode, response));
         }
+
+        return new AICentralResponse(
+            chatRequestInformation,
+            BuildJsonResultHandler(
+                openAiResponse.StatusCode, 
+                _adapter.Adapt(response)));
+    }
+
+    protected virtual JsonResultHandler BuildJsonResultHandler(HttpStatusCode statusCode, JsonDocument response)
+    {
+        return new JsonResultHandler(statusCode, response);
     }
 }

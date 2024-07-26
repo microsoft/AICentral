@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using System.Security.Principal;
 using AICentral.Core;
 using AICentral.ResultHandlers;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -7,7 +6,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace AICentral;
 
-internal class HttpContextWrapper : IRequestContext
+public class HttpContextWrapper : IRequestContext
 {
     private readonly HttpContext _ctx;
 
@@ -16,10 +15,9 @@ internal class HttpContextWrapper : IRequestContext
         _ctx = ctx;
     }
     
-    public T GetRequiredService<T>()
-    {
-        return _ctx.RequestServices.GetRequiredService<T>();
-    }
+    public T GetRequiredService<T>() where T : notnull => _ctx.RequestServices.GetRequiredService<T>();
+
+    public DateTimeOffset Now => _ctx.RequestServices.GetRequiredService<IDateTimeProvider>().Now;
 
     public IHeaderDictionary ResponseHeaders => _ctx.Response.Headers;
     public Stream RequestBody => _ctx.Request.Body;
@@ -37,7 +35,7 @@ internal class HttpContextWrapper : IRequestContext
     public string RequestEncodedUrl => _ctx.Request.GetEncodedUrl();
     public IFormCollection Form => _ctx.Request.Form;
     public HttpResponse Response => _ctx.Response;
-    public PathString RequestPath => _ctx.Request.Path;
+    public virtual PathString RequestPath => _ctx.Request.Path;
     public string RequestScheme => _ctx.Request.Scheme;
     public HostString RequestHost => _ctx.Request.Host;
     public bool HasJsonContentType() => _ctx.Request.HasJsonContentType();
@@ -74,5 +72,20 @@ internal class HttpContextWrapper : IRequestContext
         }
 
         return string.Empty;
+    }
+
+    public IResponseHandler CreateStreamResponseHandler()
+    {
+        return new StreamResponseHandler();
+    }
+
+    public virtual IResponseHandler CreateJsonResponseHandler()
+    {
+        return new JsonResponseHandler();
+    }
+
+    public IResponseHandler CreateServerSideEventResponseHandler()
+    {
+        return new ServerSideEventResponseHandler();
     }
 }

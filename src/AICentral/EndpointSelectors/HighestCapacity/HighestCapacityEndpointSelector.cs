@@ -16,7 +16,7 @@ public class HighestCapacitySelector : RandomEndpointSelector
     protected override IEnumerable<IEndpointDispatcher> NextEndpointEnumerator(IRequestContext context)
     {
         var rateLimitingTracker = context.RequestServices.GetRequiredService<DownstreamEndpointResponseDataTracker>();
-        var now = context.RequestServices.GetRequiredService<IDateTimeProvider>().Now;
+        var now = context.Now;
         var ordered = rateLimitingTracker.PrioritiseBasedOnMetrics(now, _endpointDictionary.Keys.ToArray());
         foreach (var endpoint in ordered)
         {

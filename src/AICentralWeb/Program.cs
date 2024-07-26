@@ -87,6 +87,11 @@ app.UseCors(corsPolicyBuilder => corsPolicyBuilder.AllowAnyOrigin().AllowAnyMeth
 
 app.UseAICentral();
 
+app.MapPost("/embeddings", (HttpContext ctx) =>
+{
+    //build a context to support an internal trans
+});
+
 app.Run();
 
 namespace AICentralWeb

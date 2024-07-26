@@ -34,7 +34,6 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<DownstreamEndpointDispatcher>>();
         var rateLimitingTracker = context.RequestServices.GetRequiredService<DownstreamEndpointResponseDataTracker>();
-        var dateTimeProvider = context.RequestServices.GetRequiredService<IDateTimeProvider>();
         var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
 
         var outboundRequest = await _iaiCentralDownstreamEndpointAdapter.BuildRequest(callInformation, context);
@@ -56,7 +55,7 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
 
         outboundRequest.Left(out var newRequest);
 
-        var now = dateTimeProvider.Now;
+        var now = context.Now;
         TimeSpan timeToResponse = TimeSpan.Zero;
         HttpResponseMessage? openAiResponse;
         bool addEndpointToFailed = true;

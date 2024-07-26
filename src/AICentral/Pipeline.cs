@@ -54,8 +54,12 @@ public class Pipeline
     /// <param name="cancellationToken"></param>
     /// <param name="deploymentName"></param>
     /// <returns></returns>
-    private async Task<AICentralResponse> Execute(IRequestContext context, string? deploymentName, string? assistantName,
-        AICallType callType, CancellationToken cancellationToken)
+    private async Task<AICentralResponse> Execute(
+        IRequestContext context, 
+        string? deploymentName, 
+        string? assistantName,
+        AICallType callType, 
+        CancellationToken cancellationToken)
     {
         var sw = new Stopwatch();
         sw.Start();

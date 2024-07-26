@@ -62,11 +62,11 @@ public class HostNameMatchRouter
                     (await handler(WrapContext(ctx), deploymentName, null, AICallType.Chat, cancellationToken)).ResultHandler)
             .RequireHost(_hostNames);
 
-        yield return application.MapMethods(
-                "/openai/deployments/{deploymentName}/embeddings",
-                new[] { "Post" },
-                async (HttpContext ctx, CancellationToken cancellationToken, string deploymentName) =>
-                    (await handler(WrapContext(ctx), deploymentName, null, AICallType.Embeddings, cancellationToken)).ResultHandler)
+            yield return application.MapMethods(
+                    "/openai/deployments/{deploymentName}/embeddings",
+                    new[] { "Post" },
+                    async (HttpContext ctx, CancellationToken cancellationToken, string deploymentName) =>
+                        (await handler(WrapContext(ctx), deploymentName, null, AICallType.Embeddings, cancellationToken)).ResultHandler)
             .RequireHost(_hostNames);
 
         yield return application.MapMethods(

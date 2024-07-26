@@ -50,7 +50,7 @@ public class DistributedRateLimiter : IPipelineStep
 
         var keyPartFromLimitType =
             _limitType == LimitType.PerConsumer
-                ? context.User.Identity?.Name ?? "all"
+                ? context.UserName ?? "all"
                 : string.Empty;
 
         var keyName =

@@ -5,7 +5,8 @@ namespace AICentral.Core;
 
 public interface IRequestContext
 {
-    T GetRequiredService<T>();
+    T GetRequiredService<T>() where T : notnull;
+    DateTimeOffset Now { get; }
     IHeaderDictionary ResponseHeaders { get;  }
     Stream RequestBody { get;  }
     QueryString QueryString { get;  }
@@ -27,4 +28,8 @@ public interface IRequestContext
     void AppendTrailer(string trailerName, string trailerValue);
     string GetMultipartBoundary();
     string GetClientForLoggingPurposes();
+    
+    IResponseHandler CreateStreamResponseHandler();
+    IResponseHandler CreateJsonResponseHandler();
+    IResponseHandler CreateServerSideEventResponseHandler();
 }

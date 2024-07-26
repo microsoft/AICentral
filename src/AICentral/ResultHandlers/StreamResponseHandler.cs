@@ -2,9 +2,9 @@ using AICentral.Core;
 
 namespace AICentral.ResultHandlers;
 
-public class StreamResponseHandler
+public class StreamResponseHandler: IResponseHandler
 {
-    public static async Task<AICentralResponse> Handle(
+    public async Task<AICentralResponse> Handle(
         IRequestContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,

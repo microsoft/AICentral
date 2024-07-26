@@ -51,7 +51,6 @@ public class AICentralPipelineAssembler
 
         var pipelines = BuildPipelines(startupLogger);
         services.AddSingleton(pipelines);
-
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
         return pipelines;

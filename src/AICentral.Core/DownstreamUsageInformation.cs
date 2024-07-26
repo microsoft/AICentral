@@ -42,7 +42,7 @@ public record DownstreamUsageInformation(
                 null,
                 null,
                 context.RemoteIpAddress,
-                context.RequestServices.GetRequiredService<IDateTimeProvider>().Now, 
+                context.Now, 
                 TimeSpan.Zero, 
                 null);
     

@@ -37,7 +37,7 @@ public class AzureMonitorLogger : IPipelineStep
         _serilogAzureLogAnalyticsLogger.Information(
             "AzureOpenAI call. ClientIP:{ClientIP}. Client Name:{ClientName}. Host:{OpenAIHost}. Type:{CallType}. StreamedResponse:{Streamed}. Deployment:{Deployment} Model:{Model}. Prompt:{Prompt}. Response:{Response}. Estimated Prompt Tokens:{EstimatedPromptTokens}. Estimated Completion Tokens:{EstimatedCompletionTokens}. Prompt Tokens:{PromptTokens}. Completion Tokens:{CompletionTokens}. Total Tokens:{TotalTokens}. Duration:{Duration}",
             result.DownstreamUsageInformation.RemoteIpAddress,
-            _logClient ? context.User.Identity?.Name ?? string.Empty : "**redacted**",
+            _logClient ? context.UserName ?? string.Empty : "**redacted**",
             result.DownstreamUsageInformation.OpenAIHost,
             result.DownstreamUsageInformation.CallType.ToString(),
             result.DownstreamUsageInformation.StreamingResponse.HasValue

@@ -1,6 +1,4 @@
-using AICentral.Core;
-
-namespace AICentral;
+namespace AICentral.Core;
 
 public delegate Task<AICentralResponse> AIHandler(
     IRequestContext context, 
