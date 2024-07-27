@@ -22,7 +22,7 @@ public class AzureAISearchVectorizerProxy : IRouteProxy
     public RouteHandlerBuilder MapRoute(WebApplication application, AIHandler handler)
     {
         return application.MapMethods(
-            $"/{_proxyPath}",
+            _proxyPath,
             new[] { "Post" },
             async (HttpContext ctx, CancellationToken cancellationToken) =>
             {
@@ -79,6 +79,11 @@ public class AzureAISearchVectorizerProxy : IRouteProxy
             nameof(typedConfig.OpenAIApiVersion));
         var proxyPath = Guard.NotNullOrEmptyOrWhitespace(typedConfig.ProxyPath,
             nameof(typedConfig.ProxyPath));
+
+        if (!proxyPath.StartsWith("/"))
+        {
+            throw new ArgumentException($"Proxy Path must start with '/' for proxy {config.Name}");
+        }
 
         return new AzureAISearchVectorizerProxy(proxyPath, embeddingsDeploymentName, apiVersion);
     }

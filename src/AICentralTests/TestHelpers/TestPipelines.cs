@@ -192,6 +192,12 @@ public static class TestPipelines
             .WithSingleEndpoint(Endpoint200, 5)
             .Assemble("azure-with-bulkhead-on-endpoint.localtest.me");
 
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithAzureAISearchRouteProxy() =>
+        new TestAICentralPipelineBuilder()
+            .WithSingleEndpoint(Endpoint200)
+            .WithAzureAISearchRouteProxy()
+            .Assemble("azure-with-aisearch-route-proxy.localtest.me");
+
     public static AICentralPipelineAssembler AzureOpenAIServiceWithRandomAffinityBasedAzureOpenAIEndpoints() =>
         new TestAICentralPipelineBuilder()
             .WithEndpointAffinity(TimeSpan.FromMinutes(1))

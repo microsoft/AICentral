@@ -2,6 +2,7 @@
 using System.Security.Cryptography;
 using AICentral;
 using AICentral.Affinity;
+using AICentral.AzureAISearchVectorizationProxy;
 using AICentral.BulkHead;
 using AICentral.Configuration;
 using AICentral.ConsumerAuth.AICentralJWT;
@@ -42,6 +43,7 @@ public class TestAICentralPipelineBuilder
     private static readonly DiagnosticsCollectorFactory DiagnosticsCollectorFactory = new();
     private static readonly string DiagnosticsCollectorFactoryId = Guid.NewGuid().ToString();
     private string[]? _allowedChatImageHostNames;
+    private AzureAISearchVectorizerProxy? _routeProxy;
 
     public TestAICentralPipelineBuilder WithApiKeyAuth(params (string clientName, string key1, string key2)[] clients)
     {
@@ -101,6 +103,12 @@ public class TestAICentralPipelineBuilder
         _openAiEndpointDispatcherBuilders = new[]
             { new DownstreamEndpointDispatcherFactory(openAiEndpointDispatcherBuilder) };
 
+        return this;
+    }
+
+    public TestAICentralPipelineBuilder WithAzureAISearchRouteProxy()
+    {
+        _routeProxy = new AzureAISearchVectorizerProxy("/proxypath", "embeddings", "2024-04-01-preview");
         return this;
     }
 
@@ -268,7 +276,10 @@ public class TestAICentralPipelineBuilder
     {
         var id = Guid.NewGuid().ToString();
         var genericSteps = new Dictionary<string, IPipelineStepFactory>();
+        var routeProxies = new Dictionary<string, IRouteProxy>();
+        
         var steps = new List<string>();
+        var proxies = new List<string>();
 
         genericSteps[DiagnosticsCollectorFactoryId] = DiagnosticsCollectorFactory;
         steps.Add(DiagnosticsCollectorFactoryId);
@@ -330,6 +341,13 @@ public class TestAICentralPipelineBuilder
             steps.Add(stepId);
         }
 
+        if (_routeProxy != null)
+        {
+            var stepId = Guid.NewGuid().ToString();
+            routeProxies.Add(stepId, _routeProxy);
+            proxies.Add(stepId);
+        }
+
         return new AICentralPipelineAssembler(
             HostNameMatchRouter.WithHostHeader,
             new Dictionary<string, IPipelineStepFactory>()
@@ -342,7 +360,7 @@ public class TestAICentralPipelineBuilder
                 [id] = _endpointFactory!
             },
             genericSteps,
-            [],
+            routeProxies,
             new[]
             {
                 new PipelineConfig()
@@ -351,6 +369,7 @@ public class TestAICentralPipelineBuilder
                     Host = host,
                     AuthProvider = id,
                     Steps = steps.ToArray(),
+                    RouteProxies = proxies.ToArray(),
                     EndpointSelector = id
                 }
             }
