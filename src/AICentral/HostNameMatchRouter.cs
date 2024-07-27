@@ -18,7 +18,8 @@ public class HostNameMatchRouter
 
     public IEnumerable<RouteHandlerBuilder> BuildRoutes(
         WebApplication application,
-        AIHandler handler)
+        AIHandler handler,
+        IRouteProxy[] routeProxies)
     {
         yield return application.MapMethods(
                 "/openai/images/generations:submit",
@@ -110,6 +111,12 @@ public class HostNameMatchRouter
                 async (HttpContext ctx, CancellationToken cancellationToken) =>
                     (await handler(WrapContext(ctx), null, null, AICallType.Other, cancellationToken)).ResultHandler)
             .RequireHost(_hostNames);
+
+        foreach (var additionalRoute in routeProxies)
+        {
+            yield return additionalRoute.MapRoute(application, handler)
+                .RequireHost(_hostNames);
+        }
     }
 
     private IRequestContext WrapContext(HttpContext ctx)

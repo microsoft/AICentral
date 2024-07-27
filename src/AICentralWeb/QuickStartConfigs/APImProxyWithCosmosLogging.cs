@@ -129,6 +129,7 @@ public static class APImProxyWithCosmosLogging
                 [cosmosLoggerStepName] = new PIIStrippingLoggerFactory(cosmosLoggerStepName, cosmosLoggerConfig),
                 [chatImageFilterStepName] = chatImageFilter
             },
+            new Dictionary<string, IRouteProxy>(),
             [
                 new PipelineConfig()
                 {

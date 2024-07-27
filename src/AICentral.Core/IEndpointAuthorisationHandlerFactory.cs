@@ -20,4 +20,6 @@ public interface IEndpointAuthorisationHandlerFactory
     
     static virtual IEndpointAuthorisationHandlerFactory BuildFromConfig(ILogger logger, TypeAndNameConfig config) => throw new NotImplementedException();
 
-    object WriteDebug();}
+    object WriteDebug();
+    
+}

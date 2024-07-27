@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text.Json;
 using AICentral.Core;
 using Microsoft.Extensions.Primitives;
@@ -11,7 +12,6 @@ public class ServerSideEventResponseHandler: IResponseHandler
     private static readonly int StreamingLinePrefixLength = "data:".Length;
     private static readonly HashSet<string> EmptySet = new();
     private static readonly ConcurrentDictionary<string, GptEncoding> Encoders = new();
-
 
     public async Task<AICentralResponse> Handle(
         IRequestContext context,

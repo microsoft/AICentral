@@ -1,8 +1,9 @@
 using AICentral;
+using AICentral.AzureAISearchVectorizationProxy;
 using AICentral.Configuration;
 using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 using AICentral.Logging.PIIStripping;
-using AICentral.RateLimiting.DistributedRedis;
+using AICentral.RateLimiting.DistributedRedis;using AICentralWeb;
 using AICentralWeb.QuickStartConfigs;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Microsoft.Extensions.Logging.Console;
@@ -64,6 +65,7 @@ else
             typeof(AzureMonitorLoggerFactory).Assembly,
             typeof(PIIStrippingLogger).Assembly,
             typeof(DistributedRateLimiter).Assembly,
+            typeof(AdaptJsonToAzureAISearchTransformer).Assembly
         ]);
 }
 
@@ -86,11 +88,6 @@ app.MapHealthChecks("/healthz");
 app.UseCors(corsPolicyBuilder => corsPolicyBuilder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 app.UseAICentral();
-
-app.MapPost("/embeddings", (HttpContext ctx) =>
-{
-    //build a context to support an internal trans
-});
 
 app.Run();
 

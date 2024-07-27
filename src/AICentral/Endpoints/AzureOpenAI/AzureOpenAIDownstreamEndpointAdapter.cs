@@ -99,7 +99,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
         };
 
         var newRequestString = new Uri(BaseUrl, pathPiece).AbsoluteUri;
-        return QueryHelpers.AddQueryString(newRequestString, aiCallInformation.QueryString ?? new Dictionary<string, StringValues>());
+        return newRequestString + context.QueryString.ToUriComponent();
     }
     
 }

@@ -342,6 +342,7 @@ public class TestAICentralPipelineBuilder
                 [id] = _endpointFactory!
             },
             genericSteps,
+            [],
             new[]
             {
                 new PipelineConfig()

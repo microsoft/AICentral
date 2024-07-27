@@ -20,8 +20,8 @@ public class HttpContextWrapper : IRequestContext
     public DateTimeOffset Now => _ctx.RequestServices.GetRequiredService<IDateTimeProvider>().Now;
 
     public IHeaderDictionary ResponseHeaders => _ctx.Response.Headers;
-    public Stream RequestBody => _ctx.Request.Body;
-    public QueryString QueryString => _ctx.Request.QueryString;
+    public virtual Stream RequestBody => _ctx.Request.Body;
+    public virtual QueryString QueryString => _ctx.Request.QueryString;
     public string RequestMethod => _ctx.Request.Method;
     public IServiceProvider RequestServices => _ctx.RequestServices;
     public string? UserName => _ctx.User.Identity?.Name;
@@ -38,7 +38,7 @@ public class HttpContextWrapper : IRequestContext
     public virtual PathString RequestPath => _ctx.Request.Path;
     public string RequestScheme => _ctx.Request.Scheme;
     public HostString RequestHost => _ctx.Request.Host;
-    public bool HasJsonContentType() => _ctx.Request.HasJsonContentType();
+    public virtual bool HasJsonContentType() => _ctx.Request.HasJsonContentType();
 
     public bool SupportsTrailers() => _ctx.Response.SupportsTrailers();
 

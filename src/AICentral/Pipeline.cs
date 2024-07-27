@@ -20,6 +20,7 @@ public class Pipeline
     private readonly IPipelineStepFactory _clientAuthStep;
     private readonly IPipelineStepFactory[] _pipelineSteps;
     private readonly IEndpointSelectorFactory _endpointSelector;
+    private readonly IRouteProxy[] _routeProxies;
     private readonly OTelConfig _openTelemetryConfig;
 
     public const string XAiCentralStreamingTokenHeader = "x-aicentral-streaming-tokens";
@@ -30,6 +31,7 @@ public class Pipeline
         IPipelineStepFactory clientAuthStep,
         IPipelineStepFactory[] pipelineSteps,
         IEndpointSelectorFactory endpointSelector,
+        IRouteProxy[] routeProxies,
         OTelConfig openTelemetryConfig)
     {
         _name = name;
@@ -37,6 +39,7 @@ public class Pipeline
         _clientAuthStep = clientAuthStep;
         _pipelineSteps = new[] { _clientAuthStep }.Union(pipelineSteps.Select(x => x)).ToArray();
         _endpointSelector = endpointSelector;
+        _routeProxies = routeProxies;
         _openTelemetryConfig = openTelemetryConfig;
     }
 
@@ -247,13 +250,14 @@ public class Pipeline
             ClientAuth = _clientAuthStep.WriteDebug(),
             Steps = _pipelineSteps.Except([_clientAuthStep]).Select(x => x.WriteDebug()),
             EndpointSelector = _endpointSelector.WriteDebug(),
+            RouteProxies = _routeProxies.Select(x => x.WriteDebug()),
             OpenTelemetryConfig = _openTelemetryConfig
         };
     }
 
     public void BuildRoute(WebApplication webApplication)
     {
-        foreach (var route in _router.BuildRoutes(webApplication, Execute))
+        foreach (var route in _router.BuildRoutes(webApplication, Execute, _routeProxies))
         {
             _clientAuthStep.ConfigureRoute(webApplication, route);
             foreach (var step in _pipelineSteps) step.ConfigureRoute(webApplication, route);

@@ -29,6 +29,11 @@ public class PipelineConfig
     /// Array of step-names to execute in order
     /// </summary>
     public string[]? Steps { get; init; }
+    
+    /// <summary>
+    /// Array of route-proxies to provide additional endpoints
+    /// </summary>
+    public string[]? RouteProxies { get; init; }
 
     public OTelConfig? OpenTelemetryConfig
     {

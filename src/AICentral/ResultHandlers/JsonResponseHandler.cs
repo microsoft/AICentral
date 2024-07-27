@@ -5,16 +5,11 @@ using AICentral.Core;
 
 namespace AICentral.ResultHandlers;
 
-public interface IAdaptJsonDocuments
-{
-    JsonDocument Adapt(JsonDocument input);
-}
-
 public class JsonResponseHandler: IResponseHandler
 {
-    private readonly IAdaptJsonDocuments? _adapter;
+    private readonly ITransformIncomingJsonDocumentsToOpenAIJsonDocuments? _adapter;
 
-    public JsonResponseHandler(IAdaptJsonDocuments? adapter = null)
+    public JsonResponseHandler(ITransformIncomingJsonDocumentsToOpenAIJsonDocuments? adapter = null)
     {
         _adapter = adapter;
     }
@@ -30,6 +25,8 @@ public class JsonResponseHandler: IResponseHandler
         var response = await JsonDocument.ParseAsync(
             await openAiResponse.Content.ReadAsStreamAsync(cancellationToken),
             cancellationToken: cancellationToken);
+
+        var responseToReturn = _adapter == null ? response : _adapter.Adapt(response);
 
         if (openAiResponse.StatusCode == HttpStatusCode.OK)
         {
@@ -91,7 +88,7 @@ public class JsonResponseHandler: IResponseHandler
 
             return new AICentralResponse(
                 downstreamUsageInformation,
-                BuildJsonResultHandler(openAiResponse.StatusCode, response));
+                BuildJsonResultHandler(openAiResponse.StatusCode, responseToReturn));
         }
 
         var chatRequestInformation = new DownstreamUsageInformation(
@@ -112,17 +109,11 @@ public class JsonResponseHandler: IResponseHandler
             requestInformation.Duration,
             false);
 
-        if (_adapter == null)
-        {
-            return new AICentralResponse(chatRequestInformation,
-                BuildJsonResultHandler(openAiResponse.StatusCode, response));
-        }
-
         return new AICentralResponse(
             chatRequestInformation,
             BuildJsonResultHandler(
                 openAiResponse.StatusCode, 
-                _adapter.Adapt(response)));
+                responseToReturn));
     }
 
     protected virtual JsonResultHandler BuildJsonResultHandler(HttpStatusCode statusCode, JsonDocument response)

@@ -69,6 +69,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aspire", "aspire", "{F9819A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.OpenAITestExtensions", "AICentral.OpenAITestExtensions\AICentral.OpenAITestExtensions.csproj", "{70430FEE-5DE2-42EA-A6CC-780BB1873E34}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.AzureAISearchVectorizationProxy", "AICentral.AzureAISearchVectorizationProxy\AICentral.AzureAISearchVectorizationProxy.csproj", "{269A9D94-F4E0-41FB-AA24-561AF3D92914}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +125,10 @@ Global
 		{70430FEE-5DE2-42EA-A6CC-780BB1873E34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70430FEE-5DE2-42EA-A6CC-780BB1873E34}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70430FEE-5DE2-42EA-A6CC-780BB1873E34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{269A9D94-F4E0-41FB-AA24-561AF3D92914}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{269A9D94-F4E0-41FB-AA24-561AF3D92914}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{269A9D94-F4E0-41FB-AA24-561AF3D92914}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{269A9D94-F4E0-41FB-AA24-561AF3D92914}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{087EA4B4-12E0-4517-B481-97ECE4F0FED9} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
@@ -139,5 +145,6 @@ Global
 		{46CF923B-9411-4B9D-A16F-BC56F90E82AD} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
 		{6D85C816-7BD8-42CE-8390-60407C8688DC} = {F9819AC6-DE12-4B91-8429-7CB53DC03E64}
 		{70430FEE-5DE2-42EA-A6CC-780BB1873E34} = {DBC3240F-7978-4C3D-B266-CA5B378992B8}
+		{269A9D94-F4E0-41FB-AA24-561AF3D92914} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
 	EndGlobalSection
 EndGlobal
