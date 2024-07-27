@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using AICentral.Core;
+using AICentral.ResultHandlers;
 
 namespace AICentral.AzureAISearchVectorizationProxy;
 

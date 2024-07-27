@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace AICentral.Core;
+namespace AICentral.ResultHandlers;
 
 public interface ITransformIncomingJsonDocumentsToOpenAIJsonDocuments
 {
