@@ -3,16 +3,22 @@ using AICentral.Core;
 using AICentral.ResultHandlers;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral;
 
 public class HttpContextWrapper : IRequestContext
 {
     private readonly HttpContext _ctx;
+    private readonly Dictionary<string,StringValues> _queryStringParts;
 
     public HttpContextWrapper(HttpContext ctx)
     {
         _ctx = ctx;
+        var queryStringParts = QueryHelpers.ParseQuery(ctx.Request.QueryString.Value ?? "");
+        queryStringParts.Remove("x-aicentral-affinity-key");
+        _queryStringParts = queryStringParts;
     }
     
     public T GetRequiredService<T>() where T : notnull => _ctx.RequestServices.GetRequiredService<T>();
@@ -21,7 +27,7 @@ public class HttpContextWrapper : IRequestContext
 
     public IHeaderDictionary ResponseHeaders => _ctx.Response.Headers;
     public virtual Stream RequestBody => _ctx.Request.Body;
-    public virtual QueryString QueryString => _ctx.Request.QueryString;
+    public virtual Dictionary<string, StringValues> QueryString => _queryStringParts;
     public string RequestMethod => _ctx.Request.Method;
     public IServiceProvider RequestServices => _ctx.RequestServices;
     public string? UserName => _ctx.User.Identity?.Name;

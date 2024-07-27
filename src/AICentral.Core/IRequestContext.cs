@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Security.Principal;
+using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Core;
 
@@ -9,7 +10,7 @@ public interface IRequestContext
     DateTimeOffset Now { get; }
     IHeaderDictionary ResponseHeaders { get;  }
     Stream RequestBody { get;  }
-    QueryString QueryString { get;  }
+    Dictionary<string, StringValues> QueryString { get;  }
     string RequestMethod { get;  }
     IServiceProvider RequestServices { get;  }
     string? UserName { get;  }

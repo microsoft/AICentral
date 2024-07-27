@@ -24,7 +24,7 @@ public class AzureOpenAIDetector
             AICallType.Assistants => await DetectAssistant(pipelineName, assistantName, request, cancellationToken),
             AICallType.Threads => await DetectThread(pipelineName, request, cancellationToken),
             AICallType.Files => DetectFile(pipelineName, request),
-            _ => new IncomingCallDetails(pipelineName, callType, AICallResponseType.NonStreaming, null, null, null, null, QueryHelpers.ParseQuery(request.QueryString.Value), null)
+            _ => new IncomingCallDetails(pipelineName, callType, AICallResponseType.NonStreaming, null, null, null, null, null)
         };
     }
 
@@ -49,7 +49,6 @@ public class AzureOpenAIDetector
             deploymentName,
             null,
             requestContent,
-            QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
     }
 
@@ -122,7 +121,6 @@ public class AzureOpenAIDetector
             deploymentName,
             null,
             requestContent,
-            QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
     }
 
@@ -137,7 +135,6 @@ public class AzureOpenAIDetector
             deploymentName,
             null,
             requestContent,
-            QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
     }
 
@@ -168,7 +165,6 @@ public class AzureOpenAIDetector
             deploymentName,
             null,
             null,
-            QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
     }
 
@@ -182,7 +178,6 @@ public class AzureOpenAIDetector
             null,
             null,
             null,
-            QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
     }
 
@@ -196,7 +191,6 @@ public class AzureOpenAIDetector
             deploymentName,
             null,
             null,
-            QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
     }
     
@@ -211,14 +205,12 @@ public class AzureOpenAIDetector
             null,
             null,
             requestContent,
-            QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
     }
     
     private IncomingCallDetails DetectOperations(string pipelineName, IRequestContext request)
     {
-        var queryString = QueryHelpers.ParseQuery(request.QueryString.Value);
-        var endpointAffinity = LookForAffinityOnRequest(queryString);
+        var endpointAffinity = LookForAffinityOnRequest(request.QueryString);
 
         return new IncomingCallDetails(
             pipelineName,
@@ -228,7 +220,6 @@ public class AzureOpenAIDetector
             null,
             null,
             null,
-            queryString,
             endpointAffinity);
     }
     
@@ -243,7 +234,6 @@ public class AzureOpenAIDetector
             deploymentName,
             null,
             requestContent,
-            QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
     }
     
@@ -263,7 +253,6 @@ public class AzureOpenAIDetector
             null,
             assistantName,
             requestContent,
-            QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
     }
     
@@ -287,7 +276,6 @@ public class AzureOpenAIDetector
             null,
             assistantId,
             requestContent,
-            QueryHelpers.ParseQuery(request.QueryString.Value),
             null);
     }
     
