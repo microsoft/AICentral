@@ -26,7 +26,7 @@ public class RequestFilteringProvider : IPipelineStep
         {
             var requestContent = aiCallInformation.RequestContent!;
             var messages = requestContent["messages"]!.AsArray();
-            var logger = context.RequestServices.GetRequiredService<ILogger<RequestFilteringProvider>>();
+            var logger = context.GetLogger<RequestFilteringProvider>();
             foreach (var message in messages.AsArray())
             {
                 RemoveImageUrls(logger, message!);

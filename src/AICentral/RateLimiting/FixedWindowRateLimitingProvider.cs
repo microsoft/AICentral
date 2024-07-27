@@ -22,7 +22,7 @@ public class FixedWindowRateLimitingProvider : IPipelineStep, IPipelineStepFacto
         NextPipelineStep next,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<FixedWindowRateLimitingProvider>>();
+        var logger = context.GetLogger<FixedWindowRateLimitingProvider>();
         if (HasExceededTokenLimit(context, out var retryAt))
         {
             return ExceededRateLimitResponse(context, aiCallInformation, logger, retryAt);

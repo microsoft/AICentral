@@ -20,7 +20,7 @@ public class RandomEndpointSelector : IEndpointSelector
         IResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<RandomEndpointSelector>>();
+        var logger = context.GetLogger<RandomEndpointSelector>();
         logger.LogDebug("Random Endpoint selector is handling request");
         var count = 0;
         foreach (var chosen in NextEndpointEnumerator(context))

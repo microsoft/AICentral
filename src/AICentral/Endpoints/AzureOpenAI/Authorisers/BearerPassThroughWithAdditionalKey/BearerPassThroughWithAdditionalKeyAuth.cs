@@ -16,7 +16,7 @@ public class BearerPassThroughWithAdditionalKeyAuth: BearerTokenPassThroughAuth
 
     public override async Task ApplyAuthorisationToRequest(IRequestContext incomingRequest, HttpRequestMessage outgoingRequest)
     {
-        var logger = incomingRequest.GetRequiredService<ILogger<BearerPassThroughWithAdditionalKeyAuth>>();
+        var logger = incomingRequest.GetLogger<BearerPassThroughWithAdditionalKeyAuth>();
 
         await base.ApplyAuthorisationToRequest(incomingRequest, outgoingRequest);
 

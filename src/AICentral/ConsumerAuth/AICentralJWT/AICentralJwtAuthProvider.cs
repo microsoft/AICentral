@@ -49,7 +49,7 @@ public class AICentralJwtAuthProvider : IPipelineStep
                     return await next(context, aiCallInformation, cancellationToken);
                 }
 
-                context.RequestServices.GetRequiredService<ILogger<AICentralJwtAuthProvider>>()
+                context.GetLogger<AICentralJwtAuthProvider>()
                     .LogWarning("Unauthorized request for pipeline {Pipeline} and model {Model} from User {User}",
                         aiCallInformation.PipelineName, aiCallInformation.IncomingModelName,
                         context.UserName);

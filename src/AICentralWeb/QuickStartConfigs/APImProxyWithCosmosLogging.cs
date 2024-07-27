@@ -148,7 +148,8 @@ public static class APImProxyWithCosmosLogging
                         cosmosLoggerStepName
                     ]
                 }
-            ]
+            ],
+            false
         );
     }
 }

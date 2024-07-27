@@ -32,7 +32,7 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
         IResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<DownstreamEndpointDispatcher>>();
+        var logger = context.GetLogger<DownstreamEndpointDispatcher>();
         var rateLimitingTracker = context.RequestServices.GetRequiredService<DownstreamEndpointResponseDataTracker>();
         var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
 

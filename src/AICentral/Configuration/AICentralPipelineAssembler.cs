@@ -16,6 +16,7 @@ public class AICentralPipelineAssembler
     private readonly Dictionary<string, IPipelineStepFactory> _genericSteps;
     private readonly Dictionary<string, IRouteProxy> _routeProxies;
     private readonly PipelineConfig[] _pipelines;
+    private readonly bool _enableDiagnosticsHeaders;
 
     private bool _servicesAdded;
 
@@ -26,7 +27,8 @@ public class AICentralPipelineAssembler
         Dictionary<string, IEndpointSelectorFactory> endpointSelectors,
         Dictionary<string, IPipelineStepFactory> genericSteps,
         Dictionary<string, IRouteProxy> routeProxies,
-        PipelineConfig[] pipelines)
+        PipelineConfig[] pipelines,
+        bool enableDiagnosticsHeaders)
     {
         _routeBuilder = routeBuilder;
         _authProviders = authProviders;
@@ -35,6 +37,7 @@ public class AICentralPipelineAssembler
         _genericSteps = genericSteps;
         _routeProxies = routeProxies;
         _pipelines = pipelines;
+        _enableDiagnosticsHeaders = enableDiagnosticsHeaders;
     }
 
     public ConfiguredPipelines AddServices(
@@ -115,7 +118,8 @@ public class AICentralPipelineAssembler
                     {
                         AddClientNameTag = false,
                         Transmit = false
-                    });
+                    },
+                    _enableDiagnosticsHeaders);
 
                 startupLogger.LogInformation("Configured Pipeline {Name} on Host {Host}", pipelineConfig.Name,
                     pipelineConfig.Host);
@@ -140,7 +144,8 @@ public class AICentralPipelineAssembler
             otherAssembler._endpointSelectors.Union(_endpointSelectors).ToDictionary(x => x.Key, x => x.Value),
             otherAssembler._genericSteps.Union(_genericSteps).ToDictionary(x => x.Key, x => x.Value),
             otherAssembler._routeProxies.Union(_routeProxies).ToDictionary(x => x.Key, x => x.Value),
-            otherAssembler._pipelines.Union(_pipelines).ToArray()
+            otherAssembler._pipelines.Union(_pipelines).ToArray(),
+            _enableDiagnosticsHeaders
         );
     }
 }

@@ -35,7 +35,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
     public async Task<Either<HttpRequestMessage, IResult>> BuildRequest(IncomingCallDetails callInformation,
         IRequestContext context)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<OpenAILikeDownstreamEndpointAdapter>>();
+        var logger = context.GetLogger<OpenAILikeDownstreamEndpointAdapter>();
         
         var incomingModelName = callInformation.IncomingModelName;
         _modelMappings.TryGetValue(incomingModelName ?? string.Empty, out var mappedModelName);

@@ -6,7 +6,7 @@ namespace AICentral.Core;
 
 public interface IRequestContext
 {
-    T GetRequiredService<T>() where T : notnull;
+    ILogger<T> GetLogger<T>() where T : notnull;
     DateTimeOffset Now { get; }
     IHeaderDictionary ResponseHeaders { get;  }
     Stream RequestBody { get;  }

@@ -75,7 +75,7 @@ public class PipelineExecutor : IResponseGenerator, IDisposable
         ResponseMetadata responseMetadata, 
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<PipelineExecutor>>();
+        var logger = context.GetLogger<PipelineExecutor>();
 
         //decision point... If this is a streaming request, then we should start streaming the result now.
         logger.LogDebug("Received Azure Open AI Response. Status Code: {StatusCode}", openAiResponse.StatusCode);

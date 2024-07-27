@@ -24,7 +24,7 @@ public class PriorityEndpointSelector : IEndpointSelector
         IResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<PriorityEndpointSelector>>();
+        var logger = context.GetLogger<PriorityEndpointSelector>();
         try
         {
             logger.LogDebug("Prioritised Endpoint selector handling request");
@@ -59,7 +59,7 @@ public class PriorityEndpointSelector : IEndpointSelector
         IResponseGenerator responseGenerator
         )
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<PriorityEndpointSelector>>();
+        var logger = context.GetLogger<PriorityEndpointSelector>();
         var toTry = endpoints.ToList();
         do
         {

@@ -21,7 +21,7 @@ public class HttpContextWrapper : IRequestContext
         _queryStringParts = queryStringParts;
     }
     
-    public T GetRequiredService<T>() where T : notnull => _ctx.RequestServices.GetRequiredService<T>();
+    public ILogger<T> GetLogger<T>() where T : notnull => _ctx.RequestServices.GetRequiredService<ILogger<T>>();
 
     public DateTimeOffset Now => _ctx.RequestServices.GetRequiredService<IDateTimeProvider>().Now;
 

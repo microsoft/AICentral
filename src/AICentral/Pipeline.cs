@@ -22,6 +22,7 @@ public class Pipeline
     private readonly IEndpointSelectorFactory _endpointSelector;
     private readonly IRouteProxy[] _routeProxies;
     private readonly OTelConfig _openTelemetryConfig;
+    private readonly bool _enableDiagnosticsHeaders;
 
     public const string XAiCentralStreamingTokenHeader = "x-aicentral-streaming-tokens";
 
@@ -32,7 +33,8 @@ public class Pipeline
         IPipelineStepFactory[] pipelineSteps,
         IEndpointSelectorFactory endpointSelector,
         IRouteProxy[] routeProxies,
-        OTelConfig openTelemetryConfig)
+        OTelConfig openTelemetryConfig,
+        bool enableDiagnosticsHeaders)
     {
         _name = name;
         _router = router;
@@ -41,6 +43,7 @@ public class Pipeline
         _endpointSelector = endpointSelector;
         _routeProxies = routeProxies;
         _openTelemetryConfig = openTelemetryConfig;
+        _enableDiagnosticsHeaders = enableDiagnosticsHeaders;
     }
 
     /// <summary>
@@ -69,14 +72,12 @@ public class Pipeline
 
         // Create a new Activity scoped to the method
         using var activity = ActivitySource.AICentralRequestActivitySource.StartActivity("AICentralRequest");
-        var config = context.GetRequiredService<IOptions<AICentralConfig>>();
-
-        if (config.Value.EnableDiagnosticsHeaders)
+        if (_enableDiagnosticsHeaders)
         {
             context.ResponseHeaders.TryAdd("x-aicentral-pipeline", new StringValues(_name));
         }
 
-        var logger = context.GetRequiredService<ILogger<Pipeline>>();
+        var logger = context.GetLogger<Pipeline>();
         using var scope = logger.BeginScope(new
         {
             TraceId = Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString()

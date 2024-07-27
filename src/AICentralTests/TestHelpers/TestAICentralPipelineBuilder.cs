@@ -372,7 +372,8 @@ public class TestAICentralPipelineBuilder
                     RouteProxies = proxies.ToArray(),
                     EndpointSelector = id
                 }
-            }
+            },
+            true
         );
     }
 

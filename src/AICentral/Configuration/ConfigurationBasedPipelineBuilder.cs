@@ -182,7 +182,8 @@ public class ConfigurationBasedPipelineBuilder
             endpointSelectors,
             genericSteps,
             routeProxies,
-            configuration.Pipelines ?? []
+            configuration.Pipelines ?? [],
+            configuration.EnableDiagnosticsHeaders
         );
 
         return builder;

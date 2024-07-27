@@ -26,7 +26,7 @@ public class LowestLatencyEndpointSelector : IEndpointSelector
         IResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<LowestLatencyEndpointSelector>>();
+        var logger = context.GetLogger<LowestLatencyEndpointSelector>();
         var toTry = _openAiServers.OrderBy(GetRecentAverageLatencyFor).ToArray();
         logger.LogDebug("Lowest Latency selector is handling request");
         var tried = 0;
