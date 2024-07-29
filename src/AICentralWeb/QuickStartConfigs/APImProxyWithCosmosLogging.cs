@@ -1,4 +1,5 @@
 ﻿using AICentral;
+using AICentral.AzureAISearchVectorizationProxy;
 using AICentral.Configuration;
 using AICentral.ConsumerAuth.Entra;
 using AICentral.Core;
@@ -29,6 +30,9 @@ public static class APImProxyWithCosmosLogging
         public string? TextAnalyticsKey { get; init; }
         public ClaimValueToSubscriptionKey[]? ClaimsToKeys { get; init; }
         public string[]? AllowedChatImageUriHostNames { get; init; }
+
+        public string? AISearchEmbeddingsDeploymentName { get; init; }
+        public string? AISearchEmbeddingsOpenAIApiVersion { get; init; }
     }
 
     public static AICentralPipelineAssembler BuildAssembler(Config config)
@@ -80,6 +84,13 @@ public static class APImProxyWithCosmosLogging
             AllowDataUris = true
         });
 
+        var routeProxies = new Dictionary<string, IRouteProxy>();
+        var vectorizerName = "vectorizer";
+        if (config is { AISearchEmbeddingsDeploymentName: not null, AISearchEmbeddingsOpenAIApiVersion: not null })
+        {
+            routeProxies.Add(vectorizerName, new AzureAISearchVectorizerProxy("/aisearchvectorizer", config.AISearchEmbeddingsDeploymentName, config.AISearchEmbeddingsOpenAIApiVersion));
+        }   
+
         return new AICentralPipelineAssembler(
             _ => new HostNameMatchRouter("*"),
             new Dictionary<string, IPipelineStepFactory>()
@@ -129,6 +140,7 @@ public static class APImProxyWithCosmosLogging
                 [cosmosLoggerStepName] = new PIIStrippingLoggerFactory(cosmosLoggerStepName, cosmosLoggerConfig),
                 [chatImageFilterStepName] = chatImageFilter
             },
+            routeProxies,
             [
                 new PipelineConfig()
                 {
@@ -145,9 +157,11 @@ public static class APImProxyWithCosmosLogging
                     [
                         chatImageFilterStepName,
                         cosmosLoggerStepName
-                    ]
+                    ],
+                    RouteProxies = routeProxies.Count == 0 ? [] : [vectorizerName]
                 }
-            ]
+            ],
+            false
         );
     }
 }

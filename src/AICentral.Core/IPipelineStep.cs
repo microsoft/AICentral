@@ -17,7 +17,7 @@ public interface IPipelineStep
     /// <param name="next"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
+    Task<AICentralResponse> Handle(IRequestContext context, IncomingCallDetails aiCallInformation,
         NextPipelineStep next,
         CancellationToken cancellationToken);
 
@@ -29,5 +29,5 @@ public interface IPipelineStep
     /// For streaming responses we do not have token counts when this method executes as we haven't sent the response to the client yet.
     /// </remarks>
     /// <returns></returns>
-    Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string,StringValues> rawHeaders);
+    Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse, Dictionary<string,StringValues> rawHeaders);
 }

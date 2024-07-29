@@ -20,7 +20,9 @@ public class Pipeline
     private readonly IPipelineStepFactory _clientAuthStep;
     private readonly IPipelineStepFactory[] _pipelineSteps;
     private readonly IEndpointSelectorFactory _endpointSelector;
+    private readonly IRouteProxy[] _routeProxies;
     private readonly OTelConfig _openTelemetryConfig;
+    private readonly bool _enableDiagnosticsHeaders;
 
     public const string XAiCentralStreamingTokenHeader = "x-aicentral-streaming-tokens";
 
@@ -30,14 +32,18 @@ public class Pipeline
         IPipelineStepFactory clientAuthStep,
         IPipelineStepFactory[] pipelineSteps,
         IEndpointSelectorFactory endpointSelector,
-        OTelConfig openTelemetryConfig)
+        IRouteProxy[] routeProxies,
+        OTelConfig openTelemetryConfig,
+        bool enableDiagnosticsHeaders)
     {
         _name = name;
         _router = router;
         _clientAuthStep = clientAuthStep;
         _pipelineSteps = new[] { _clientAuthStep }.Union(pipelineSteps.Select(x => x)).ToArray();
         _endpointSelector = endpointSelector;
+        _routeProxies = routeProxies;
         _openTelemetryConfig = openTelemetryConfig;
+        _enableDiagnosticsHeaders = enableDiagnosticsHeaders;
     }
 
     /// <summary>
@@ -54,22 +60,24 @@ public class Pipeline
     /// <param name="cancellationToken"></param>
     /// <param name="deploymentName"></param>
     /// <returns></returns>
-    private async Task<AICentralResponse> Execute(HttpContext context, string? deploymentName, string? assistantName,
-        AICallType callType, CancellationToken cancellationToken)
+    private async Task<AICentralResponse> Execute(
+        IRequestContext context, 
+        string? deploymentName, 
+        string? assistantName,
+        AICallType callType, 
+        CancellationToken cancellationToken)
     {
         var sw = new Stopwatch();
         sw.Start();
 
         // Create a new Activity scoped to the method
         using var activity = ActivitySource.AICentralRequestActivitySource.StartActivity("AICentralRequest");
-        var config = context.RequestServices.GetRequiredService<IOptions<AICentralConfig>>();
-
-        if (config.Value.EnableDiagnosticsHeaders)
+        if (_enableDiagnosticsHeaders)
         {
-            context.Response.Headers.TryAdd("x-aicentral-pipeline", new StringValues(_name));
+            context.ResponseHeaders.TryAdd("x-aicentral-pipeline", new StringValues(_name));
         }
 
-        var logger = context.RequestServices.GetRequiredService<ILogger<Pipeline>>();
+        var logger = context.GetLogger<Pipeline>();
         using var scope = logger.BeginScope(new
         {
             TraceId = Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString()
@@ -78,7 +86,7 @@ public class Pipeline
         logger.LogInformation("Executing Pipeline {PipelineName}", _name);
 
         var requestDetails = await new AzureOpenAIDetector().Detect(_name, deploymentName, assistantName, callType,
-            context.Request, cancellationToken);
+            context, cancellationToken);
 
         logger.LogDebug("Detected {CallType} from incoming request",
             requestDetails.AICallType);
@@ -99,9 +107,9 @@ public class Pipeline
         try
         {
             if (requestDetails.AICallResponseType == AICallResponseType.Streaming &&
-                context.Response.SupportsTrailers())
+                context.SupportsTrailers())
             {
-                context.Response.DeclareTrailer(XAiCentralStreamingTokenHeader);
+                context.DeclareTrailer(XAiCentralStreamingTokenHeader);
             }
 
             try
@@ -114,14 +122,14 @@ public class Pipeline
 
                 if (result.DownstreamUsageInformation.StreamingResponse.GetValueOrDefault() &&
                     result.DownstreamUsageInformation.EstimatedTokens?.Value.EstimatedCompletionTokens != null &&
-                    context.Response.SupportsTrailers())
+                    context.SupportsTrailers())
                 {
                     var streamingTokenCount =
                         result.DownstreamUsageInformation.EstimatedTokens!.Value.EstimatedCompletionTokens!.ToString();
 
-                    context.Response.AppendTrailer(
+                    context.AppendTrailer(
                         XAiCentralStreamingTokenHeader,
-                        streamingTokenCount);
+                        streamingTokenCount!);
                 }
 
                 TransmitOtelTelemetry(context, result, sw, activity);
@@ -132,7 +140,7 @@ public class Pipeline
             {
                 logger.LogError(e, "Failed to handle request");
                 return new AICentralResponse(
-                    DownstreamUsageInformation.Empty(context, requestDetails, null, null, null),
+                    DownstreamUsageInformation.Empty(context, requestDetails, null, null),
                     Results.StatusCode(502));
             }
         }
@@ -145,7 +153,7 @@ public class Pipeline
         }
     }
 
-    private void TransmitOtelTelemetry(HttpContext context, AICentralResponse result, Stopwatch sw, Activity? activity)
+    private void TransmitOtelTelemetry(IRequestContext context, AICentralResponse result, Stopwatch sw, Activity? activity)
     {
         if (!_openTelemetryConfig.Transmit.GetValueOrDefault()) return;
 
@@ -161,7 +169,7 @@ public class Pipeline
 
         if (_openTelemetryConfig.AddClientNameTag.GetValueOrDefault())
         {
-            tagList.Add("ClientName", context.User.Identity?.Name ?? "unknown");
+            tagList.Add("ClientName", context.UserName ?? "unknown");
         }
 
         ActivitySources.RecordHistogram(
@@ -243,13 +251,14 @@ public class Pipeline
             ClientAuth = _clientAuthStep.WriteDebug(),
             Steps = _pipelineSteps.Except([_clientAuthStep]).Select(x => x.WriteDebug()),
             EndpointSelector = _endpointSelector.WriteDebug(),
+            RouteProxies = _routeProxies.Select(x => x.WriteDebug()),
             OpenTelemetryConfig = _openTelemetryConfig
         };
     }
 
     public void BuildRoute(WebApplication webApplication)
     {
-        foreach (var route in _router.BuildRoutes(webApplication, Execute))
+        foreach (var route in _router.BuildRoutes(webApplication, Execute, _routeProxies))
         {
             _clientAuthStep.ConfigureRoute(webApplication, route);
             foreach (var step in _pipelineSteps) step.ConfigureRoute(webApplication, route);

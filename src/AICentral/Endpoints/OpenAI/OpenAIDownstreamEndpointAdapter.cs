@@ -46,7 +46,7 @@ public class OpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpointAdapt
         return false;
     }
 
-    protected override string BuildUri(HttpContext context, IncomingCallDetails aiCallInformation, string? incomingAssistantName, string? mappedAssistantName, string? incomingModelName, string? mappedModelName)
+    protected override string BuildUri(IRequestContext context, IncomingCallDetails aiCallInformation, string? incomingAssistantName, string? mappedAssistantName, string? incomingModelName, string? mappedModelName)
     {
         var pathPiece = aiCallInformation.AICallType switch
         {
@@ -57,9 +57,9 @@ public class OpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpointAdapt
             AICallType.DALLE3 => "images/generations",
             AICallType.Transcription => "audio/transcriptions",
             AICallType.Translation => "audio/translations",
-            AICallType.Files => context.Request.Path.Value!.Replace("/openai/", "/"), //affinity will ensure the request is going to the right place
-            AICallType.Threads => context.Request.Path.Value!.Replace("/openai/", "/"), //affinity will ensure the request is going to the right place
-            AICallType.Assistants => context.Request.Path.Value!.Replace("/openai/", "/").Replace(incomingAssistantName ?? string.Empty, mappedAssistantName),
+            AICallType.Files => context.RequestPath.Value!.Replace("/openai/", "/"), //affinity will ensure the request is going to the right place
+            AICallType.Threads => context.RequestPath.Value!.Replace("/openai/", "/"), //affinity will ensure the request is going to the right place
+            AICallType.Assistants => context.RequestPath.Value!.Replace("/openai/", "/").Replace(incomingAssistantName ?? string.Empty, mappedAssistantName),
             _ => string.Empty
         };
 
@@ -71,7 +71,7 @@ public class OpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpointAdapt
         return requestUri.AbsoluteUri;
     }
 
-    protected override Task ApplyAuthorisation(HttpContext context, HttpRequestMessage newRequest)
+    protected override Task ApplyAuthorisation(IRequestContext context, HttpRequestMessage newRequest)
     {
         newRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
         if (!string.IsNullOrWhiteSpace(_organization))

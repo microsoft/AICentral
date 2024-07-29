@@ -18,13 +18,13 @@ public class PriorityEndpointSelector : IEndpointSelector
     }
 
     public async Task<AICentralResponse> Handle(
-        HttpContext context,
+        IRequestContext context,
         IncomingCallDetails aiCallInformation,
         bool isLastChance,
         IResponseGenerator responseGenerator,
         CancellationToken cancellationToken)
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<PriorityEndpointSelector>>();
+        var logger = context.GetLogger<PriorityEndpointSelector>();
         try
         {
             logger.LogDebug("Prioritised Endpoint selector handling request");
@@ -51,7 +51,7 @@ public class PriorityEndpointSelector : IEndpointSelector
     }
 
     private async Task<AICentralResponse> Handle(
-        HttpContext context,
+        IRequestContext context,
         IncomingCallDetails aiCallInformation,
         CancellationToken cancellationToken,
         IEndpointDispatcher[] endpoints,
@@ -59,7 +59,7 @@ public class PriorityEndpointSelector : IEndpointSelector
         IResponseGenerator responseGenerator
         )
     {
-        var logger = context.RequestServices.GetRequiredService<ILogger<PriorityEndpointSelector>>();
+        var logger = context.GetLogger<PriorityEndpointSelector>();
         var toTry = endpoints.ToList();
         do
         {
@@ -90,7 +90,7 @@ public class PriorityEndpointSelector : IEndpointSelector
         throw new InvalidOperationException("Failed to satisfy request");
     }
     
-    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
+    public Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
     {
         rawHeaders.Remove("x-ratelimit-remaining-tokens");
         rawHeaders.Remove("x-ratelimit-remaining-requests");

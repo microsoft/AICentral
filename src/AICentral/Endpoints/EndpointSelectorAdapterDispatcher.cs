@@ -21,7 +21,7 @@ public class EndpointSelectorAdapterDispatcher : IEndpointDispatcher
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public Task<AICentralResponse> Handle(
-        HttpContext context,
+        IRequestContext context,
         IncomingCallDetails callInformation,
         bool isLastChance,
         IResponseGenerator responseGenerator,

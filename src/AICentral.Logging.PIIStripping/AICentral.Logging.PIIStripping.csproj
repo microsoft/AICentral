@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AICentral.Core" Version="0.18.0" />
+      <PackageReference Include="AICentral.Core" Version="0.19.0-pullrequest0136-0012" />
       <PackageReference Include="Aspire.StackExchange.Redis" Version="8.0.2" />
       <PackageReference Include="Azure.AI.TextAnalytics" Version="5.3.0" />
       <PackageReference Include="Azure.Identity" Version="1.12.0" />

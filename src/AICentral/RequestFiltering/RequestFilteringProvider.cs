@@ -16,7 +16,9 @@ public class RequestFilteringProvider : IPipelineStep
         _allowDataUris = properties.AllowDataUris ?? true;
     }
 
-    public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
+    public async Task<AICentralResponse> Handle(
+        IRequestContext context, 
+        IncomingCallDetails aiCallInformation,
         NextPipelineStep next,
         CancellationToken cancellationToken)
     {
@@ -24,7 +26,7 @@ public class RequestFilteringProvider : IPipelineStep
         {
             var requestContent = aiCallInformation.RequestContent!;
             var messages = requestContent["messages"]!.AsArray();
-            var logger = context.RequestServices.GetRequiredService<ILogger<RequestFilteringProvider>>();
+            var logger = context.GetLogger<RequestFilteringProvider>();
             foreach (var message in messages.AsArray())
             {
                 RemoveImageUrls(logger, message!);
@@ -93,7 +95,7 @@ public class RequestFilteringProvider : IPipelineStep
         }
     }
 
-    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse,
+    public Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse,
         Dictionary<string, StringValues> rawHeaders)
     {
         return Task.CompletedTask;

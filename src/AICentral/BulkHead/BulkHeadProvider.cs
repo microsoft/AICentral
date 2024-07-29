@@ -12,7 +12,7 @@ public class BulkHeadProvider : IPipelineStep
         _semaphore = new SemaphoreSlim(properties.MaxConcurrency!.Value);
     }
 
-    public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
+    public async Task<AICentralResponse> Handle(IRequestContext context, IncomingCallDetails aiCallInformation,
         NextPipelineStep next,
         CancellationToken cancellationToken)
     {
@@ -27,7 +27,7 @@ public class BulkHeadProvider : IPipelineStep
         }
     }
 
-    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse,
+    public Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse,
         Dictionary<string, StringValues> rawHeaders)
     {
         return Task.CompletedTask;

@@ -16,11 +16,11 @@ public class SingleNodeAffinity : IPipelineStep
 
     private readonly MemoryCache _cache;
 
-    public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
+    public async Task<AICentralResponse> Handle(IRequestContext context, IncomingCallDetails aiCallInformation,
         NextPipelineStep next,
         CancellationToken cancellationToken)
     {
-        var incomingHeader = context.Request.Headers["x-aicentral-affinity-key"];
+        var incomingHeader = context.RequestHeaders["x-aicentral-affinity-key"];
 
         if (incomingHeader.Count == 0 || string.IsNullOrWhiteSpace(incomingHeader.ToString()))
         {
@@ -30,7 +30,6 @@ public class SingleNodeAffinity : IPipelineStep
                         context,
                         aiCallInformation,
                         null,
-                        null,
                         null), Results.BadRequest(new
                     {
                         message =
@@ -38,7 +37,7 @@ public class SingleNodeAffinity : IPipelineStep
                     }));
         }
 
-        var key = $"{context.User.Identity?.Name}-{incomingHeader.ToString()}";
+        var key = $"{context.UserName}-{incomingHeader.ToString()}";
 
         if (_cache.TryGetValue(key, out var preferredEndpoint))
         {
@@ -63,7 +62,7 @@ public class SingleNodeAffinity : IPipelineStep
         return response;
     }
 
-    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse,
+    public Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse,
         Dictionary<string, StringValues> rawHeaders)
     {
         return Task.CompletedTask;

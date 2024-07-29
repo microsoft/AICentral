@@ -26,6 +26,10 @@ public class ConfigurationBasedPipelineBuilder
         _backendAuths = new();
 
     private readonly Dictionary<string,
+            Func<ILogger, TypeAndNameConfig, IRouteProxy>>
+        _routeProxies = new();
+
+    private readonly Dictionary<string,
             Func<ILogger, TypeAndNameConfig, IPipelineStepFactory>>
         _genericStepBuilders = new();
 
@@ -49,6 +53,9 @@ public class ConfigurationBasedPipelineBuilder
     private void RegisterBackendEndpointAuthoriser<T>() where T : IEndpointAuthorisationHandlerFactory =>
         _backendAuths.Add(T.ConfigName, T.BuildFromConfig);
 
+    private void RegisterRouteProxy<T>() where T : IRouteProxy =>
+        _routeProxies.Add(T.ConfigName, T.BuildFromConfig);
+
     public AICentralPipelineAssembler BuildPipelinesFromConfig(
         AICentralConfig configuration,
         ILogger startupLogger,
@@ -59,7 +66,24 @@ public class ConfigurationBasedPipelineBuilder
         RegisterBuilders<IPipelineStepFactory>(additionalAssembliesToScan, nameof(RegisterGenericStep));
         RegisterBuilders<IPipelineStepFactory>(additionalAssembliesToScan, nameof(RegisterAuthProvider));
         RegisterBuilders<IEndpointAuthorisationHandlerFactory>(additionalAssembliesToScan, nameof(RegisterBackendEndpointAuthoriser));
-
+        RegisterBuilders<IRouteProxy>(additionalAssembliesToScan, nameof(RegisterRouteProxy));
+        
+        var routeProxies =
+            (configuration
+                .RouteProxies ?? [])
+            .ToDictionary(
+                x => Guard.NotNull(x.Name, "Name"),
+                x =>
+                {
+                    startupLogger.LogInformation("Configuring Route Proxy {Name}", x.Name);
+                    return _routeProxies[
+                        Guard.NotNull(x.Type, "Type") ??
+                        throw new ArgumentException("No Type specified for Route Proxy")](
+                        startupLogger,
+                        x
+                    );
+                });        
+        
         var backendAuths =
             (configuration
                 .BackendAuths ?? [])
@@ -157,7 +181,9 @@ public class ConfigurationBasedPipelineBuilder
             endpoints,
             endpointSelectors,
             genericSteps,
-            configuration.Pipelines ?? Array.Empty<PipelineConfig>()
+            routeProxies,
+            configuration.Pipelines ?? [],
+            configuration.EnableDiagnosticsHeaders
         );
 
         return builder;

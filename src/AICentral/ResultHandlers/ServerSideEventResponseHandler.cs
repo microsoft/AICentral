@@ -1,22 +1,20 @@
 using System.Collections.Concurrent;
-using System.Text;
+using System.Diagnostics;
 using System.Text.Json;
 using AICentral.Core;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using SharpToken;
 
 namespace AICentral.ResultHandlers;
 
-public static class ServerSideEventResponseHandler
+public class ServerSideEventResponseHandler: IResponseHandler
 {
     private static readonly int StreamingLinePrefixLength = "data:".Length;
     private static readonly HashSet<string> EmptySet = new();
     private static readonly ConcurrentDictionary<string, GptEncoding> Encoders = new();
 
-
-    public static async Task<AICentralResponse> Handle(
-        HttpContext context,
+    public async Task<AICentralResponse> Handle(
+        IRequestContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
         DownstreamRequestInformation requestInformation,
@@ -147,7 +145,7 @@ public static class ServerSideEventResponseHandler
             estimatedTokens,
             null,
             responseMetadata,
-            context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString() ?? context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+            context.RemoteIpAddress,
             requestInformation.StartDate,
             requestInformation.Duration,
             openAiResponse.IsSuccessStatusCode);

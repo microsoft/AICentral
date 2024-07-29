@@ -32,12 +32,12 @@ public class PreCannedEndpointAdapterFactory : IDownstreamEndpointAdapter, IDown
         _content = Encoding.UTF8.GetBytes(contentReader.ReadToEnd());
     }
 
-    public Task<Either<HttpRequestMessage, IResult>> BuildRequest(IncomingCallDetails incomingCall, HttpContext context)
+    public Task<Either<HttpRequestMessage, IResult>> BuildRequest(IncomingCallDetails incomingCall, IRequestContext context)
     {
         return _preCannedRequest;
     }
 
-    public Task<HttpResponseMessage> DispatchRequest(HttpContext context, HttpRequestMessage requestMessage,
+    public Task<HttpResponseMessage> DispatchRequest(IRequestContext context, HttpRequestMessage requestMessage,
         CancellationToken cancellationToken)
     {
         return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
@@ -50,7 +50,7 @@ public class PreCannedEndpointAdapterFactory : IDownstreamEndpointAdapter, IDown
     }
 
     public Task<ResponseMetadata> ExtractResponseMetadata(IncomingCallDetails callInformationIncomingCallDetails,
-        HttpContext context,
+        IRequestContext context,
         HttpResponseMessage openAiResponse)
     {
         return Task.FromResult(new ResponseMetadata(EmptyHeaders, null, null));

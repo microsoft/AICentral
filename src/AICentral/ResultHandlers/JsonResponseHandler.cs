@@ -2,22 +2,31 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using AICentral.Core;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace AICentral.ResultHandlers;
 
-public static class JsonResponseHandler
+public class JsonResponseHandler: IResponseHandler
 {
-    public static async Task<AICentralResponse> Handle(
-        HttpContext context,
+    private readonly IResponseTransformer? _adapter;
+
+    public JsonResponseHandler(IResponseTransformer? adapter = null)
+    {
+        _adapter = adapter;
+    }
+    
+    public async Task<AICentralResponse> Handle(
+        IRequestContext context,
         CancellationToken cancellationToken,
         HttpResponseMessage openAiResponse,
         DownstreamRequestInformation requestInformation,
-        ResponseMetadata responseMetadata)
+        ResponseMetadata responseMetadata
+        )
     {
         var response = await JsonDocument.ParseAsync(
             await openAiResponse.Content.ReadAsStreamAsync(cancellationToken),
             cancellationToken: cancellationToken);
+
+        var responseToReturn = _adapter == null ? response : _adapter.Transform(response);
 
         if (openAiResponse.StatusCode == HttpStatusCode.OK)
         {
@@ -59,7 +68,7 @@ public static class JsonResponseHandler
                 }
             }
 
-            var chatRequestInformation = new DownstreamUsageInformation(
+            var downstreamUsageInformation = new DownstreamUsageInformation(
                 requestInformation.LanguageUrl,
                 requestInformation.InternalEndpointName,
                 model,
@@ -72,37 +81,43 @@ public static class JsonResponseHandler
                 null,
                 (promptTokens, completionTokens, totalTokens),
                 responseMetadata,
-                context.Features.Get<IHttpConnectionFeature>()?.RemoteIpAddress?.ToString() ?? context.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+                context.RemoteIpAddress,
                 requestInformation.StartDate,
                 requestInformation.Duration,
                 true);
 
             return new AICentralResponse(
-                chatRequestInformation,
-                new JsonResultHandler(openAiResponse, response));
+                downstreamUsageInformation,
+                BuildJsonResultHandler(openAiResponse.StatusCode, responseToReturn));
         }
-        else
-        {
-            var chatRequestInformation = new DownstreamUsageInformation(
-                requestInformation.LanguageUrl,
-                requestInformation.InternalEndpointName,
-                null,
-                requestInformation.DeploymentName,
-                context.User.Identity?.Name ?? string.Empty,
-                requestInformation.CallType,
-                false,
-                requestInformation.Prompt,
-                null,
-                null,
-                null,
-                responseMetadata,
-                context.Connection.RemoteIpAddress?.ToString() ?? "",
-                requestInformation.StartDate,
-                requestInformation.Duration,
-                false);
 
-            return new AICentralResponse(chatRequestInformation,
-                new JsonResultHandler(openAiResponse, response));
-        }
+        var chatRequestInformation = new DownstreamUsageInformation(
+            requestInformation.LanguageUrl,
+            requestInformation.InternalEndpointName,
+            null,
+            requestInformation.DeploymentName,
+            context.UserName ?? string.Empty,
+            requestInformation.CallType,
+            false,
+            requestInformation.Prompt,
+            null,
+            null,
+            null,
+            responseMetadata,
+            context.RemoteIpAddress?.ToString() ?? "",
+            requestInformation.StartDate,
+            requestInformation.Duration,
+            false);
+
+        return new AICentralResponse(
+            chatRequestInformation,
+            BuildJsonResultHandler(
+                openAiResponse.StatusCode, 
+                responseToReturn));
+    }
+
+    protected virtual JsonResultHandler BuildJsonResultHandler(HttpStatusCode statusCode, JsonDocument response)
+    {
+        return new JsonResultHandler(statusCode, response);
     }
 }

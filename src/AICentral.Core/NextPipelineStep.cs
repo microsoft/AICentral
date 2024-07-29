@@ -1,3 +1,3 @@
 ﻿namespace AICentral.Core;
 
-public delegate Task<AICentralResponse> NextPipelineStep(HttpContext context, IncomingCallDetails requestDetails, CancellationToken cancellationToken);
+public delegate Task<AICentralResponse> NextPipelineStep(IRequestContext context, IncomingCallDetails requestDetails, CancellationToken cancellationToken);

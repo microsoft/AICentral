@@ -14,7 +14,7 @@ public class AICentralJwtAuthProvider : IPipelineStep
     }
 
     public async Task<AICentralResponse> Handle(
-        HttpContext context,
+        IRequestContext context,
         IncomingCallDetails aiCallInformation,
         NextPipelineStep next,
         CancellationToken cancellationToken)
@@ -25,7 +25,7 @@ public class AICentralJwtAuthProvider : IPipelineStep
         if (pipelines == null)
         {
             return new AICentralResponse(
-                DownstreamUsageInformation.Empty(context, aiCallInformation, null, null, null),
+                DownstreamUsageInformation.Empty(context, aiCallInformation, null, null),
                 Results.Unauthorized()
             );
         }
@@ -49,20 +49,20 @@ public class AICentralJwtAuthProvider : IPipelineStep
                     return await next(context, aiCallInformation, cancellationToken);
                 }
 
-                context.RequestServices.GetRequiredService<ILogger<AICentralJwtAuthProvider>>()
+                context.GetLogger<AICentralJwtAuthProvider>()
                     .LogWarning("Unauthorized request for pipeline {Pipeline} and model {Model} from User {User}",
                         aiCallInformation.PipelineName, aiCallInformation.IncomingModelName,
-                        context.User.Identity!.Name);
+                        context.UserName);
             }
         }
 
         return new AICentralResponse(
-            DownstreamUsageInformation.Empty(context, aiCallInformation, null, null, null),
+            DownstreamUsageInformation.Empty(context, aiCallInformation, null, null),
             Results.Unauthorized()
         );
     }
 
-    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse,
+    public Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse,
         Dictionary<string, StringValues> rawHeaders)
     {
         return Task.CompletedTask;

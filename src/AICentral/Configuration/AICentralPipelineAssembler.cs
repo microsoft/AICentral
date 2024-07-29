@@ -14,7 +14,9 @@ public class AICentralPipelineAssembler
     private readonly Dictionary<string, IEndpointDispatcherFactory> _endpoints;
     private readonly Dictionary<string, IEndpointSelectorFactory> _endpointSelectors;
     private readonly Dictionary<string, IPipelineStepFactory> _genericSteps;
+    private readonly Dictionary<string, IRouteProxy> _routeProxies;
     private readonly PipelineConfig[] _pipelines;
+    private readonly bool _enableDiagnosticsHeaders;
 
     private bool _servicesAdded;
 
@@ -24,14 +26,18 @@ public class AICentralPipelineAssembler
         Dictionary<string, IEndpointDispatcherFactory> endpoints,
         Dictionary<string, IEndpointSelectorFactory> endpointSelectors,
         Dictionary<string, IPipelineStepFactory> genericSteps,
-        PipelineConfig[] pipelines)
+        Dictionary<string, IRouteProxy> routeProxies,
+        PipelineConfig[] pipelines,
+        bool enableDiagnosticsHeaders)
     {
         _routeBuilder = routeBuilder;
         _authProviders = authProviders;
         _endpoints = endpoints;
         _endpointSelectors = endpointSelectors;
         _genericSteps = genericSteps;
+        _routeProxies = routeProxies;
         _pipelines = pipelines;
+        _enableDiagnosticsHeaders = enableDiagnosticsHeaders;
     }
 
     public ConfiguredPipelines AddServices(
@@ -51,7 +57,6 @@ public class AICentralPipelineAssembler
 
         var pipelines = BuildPipelines(startupLogger);
         services.AddSingleton(pipelines);
-
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
         return pipelines;
@@ -71,7 +76,8 @@ public class AICentralPipelineAssembler
                 var pipelineName =
                     Guard.NotNullOrEmptyOrWhitespace(pipelineConfig.Name, nameof(pipelineConfig.Name));
 
-                var pipelineSteps = pipelineConfig.Steps ?? Array.Empty<string>();
+                var pipelineSteps = pipelineConfig.Steps ?? [];
+                var routeProxies = pipelineConfig.RouteProxies ?? [];
 
                 var routeBuilder =
                     _routeBuilder(
@@ -95,8 +101,8 @@ public class AICentralPipelineAssembler
                         ? _authProviders[pipelineConfig.AuthProvider ?? string.Empty]
                         : throw new ArgumentException($"Cannot find Auth Provider {pipelineConfig.AuthProvider}"),
                     pipelineSteps.Select(step =>
-                        _genericSteps.ContainsKey(step)
-                            ? _genericSteps[step ?? string.Empty]
+                        _genericSteps.TryGetValue(step, out var genericStep)
+                            ? genericStep
                             : throw new ArgumentException($"Cannot find Step {step}")).ToArray(),
                     _endpointSelectors.ContainsKey(
                         pipelineConfig.EndpointSelector ??
@@ -104,11 +110,16 @@ public class AICentralPipelineAssembler
                         ? _endpointSelectors[pipelineConfig.EndpointSelector ?? string.Empty]
                         : throw new ArgumentException(
                             $"Cannot find EndpointSelector {pipelineConfig.EndpointSelector}"),
+                    routeProxies.Select(proxy =>
+                        _routeProxies.TryGetValue(proxy, out var routeProxy)
+                            ? routeProxy
+                            : throw new ArgumentException($"Cannot find RouteProxy {proxy}")).ToArray(),
                     pipelineConfig.OpenTelemetryConfig ?? new OTelConfig()
                     {
                         AddClientNameTag = false,
                         Transmit = false
-                    });
+                    },
+                    _enableDiagnosticsHeaders);
 
                 startupLogger.LogInformation("Configured Pipeline {Name} on Host {Host}", pipelineConfig.Name,
                     pipelineConfig.Host);
@@ -132,7 +143,9 @@ public class AICentralPipelineAssembler
             otherAssembler._endpoints.Union(_endpoints).ToDictionary(x => x.Key, x => x.Value),
             otherAssembler._endpointSelectors.Union(_endpointSelectors).ToDictionary(x => x.Key, x => x.Value),
             otherAssembler._genericSteps.Union(_genericSteps).ToDictionary(x => x.Key, x => x.Value),
-            otherAssembler._pipelines.Union(_pipelines).ToArray()
+            otherAssembler._routeProxies.Union(_routeProxies).ToDictionary(x => x.Key, x => x.Value),
+            otherAssembler._pipelines.Union(_pipelines).ToArray(),
+            _enableDiagnosticsHeaders
         );
     }
 }

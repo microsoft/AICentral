@@ -18,7 +18,7 @@ public class PIIStrippingLogger(
     private bool _doesQueueExist;
     private bool _loggedError;
 
-    public async Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
+    public async Task<AICentralResponse> Handle(IRequestContext context, IncomingCallDetails aiCallInformation,
         NextPipelineStep next,
         CancellationToken cancellationToken)
     {
@@ -83,7 +83,7 @@ public class PIIStrippingLogger(
     /// <param name="rawResponse"></param>
     /// <param name="rawHeaders"></param>
     /// <returns></returns>
-    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse,
+    public Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse,
         Dictionary<string, StringValues> rawHeaders)
     {
         return Task.CompletedTask;

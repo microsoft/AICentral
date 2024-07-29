@@ -39,6 +39,11 @@ public class AICentralConfig
     
     
     /// <summary>
+    /// A set of additional routes that can map incoming requests to downstream Open AI calls
+    /// </summary>
+    public TypeAndNameConfig[]? RouteProxies { get; set; }
+    
+    /// <summary>
     /// A set of backend authorisers to provide custom auth for backend services
     /// </summary>
     public TypeAndNameConfig[]? BackendAuths { get; set; }
@@ -59,6 +64,7 @@ public class AICentralConfig
         AuthProviders = FillCollection(nameof(AuthProviders), configurationSection).ToArray();
         GenericSteps = FillCollection(nameof(GenericSteps), configurationSection).ToArray();
         BackendAuths = FillCollection(nameof(BackendAuths), configurationSection).ToArray();
+        RouteProxies = FillCollection(nameof(RouteProxies), configurationSection).ToArray();
     }
 
     private List<TypeAndNameConfig> FillCollection(

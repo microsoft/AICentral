@@ -13,7 +13,7 @@ public class SingleEndpointSelector : IEndpointSelector
     }
 
     public Task<AICentralResponse> Handle(
-        HttpContext context,
+        IRequestContext context,
         IncomingCallDetails aiCallInformation,
         bool isLastChance,
         IResponseGenerator responseGenerator,
@@ -32,7 +32,7 @@ public class SingleEndpointSelector : IEndpointSelector
         return new[] { _endpoint };
     }
     
-    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
+    public Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse, Dictionary<string, StringValues> rawHeaders)
     {
         return Task.CompletedTask;
     }

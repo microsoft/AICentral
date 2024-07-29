@@ -5,7 +5,7 @@ namespace AICentral.ConsumerAuth.Entra;
 
 public class EntraClientAuthProvider : IPipelineStep
 {
-    public Task<AICentralResponse> Handle(HttpContext context, IncomingCallDetails aiCallInformation,
+    public Task<AICentralResponse> Handle(IRequestContext context, IncomingCallDetails aiCallInformation,
         NextPipelineStep next,
         CancellationToken cancellationToken)
     {
@@ -13,7 +13,7 @@ public class EntraClientAuthProvider : IPipelineStep
     }
 
 
-    public Task BuildResponseHeaders(HttpContext context, HttpResponseMessage rawResponse,
+    public Task BuildResponseHeaders(IRequestContext context, HttpResponseMessage rawResponse,
         Dictionary<string, StringValues> rawHeaders)
     {
         return Task.CompletedTask;
