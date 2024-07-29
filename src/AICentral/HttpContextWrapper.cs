@@ -1,6 +1,6 @@
 using System.Security.Claims;
+using System.Text.Json;
 using AICentral.Core;
-using AICentral.ResultHandlers;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
@@ -80,18 +80,16 @@ public class HttpContextWrapper : IRequestContext
         return string.Empty;
     }
 
-    public IResponseHandler CreateStreamResponseHandler()
+    public virtual IResponseTransformer CreateJsonResponseTransformer()
     {
-        return new StreamResponseHandler();
+        return new EmptyResponseTransformer();
     }
+}
 
-    public virtual IResponseHandler CreateJsonResponseHandler()
+public class EmptyResponseTransformer : IResponseTransformer
+{
+    public JsonDocument Adapt(JsonDocument input)
     {
-        return new JsonResponseHandler();
-    }
-
-    public IResponseHandler CreateServerSideEventResponseHandler()
-    {
-        return new ServerSideEventResponseHandler();
+        return input;
     }
 }

@@ -5,7 +5,7 @@ using AICentral.ResultHandlers;
 
 namespace AICentral.AzureAISearchVectorizationProxy;
 
-public class AdaptJsonToAzureAISearchTransformer: ITransformIncomingJsonDocumentsToOpenAIJsonDocuments
+public class AdaptJsonToAzureAISearchTransformer: IResponseTransformer
 {
     private readonly JsonNode _incomingDocument;
 

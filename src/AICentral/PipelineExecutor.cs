@@ -85,7 +85,7 @@ public class PipelineExecutor : IResponseGenerator, IDisposable
         if (openAiResponse.Content.Headers.ContentType?.MediaType?.Equals("text/event-stream") ?? false)
         {
             logger.LogDebug("Detected SSE response. Streaming response back to consumer");
-            return context.CreateServerSideEventResponseHandler().Handle(
+            return new ServerSideEventResponseHandler().Handle(
                 context,
                 cancellationToken,
                 openAiResponse,
@@ -96,7 +96,7 @@ public class PipelineExecutor : IResponseGenerator, IDisposable
         if ((openAiResponse.Content.Headers.ContentType?.MediaType ?? string.Empty).Contains("json", StringComparison.InvariantCultureIgnoreCase))
         {
             logger.LogDebug("Detected non-chunked encoding response. Sending response back to consumer");
-            return context.CreateJsonResponseHandler().Handle(
+            return new JsonResponseHandler(context.CreateJsonResponseTransformer()).Handle(
                 context,
                 cancellationToken,
                 openAiResponse,
@@ -104,7 +104,7 @@ public class PipelineExecutor : IResponseGenerator, IDisposable
                 responseMetadata);
         }
 
-        return context.CreateStreamResponseHandler().Handle(
+        return new StreamResponseHandler().Handle(
             context,
             cancellationToken,
             openAiResponse,

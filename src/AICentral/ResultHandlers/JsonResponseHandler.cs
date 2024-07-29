@@ -7,9 +7,9 @@ namespace AICentral.ResultHandlers;
 
 public class JsonResponseHandler: IResponseHandler
 {
-    private readonly ITransformIncomingJsonDocumentsToOpenAIJsonDocuments? _adapter;
+    private readonly IResponseTransformer? _adapter;
 
-    public JsonResponseHandler(ITransformIncomingJsonDocumentsToOpenAIJsonDocuments? adapter = null)
+    public JsonResponseHandler(IResponseTransformer? adapter = null)
     {
         _adapter = adapter;
     }

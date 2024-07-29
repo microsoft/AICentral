@@ -1,7 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using AICentral.Core;
-using AICentral.ResultHandlers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
@@ -36,9 +35,9 @@ public class ProxyContext: HttpContextWrapper, IDisposable, IAsyncDisposable
 
     public override PathString RequestPath => new(_newUrl.AbsolutePath);
 
-    public override IResponseHandler CreateJsonResponseHandler()
+    public override IResponseTransformer CreateJsonResponseTransformer()
     {   
-        return new JsonResponseHandler(new AdaptJsonToAzureAISearchTransformer(_incomingDocument));
+        return new AdaptJsonToAzureAISearchTransformer(_incomingDocument);
     }
 
     public override bool HasJsonContentType() => true;

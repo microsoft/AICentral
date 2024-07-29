@@ -29,8 +29,5 @@ public interface IRequestContext
     void AppendTrailer(string trailerName, string trailerValue);
     string GetMultipartBoundary();
     string GetClientForLoggingPurposes();
-    
-    IResponseHandler CreateStreamResponseHandler();
-    IResponseHandler CreateJsonResponseHandler();
-    IResponseHandler CreateServerSideEventResponseHandler();
+    IResponseTransformer CreateJsonResponseTransformer();
 }
