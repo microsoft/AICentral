@@ -20,6 +20,6 @@ public class BearerPassThroughWithAdditionalKeyAuthFactoryConfig
 
 public class ClaimValueToSubscriptionKey
 {
-    public string? ClaimValue { get; init; }
+    public string[] ClaimValues { get; init; } = default!;
     public string? SubscriptionKey { get; init; }
 }
