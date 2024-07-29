@@ -11,7 +11,9 @@ public class BearerPassThroughWithAdditionalKeyAuth: BearerTokenPassThroughAuth
     public BearerPassThroughWithAdditionalKeyAuth(BearerPassThroughWithAdditionalKeyAuthFactoryConfig config)
     {
         _config = config;
-        _mappings = _config.ClaimsToKeys!.ToDictionary(x => x.ClaimValue!, x => x.SubscriptionKey!);
+        _mappings = _config.ClaimsToKeys!
+            .SelectMany(x => x.ClaimValues.Select(cv => new {ClaimValue = cv, SubscriptionKey = x.SubscriptionKey}))
+            .ToDictionary(x => x.ClaimValue!, x => x.SubscriptionKey!);
     }
 
     public override async Task ApplyAuthorisationToRequest(IRequestContext incomingRequest, HttpRequestMessage outgoingRequest)

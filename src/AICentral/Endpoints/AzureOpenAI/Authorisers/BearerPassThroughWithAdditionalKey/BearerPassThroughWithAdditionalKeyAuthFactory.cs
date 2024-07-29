@@ -2,7 +2,7 @@ using AICentral.Core;
 
 namespace AICentral.Endpoints.AzureOpenAI.Authorisers.BearerPassThroughWithAdditionalKey;
 
-public class BearerPassThroughWithAdditionalKeyAuthFactory: IEndpointAuthorisationHandlerFactory
+public class BearerPassThroughWithAdditionalKeyAuthFactory : IEndpointAuthorisationHandlerFactory
 {
     private readonly BearerPassThroughWithAdditionalKeyAuth _provider;
     private BearerPassThroughWithAdditionalKeyAuthFactoryConfig _config;
@@ -12,7 +12,7 @@ public class BearerPassThroughWithAdditionalKeyAuthFactory: IEndpointAuthorisati
         _config = config;
         _provider = new BearerPassThroughWithAdditionalKeyAuth(_config);
     }
-    
+
     public static string ConfigName => "BearerPlusKey";
 
     public static IEndpointAuthorisationHandlerFactory BuildFromConfig(ILogger logger, TypeAndNameConfig config)
@@ -33,7 +33,8 @@ public class BearerPassThroughWithAdditionalKeyAuthFactory: IEndpointAuthorisati
             Type = "BearerPlusKey",
             IncomingClaim = _config.IncomingClaimName,
             BackendHeader = _config.KeyHeaderName,
-            MatchedUsers = _config.ClaimsToKeys!.Select(x => x.ClaimValue!.Substring(0, Math.Min(x.ClaimValue!.Length, 4)) + "...")
+            MatchedUsers = _config.ClaimsToKeys!.SelectMany(x =>
+                x.ClaimValues.Select(cv => cv.Substring(0, Math.Max(cv!.Length, 4)) + "..."))
         };
     }
 }

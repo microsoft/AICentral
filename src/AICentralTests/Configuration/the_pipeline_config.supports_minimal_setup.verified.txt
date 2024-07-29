@@ -21,8 +21,8 @@
             IncomingClaim: test,
             BackendHeader: api-key,
             MatchedUsers: [
-              User...,
-              User...
+              User1...,
+              User2...
             ]
           },
           AutoPopulateEmptyUserId: false

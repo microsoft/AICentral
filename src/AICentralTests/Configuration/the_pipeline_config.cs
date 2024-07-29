@@ -63,12 +63,12 @@ public class the_pipeline_config
                                 {
                                     new ()
                                     {
-                                        ClaimValue = "User1",
+                                        ClaimValues = ["User1"],
                                         SubscriptionKey = "Key1"
                                     },
                                     new ()
                                     {
-                                        ClaimValue = "User2",
+                                        ClaimValues = ["User2"],
                                         SubscriptionKey = "Key2"
                                     },
                                 }

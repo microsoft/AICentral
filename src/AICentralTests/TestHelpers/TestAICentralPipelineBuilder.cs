@@ -123,8 +123,8 @@ public class TestAICentralPipelineBuilder
                 IncomingClaimName = ClaimTypes.Name,
                 KeyHeaderName = "new-api-key",
                 ClaimsToKeys = [
-                    new ClaimValueToSubscriptionKey {ClaimValue = "user1", SubscriptionKey = "key-1"},
-                    new ClaimValueToSubscriptionKey {ClaimValue = "user2", SubscriptionKey = "key-2"},
+                    new ClaimValueToSubscriptionKey {ClaimValues = ["user1"], SubscriptionKey = "key-1"},
+                    new ClaimValueToSubscriptionKey {ClaimValues = ["user2"], SubscriptionKey = "key-2"},
                 ]
             }),
             new Dictionary<string, string>(),
