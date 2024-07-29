@@ -1,12 +1,11 @@
 using System.Security.Claims;
 using System.Text.Json;
-using AICentral.Core;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 
-namespace AICentral;
+namespace AICentral.Core;
 
 public class HttpContextWrapper : IRequestContext
 {
