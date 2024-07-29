@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AICentral.AzureAISearchVectorizationProxy\AICentral.AzureAISearchVectorizationProxy.csproj" />
+      <ProjectReference Include="..\AICentral.AzureAISearchVectorizer\AICentral.AzureAISearchVectorizer.csproj" />
       <ProjectReference Include="..\AICentral.Logging.AzureMonitor\AICentral.Logging.AzureMonitor.csproj" />
       <ProjectReference Include="..\AICentral.Logging.PIIStripping\AICentral.Logging.PIIStripping.csproj" />
       <ProjectReference Include="..\AICentral.RateLimiting.DistributedRedis\AICentral.RateLimiting.DistributedRedis.csproj" />
