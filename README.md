@@ -38,6 +38,8 @@
 - Bulkhead support for buffering requests to backend
 - Distributed token rate limiting (using Redis)
   - Powered by an extension ```graemefoster/aicentral.ratelimiting.distributedredis```
+- AI Search Vectorization endpoint
+  - Powered by an extension ```graemefoster/aicentral.azureaisearchvectorizer```
 
 > Extensibility model makes it easy to build your own plugins
 

@@ -1,8 +1,12 @@
 Release Notes:
 
+0.19.1/2/3 (29/jul/2024)
+- Fixed a bug stopping PII Stripped embeddings being logged
+- Added AI Search Vectorization nuget publish
+
 0.19.0 (29/jul/2024)
 - Added 'route proxies' enabling new routes to proxy to downstream Open AI services
-- Published a AI Search Vectorization route so you can use AI Central over a Private Endpoint to handle AI Search Vectorization request.  
+- Published a AI Search Vectorization route so you can use AI Central over a Private Endpoint to handle AI Search Vectorization request.
 
 0.18.5 (15/jul/2024)
 - Stopped retrying 400's against different servers. 400's are badly formed requests, content-filter triggers, etc, and should not be retried.
