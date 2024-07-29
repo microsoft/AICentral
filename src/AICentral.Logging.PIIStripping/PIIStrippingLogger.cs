@@ -55,7 +55,7 @@ public class PIIStrippingLogger(
                         response.DownstreamUsageInformation.ModelName,
                         response.DownstreamUsageInformation.DeploymentName,
                         response.DownstreamUsageInformation.Client,
-                        response.DownstreamUsageInformation.CallType,
+                        response.DownstreamUsageInformation.CallType.ToString(),
                         response.DownstreamUsageInformation.StreamingResponse,
                         response.DownstreamUsageInformation.Prompt,
                         response.DownstreamUsageInformation.Response,

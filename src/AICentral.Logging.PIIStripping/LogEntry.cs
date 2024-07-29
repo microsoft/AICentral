@@ -11,7 +11,7 @@ internal record LogEntry(
     string? ModelName,
     string? DeploymentName,
     string Client,
-    AICallType CallType,
+    string CallType,
     bool? StreamingResponse,
     string? Prompt,
     string? Response,
