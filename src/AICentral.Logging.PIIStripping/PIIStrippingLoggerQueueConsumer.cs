@@ -49,14 +49,19 @@ internal class PIIStrippingLoggerQueueConsumer(
 
                         //get the prompt and redact it
                         var loggingMessage = message.Value.Body.ToObjectFromJson<LogEntry>();
+                        
                         var redacted = await textAnalyticsClient.RecognizePiiEntitiesBatchAsync(
                             [loggingMessage.Prompt, loggingMessage.Response], cancellationToken: cancellationToken);
 
                         //log the response
                         var redactedMessage = loggingMessage with
                         {
-                            Prompt = redacted.Value[0].Entities.RedactedText,
-                            Response = redacted.Value[1].Entities.RedactedText
+                            Prompt = string.IsNullOrWhiteSpace(loggingMessage.Prompt) 
+                                ? string.Empty
+                                : redacted.Value[0].Entities.RedactedText,
+                            Response =string.IsNullOrWhiteSpace(loggingMessage.Response) 
+                                ? string.Empty
+                                : redacted.Value[1].Entities.RedactedText
                         };
 
                         //save the message
