@@ -87,7 +87,7 @@ public class HttpContextWrapper : IRequestContext
 
 public class EmptyResponseTransformer : IResponseTransformer
 {
-    public JsonDocument Adapt(JsonDocument input)
+    public JsonDocument Transform(JsonDocument input)
     {
         return input;
     }

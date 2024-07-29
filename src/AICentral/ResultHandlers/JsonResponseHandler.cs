@@ -26,7 +26,7 @@ public class JsonResponseHandler: IResponseHandler
             await openAiResponse.Content.ReadAsStreamAsync(cancellationToken),
             cancellationToken: cancellationToken);
 
-        var responseToReturn = _adapter == null ? response : _adapter.Adapt(response);
+        var responseToReturn = _adapter == null ? response : _adapter.Transform(response);
 
         if (openAiResponse.StatusCode == HttpStatusCode.OK)
         {

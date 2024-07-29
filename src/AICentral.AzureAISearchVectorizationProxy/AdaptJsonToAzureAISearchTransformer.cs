@@ -12,7 +12,7 @@ public class AdaptJsonToAzureAISearchTransformer: IResponseTransformer
     {
         _incomingDocument = incomingDocument;
     }
-    public JsonDocument Adapt(JsonDocument input)
+    public JsonDocument Transform(JsonDocument input)
     {
         var embeddingElement = input.RootElement.GetProperty("data")[0].GetProperty("embedding");
         var embeddings = embeddingElement.EnumerateArray().Select(x => (JsonNode)x.GetSingle());
