@@ -7,7 +7,7 @@
 ![Alt text](./docs/AI%20Central.drawio.svg)
 
 ## Take control of your AI services.
-~~~~
+
 ### Features
 
 - Minimal overhead - written on Asp.Net Core, on dotnet 8. One of the fastest web-servers in the business.
