@@ -7,13 +7,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AICentral" Version="0.18.0" />
       <PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.2.0" />
     </ItemGroup>
 
     <ItemGroup>
       <EmbeddedResource Include="Assets\FakeOpenAIChatCompletionsResponse.json" />
       <EmbeddedResource Include="Assets\FakeOpenAIStreamingResponse.txt" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\src\AICentral\AICentral.csproj" />
     </ItemGroup>
 
 </Project>
