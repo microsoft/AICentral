@@ -59,6 +59,39 @@ public class the_azure_ai_search_vectorizer_proxy : IClassFixture<TestWebApplica
 
     
     [Fact]
+    public async Task handles_downstream_failures()
+    {
+        _factory.Services.Seed(
+            $"https://{TestPipelines.Endpoint200}/openai/deployments/embeddings/embeddings?api-version=2024-04-01-preview",
+            () => Task.FromResult(OpenAIFakeResponses.NotFoundResponse()));
+
+        var request = new HttpRequestMessage(
+            HttpMethod.Post,
+            "https://azure-with-aisearch-route-proxy.localtest.me/proxypath")
+        {
+            Content = new StringContent(JsonConvert.SerializeObject(new
+            {
+                values = new[]
+                {
+                    new
+                    {
+                        recordId = 0,
+                        data = new
+                        {
+                            text = "this is a test"
+                        }
+                    }
+                }
+            }))
+        };
+
+        var result = await _httpClient.SendAsync(request);
+        
+        result.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    
+    [Fact]
     public async Task blocks_image_embedding_requests()
     {
         var request = new HttpRequestMessage(
