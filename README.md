@@ -7,7 +7,7 @@
 ![Alt text](./docs/AI%20Central.drawio.svg)
 
 ## Take control of your AI services.
-~~~~
+
 ### Features
 
 - Minimal overhead - written on Asp.Net Core, on dotnet 8. One of the fastest web-servers in the business.
@@ -38,6 +38,8 @@
 - Bulkhead support for buffering requests to backend
 - Distributed token rate limiting (using Redis)
   - Powered by an extension ```graemefoster/aicentral.ratelimiting.distributedredis```
+- AI Search Vectorization endpoint
+  - Powered by an extension ```graemefoster/aicentral.azureaisearchvectorizer```
 
 > Extensibility model makes it easy to build your own plugins
 

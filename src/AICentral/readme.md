@@ -2,17 +2,36 @@
 
 AI Central gives you control over your AI services.
 
-- Lightweight out-the-box token logging using Open Telemetry
+- Minimal overhead - written on Asp.Net Core, on dotnet 8. One of the fastest web-servers in the business.
+- Enable advanced Azure APIm scenarios such as passing a Subscription Key, and a JWT from libraries like PromptFlow that don't support that out-of-the-box.
+- PII Stripping logging to Cosmos DB
+  - Powered by ```graemefoster/aicentral.logging.piistripping```
+- Lightweight out-the-box token metrics surfaced through Open Telemetry
+  - **Does not buffer and block streaming**
+  - Use for PTU Chargeback scenarios
+  - Gain quick insights into who's using what, how much, and how often
+  - Standard Open Telemetry format to surface Dashboards in you monitoring solution of choice
+- Prompt and usage logging to Azure Monitor
+  - **Works for streaming endpoints as-well as non-streaming**
 - Intelligent Routing
+  - Endpoint Selector that favours endpoints reporting higher available capacity
+  - Random endpoint selector
+  - Prioritised endpoint selector with fallback
+  - Lowest Latency endpoint selector
+- Can proxy asynchronous requests such as Azure OpenAI DALLE2 Image Generation across fleets of servers
 - Custom consumer OAuth2 authorisation
-- Fallback AI service
-- Round Robin AI services
-- Lowest Latency AI service
-- Circuit breakers, and backoff-retry over downstream AI services
-- Request based and Token based rate limiting
-- Prompt and usage logging
-    - **Works for streaming endpoints as-well as non streaming**
-- Additional Open Telemetry Metrics and Traces
+- Can mint JWT time-bound and consumer-bound JWT tokens to make it easy to run events like Hackathons without blowing your budget
+- Circuit breakers and backoff-retry over downstream AI services
+- Local token rate limiting
+  - By consumer / by endpoint
+  - By number of tokens (including streaming by estimated token count)
+- Local request rate limiting
+  - By consumer / by endpoint
+- Bulkhead support for buffering requests to backend
+- Distributed token rate limiting (using Redis)
+  - Powered by an extension ```graemefoster/aicentral.ratelimiting.distributedredis```
+- AI Search Vectorization endpoint
+  - Powered by an extension ```graemefoster/aicentral.azureaisearchvectorizer```
 
 ## Configuration
 

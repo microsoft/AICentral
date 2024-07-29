@@ -47,6 +47,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		..\.github\workflows\build-aicentral-azure-distributed-rate-limiter.yaml = ..\.github\workflows\build-aicentral-azure-distributed-rate-limiter.yaml
 		..\.github\workflows\build-aicentral-pii-stripping-logging.yaml = ..\.github\workflows\build-aicentral-pii-stripping-logging.yaml
 		..\.github\workflows\build-fake-openai-server.yaml = ..\.github\workflows\build-fake-openai-server.yaml
+		..\.github\workflows\build-aicentral-aisearch-vectorizer.yaml = ..\.github\workflows\build-aicentral-aisearch-vectorizer.yaml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.Logging.AzureMonitor", "AICentral.Logging.AzureMonitor\AICentral.Logging.AzureMonitor.csproj", "{D6C1FAC7-ABC6-49A4-A2A4-6FAD13A9B483}"
@@ -69,7 +70,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aspire", "aspire", "{F9819A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.OpenAITestExtensions", "AICentral.OpenAITestExtensions\AICentral.OpenAITestExtensions.csproj", "{70430FEE-5DE2-42EA-A6CC-780BB1873E34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.AzureAISearchVectorizationProxy", "AICentral.AzureAISearchVectorizationProxy\AICentral.AzureAISearchVectorizationProxy.csproj", "{269A9D94-F4E0-41FB-AA24-561AF3D92914}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.AzureAISearchVectorizer", "AICentral.AzureAISearchVectorizer\AICentral.AzureAISearchVectorizer.csproj", "{269A9D94-F4E0-41FB-AA24-561AF3D92914}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
