@@ -142,14 +142,21 @@ public class AzureOpenAIDetector
     {
         if (contentProperty.GetValueKind() == JsonValueKind.Array)
         {
-            var arrayContent = new StringBuilder();
-            foreach(var item in contentProperty.AsArray())
+            var jsonArray = contentProperty.AsArray();
+            if (jsonArray.Count > 0 && jsonArray.First()!.GetValueKind() == JsonValueKind.String)
             {
-                arrayContent.Append(item!.GetValue<string>());
-                arrayContent.Append(" ");
+                var arrayContent = new StringBuilder();
+                foreach (var item in jsonArray)
+                {
+                    arrayContent.Append(item!.GetValue<string>());
+                    arrayContent.Append(Environment.NewLine);
+                }
+
+                return arrayContent.ToString();
             }
 
-            return arrayContent.ToString();
+            //Embedding numbers or arrays of numbers... Not sure it makes sense to log these (there could be many?)
+            return string.Empty;
         }
 
         return contentProperty.GetValue<string>();

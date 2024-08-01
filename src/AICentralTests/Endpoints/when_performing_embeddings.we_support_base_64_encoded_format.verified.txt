@@ -1,0 +1,58 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/openai/deployments/adatest/embeddings?api-version=2024-02-15-preview",
+    "Method": "POST",
+    "Headers": {
+      "api-key": "ignore-fake-key-hr987345"
+    },
+    "ContentType": "application/json",
+    "Content": "{\"input\":[1199],\"model\":\"text-embedding-ada-002\",\"encoding_format\":\"base64\"}"
+  }
+],
+  Response: {
+    Headers: [],
+    Content:
+{
+  "id": "chatcmpl-6v7mkQj980V1yBec6ETrKPRqFjNw9",
+  "object": "list",
+  "model": "ada",
+  "usage": {
+    "prompt_tokens": 58,
+    "total_tokens": 126
+  },
+  "data": [
+    {
+      "embedding": [
+        0.1,
+        0.2,
+        0.3
+      ],
+      "index": 0,
+      "object": "embedding"
+    }
+  ]
+}
+  },
+  ResponseMetadata: {
+    InternalEndpointName: Guid_1,
+    OpenAIHost: Guid_1,
+    ModelName: ada,
+    DeploymentName: adatest,
+    Client: ,
+    CallType: Embeddings,
+    StreamingResponse: false,
+    Prompt: ,
+    Response: ,
+    KnownTokens: {
+      Item1: 58,
+      Item3: 126
+    },
+    ResponseMetadata: {},
+    RemoteIpAddress: ,
+    StartDate: DateTimeOffset_1,
+    Success: true,
+    TotalTokens: 126
+  }
+}
