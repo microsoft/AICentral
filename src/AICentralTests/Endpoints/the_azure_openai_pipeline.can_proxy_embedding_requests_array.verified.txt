@@ -47,7 +47,10 @@
     Client: ,
     CallType: Embeddings,
     StreamingResponse: false,
-    Prompt: Test1 Test2 ,
+    Prompt:
+Test1
+Test2
+,
     Response: ,
     KnownTokens: {
       Item1: 58,
