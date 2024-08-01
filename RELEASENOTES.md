@@ -1,5 +1,8 @@
 Release Notes:
 
+0.19.4 (01/aug/2024)
+- Embeddings don't expect the array to be of strings anymore, when passed as an array.
+
 0.19.1/2/3 (29/jul/2024)
 - Fixed a bug stopping PII Stripped embeddings being logged
 - Added AI Search Vectorization nuget publish
