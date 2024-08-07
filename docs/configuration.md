@@ -22,7 +22,7 @@ All endpoints are wrapped with a Polly Policy. We
 | ModelMappings           | Maps incoming model names to backend model names.                                        |
 | EnforceMappedModels     | If true, only models in the ModelMappings will be allowed.                               |
 | AuthenticationType      | The type of authentication to use. ```apikey``` or ```entra``` or ```entrapassthrough``` |
-| AuthenticationKey       | The key to use for authentication (when AuthenticationType is apikey).                   |
+| ApiKey                  | The key to use for authentication (when AuthenticationType is apikey).                   |
 | MaxConcurrency          | The maximum number of concurrent requests to the endpoint.                               |
 | AutoPopulateEmptyUserId | If true, the UserId will be populated with the incoming User Name if it is empty.        |
 
@@ -44,7 +44,7 @@ All endpoints are wrapped with a Polly Policy. We
         },
         "EnforceMappedModels": true,
         "AuthenticationType": "ApiKey|Entra|EntraPassThrough",
-        "AuthenticationKey": "required-when-using-ApiKey",
+        "ApiKey": "required-when-using-ApiKey",
         "MaxConcurrency": 5,
         "AutoPopulateEmptyUserId": true
     }
