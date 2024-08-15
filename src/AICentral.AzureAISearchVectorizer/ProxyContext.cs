@@ -1,10 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using AICentral.AzureAISearchVectorizationProxy;
 using AICentral.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace AICentral.AzureAISearchVectorizationProxy;
+namespace AICentral.AzureAISearchVectorizer;
 
 public class ProxyContext: HttpContextWrapper, IDisposable, IAsyncDisposable
 {

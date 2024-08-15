@@ -1,9 +1,6 @@
 ﻿using System.Diagnostics;
-using System.Net;
 using AICentral.Core;
 using AICentral.EndpointSelectors;
-using AICentral.ResultHandlers;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace AICentral;
@@ -60,7 +57,7 @@ public class Pipeline
     /// <param name="cancellationToken"></param>
     /// <param name="deploymentName"></param>
     /// <returns></returns>
-    private async Task<AICentralResponse> Execute(
+    public async Task<AICentralResponse> Execute(
         IRequestContext context, 
         string? deploymentName, 
         string? assistantName,

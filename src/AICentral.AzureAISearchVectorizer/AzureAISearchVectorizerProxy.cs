@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using AICentral.AzureAISearchVectorizer;
 using AICentral.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
