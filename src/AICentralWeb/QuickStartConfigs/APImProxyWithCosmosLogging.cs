@@ -1,10 +1,12 @@
 ﻿using AICentral;
 using AICentral.AzureAISearchVectorizationProxy;
 using AICentral.Configuration;
+using AICentral.ConsumerAuth.AllowAnonymous;
 using AICentral.ConsumerAuth.Entra;
 using AICentral.Core;
 using AICentral.Endpoints;
 using AICentral.Endpoints.AzureOpenAI;
+using AICentral.Endpoints.AzureOpenAI.Authorisers;
 using AICentral.Endpoints.AzureOpenAI.Authorisers.BearerPassThroughWithAdditionalKey;
 using AICentral.EndpointSelectors.Single;
 using AICentral.Logging.PIIStripping;
@@ -66,13 +68,14 @@ public static class APImProxyWithCosmosLogging
             new AzureOpenAIDownstreamEndpointAdapterFactory(
                 "apim",
                 apimEndpointUri!,
-                new BearerPassThroughWithAdditionalKeyAuthFactory(
-                    new BearerPassThroughWithAdditionalKeyAuthFactoryConfig()
-                    {
-                        IncomingClaimName = incomingClaimName,
-                        KeyHeaderName = "api-key",
-                        ClaimsToKeys = claimsToKeys
-                    }),
+                new KeyAuthFactory("41e8faa77a7e4ca08c8dc32b9d20c195"),
+                // new BearerPassThroughWithAdditionalKeyAuthFactory(
+                //     new BearerPassThroughWithAdditionalKeyAuthFactoryConfig()
+                //     {
+                //         IncomingClaimName = incomingClaimName,
+                //         KeyHeaderName = "api-key",
+                //         ClaimsToKeys = claimsToKeys
+                //     }),
                 new Dictionary<string, string>(),
                 new Dictionary<string, string>(),
                 false));
@@ -95,37 +98,38 @@ public static class APImProxyWithCosmosLogging
             _ => new HostNameMatchRouter("*"),
             new Dictionary<string, IPipelineStepFactory>()
             {
-                ["auth"] = new EntraClientAuthFactory(new EntraClientAuthConfig()
-                {
-                    Entra = new MicrosoftIdentityApplicationOptions()
-                    {
-                        TenantId = tenantId,
-                        ClientId = "ignored-as-not-exchanging-codes-for-tokens",
-                        Audience = "https://cognitiveservices.azure.com",
-                    }
-                }, (builder, schemeId) =>
-                {
-                    builder
-                        .AddMicrosoftIdentityWebApi(options =>
-                        {
-                            options.Audience = "https://cognitiveservices.azure.com";
-                            options.TokenValidationParameters = new TokenValidationParameters()
-                            {
-                                ValidateIssuer = true,
-                                ValidAudiences = new[] { "https://cognitiveservices.azure.com" }
-                            };
-                            options.TokenValidationParameters.EnableAadSigningKeyIssuerValidation();
-                        }, options =>
-                        {
-                            options.TenantId = tenantId;
-                            options.Instance = "https://login.microsoftonline.com/";
-                            options.ClientId = "ignored-as-not-exchanging-codes-for-tokens";
-                        }, schemeId);
-
-                    builder.Services.Configure<JwtBearerOptions>(
-                        schemeId,
-                        jwtBearerOptions => { jwtBearerOptions.Events.OnTokenValidated = _ => Task.CompletedTask; });
-                })
+                ["auth"] = new AllowAnonymousClientAuthFactory(),
+                // ["auth"] = new EntraClientAuthFactory(new EntraClientAuthConfig()
+                // {
+                //     Entra = new MicrosoftIdentityApplicationOptions()
+                //     {
+                //         TenantId = tenantId,
+                //         ClientId = "ignored-as-not-exchanging-codes-for-tokens",
+                //         Audience = "https://cognitiveservices.azure.com",
+                //     }
+                // }, (builder, schemeId) =>
+                // {
+                //     builder
+                //         .AddMicrosoftIdentityWebApi(options =>
+                //         {
+                //             options.Audience = "https://cognitiveservices.azure.com";
+                //             options.TokenValidationParameters = new TokenValidationParameters()
+                //             {
+                //                 ValidateIssuer = true,
+                //                 ValidAudiences = new[] { "https://cognitiveservices.azure.com" }
+                //             };
+                //             options.TokenValidationParameters.EnableAadSigningKeyIssuerValidation();
+                //         }, options =>
+                //         {
+                //             options.TenantId = tenantId;
+                //             options.Instance = "https://login.microsoftonline.com/";
+                //             options.ClientId = "ignored-as-not-exchanging-codes-for-tokens";
+                //         }, schemeId);
+                //
+                //     builder.Services.Configure<JwtBearerOptions>(
+                //         schemeId,
+                //         jwtBearerOptions => { jwtBearerOptions.Events.OnTokenValidated = _ => Task.CompletedTask; });
+                // })
             },
             new Dictionary<string, IEndpointDispatcherFactory>()
             {
