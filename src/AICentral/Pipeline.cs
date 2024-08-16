@@ -104,9 +104,9 @@ public class Pipeline
         try
         {
             if (requestDetails.AICallResponseType == AICallResponseType.Streaming &&
-                context.SupportsTrailers())
+                context.ResponseSupportsTrailers())
             {
-                context.DeclareTrailer(XAiCentralStreamingTokenHeader);
+                context.ResponseDeclareTrailer(XAiCentralStreamingTokenHeader);
             }
 
             try
@@ -119,12 +119,12 @@ public class Pipeline
 
                 if (result.DownstreamUsageInformation.StreamingResponse.GetValueOrDefault() &&
                     result.DownstreamUsageInformation.EstimatedTokens?.Value.EstimatedCompletionTokens != null &&
-                    context.SupportsTrailers())
+                    context.ResponseSupportsTrailers())
                 {
                     var streamingTokenCount =
                         result.DownstreamUsageInformation.EstimatedTokens!.Value.EstimatedCompletionTokens!.ToString();
 
-                    context.AppendTrailer(
+                    context.ResponseAppendTrailer(
                         XAiCentralStreamingTokenHeader,
                         streamingTokenCount!);
                 }

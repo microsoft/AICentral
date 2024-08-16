@@ -9,12 +9,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AICentral.Core" Version="0.19.0-pullrequest0136-0012" />
       <PackageReference Include="Aspire.StackExchange.Redis" Version="8.0.2" />
       <PackageReference Include="Azure.AI.TextAnalytics" Version="5.3.0" />
       <PackageReference Include="Azure.Identity" Version="1.12.0" />
       <PackageReference Include="Azure.Storage.Queues" Version="12.18.0" />
       <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.41.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AICentral.Core\AICentral.Core.csproj" />
     </ItemGroup>
 
 </Project>

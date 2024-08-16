@@ -8,5 +8,10 @@
             },
             "enableLiveMetricsFilters": true
         }
+    },
+    "extensions": {
+        "http": {
+            "routePrefix": ""
+        }
     }
 }

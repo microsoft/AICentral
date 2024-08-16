@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using System.Text.Json;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.WebUtilities;
@@ -11,6 +10,7 @@ public class HttpContextWrapper : IRequestContext
 {
     private readonly HttpContext _ctx;
     private readonly Dictionary<string,StringValues> _queryStringParts;
+    private WrappedHttpResponse _wrappedHttpResponse;
 
     public HttpContextWrapper(HttpContext ctx)
     {
@@ -18,6 +18,7 @@ public class HttpContextWrapper : IRequestContext
         var queryStringParts = QueryHelpers.ParseQuery(ctx.Request.QueryString.Value ?? "");
         queryStringParts.Remove("x-aicentral-affinity-key");
         _queryStringParts = queryStringParts;
+        _wrappedHttpResponse = new WrappedHttpResponse(_ctx.Response);
     }
     
     public ILogger<T> GetLogger<T>() where T : notnull => _ctx.RequestServices.GetRequiredService<ILogger<T>>();
@@ -39,24 +40,13 @@ public class HttpContextWrapper : IRequestContext
     public ClaimsPrincipal User => _ctx.User;
     public string RequestEncodedUrl => _ctx.Request.GetEncodedUrl();
     public IFormCollection Form => _ctx.Request.Form;
-    public HttpResponse Response => _ctx.Response;
+    public IAICentralResponse Response => _wrappedHttpResponse;
+
     public virtual PathString RequestPath => _ctx.Request.Path;
     public string RequestScheme => _ctx.Request.Scheme;
     public HostString RequestHost => _ctx.Request.Host;
     public virtual bool HasJsonContentType() => _ctx.Request.HasJsonContentType();
-
-    public bool SupportsTrailers() => _ctx.Response.SupportsTrailers();
-
-    public void DeclareTrailer(string trailerHeader)
-    {
-        _ctx.Response.DeclareTrailer(trailerHeader);
-    }
-
-    public void AppendTrailer(string trailerName, string trailerValue)
-    {
-        _ctx.Response.AppendTrailer(trailerName, trailerValue);
-    }
-
+    
     public string GetMultipartBoundary() => _ctx.Request.GetMultipartBoundary();
 
     public string GetClientForLoggingPurposes()
@@ -83,12 +73,24 @@ public class HttpContextWrapper : IRequestContext
     {
         return new EmptyResponseTransformer();
     }
-}
 
-public class EmptyResponseTransformer : IResponseTransformer
-{
-    public JsonDocument Transform(JsonDocument input)
+    public bool ResponseSupportsTrailers()
     {
-        return input;
+        return _ctx.Response.SupportsTrailers();
+    }
+
+    public void ResponseDeclareTrailer(string header)
+    {
+        _ctx.Response.DeclareTrailer(header);
+    }
+
+    public void ResponseSetHeader(string headerName, string headerValue)
+    {
+        _ctx.Response.Headers[headerName] = headerValue;
+    }
+
+    public void ResponseAppendTrailer(string trailerName, string trailerValue)
+    {
+        _ctx.Response.AppendTrailer(trailerName, trailerValue);
     }
 }

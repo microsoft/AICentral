@@ -1,6 +1,6 @@
 ﻿namespace AICentral.ResultHandlers;
 
-public class StreamAlreadySentResultHandler: IResult
+public class ResponseAlreadySentResultHandler: IResult
 {
     public Task ExecuteAsync(HttpContext context)
     {

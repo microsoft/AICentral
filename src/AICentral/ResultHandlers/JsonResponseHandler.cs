@@ -2,6 +2,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using AICentral.Core;
+using Microsoft.Net.Http.Headers;
 
 namespace AICentral.ResultHandlers;
 
@@ -31,6 +32,12 @@ public class JsonResponseHandler: IResponseHandler
             : openAiResponse.IsSuccessStatusCode
                 ? _adapter.Transform(response)
                 : response;
+
+        context.Response.StatusCode = (int)openAiResponse.StatusCode;
+        context.Response.SetHeader(HeaderNames.ContentType, "application/json");
+        await using var utf8Writer = new Utf8JsonWriter(context.Response.Body, new JsonWriterOptions { Indented = false });
+        responseToReturn.WriteTo(utf8Writer);
+        await utf8Writer.FlushAsync(cancellationToken);
 
         if (openAiResponse.StatusCode == HttpStatusCode.OK)
         {
@@ -92,7 +99,7 @@ public class JsonResponseHandler: IResponseHandler
 
             return new AICentralResponse(
                 downstreamUsageInformation,
-                BuildJsonResultHandler(openAiResponse.StatusCode, responseToReturn));
+                new ResponseAlreadySentResultHandler());
         }
 
         var chatRequestInformation = new DownstreamUsageInformation(
@@ -115,13 +122,6 @@ public class JsonResponseHandler: IResponseHandler
 
         return new AICentralResponse(
             chatRequestInformation,
-            BuildJsonResultHandler(
-                openAiResponse.StatusCode, 
-                responseToReturn));
-    }
-
-    protected virtual JsonResultHandler BuildJsonResultHandler(HttpStatusCode statusCode, JsonDocument response)
-    {
-        return new JsonResultHandler(statusCode, response);
+            new ResponseAlreadySentResultHandler());
     }
 }

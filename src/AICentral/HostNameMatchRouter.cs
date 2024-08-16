@@ -4,6 +4,7 @@ namespace AICentral;
 
 public class HostNameMatchRouter
 {
+    public const string EmbeddingsRoute = "openai/deployments/{deploymentName}/embeddings";
     private readonly string[] _hostNames;
 
     public HostNameMatchRouter(string hostName)
@@ -64,7 +65,7 @@ public class HostNameMatchRouter
             .RequireHost(_hostNames);
 
             yield return application.MapMethods(
-                    "/openai/deployments/{deploymentName}/embeddings",
+                    EmbeddingsRoute,
                     new[] { "Post" },
                     async (HttpContext ctx, CancellationToken cancellationToken, string deploymentName) =>
                         (await handler(WrapContext(ctx), deploymentName, null, AICallType.Embeddings, cancellationToken)).ResultHandler)

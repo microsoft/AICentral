@@ -1,8 +1,9 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using AICentral.Core;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using SharpToken;
 
 namespace AICentral.ResultHandlers;
@@ -29,8 +30,8 @@ public class ServerSideEventResponseHandler: IResponseHandler
         //squirt the response as it comes in:
         using var openAiResponseReader =
             new StreamReader(await openAiResponse.Content.ReadAsStreamAsync(cancellationToken));
-        context.Response.Headers.CacheControl = new StringValues("no-cache");
-        context.Response.ContentType = "text/event-stream";
+        context.Response.SetHeader(HeaderNames.CacheControl, new StringValues("no-cache"));
+        context.Response.SetHeader(HeaderNames.ContentType, "text/event-stream");
 
         var model = string.Empty;
         var choices = new Dictionary<int, List<string>>();
@@ -42,7 +43,7 @@ public class ServerSideEventResponseHandler: IResponseHandler
             if (line != null)
             {
                 //Write this out as we read it so we get the fastest response back to the consumer possible. 
-                await context.Response.WriteAsync($"{line}\n", cancellationToken);
+                await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes($"{line}\n"), cancellationToken);
 
                 if (line.StartsWith("data:", StringComparison.InvariantCultureIgnoreCase) &&
                     !line.EndsWith("[done]", StringComparison.InvariantCultureIgnoreCase))
@@ -162,6 +163,6 @@ public class ServerSideEventResponseHandler: IResponseHandler
             };
         }
         
-        return new AICentralResponse(chatRequestInformation, new StreamAlreadySentResultHandler());
+        return new AICentralResponse(chatRequestInformation, new ResponseAlreadySentResultHandler());
     }
 }

@@ -55,7 +55,7 @@ public class AzureAISearchVectorizerProxy : IRouteProxy
 
                 return (await handler(
                         new ProxyContext(
-                            ctx,
+                            new HttpContextWrapper(ctx),
                             new Uri($"/openai/deployments/{_embeddingsName}/embeddings"),
                             _apiVersion,
                             mappedObject,
