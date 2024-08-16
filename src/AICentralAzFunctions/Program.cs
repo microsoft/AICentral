@@ -1,4 +1,5 @@
 using AICentralAzFunctions.Quickstarts;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -14,7 +15,18 @@ using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.
 var startupLogger = loggerFactory.CreateLogger("AICentral.Startup");
 
 var builder = new HostBuilder()
-    .ConfigureFunctionsWebApplication()
+    .ConfigureFunctionsWebApplication(ctx =>
+    {
+        ctx.UseMiddleware(async (ctx, next) =>
+        {
+            var authResult = await ctx.GetHttpContext()!.AuthenticateAsync();
+            if (authResult.Succeeded)
+            {
+                ctx.GetHttpContext()!.User = authResult.Principal;
+            }
+            await next();
+        });
+    })
     .ConfigureServices((hc, services) =>
     {
         services.AddApplicationInsightsTelemetryWorkerService();
