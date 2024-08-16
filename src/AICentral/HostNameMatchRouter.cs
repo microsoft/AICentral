@@ -5,6 +5,9 @@ namespace AICentral;
 public class HostNameMatchRouter
 {
     public const string EmbeddingsRoute = "openai/deployments/{deploymentName}/embeddings";
+    public const string ChatCompletionsRoute = "openai/deployments/{deploymentName}/chat/completions";
+    public const string CompletionsRoute = "openai/deployments/{deploymentName}/completions";
+
     private readonly string[] _hostNames;
 
     public HostNameMatchRouter(string hostName)
@@ -58,7 +61,7 @@ public class HostNameMatchRouter
             .RequireHost(_hostNames);
 
         yield return application.MapMethods(
-                "/openai/deployments/{deploymentName}/chat/completions",
+                ChatCompletionsRoute,
                 new[] { "Post" },
                 async (HttpContext ctx, CancellationToken cancellationToken, string deploymentName) =>
                     (await handler(WrapContext(ctx), deploymentName, null, AICallType.Chat, cancellationToken)).ResultHandler)
@@ -72,7 +75,7 @@ public class HostNameMatchRouter
             .RequireHost(_hostNames);
 
         yield return application.MapMethods(
-                "/openai/deployments/{deploymentName}/completions",
+                CompletionsRoute,
                 new[] { "Post" },
                 async (HttpContext ctx, CancellationToken cancellationToken, string deploymentName) =>
                     (await handler(WrapContext(ctx), deploymentName, null, AICallType.Completions, cancellationToken)).ResultHandler)

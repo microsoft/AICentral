@@ -1,9 +1,4 @@
-using AICentral.AzureAISearchVectorizationProxy;
-using AICentral.Configuration;
-using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
-using AICentral.Logging.PIIStripping;
-using AICentral.RateLimiting.DistributedRedis;
-using AICentralAzFunctions;
+using AICentralAzFunctions.Quickstarts;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -20,30 +15,21 @@ var startupLogger = loggerFactory.CreateLogger("AICentral.Startup");
 
 var builder = new HostBuilder()
     .ConfigureFunctionsWebApplication()
-    .ConfigureHostConfiguration(c =>
-    {
-        if (Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT") != null)
-        {
-            c.AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT")}.json");
-        }
-    })
     .ConfigureServices((hc, services) =>
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
+
+        services.AddAuthentication();
+        services.AddAuthorization();
         
-        services.AddAICentral(
-           hc.Configuration,
-            startupLogger: startupLogger,
-            additionalComponentAssemblies:
-            [
-                typeof(AzureMonitorLoggerFactory).Assembly,
-                typeof(PIIStrippingLogger).Assembly,
-                typeof(DistributedRateLimiter).Assembly,
-                typeof(AdaptJsonToAzureAISearchTransformer).Assembly
-            ]);
+        var config = new APImProxyWithCosmosLogging.Config();
+        hc.Configuration.Bind("AICentral", config);
+        var assembler = APImProxyWithCosmosLogging.BuildAssembler(config);
+        assembler.AddServices(services, null, startupLogger);
     });
 
 var host = builder.Build();
 
 host.Run();
+
