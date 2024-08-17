@@ -32,6 +32,7 @@ builder.Services.AddAICentral(
         "Name": "pii-stripping-logger",
         "Properties": {
           "UseManagedIdentities": "true|false",
+          "UserAssignedManagedIdentityId": "<id-or-blank>",
           "StorageQueueConnectionString": "<storage-connection-string>",
           "QueueName": "queue-to-write-to",
           "TextAnalyticsEndpoint": "<text-analytics-uri>",
