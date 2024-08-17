@@ -15,10 +15,12 @@ public class PIIStrippingLoggerConfig
     /// Used when no Managed Identity
     /// </summary>
     public string? StorageQueueConnectionString { get; init; }
+    
     /// <summary>
     /// Used when no Managed Identity
     /// </summary>
     public string? CosmosConnectionString { get; init; }
+    
     /// <summary>
     /// Used when no Managed Identity
     /// </summary>
@@ -30,5 +32,5 @@ public class PIIStrippingLoggerConfig
     public required string TextAnalyticsEndpoint { get; init; }
 
     public bool UseManagedIdentities { get; init; }
-
+    public string? UserAssignedManagedIdentityId { get; init; }
 }

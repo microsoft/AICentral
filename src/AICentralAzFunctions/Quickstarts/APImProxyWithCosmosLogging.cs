@@ -21,6 +21,7 @@ public static class APImProxyWithCosmosLogging
 {
     public class Config
     {
+        public string? UserAssignedManagedIdentityId { get; init; }
         public string? TenantId { get; init; }
         public string? ApimEndpointUri { get; init; }
         public string? IncomingClaimName { get; init; }
@@ -48,6 +49,7 @@ public static class APImProxyWithCosmosLogging
         var cosmosLoggerConfig = new PIIStrippingLoggerConfig()
         {
             UseManagedIdentities = true,
+            UserAssignedManagedIdentityId = config.UserAssignedManagedIdentityId,
             CosmosContainer = "aoaiLogContainer",
             CosmosDatabase = "aoaiLogs",
             QueueName = "prompt-and-response-queue",

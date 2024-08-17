@@ -1,6 +1,7 @@
 ﻿using AICentral.Core;
 using Azure;
 using Azure.AI.TextAnalytics;
+using Azure.Core;
 using Azure.Identity;
 using Azure.Storage.Queues;
 using Microsoft.AspNetCore.Builder;
@@ -32,10 +33,14 @@ public class PIIStrippingLoggerFactory : IPipelineStepFactory
 
     public void RegisterServices(IServiceCollection services)
     {
+        TokenCredential credential = string.IsNullOrWhiteSpace(_config.UserAssignedManagedIdentityId)
+            ? new DefaultAzureCredential()
+            : new ManagedIdentityCredential(_config.UserAssignedManagedIdentityId);
+        
         services.AddKeyedSingleton<QueueClient>(_id,
             (_, _) =>
                 _config.UseManagedIdentities
-                    ? new QueueClient(new Uri($"{_config.StorageUri!}/{_config.QueueName}"), new DefaultAzureCredential())
+                    ? new QueueClient(new Uri($"{_config.StorageUri!}/{_config.QueueName}"), credential)
                     : new QueueClient(_config.StorageQueueConnectionString, _config.QueueName));
         
         services.AddKeyedSingleton<TextAnalyticsClient>(_id,
@@ -45,7 +50,7 @@ public class PIIStrippingLoggerFactory : IPipelineStepFactory
         services.AddKeyedSingleton<CosmosClient>(_id,
             (_, _) =>
                 _config.UseManagedIdentities
-                    ? new CosmosClient(_config.CosmosAccountEndpoint, new DefaultAzureCredential())
+                    ? new CosmosClient(_config.CosmosAccountEndpoint, credential)
                     : new CosmosClient(_config.CosmosConnectionString)
         );
         
