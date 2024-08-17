@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using System.Security.Principal;
 using Microsoft.Extensions.Primitives;
 
 namespace AICentral.Core;
@@ -18,16 +17,24 @@ public interface IRequestContext
     ClaimsPrincipal User { get;  }
     string RequestEncodedUrl { get;  }
     IFormCollection Form { get;  }
-    HttpResponse Response { get;  }
+    IAICentralResponse Response { get;  }
     string RemoteIpAddress { get;  }
     PathString RequestPath { get;  }
     string RequestScheme { get;  }
     HostString RequestHost { get;  }
     bool HasJsonContentType();
-    bool SupportsTrailers();
-    void DeclareTrailer(string trailerHeader);
-    void AppendTrailer(string trailerName, string trailerValue);
     string GetMultipartBoundary();
     string GetClientForLoggingPurposes();
     IResponseTransformer CreateJsonResponseTransformer();
+    bool ResponseSupportsTrailers();
+    void ResponseDeclareTrailer(string header);
+    void ResponseSetHeader(string headerName, string headerValue);
+    void ResponseAppendTrailer(string trailerName, string trailerValue);
+}
+
+public interface IAICentralResponse
+{
+    int StatusCode { set; }
+    Stream Body { get; }
+    void SetHeader(string headerName, string? headerValue);
 }

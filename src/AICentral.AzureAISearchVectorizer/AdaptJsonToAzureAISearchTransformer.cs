@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using AICentral.Core;
 
-namespace AICentral.AzureAISearchVectorizationProxy;
+namespace AICentral.AzureAISearchVectorizer;
 
 public class AdaptJsonToAzureAISearchTransformer: IResponseTransformer
 {

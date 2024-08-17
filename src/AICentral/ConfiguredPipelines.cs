@@ -9,6 +9,8 @@ public class ConfiguredPipelines
         _pipelines = pipelines;
     }
 
+    public  IEnumerable<Pipeline> Pipelines => _pipelines;
+
     public void BuildRoutes(WebApplication webApplication)
     {
         foreach (var pipeline in _pipelines)

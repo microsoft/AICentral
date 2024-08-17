@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace AICentral.AzureAISearchVectorizationProxy;
+namespace AICentral.AzureAISearchVectorizer;
 
 public class AzureAISearchVectorizerProxy : IRouteProxy
 {
@@ -54,7 +54,7 @@ public class AzureAISearchVectorizerProxy : IRouteProxy
 
                 return (await handler(
                         new ProxyContext(
-                            ctx,
+                            new HttpContextWrapper(ctx),
                             new Uri($"/openai/deployments/{_embeddingsName}/embeddings"),
                             _apiVersion,
                             mappedObject,
@@ -98,11 +98,4 @@ public class AzureAISearchVectorizerProxy : IRouteProxy
             ProxyPath = _proxyPath
         };
     }
-}
-
-internal class Config
-{
-    public string? EmbeddingsDeploymentName { get; init; }
-    public string? ProxyPath { get; init; }
-    public string? OpenAIApiVersion { get; init; }
 }

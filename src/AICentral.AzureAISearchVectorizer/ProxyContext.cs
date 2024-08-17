@@ -4,9 +4,9 @@ using AICentral.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace AICentral.AzureAISearchVectorizationProxy;
+namespace AICentral.AzureAISearchVectorizer;
 
-public class ProxyContext: HttpContextWrapper, IDisposable, IAsyncDisposable
+public class ProxyContext: ExtendableWrappedContext, IDisposable, IAsyncDisposable
 {
     private readonly Uri _newUrl;
     private readonly JsonNode _incomingDocument;
@@ -14,11 +14,11 @@ public class ProxyContext: HttpContextWrapper, IDisposable, IAsyncDisposable
     private readonly Dictionary<string, StringValues> _queryString;
 
     public ProxyContext(
-        HttpContext ctx, 
+        IRequestContext ctx, 
         Uri relativeUrl, 
         string apiVersion,
         object requestContent,
-        JsonNode incomingDocument): base(ctx)
+        JsonNode incomingDocument) : base(ctx)
     {
         _newUrl = relativeUrl;
         _incomingDocument = incomingDocument;
@@ -35,13 +35,11 @@ public class ProxyContext: HttpContextWrapper, IDisposable, IAsyncDisposable
 
     public override PathString RequestPath => new(_newUrl.AbsolutePath);
 
-    public override IResponseTransformer CreateJsonResponseTransformer()
+    public override  IResponseTransformer CreateJsonResponseTransformer()
     {   
         return new AdaptJsonToAzureAISearchTransformer(_incomingDocument);
     }
-
-    public override bool HasJsonContentType() => true;
-
+    
     public override Stream RequestBody => _requestStream;
 
     public override Dictionary<string, StringValues> QueryString => _queryString;

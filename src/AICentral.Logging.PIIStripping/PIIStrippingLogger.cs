@@ -69,6 +69,7 @@ public class PIIStrippingLogger(
                         response.DownstreamUsageInformation.Duration,
                         response.DownstreamUsageInformation.Success
                     )), cancellationToken: cancellationToken);
+
             }
         }
 

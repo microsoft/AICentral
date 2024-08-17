@@ -1,5 +1,10 @@
 Release Notes:
 
+0.20.0 (17/aug/2024)
+- Support running in Azure Fuctions
+- PII Stripping Logger now able to use Managed Identities (User / System assigned)
+- Updated the PII Stripping Quickstart to use Managed Identities over access keys.
+
 0.19.4 (01/aug/2024)
 - Embeddings don't expect the array to be of strings anymore, when passed as an array.
 

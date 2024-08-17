@@ -1,9 +1,9 @@
 using AICentral;
-using AICentral.AzureAISearchVectorizationProxy;
+using AICentral.AzureAISearchVectorizer;
 using AICentral.Configuration;
 using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 using AICentral.Logging.PIIStripping;
-using AICentral.RateLimiting.DistributedRedis;using AICentralWeb;
+using AICentral.RateLimiting.DistributedRedis;
 using AICentralWeb.QuickStartConfigs;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Microsoft.Extensions.Logging.Console;

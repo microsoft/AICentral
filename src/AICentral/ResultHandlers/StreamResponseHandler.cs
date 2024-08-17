@@ -1,4 +1,5 @@
 using AICentral.Core;
+using Microsoft.Net.Http.Headers;
 
 namespace AICentral.ResultHandlers;
 
@@ -13,7 +14,7 @@ public class StreamResponseHandler: IResponseHandler
     {
         //send the headers down to the client
         context.Response.StatusCode = (int)openAiResponse.StatusCode;
-        context.Response.Headers.ContentType = openAiResponse.Content.Headers.ContentType?.ToString();
+        context.Response.SetHeader(HeaderNames.ContentType, openAiResponse.Content.Headers.ContentType?.ToString());
 
         //squirt the response as it comes in:
         await openAiResponse.Content.CopyToAsync(context.Response.Body, cancellationToken);
@@ -37,6 +38,6 @@ public class StreamResponseHandler: IResponseHandler
             requestInformation.Duration,
             openAiResponse.IsSuccessStatusCode);
 
-        return new AICentralResponse(chatRequestInformation, new StreamAlreadySentResultHandler());
+        return new AICentralResponse(chatRequestInformation, new ResponseAlreadySentResultHandler());
     }
 }

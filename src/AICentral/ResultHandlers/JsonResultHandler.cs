@@ -16,10 +16,10 @@ public class JsonResultHandler : IResult
 
     public async Task ExecuteAsync(HttpContext context)
     {
-        context.Response.StatusCode = (int)_statusCode;
-        context.Response.ContentType = "application/json";
-        await using var utf8Writer = new Utf8JsonWriter(context.Response.BodyWriter, new JsonWriterOptions { Indented = false });
-        _json.WriteTo(utf8Writer);
-        await utf8Writer.FlushAsync();
+            context.Response.StatusCode = (int)_statusCode;
+            context.Response.ContentType = "application/json";
+            await using var utf8Writer = new Utf8JsonWriter(context.Response.BodyWriter, new JsonWriterOptions { Indented = false });
+            _json.WriteTo(utf8Writer);
+            await utf8Writer.FlushAsync();
     }
 }

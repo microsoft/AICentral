@@ -1,6 +1,7 @@
 ﻿using AICentral.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using StackExchange.Redis;
 
 namespace AICentral.RateLimiting.DistributedRedis;
@@ -35,9 +36,9 @@ public class DistributedRateLimiter : IPipelineStep
         NextPipelineStep next,
         CancellationToken cancellationToken)
     {
-        if (context.Response.SupportsTrailers())
+        if (context.ResponseSupportsTrailers())
         {
-            context.Response.DeclareTrailer(
+            context.ResponseDeclareTrailer(
                 _metricType == MetricType.Tokens
                     ? "x-aicentral-remaining-tokens"
                     : "x-aicentral-remaining-requests");
@@ -64,7 +65,7 @@ public class DistributedRateLimiter : IPipelineStep
         if (limitConsumed > _limitPerInterval)
         {
             var resultHandler = Results.StatusCode(429);
-            context.Response.Headers.RetryAfter = new StringValues(intervalEnd.ToString("R"));
+            context.ResponseSetHeader(HeaderNames.RetryAfter, intervalEnd.ToString("R"));
 
             return new AICentralResponse(
                 DownstreamUsageInformation.Empty(
@@ -97,13 +98,13 @@ public class DistributedRateLimiter : IPipelineStep
                 //Hopefully this doesn't have too big an impact on performance...
                 _redisAsync.KeyExpire(key, intervalEnd);
 
-                if (context.Response.SupportsTrailers())
+                if (context.ResponseSupportsTrailers())
                 {
-                    context.Response.AppendTrailer(
+                    context.ResponseAppendTrailer(
                         _metricType == MetricType.Tokens
                             ? "x-aicentral-remaining-tokens"
                             : "x-aicentral-remaining-requests",
-                        new StringValues(consumed.ToString()));
+                        new StringValues(consumed.ToString())!);
                 }
             }
         }

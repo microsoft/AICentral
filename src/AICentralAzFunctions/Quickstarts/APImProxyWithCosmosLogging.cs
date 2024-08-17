@@ -9,12 +9,13 @@ using AICentral.EndpointSelectors.Single;
 using AICentral.Logging.PIIStripping;
 using AICentral.RequestFiltering;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.Validators;
 
-namespace AICentralWeb.QuickStartConfigs;
+namespace AICentralAzFunctions.Quickstarts;
 
 public static class APImProxyWithCosmosLogging
 {
@@ -37,7 +38,7 @@ public static class APImProxyWithCosmosLogging
         var tenantId = Guard.NotNull(config.TenantId, nameof(config.TenantId));
         var apimEndpointUri = Guard.NotNull(config.ApimEndpointUri, nameof(config.ApimEndpointUri));
         var textAnalyticsEndpoint = Guard.NotNull(config.TextAnalyticsEndpoint, nameof(config.TextAnalyticsEndpoint));
-        var textAnalyticsKey = Guard.NotNull(config.TextAnalyticsKey, nameof(config.TextAnalyticsKey));
+        var textAnalyticsKey = Guard.NotNull(config.TextAnalyticsKey, nameof(config.TextAnalyticsKey)); //RBAC not support
         var incomingClaimName = Guard.NotNull(config.IncomingClaimName, nameof(config.IncomingClaimName));
         var cosmosAccountEndpoint = Guard.NotNull(config.CosmosAccountEndpoint, nameof(config.CosmosAccountEndpoint));
         var storageUri = Guard.NotNull(config.StorageUri, nameof(config.StorageUri));

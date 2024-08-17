@@ -1,6 +1,8 @@
 ﻿using AICentral.Core;
 using Azure;
 using Azure.AI.TextAnalytics;
+using Azure.Core;
+using Azure.Identity;
 using Azure.Storage.Queues;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Azure.Cosmos;
@@ -31,20 +33,27 @@ public class PIIStrippingLoggerFactory : IPipelineStepFactory
 
     public void RegisterServices(IServiceCollection services)
     {
+        TokenCredential credential = string.IsNullOrWhiteSpace(_config.UserAssignedManagedIdentityId)
+            ? new DefaultAzureCredential()
+            : new ManagedIdentityCredential(_config.UserAssignedManagedIdentityId);
+        
         services.AddKeyedSingleton<QueueClient>(_id,
-            (_, _) => new QueueClient(
-                _config.StorageQueueConnectionString,
-                _config.QueueName));
-
+            (_, _) =>
+                _config.UseManagedIdentities
+                    ? new QueueClient(new Uri($"{_config.StorageUri!}/{_config.QueueName}"), credential)
+                    : new QueueClient(_config.StorageQueueConnectionString, _config.QueueName));
+        
         services.AddKeyedSingleton<TextAnalyticsClient>(_id,
-            (_, _) => new TextAnalyticsClient(
-                new Uri(_config.TextAnalyticsEndpoint),
-                new AzureKeyCredential(_config.TextAnalyticsKey)));
-
+            (_, _) => new TextAnalyticsClient(new Uri(_config.TextAnalyticsEndpoint),
+                        new AzureKeyCredential(_config.TextAnalyticsKey!)));
+        
         services.AddKeyedSingleton<CosmosClient>(_id,
-            (_, _) => new CosmosClient(_config.CosmosConnectionString)
+            (_, _) =>
+                _config.UseManagedIdentities
+                    ? new CosmosClient(_config.CosmosAccountEndpoint, credential)
+                    : new CosmosClient(_config.CosmosConnectionString)
         );
-
+        
         services.AddKeyedSingleton<PIIStrippingLogger>(
             _id,
             (sp, _) => new PIIStrippingLogger(
@@ -68,11 +77,30 @@ public class PIIStrippingLoggerFactory : IPipelineStepFactory
     {
         var typedConfig = config.TypedProperties<PIIStrippingLoggerConfig>();
         Guard.NotNull(typedConfig.TextAnalyticsEndpoint, nameof(typedConfig.TextAnalyticsEndpoint));
-        Guard.NotNull(typedConfig.TextAnalyticsKey, nameof(typedConfig.TextAnalyticsKey));
-        Guard.NotNull(typedConfig.CosmosConnectionString, nameof(typedConfig.CosmosConnectionString));
-        Guard.NotNull(typedConfig.StorageQueueConnectionString, nameof(typedConfig.StorageQueueConnectionString));
+        Guard.NotNull(typedConfig.TextAnalyticsKey, nameof(typedConfig.TextAnalyticsKey)); //RBAC not possible for language service
         Guard.NotNull(typedConfig.QueueName, nameof(typedConfig.QueueName));
 
+        if (typedConfig.UseManagedIdentities)
+        {
+            Guard.NotNull(typedConfig.StorageUri, nameof(typedConfig.StorageUri));
+            Guard.NotNull(typedConfig.CosmosAccountEndpoint, nameof(typedConfig.CosmosAccountEndpoint));
+            Guard.NotNull(typedConfig.TextAnalyticsKey, nameof(typedConfig.TextAnalyticsKey));
+            
+            logger.LogInformation("PII Stripping logging will using Managed Identity {ClientId} to connect", typedConfig.UserAssignedManagedIdentityId);
+            logger.LogInformation("Cosmos Endpoint {CosmosEndpoint}", typedConfig.CosmosAccountEndpoint);
+            logger.LogInformation("Storage Endpoint {StorageEndpoint}", typedConfig.StorageUri);
+            logger.LogInformation("Text Analytics Endpoint {TextEndpoint}", typedConfig.TextAnalyticsEndpoint);
+        }
+        else
+        {
+            Guard.NotNull(typedConfig.CosmosConnectionString, nameof(typedConfig.CosmosConnectionString));
+            Guard.NotNull(typedConfig.StorageQueueConnectionString, nameof(typedConfig.StorageQueueConnectionString));
+            Guard.NotNull(typedConfig.TextAnalyticsKey, nameof(typedConfig.TextAnalyticsKey));
+
+            logger.LogInformation("PII Stripping logging will use Connection Strings to connect to Storage, Cosmos, and Language Service");
+
+        }
+        
         return new PIIStrippingLoggerFactory(
             config.Name!,
             typedConfig

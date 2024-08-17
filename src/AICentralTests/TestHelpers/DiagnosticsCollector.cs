@@ -18,7 +18,7 @@ public class DiagnosticsCollector:  IPipelineStep
         CancellationToken cancellationToken)
     {
         var id = Guid.NewGuid().ToString();
-        context.Response.Headers.Append("x-aicentral-test-diagnostics", id);
+        context.Response.SetHeader("x-aicentral-test-diagnostics", id);
         var response = await next(context, aiCallInformation, cancellationToken);
         DownstreamUsageInformation.TryAdd(id, response.DownstreamUsageInformation);
         return response;
