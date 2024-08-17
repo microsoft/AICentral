@@ -40,7 +40,7 @@ builder.Services.AddAICentral(
           "CosmosDatabase": "cosmos-database-to-log-to",
           "CosmosContainer": "container-to-log-to",
           "CosmosConnectionString": "<cosmos-connection-string-if-not-using-managed-identities>",
-          "StorageUri": "<uri-to-storage-if-using-managed-identities>",
+          "StorageUri": "<uri-to-storage-if-using-managed-identities>"
         }
       }
     ]    

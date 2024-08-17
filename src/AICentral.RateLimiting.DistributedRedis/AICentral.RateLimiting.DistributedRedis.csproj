@@ -7,11 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="AICentral.Core" Version="0.20.0-pullrequest0143-0010" />
       <PackageReference Include="Aspire.StackExchange.Redis" Version="8.0.2" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\AICentral.Core\AICentral.Core.csproj" />
     </ItemGroup>
 
 </Project>

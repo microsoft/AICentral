@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AICentral.Core\AICentral.Core.csproj" />
+      <PackageReference Include="AICentral.Core" Version="0.20.0-pullrequest0143-0010" />
     </ItemGroup>
 
 </Project>

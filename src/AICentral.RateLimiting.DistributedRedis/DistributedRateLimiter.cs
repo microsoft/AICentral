@@ -104,7 +104,7 @@ public class DistributedRateLimiter : IPipelineStep
                         _metricType == MetricType.Tokens
                             ? "x-aicentral-remaining-tokens"
                             : "x-aicentral-remaining-requests",
-                        new StringValues(consumed.ToString()));
+                        new StringValues(consumed.ToString())!);
                 }
             }
         }
