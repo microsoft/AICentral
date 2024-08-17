@@ -85,12 +85,20 @@ public class PIIStrippingLoggerFactory : IPipelineStepFactory
             Guard.NotNull(typedConfig.StorageUri, nameof(typedConfig.StorageUri));
             Guard.NotNull(typedConfig.CosmosAccountEndpoint, nameof(typedConfig.CosmosAccountEndpoint));
             Guard.NotNull(typedConfig.TextAnalyticsKey, nameof(typedConfig.TextAnalyticsKey));
+            
+            logger.LogInformation("PII Stripping logging will using Managed Identity {ClientId} to connect", typedConfig.UserAssignedManagedIdentityId);
+            logger.LogInformation("Cosmos Endpoint {CosmosEndpoint}", typedConfig.CosmosAccountEndpoint);
+            logger.LogInformation("Storage Endpoint {StorageEndpoint}", typedConfig.StorageUri);
+            logger.LogInformation("Text Analytics Endpoint {TextEndpoint}", typedConfig.TextAnalyticsEndpoint);
         }
         else
         {
             Guard.NotNull(typedConfig.CosmosConnectionString, nameof(typedConfig.CosmosConnectionString));
             Guard.NotNull(typedConfig.StorageQueueConnectionString, nameof(typedConfig.StorageQueueConnectionString));
             Guard.NotNull(typedConfig.TextAnalyticsKey, nameof(typedConfig.TextAnalyticsKey));
+
+            logger.LogInformation("PII Stripping logging will use Connection Strings to connect to Storage, Cosmos, and Language Service");
+
         }
         
         return new PIIStrippingLoggerFactory(
