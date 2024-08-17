@@ -1,12 +1,9 @@
 ﻿using AICentral;
-using AICentral.AzureAISearchVectorizationProxy;
 using AICentral.Configuration;
-using AICentral.ConsumerAuth.AllowAnonymous;
 using AICentral.ConsumerAuth.Entra;
 using AICentral.Core;
 using AICentral.Endpoints;
 using AICentral.Endpoints.AzureOpenAI;
-using AICentral.Endpoints.AzureOpenAI.Authorisers;
 using AICentral.Endpoints.AzureOpenAI.Authorisers.BearerPassThroughWithAdditionalKey;
 using AICentral.EndpointSelectors.Single;
 using AICentral.Logging.PIIStripping;
@@ -26,15 +23,12 @@ public static class APImProxyWithCosmosLogging
         public string? TenantId { get; init; }
         public string? ApimEndpointUri { get; init; }
         public string? IncomingClaimName { get; init; }
-        public string? CosmosConnectionString { get; init; }
-        public string? StorageConnectionString { get; init; }
+        public string? CosmosAccountEndpoint { get; init; }
         public string? TextAnalyticsEndpoint { get; init; }
         public string? TextAnalyticsKey { get; init; }
+        public string? StorageUri { get; init; }
         public ClaimValueToSubscriptionKey[]? ClaimsToKeys { get; init; }
         public string[]? AllowedChatImageUriHostNames { get; init; }
-
-        public string? AISearchEmbeddingsDeploymentName { get; init; }
-        public string? AISearchEmbeddingsOpenAIApiVersion { get; init; }
     }
 
     public static AICentralPipelineAssembler BuildAssembler(Config config)
@@ -42,26 +36,24 @@ public static class APImProxyWithCosmosLogging
         var tenantId = Guard.NotNull(config.TenantId, nameof(config.TenantId));
         var apimEndpointUri = Guard.NotNull(config.ApimEndpointUri, nameof(config.ApimEndpointUri));
         var textAnalyticsEndpoint = Guard.NotNull(config.TextAnalyticsEndpoint, nameof(config.TextAnalyticsEndpoint));
-        var storageConnectionString =
-            Guard.NotNull(config.StorageConnectionString, nameof(config.StorageConnectionString));
-        var incomingClaimName = Guard.NotNull(config.IncomingClaimName, nameof(config.IncomingClaimName));
-        var cosmosConnectionString =
-            Guard.NotNull(config.CosmosConnectionString, nameof(config.CosmosConnectionString));
         var textAnalyticsKey = Guard.NotNull(config.TextAnalyticsKey, nameof(config.TextAnalyticsKey));
-
+        var incomingClaimName = Guard.NotNull(config.IncomingClaimName, nameof(config.IncomingClaimName));
+        var cosmosAccountEndpoint = Guard.NotNull(config.CosmosAccountEndpoint, nameof(config.CosmosAccountEndpoint));
+        var storageUri = Guard.NotNull(config.StorageUri, nameof(config.StorageUri));
         var claimsToKeys = config.ClaimsToKeys ?? [];
         var allowedChatImageHostNames = config.AllowedChatImageUriHostNames ?? [];
 
         var cosmosLoggerStepName = "cosmosLogger";
         var cosmosLoggerConfig = new PIIStrippingLoggerConfig()
         {
+            UseManagedIdentities = true,
             CosmosContainer = "aoaiLogContainer",
             CosmosDatabase = "aoaiLogs",
             QueueName = "prompt-and-response-queue",
-            CosmosConnectionString = cosmosConnectionString,
+            CosmosAccountEndpoint = cosmosAccountEndpoint,
             TextAnalyticsEndpoint = textAnalyticsEndpoint,
-            StorageQueueConnectionString = storageConnectionString,
-            TextAnalyticsKey = textAnalyticsKey
+            TextAnalyticsKey = textAnalyticsKey,
+            StorageUri = storageUri
         };
 
         var downstreamEndpointDispatcherFactory = new DownstreamEndpointDispatcherFactory(
@@ -85,13 +77,6 @@ public static class APImProxyWithCosmosLogging
             AllowedHostNames = allowedChatImageHostNames,
             AllowDataUris = true
         });
-
-        var routeProxies = new Dictionary<string, IRouteProxy>();
-        var vectorizerName = "vectorizer";
-        if (config is { AISearchEmbeddingsDeploymentName: not null, AISearchEmbeddingsOpenAIApiVersion: not null })
-        {
-            routeProxies.Add(vectorizerName, new AzureAISearchVectorizerProxy("/aisearchvectorizer", config.AISearchEmbeddingsDeploymentName, config.AISearchEmbeddingsOpenAIApiVersion));
-        }   
 
         return new AICentralPipelineAssembler(
             _ => new HostNameMatchRouter("*"),
@@ -142,7 +127,7 @@ public static class APImProxyWithCosmosLogging
                 [cosmosLoggerStepName] = new PIIStrippingLoggerFactory(cosmosLoggerStepName, cosmosLoggerConfig),
                 [chatImageFilterStepName] = chatImageFilter
             },
-            routeProxies,
+            new Dictionary<string, IRouteProxy>(),
             [
                 new PipelineConfig()
                 {
@@ -160,7 +145,7 @@ public static class APImProxyWithCosmosLogging
                         chatImageFilterStepName,
                         cosmosLoggerStepName
                     ],
-                    RouteProxies = routeProxies.Count == 0 ? [] : [vectorizerName]
+                    RouteProxies = []
                 }
             ],
             false
