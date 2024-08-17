@@ -1,5 +1,5 @@
 using AICentral;
-using AICentral.AzureAISearchVectorizationProxy;
+using AICentral.AzureAISearchVectorizer;
 using AICentral.Configuration;
 using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 using AICentral.Logging.PIIStripping;

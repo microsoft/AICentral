@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using AICentral;
 using AICentral.Affinity;
-using AICentral.AzureAISearchVectorizationProxy;
+using AICentral.AzureAISearchVectorizer;
 using AICentral.BulkHead;
 using AICentral.Configuration;
 using AICentral.ConsumerAuth.AICentralJWT;

@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using AICentral.AzureAISearchVectorizationProxy;
 using AICentral.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
