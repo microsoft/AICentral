@@ -25,19 +25,20 @@ Set the following environment variables
 
 >> This quickstart expects consumers to provide tokens scoped for Azure Open AI. You don't need to setup RBAC for your consumers to Azure Open AI. Libraries like PromptFlow hardcode this scope, so that's why we look for it.
 
-| Environment Variable                 | Definition                                                                     |
-|--------------------------------------|--------------------------------------------------------------------------------|
-| ApimEndpointUri                      | Base Uri of API Management AI Gateway API                                      |
-| TenantId                             | Tenant Id linked to your JWTs                                                  |
-| UserAssignedManagedIdentityId        | Either the Client Id of the UAMI to use, or leave blank to use System Identity |
-| IncomingClaimName                    | Claim to use to target a subscription key                                      |
-| CosmosAccountEndpoint                | Cosmos account endpoint for prompt and response logging                        |
-| StorageUri                           | Storage Uri used to enqueue prompts / responses for logging                    |
-| TextAnalyticsEndpoint                | Uri of text analytics service for PII stripping                                |
-| ClaimsToKeys__{idx}__ClaimValue      | Value of claim                                                                 |
-| ClaimsToKeys__{idx}__SubscriptionKey | APIm subscription key                                                          |
-| AllowedChatImageUriHostNames__{idx}  | Hostname to allow images to be retrieved by AOAI, e.g. www.flickr.com          |
-
+| Environment Variable                 | Definition                                                                                      |
+|--------------------------------------|-------------------------------------------------------------------------------------------------|
+| ApimEndpointUri                      | Base Uri of API Management AI Gateway API                                                       |
+| TenantId                             | Tenant Id linked to your JWTs                                                                   |
+| UserAssignedManagedIdentityId        | Either the Client Id of the UAMI to use, or leave blank to use System Identity                  |
+| IncomingClaimName                    | Claim to use to target a subscription key                                                       |
+| CosmosAccountEndpoint                | Cosmos account endpoint for prompt and response logging                                         |
+| StorageUri                           | Storage Uri used to enqueue prompts / responses for logging                                     |
+| TextAnalyticsEndpoint                | Uri of text analytics service for PII stripping                                                 |
+| TextAnalyticsKey                     | Key of text analytics service for PII stripping                                                 |
+| ClaimsToKeys__{idx}__ClaimValue      | Value of claim                                                                                  |
+| ClaimsToKeys__{idx}__SubscriptionKey | APIm subscription key                                                                           |
+| AllowedChatImageUriHostNames__{idx}  | Hostname to allow images to be retrieved by AOAI, e.g. www.flickr.com                           |
+| PIIStrippingDisabled                 | True to avoid PII stripping. You can leave TextAnalyticsEndpoint and TextAnalyticsKey when true |
 ### Architecture Diagram
 
 TODO

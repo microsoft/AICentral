@@ -42,11 +42,14 @@ public class PIIStrippingLoggerFactory : IPipelineStepFactory
                 _config.UseManagedIdentities
                     ? new QueueClient(new Uri($"{_config.StorageUri!}/{_config.QueueName}"), credential)
                     : new QueueClient(_config.StorageQueueConnectionString, _config.QueueName));
-        
-        services.AddKeyedSingleton<TextAnalyticsClient>(_id,
-            (_, _) => new TextAnalyticsClient(new Uri(_config.TextAnalyticsEndpoint),
-                        new AzureKeyCredential(_config.TextAnalyticsKey!)));
-        
+
+        if (!_config.PIIStrippingDisabled)
+        {
+            services.AddKeyedSingleton<TextAnalyticsClient>(_id,
+                (_, _) => new TextAnalyticsClient(new Uri(_config.TextAnalyticsEndpoint),
+                    new AzureKeyCredential(_config.TextAnalyticsKey!)));
+        }
+
         services.AddKeyedSingleton<CosmosClient>(_id,
             (_, _) =>
                 _config.UseManagedIdentities
@@ -65,7 +68,7 @@ public class PIIStrippingLoggerFactory : IPipelineStepFactory
 
         services.AddHostedService<PIIStrippingLoggerQueueConsumer>(sp => new PIIStrippingLoggerQueueConsumer(
             sp.GetRequiredKeyedService<QueueClient>(_id),
-            sp.GetRequiredKeyedService<TextAnalyticsClient>(_id),
+            () => sp.GetRequiredKeyedService<TextAnalyticsClient>(_id),
             sp.GetRequiredKeyedService<CosmosClient>(_id),
             _config,
             sp.GetRequiredService<ILogger<PIIStrippingLoggerQueueConsumer>>(),
@@ -76,31 +79,41 @@ public class PIIStrippingLoggerFactory : IPipelineStepFactory
     public static IPipelineStepFactory BuildFromConfig(ILogger logger, TypeAndNameConfig config)
     {
         var typedConfig = config.TypedProperties<PIIStrippingLoggerConfig>();
-        Guard.NotNull(typedConfig.TextAnalyticsEndpoint, nameof(typedConfig.TextAnalyticsEndpoint));
-        Guard.NotNull(typedConfig.TextAnalyticsKey, nameof(typedConfig.TextAnalyticsKey)); //RBAC not possible for language service
+
+        if (!typedConfig.PIIStrippingDisabled)
+        {
+            Guard.NotNull(typedConfig.TextAnalyticsEndpoint, nameof(typedConfig.TextAnalyticsEndpoint));
+            Guard.NotNull(typedConfig.TextAnalyticsKey, nameof(typedConfig.TextAnalyticsKey)); //RBAC not possible for language service
+        }
+        
         Guard.NotNull(typedConfig.QueueName, nameof(typedConfig.QueueName));
 
         if (typedConfig.UseManagedIdentities)
         {
             Guard.NotNull(typedConfig.StorageUri, nameof(typedConfig.StorageUri));
             Guard.NotNull(typedConfig.CosmosAccountEndpoint, nameof(typedConfig.CosmosAccountEndpoint));
-            Guard.NotNull(typedConfig.TextAnalyticsKey, nameof(typedConfig.TextAnalyticsKey));
             
             logger.LogInformation("PII Stripping logging will using Managed Identity {ClientId} to connect", typedConfig.UserAssignedManagedIdentityId);
             logger.LogInformation("Cosmos Endpoint {CosmosEndpoint}", typedConfig.CosmosAccountEndpoint);
             logger.LogInformation("Storage Endpoint {StorageEndpoint}", typedConfig.StorageUri);
-            logger.LogInformation("Text Analytics Endpoint {TextEndpoint}", typedConfig.TextAnalyticsEndpoint);
         }
         else
         {
             Guard.NotNull(typedConfig.CosmosConnectionString, nameof(typedConfig.CosmosConnectionString));
             Guard.NotNull(typedConfig.StorageQueueConnectionString, nameof(typedConfig.StorageQueueConnectionString));
-            Guard.NotNull(typedConfig.TextAnalyticsKey, nameof(typedConfig.TextAnalyticsKey));
-
-            logger.LogInformation("PII Stripping logging will use Connection Strings to connect to Storage, Cosmos, and Language Service");
+            logger.LogInformation("Logging will use Connection Strings to connect to Storage, Cosmos, and Language Service");
 
         }
-        
+
+        if (!typedConfig.PIIStrippingDisabled)
+        {
+            logger.LogInformation("Text Analytics Endpoint {TextEndpoint}", typedConfig.TextAnalyticsEndpoint);
+        }
+        else
+        {
+            logger.LogWarning("PII Stripping disabled. You will see raw prompts and responses");
+        }
+
         return new PIIStrippingLoggerFactory(
             config.Name!,
             typedConfig

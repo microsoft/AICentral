@@ -9,7 +9,7 @@ namespace AICentral.Logging.PIIStripping;
 
 internal class PIIStrippingLoggerQueueConsumer(
     QueueClient queueClient,
-    TextAnalyticsClient textAnalyticsClient,
+    Func<TextAnalyticsClient> textAnalyticsClient,
     CosmosClient cosmosClient,
     PIIStrippingLoggerConfig config,
     ILogger<PIIStrippingLoggerQueueConsumer> logger,
@@ -52,24 +52,27 @@ internal class PIIStrippingLoggerQueueConsumer(
                             //get the prompt and redact it
                             var loggingMessage = message.Value.Body.ToObjectFromJson<LogEntry>();
 
-                            var redacted = await textAnalyticsClient.RecognizePiiEntitiesBatchAsync(
-                                [loggingMessage.Prompt, loggingMessage.Response], cancellationToken: cancellationToken);
+                            if (!config.PIIStrippingDisabled) {
+                                var redacted = await textAnalyticsClient().RecognizePiiEntitiesBatchAsync(
+                                    [loggingMessage.Prompt, loggingMessage.Response],
+                                    cancellationToken: cancellationToken);
 
-                            //log the response
-                            var redactedMessage = loggingMessage with
-                            {
-                                Prompt = string.IsNullOrWhiteSpace(loggingMessage.Prompt)
-                                    ? string.Empty
-                                    : redacted.Value[0].Entities.RedactedText,
-                                Response = string.IsNullOrWhiteSpace(loggingMessage.Response)
-                                    ? string.Empty
-                                    : redacted.Value[1].Entities.RedactedText
-                            };
+                                //log the response
+                                loggingMessage = loggingMessage with
+                                {
+                                    Prompt = string.IsNullOrWhiteSpace(loggingMessage.Prompt)
+                                        ? string.Empty
+                                        : redacted.Value[0].Entities.RedactedText,
+                                    Response = string.IsNullOrWhiteSpace(loggingMessage.Response)
+                                        ? string.Empty
+                                        : redacted.Value[1].Entities.RedactedText
+                                };
+                            }
 
                             //save the message
                             await container.Container.CreateItemAsync(
-                                redactedMessage,
-                                new PartitionKey(redactedMessage.LogId),
+                                loggingMessage,
+                                new PartitionKey(loggingMessage.LogId),
                                 cancellationToken: cancellationToken);
 
                             //delete the message

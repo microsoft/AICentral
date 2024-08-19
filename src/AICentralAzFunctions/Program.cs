@@ -1,4 +1,4 @@
-using AICentralAzFunctions.Quickstarts;
+using AICentral.QuickStarts;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
