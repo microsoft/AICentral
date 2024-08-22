@@ -33,4 +33,9 @@ public class PIIStrippingLoggerConfig
 
     public bool UseManagedIdentities { get; init; }
     public string? UserAssignedManagedIdentityId { get; init; }
+
+    /// <summary>
+    /// Set to true to avoid PII Stripping (i.e. log raw prompts and responses).
+    /// </summary>
+    public bool PIIStrippingDisabled { get; init; } = false;
 }

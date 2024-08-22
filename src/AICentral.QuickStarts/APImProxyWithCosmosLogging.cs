@@ -1,5 +1,4 @@
-﻿using AICentral;
-using AICentral.Configuration;
+﻿using AICentral.Configuration;
 using AICentral.ConsumerAuth.Entra;
 using AICentral.Core;
 using AICentral.Endpoints;
@@ -15,7 +14,7 @@ using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.Validators;
 
-namespace AICentralAzFunctions.Quickstarts;
+namespace AICentral.QuickStarts;
 
 public static class APImProxyWithCosmosLogging
 {
@@ -31,14 +30,22 @@ public static class APImProxyWithCosmosLogging
         public string? StorageUri { get; init; }
         public ClaimValueToSubscriptionKey[]? ClaimsToKeys { get; init; }
         public string[]? AllowedChatImageUriHostNames { get; init; }
+        public bool PIIStrippingDisabled { get; init; } = true;
     }
 
     public static AICentralPipelineAssembler BuildAssembler(Config config)
     {
         var tenantId = Guard.NotNull(config.TenantId, nameof(config.TenantId));
         var apimEndpointUri = Guard.NotNull(config.ApimEndpointUri, nameof(config.ApimEndpointUri));
-        var textAnalyticsEndpoint = Guard.NotNull(config.TextAnalyticsEndpoint, nameof(config.TextAnalyticsEndpoint));
-        var textAnalyticsKey = Guard.NotNull(config.TextAnalyticsKey, nameof(config.TextAnalyticsKey)); //RBAC not support
+
+        var textAnalyticsEndpoint = config.TextAnalyticsEndpoint;
+        var textAnalyticsKey = config.TextAnalyticsKey;
+        if (config.PIIStrippingDisabled)
+        {
+            textAnalyticsEndpoint = Guard.NotNull(config.TextAnalyticsEndpoint, nameof(config.TextAnalyticsEndpoint));
+            textAnalyticsKey = Guard.NotNull(config.TextAnalyticsKey, nameof(config.TextAnalyticsKey));
+        }
+
         var incomingClaimName = Guard.NotNull(config.IncomingClaimName, nameof(config.IncomingClaimName));
         var cosmosAccountEndpoint = Guard.NotNull(config.CosmosAccountEndpoint, nameof(config.CosmosAccountEndpoint));
         var storageUri = Guard.NotNull(config.StorageUri, nameof(config.StorageUri));
@@ -56,7 +63,8 @@ public static class APImProxyWithCosmosLogging
             CosmosAccountEndpoint = cosmosAccountEndpoint,
             TextAnalyticsEndpoint = textAnalyticsEndpoint,
             TextAnalyticsKey = textAnalyticsKey,
-            StorageUri = storageUri
+            StorageUri = storageUri,
+            PIIStrippingDisabled = config.PIIStrippingDisabled
         };
 
         var downstreamEndpointDispatcherFactory = new DownstreamEndpointDispatcherFactory(
@@ -111,7 +119,7 @@ public static class APImProxyWithCosmosLogging
                             options.Instance = "https://login.microsoftonline.com/";
                             options.ClientId = "ignored-as-not-exchanging-codes-for-tokens";
                         }, schemeId);
-                
+
                     builder.Services.Configure<JwtBearerOptions>(
                         schemeId,
                         jwtBearerOptions => { jwtBearerOptions.Events.OnTokenValidated = _ => Task.CompletedTask; });
