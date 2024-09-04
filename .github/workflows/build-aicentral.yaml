@@ -6,11 +6,13 @@ on:
       - main
     paths:
       - 'src/AICentral/**'
+      - 'src/AICentral.QuickStarts/**'
   pull_request:
     branches:
       - main
     paths:
       - 'src/AICentral/**'
+      - 'src/AICentral.QuickStarts/**'
   workflow_dispatch:
 
 jobs:

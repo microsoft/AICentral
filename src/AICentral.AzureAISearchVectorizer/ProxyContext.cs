@@ -20,7 +20,7 @@ public class ProxyContext: ExtendableWrappedContext, IDisposable, IAsyncDisposab
         object requestContent,
         JsonNode incomingDocument) : base(ctx)
     {
-        _newUrl = relativeUrl;
+        _newUrl = new Uri($"https://ignore.localtest.me/{relativeUrl}");
         _incomingDocument = incomingDocument;
         var ms = new MemoryStream();
         JsonSerializer.Serialize(ms, requestContent);
