@@ -31,6 +31,7 @@ public static class APImProxyWithCosmosLogging
         public ClaimValueToSubscriptionKey[]? ClaimsToKeys { get; init; }
         public string[]? AllowedChatImageUriHostNames { get; init; }
         public bool PIIStrippingDisabled { get; init; } = true;
+        public string? ApimKeyHeaderName { get; set; }
     }
 
     public static AICentralPipelineAssembler BuildAssembler(Config config)
@@ -75,7 +76,7 @@ public static class APImProxyWithCosmosLogging
                     new BearerPassThroughWithAdditionalKeyAuthFactoryConfig()
                     {
                         IncomingClaimName = incomingClaimName,
-                        KeyHeaderName = "api-key",
+                        KeyHeaderName = string.IsNullOrWhiteSpace(config.ApimKeyHeaderName) ? "api-key" : config.ApimKeyHeaderName,
                         ClaimsToKeys = claimsToKeys
                     }),
                 new Dictionary<string, string>(),
