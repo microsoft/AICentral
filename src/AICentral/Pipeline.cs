@@ -180,6 +180,18 @@ public class Pipeline
                 $"request.tokens_consumed", "tokens",
                 result.DownstreamUsageInformation.TotalTokens.Value, tagList);
         }
+        if (result.DownstreamUsageInformation.PromptTokens != null) {
+            ActivitySources.RecordHistogram(
+                $"request.prompt_tokens_consumed", "tokens",
+                result.DownstreamUsageInformation.PromptTokens.Value, tagList);
+        }
+
+        if (result.DownstreamUsageInformation.CompletionTokens != null)
+        {
+            ActivitySources.RecordHistogram(
+                $"request.completion_tokens_consumed", "tokens",
+                result.DownstreamUsageInformation.CompletionTokens.Value, tagList);
+        }
 
         var downsteamMetadata = result.DownstreamUsageInformation.ResponseMetadata;
         if (downsteamMetadata != null)
