@@ -73,6 +73,8 @@ Yes, other Azure AI services also support customer managed keys. Azure AI servic
     RemoteIpAddress: ,
     StartDate: DateTimeOffset_1,
     Success: true,
+    PromptTokens: 58,
+    CompletionTokens: 68,
     TotalTokens: 126
   }
 }

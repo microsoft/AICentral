@@ -60,6 +60,8 @@ Test2
     RemoteIpAddress: ,
     StartDate: DateTimeOffset_1,
     Success: true,
+    PromptTokens: 58,
+    CompletionTokens: 0,
     TotalTokens: 126
   }
 }

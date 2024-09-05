@@ -63,6 +63,8 @@ The,
     RemoteIpAddress: ,
     StartDate: DateTimeOffset_1,
     Success: true,
+    PromptTokens: 22,
+    CompletionTokens: 101,
     TotalTokens: 123
   }
 }
