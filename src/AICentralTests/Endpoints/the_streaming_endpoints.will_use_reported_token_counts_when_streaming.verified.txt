@@ -58,6 +58,8 @@ There,
     RemoteIpAddress: ,
     StartDate: DateTimeOffset_1,
     Success: true,
+    PromptTokens: 33,
+    CompletionTokens: 39,
     TotalTokens: 72
   }
 }

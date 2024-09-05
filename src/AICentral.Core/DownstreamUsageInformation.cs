@@ -46,6 +46,8 @@ public record DownstreamUsageInformation(
                 TimeSpan.Zero, 
                 null);
     
+    public int? PromptTokens => KnownTokens?.PromptTokens ?? EstimatedTokens?.Value.EstimatedPromptTokens;
+    public int? CompletionTokens => KnownTokens?.CompletionTokens ?? EstimatedTokens?.Value.EstimatedCompletionTokens;
     public int? TotalTokens
     {
         get

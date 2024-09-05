@@ -35,10 +35,9 @@ public static class ActivitySources
 
             var gauge = ActivitySource.AICentralMeter.CreateObservableGauge(
                 otelName,
-                () => LongObservedValues.GetValueOrDefault(otelKey, 0),
+                () => tags == null ? new Measurement<long>(LongObservedValues.GetValueOrDefault(otelKey)) : new Measurement<long>(LongObservedValues.GetValueOrDefault(otelKey), tagsAsKeyValuePairs),
                 unit: $"{{{unit}}}",
-                description: "",
-                tags: tagsAsKeyValuePairs);
+                description: "");
 
             LongGauges.TryAdd(otelKey, gauge);
         }

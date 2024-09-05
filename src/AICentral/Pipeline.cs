@@ -180,30 +180,44 @@ public class Pipeline
                 $"request.tokens_consumed", "tokens",
                 result.DownstreamUsageInformation.TotalTokens.Value, tagList);
         }
+        if (result.DownstreamUsageInformation.PromptTokens != null) {
+            ActivitySources.RecordHistogram(
+                $"request.prompt_tokens_consumed", "tokens",
+                result.DownstreamUsageInformation.PromptTokens.Value, tagList);
+        }
+
+        if (result.DownstreamUsageInformation.CompletionTokens != null)
+        {
+            ActivitySources.RecordHistogram(
+                $"request.completion_tokens_consumed", "tokens",
+                result.DownstreamUsageInformation.CompletionTokens.Value, tagList);
+        }
 
         var downsteamMetadata = result.DownstreamUsageInformation.ResponseMetadata;
         if (downsteamMetadata != null)
         {
-            var modelOrDeployment = result.DownstreamUsageInformation.DeploymentName ??
-                                    result.DownstreamUsageInformation.ModelName ??
-                                    "";
-
-            var normalisedHostName = result.DownstreamUsageInformation.OpenAIHost?.Replace(".", "_") ?? string.Empty;
-
+            var gaugeTagList = new TagList
+            {
+                { "Deployment", result.DownstreamUsageInformation.DeploymentName },
+                { "Model", result.DownstreamUsageInformation.ModelName },
+                { "Endpoint", result.DownstreamUsageInformation.OpenAIHost },
+            };
             if (downsteamMetadata.RemainingTokens != null)
             {
-                //Gauges don't transmit custom dimensions so I need a new metric name for each host / deployment pair.
+                //Gauges don't transmit custom dimensions, so I need a new metric name for each host / deployment pair.
                 ActivitySources.RecordGaugeMetric(
-                    $"downstream.{normalisedHostName}.{modelOrDeployment}.tokens_remaining", "tokens",
-                    downsteamMetadata.RemainingTokens.Value);
+                    $"downstream.tokens_remaining", "tokens",
+                    downsteamMetadata.RemainingTokens.Value,
+                    gaugeTagList);
             }
 
             if (downsteamMetadata.RemainingRequests != null)
             {
-                //Gauges don't transmit custom dimensions so I need a new metric name for each host / deployment pair.
+                //Gauges don't transmit custom dimensions, so I need a new metric name for each host / deployment pair.
                 ActivitySources.RecordGaugeMetric(
-                    $"downstream.{normalisedHostName}.{modelOrDeployment}.requests_remaining", "tokens",
-                    downsteamMetadata.RemainingRequests.Value);
+                    $"downstream.requests_remaining", "tokens",
+                    downsteamMetadata.RemainingRequests.Value,
+                    gaugeTagList);
             }
         }
 

@@ -96,6 +96,8 @@ Response two two two.
     RemoteIpAddress: ,
     StartDate: DateTimeOffset_1,
     Success: true,
+    PromptTokens: 29,
+    CompletionTokens: 30,
     TotalTokens: 59
   }
 }
