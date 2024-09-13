@@ -37,6 +37,9 @@ internal class PIIStrippingLoggerQueueConsumer(
             var container = await database.CreateContainerIfNotExistsAsync(config.CosmosContainer, "/LogId",
                 cancellationToken: cancellationToken);
             var failCount = 0;
+            
+            //only log every few minutes when there's nothing to do, to cut down the chatter in the debug log:
+            var nextDebugLogAt = DateTimeOffset.Now;
 
             try
             {
@@ -81,8 +84,12 @@ internal class PIIStrippingLoggerQueueConsumer(
                         }
                         else
                         {
+                            if (DateTimeOffset.Now >= nextDebugLogAt)
+                            {
+                                logger.LogDebug("Loop is active:: No messages in the queue");
+                                nextDebugLogAt = nextDebugLogAt.AddMinutes(5);
+                            }
                             await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
-                            logger.LogDebug("No messages in the queue");
                         }
 
                         failCount = 0;
