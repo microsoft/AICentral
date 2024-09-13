@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="com.microsoft.azure.toolkit.intellij.storage.azurite.settings.AzuriteSettings">
+    <option name="executablePath" value="/opt/homebrew/bin/azurite" />
+  </component>
+</project>
