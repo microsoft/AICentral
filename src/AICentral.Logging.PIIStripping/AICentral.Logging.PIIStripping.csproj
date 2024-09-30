@@ -24,4 +24,8 @@
       <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.41.0" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="readme.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+    
 </Project>

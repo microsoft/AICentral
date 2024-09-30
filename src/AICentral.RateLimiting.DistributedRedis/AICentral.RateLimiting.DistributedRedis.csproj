@@ -18,4 +18,8 @@
       <PackageReference Include="Aspire.StackExchange.Redis" Version="8.0.2" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="readme.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+    
 </Project>

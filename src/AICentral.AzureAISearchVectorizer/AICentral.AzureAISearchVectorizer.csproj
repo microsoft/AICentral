@@ -17,4 +17,8 @@
       <PackageReference Include="AICentral.Core" Version="0.20.3" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="readme.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
+    
 </Project>
