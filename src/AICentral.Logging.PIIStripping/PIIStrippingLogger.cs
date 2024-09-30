@@ -63,7 +63,7 @@ public class PIIStrippingLogger(
                         response.DownstreamUsageInformation.EstimatedTokens?.Value.EstimatedCompletionTokens,
                         response.DownstreamUsageInformation.KnownTokens?.PromptTokens,
                         response.DownstreamUsageInformation.KnownTokens?.CompletionTokens,
-                        response.DownstreamUsageInformation.KnownTokens?.TotalTokens,
+                        response.DownstreamUsageInformation.TotalTokens,
                         response.DownstreamUsageInformation.RemoteIpAddress,
                         response.DownstreamUsageInformation.StartDate,
                         response.DownstreamUsageInformation.Duration,

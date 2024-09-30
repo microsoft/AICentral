@@ -4,8 +4,6 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <AssemblyName>AICentral.Logging.PIIStripping</AssemblyName>
-        <RootNamespace>AICentral.Logging.PIIStripping</RootNamespace>
         <OutputType>Library</OutputType>
         <IsPackable>true</IsPackable>
         <PackageReadmeFile>readme.md</PackageReadmeFile>
@@ -17,11 +15,7 @@
 
     <ItemGroup>
       <PackageReference Include="AICentral.Core" Version="0.20.3" />
-      <PackageReference Include="Aspire.StackExchange.Redis" Version="8.0.2" />
-      <PackageReference Include="Azure.AI.TextAnalytics" Version="5.3.0" />
-      <PackageReference Include="Azure.Identity" Version="1.12.0" />
-      <PackageReference Include="Azure.Storage.Queues" Version="12.18.0" />
-      <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.41.0" />
+      <PackageReference Include="Dapr.Client" Version="1.14.0" />
     </ItemGroup>
 
     <ItemGroup>

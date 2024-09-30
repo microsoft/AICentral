@@ -40,6 +40,10 @@
   - Powered by an extension ```graemefoster/aicentral.ratelimiting.distributedredis```
 - AI Search Vectorization endpoint
   - Powered by an extension ```graemefoster/aicentral.azureaisearchvectorizer```
+- Broadcast messages to DAPR 
+  - Powered by an extension ```graemefoster/AICentral.Dapr.Broadcast```
+  - Simplifies using any DAPR Pub/Sub component for post-processing LLM requests
+  - Simplifies using any DAPR Pub/Sub component for post-processing LLM requests
 
 > Extensibility model makes it easy to build your own plugins
 

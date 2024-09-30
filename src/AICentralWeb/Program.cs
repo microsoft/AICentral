@@ -1,6 +1,7 @@
 using AICentral;
 using AICentral.AzureAISearchVectorizer;
 using AICentral.Configuration;
+using AICentral.Dapr.Broadcast;
 using AICentral.Logging.AzureMonitor.AzureMonitorLogging;
 using AICentral.Logging.PIIStripping;
 using AICentral.QuickStarts;
@@ -16,7 +17,7 @@ builder.Logging.ClearProviders().AddSimpleConsole(options =>
     options.SingleLine = true;
 });
 
-if (builder.Environment.EnvironmentName != "tests")
+if (builder.Environment.EnvironmentName != "tests" && Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING") != null)
 {
     builder.Services
         .AddOpenTelemetry()
@@ -65,7 +66,8 @@ else
             typeof(AzureMonitorLoggerFactory).Assembly,
             typeof(PIIStrippingLogger).Assembly,
             typeof(DistributedRateLimiter).Assembly,
-            typeof(AdaptJsonToAzureAISearchTransformer).Assembly
+            typeof(AdaptJsonToAzureAISearchTransformer).Assembly,
+            typeof(DaprBroadcaster).Assembly
         ]);
 }
 
