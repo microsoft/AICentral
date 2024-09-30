@@ -1,0 +1,42 @@
+﻿name: BuildAndPackageAISearchVectorizer
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/AICentral.Dapr.Broadcast/**'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/AICentral.Dapr.Broadcast/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-package-app:
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v1.1.1
+        with:
+          versionSpec: '5.x'
+
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v1.1.1
+        with:
+          useConfigFile: true
+
+      - name: Pack Nuget
+        run: dotnet pack ./src/AICentral.Dapr.Broadcast/AICentral.Dapr.Broadcast.csproj -p:Version=${{ steps.gitversion.outputs.NuGetVersionV2 }} --output ./publish/
+      
+      - name: Publish to Nuget ${{ steps.gitversion.outputs.NuGetVersionV2 }}
+        run: dotnet nuget push ./publish/AICentral.Dapr.Broadcast.${{ steps.gitversion.outputs.NuGetVersionV2 }}.nupkg  --api-key ${{ secrets.NUGET_PUBLISH_KEY }} --source https://api.nuget.org/v3/index.json

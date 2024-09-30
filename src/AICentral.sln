@@ -48,6 +48,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		..\.github\workflows\build-aicentral-pii-stripping-logging.yaml = ..\.github\workflows\build-aicentral-pii-stripping-logging.yaml
 		..\.github\workflows\build-fake-openai-server.yaml = ..\.github\workflows\build-fake-openai-server.yaml
 		..\.github\workflows\build-aicentral-aisearch-vectorizer.yaml = ..\.github\workflows\build-aicentral-aisearch-vectorizer.yaml
+		..\.github\workflows\build-aicentral-dapr-publisher.yaml = ..\.github\workflows\build-aicentral-dapr-publisher.yaml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.Logging.AzureMonitor", "AICentral.Logging.AzureMonitor\AICentral.Logging.AzureMonitor.csproj", "{D6C1FAC7-ABC6-49A4-A2A4-6FAD13A9B483}"
@@ -75,6 +76,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentralAzFunctions", "AICentralAzFunctions\AICentralAzFunctions.csproj", "{79941917-5461-40F0-9EA7-4267F1A4723C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.QuickStarts", "AICentral.QuickStarts\AICentral.QuickStarts.csproj", "{9C8C0F9C-E230-4AC4-9F5E-BCF76DD2BDF8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AICentral.Dapr.Broadcast", "AICentral.Dapr.Broadcast\AICentral.Dapr.Broadcast.csproj", "{3739D12E-CD04-4403-99C5-384E4FEFB422}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -142,6 +145,10 @@ Global
 		{9C8C0F9C-E230-4AC4-9F5E-BCF76DD2BDF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C8C0F9C-E230-4AC4-9F5E-BCF76DD2BDF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C8C0F9C-E230-4AC4-9F5E-BCF76DD2BDF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3739D12E-CD04-4403-99C5-384E4FEFB422}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3739D12E-CD04-4403-99C5-384E4FEFB422}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3739D12E-CD04-4403-99C5-384E4FEFB422}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3739D12E-CD04-4403-99C5-384E4FEFB422}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{087EA4B4-12E0-4517-B481-97ECE4F0FED9} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
@@ -161,5 +168,6 @@ Global
 		{269A9D94-F4E0-41FB-AA24-561AF3D92914} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
 		{79941917-5461-40F0-9EA7-4267F1A4723C} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
 		{9C8C0F9C-E230-4AC4-9F5E-BCF76DD2BDF8} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
+		{3739D12E-CD04-4403-99C5-384E4FEFB422} = {F59D2976-A325-496C-85DE-F7C9C1A2D987}
 	EndGlobalSection
 EndGlobal
