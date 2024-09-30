@@ -6,6 +6,13 @@
         <Nullable>enable</Nullable>
         <AssemblyName>AICentral.Logging.PIIStripping</AssemblyName>
         <RootNamespace>AICentral.Logging.PIIStripping</RootNamespace>
+        <OutputType>Library</OutputType>
+        <IsPackable>true</IsPackable>
+        <PackageReadmeFile>readme.md</PackageReadmeFile>
+        <PackageProjectUrl>https://github.com/microsoft/AICentral</PackageProjectUrl>
+        <PackageLicenseUrl>https://licenses.nuget.org/MIT</PackageLicenseUrl>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 
     <ItemGroup>
