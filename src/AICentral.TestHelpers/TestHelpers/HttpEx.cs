@@ -4,7 +4,7 @@ using OpenAIMock;
 
 namespace AICentralTests.TestHelpers;
 
-internal static class HttpEx
+public static class HttpEx
 {
     public static Task<HttpResponseMessage> PostChatCompletions(this HttpClient client, string endpointName, string modelName = "Model1")
     {

@@ -30,6 +30,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\AICentral.OpenAITestExtensions\AICentral.OpenAITestExtensions.csproj" />
+      <ProjectReference Include="..\AICentral.TestHelpers\AICentral.TestHelpers.csproj" />
       <ProjectReference Include="..\AICentralWeb\AICentralWeb.csproj" />
       <ProjectReference Include="..\AICentral\AICentral.csproj" />
     </ItemGroup>
@@ -58,9 +59,6 @@
     <ItemGroup>
       <EmbeddedResource Include="Assets\Recording.m4a" />
       <None Remove="TestHelpers\FakeIdp\openid-configuration.json" />
-      <EmbeddedResource Include="TestHelpers\FakeIdp\openid-configuration.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </EmbeddedResource>
     </ItemGroup>
 
 </Project>
