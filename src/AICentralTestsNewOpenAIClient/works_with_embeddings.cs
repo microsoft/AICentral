@@ -24,25 +24,25 @@ public class works_with_embeddings : IClassFixture<TestWebApplicationFactory<Pro
     }
 
     [Fact]
-    public async Task can_use_new_sdk_with_embeddings()
+    public async Task can_use_new_sdk_with_base64_encoded_embeddings()
     {
         _factory.Services.Seed(
-            $"https://{TestPipelines.Endpoint200}/openai/deployments/adatest/embeddings?api-version=2024-08-01-preview",
-            OpenAIFakeResponses.FakeEmbeddingResponse);
-
+            $"https://{TestPipelines.Endpoint200}/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-08-01-preview",
+            OpenAIFakeResponses.FakeBase64EmbeddingResponse);
 
         var client = new AzureOpenAIClient(
-                new Uri("http://azure-to-azure-openai.localtest.me"),
+                new Uri("http://azure-openai-to-azure.localtest.me"),
                 new ApiKeyCredential("ignore"),
                 new AzureOpenAIClientOptions()
                 {
-                    Transport = new HttpClientPipelineTransport(_httpClient),
-                    
+                    Transport = new HttpClientPipelineTransport(_httpClient)
                 });
 
-        var embeddings = await client
-            .GetEmbeddingClient("adatest")
+        var result = await client
+            .GetEmbeddingClient("text-embedding-ada-002")
             .GenerateEmbeddingAsync("test");
+        
+        await Verify(_factory.Services.VerifyRequestsAndResponses(result.GetRawResponse(), true));
     }
 
     public void Dispose()
