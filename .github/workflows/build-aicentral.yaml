@@ -40,6 +40,9 @@ jobs:
       - name: Test
         run: dotnet test src/AICentralTests/AICentralTests.csproj
 
+      - name: Test New OpenAI Client
+        run: dotnet test src/AICentralTestsNewOpenAIClient/AICentralTestsNewOpenAIClient.csproj
+
       - name: Pack Nuget
         run: dotnet pack src/AICentral/AICentral.csproj -p:Version=${{ steps.gitversion.outputs.NuGetVersionV2 }} --output ./publish/
       

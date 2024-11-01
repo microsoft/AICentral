@@ -35,7 +35,7 @@ public class FakeIdpMessageHandler : DelegatingHandler
             using var resourceStream =
                 new StreamReader(
                 typeof(FakeIdpMessageHandler).Assembly.GetManifestResourceStream(
-                    "AICentralTests.TestHelpers.FakeIdp.openid-configuration.json")!);
+                    "AICentral.TestHelpers.TestHelpers.FakeIdp.openid-configuration.json")!);
 
             var content = (await resourceStream.ReadToEndAsync(cancellationToken))
                 .Replace("<tenant-id>", TenantId);

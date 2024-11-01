@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using AICentral.Core;
 using Microsoft.Net.Http.Headers;
@@ -35,7 +36,7 @@ public class JsonResponseHandler: IResponseHandler
 
         context.Response.StatusCode = (int)openAiResponse.StatusCode;
         context.Response.SetHeader(HeaderNames.ContentType, "application/json");
-        await using var utf8Writer = new Utf8JsonWriter(context.Response.Body, new JsonWriterOptions { Indented = false });
+        await using var utf8Writer = new Utf8JsonWriter(context.Response.Body, new JsonWriterOptions { Indented = false, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping});
         responseToReturn.WriteTo(utf8Writer);
         await utf8Writer.FlushAsync(cancellationToken);
 

@@ -1,0 +1,44 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-08-01-preview",
+    "Method": "POST",
+    "Headers": {
+      "Accept": "application/json",
+      "api-key": "ignore-fake-key-hr987345"
+    },
+    "ContentType": "application/json",
+    "Content": "{\"input\":\"test\",\"model\":\"text-embedding-ada-002\",\"encoding_format\":\"base64\"}"
+  }
+],
+  Response: {
+    Headers: [
+      {
+        Content-Type: application/json
+      }
+    ]
+  },
+  ResponseMetadata: {
+    InternalEndpointName: Guid_1,
+    OpenAIHost: Guid_1,
+    ModelName: ada,
+    DeploymentName: text-embedding-ada-002,
+    Client: ,
+    CallType: Embeddings,
+    StreamingResponse: false,
+    Prompt: test,
+    Response: ,
+    KnownTokens: {
+      Item1: 4,
+      Item3: 4
+    },
+    ResponseMetadata: {},
+    RemoteIpAddress: ,
+    StartDate: DateTimeOffset_1,
+    Success: true,
+    PromptTokens: 4,
+    CompletionTokens: 0,
+    TotalTokens: 4
+  }
+}
