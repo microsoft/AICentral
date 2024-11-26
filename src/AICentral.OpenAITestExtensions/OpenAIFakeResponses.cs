@@ -23,6 +23,16 @@ public static class OpenAIFakeResponses
             .SeedChatCompletions(endpoint, modelName, response, apiVersion);
     }
 
+    public static void SeedInferenceChatCompletions(
+        this IServiceProvider services,
+        string endpoint,
+        Func<Task<HttpResponseMessage>> response,
+        string apiVersion = "2024-05-01-preview")
+    {
+        services.GetRequiredService<FakeHttpMessageHandlerSeeder>()
+            .SeedInferenceChatCompletions(endpoint, response, apiVersion);
+    }
+
     public static void SeedCompletions(
         this IServiceProvider services,
         string endpoint,
@@ -334,6 +344,38 @@ public static class OpenAIFakeResponses
                 }
             }
         });
+
+        return Task.FromResult(response);
+    }
+
+    public static Task<HttpResponseMessage> FakeInferenceEmbeddingResponse()
+    {
+        var response = new HttpResponseMessage();
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            id = FakeResponseId,
+            @object = "list",
+            model = "embed-english-v3.0",
+            usage = new
+            {
+                prompt_tokens = 3,
+                completion_tokens = 0,
+                total_tokens = 3
+            },
+            data = new[]
+            {
+                new
+                {
+                    embedding = new [] { 0.1f, 0.2f, 0.3f },
+                    index = 0,
+                    @object = "embedding"
+                }
+            }
+        });
+        response.Headers.Add("num_chars", "12");
+        response.Headers.Add("num_tokens", "3");
+        response.Headers.Add("prompt_token_len", "3");
+        response.Headers.Add("sampling_token_len", "3");
 
         return Task.FromResult(response);
     }
@@ -715,5 +757,43 @@ public static class OpenAIFakeResponses
             _backingStream.Dispose();
             base.Dispose(disposing);
         }
+    }
+
+    public static Task<HttpResponseMessage> FakeInferenceChatCompletionsResponse()
+    {
+        var response = new HttpResponseMessage();
+        response.Content = new OneTimeStreamReadHttpContent(new
+        {
+            id = FakeResponseId,
+            @object = "chat.completion",
+            created = 1679072642,
+            model = "phi3-mini-4k",
+            usage = new
+            {
+                prompt_tokens = 50,
+                completion_tokens = 60,
+                total_tokens = 110
+            },
+            choices = new[]
+            {
+                new
+                {
+                    message = new
+                    {
+                        role = "assistant",
+                        content =
+                            "Yes, other Azure AI services also support customer managed keys. Azure AI services offer multiple options for customers to manage keys, such as using Azure Key Vault, customer-managed keys in Azure Key Vault or customer-managed keys through Azure Storage service. This helps customers ensure that their data is secure and access to their services is controlled.",
+                        tool_calls = Array.Empty<object>()
+                    },
+                    finish_reason = "stop",
+                    index = 0
+                }
+            },
+        });
+
+        response.Headers.Add("prompt_token_len", "17");
+        response.Headers.Add("sampling_token_len", "51");
+
+        return Task.FromResult(response);    
     }
 }

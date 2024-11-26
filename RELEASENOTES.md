@@ -1,5 +1,8 @@
 Release Notes:
 
+0.20.1 (26/nov/2024)
+- Support for Azure Inference endpoint
+
 0.20.0 (17/aug/2024)
 - Support running in Azure Fuctions
 - PII Stripping Logger now able to use Managed Identities (User / System assigned)

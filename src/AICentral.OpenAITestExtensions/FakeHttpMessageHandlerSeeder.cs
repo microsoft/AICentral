@@ -37,6 +37,14 @@ public class FakeHttpMessageHandlerSeeder
         SeededResponses.TryAdd(url, _ => response());
     }
 
+    public void SeedInferenceChatCompletions(string endpoint, Func<Task<HttpResponseMessage>> response,
+        string apiVersion = OpenAITestEx.OpenAIClientApiVersion)
+    {
+        var url = $"https://{endpoint}/models/chat/completions?api-version={apiVersion}";
+        if (SeededResponses.ContainsKey(url)) SeededResponses.Remove(url, out _);
+        SeededResponses.TryAdd(url, _ => response());
+    }
+
     public void SeedCompletions(string endpoint, string modelName, Func<Task<HttpResponseMessage>> response,
         string apiVersion = OpenAITestEx.OpenAIClientApiVersion)
     {
