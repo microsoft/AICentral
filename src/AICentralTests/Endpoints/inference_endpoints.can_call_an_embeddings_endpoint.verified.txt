@@ -1,0 +1,57 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/models/embeddings?api-version=2024-05-01-preview",
+    "Method": "POST",
+    "Headers": {
+      "Accept": "application/json",
+      "x-ms-return-client-request-id": "true",
+      "api-key": "ignore-fake-key-hr987345"
+    },
+    "ContentType": "application/json",
+    "Content": "{\"input\":[\"hello\"],\"model\":\"test\"}"
+  }
+],
+  Response:
+{
+  "Value": {
+    "Id": "chatcmpl-6v7mkQj980V1yBec6ETrKPRqFjNw9",
+    "Data": [
+      {
+        "Embedding": {},
+        "Index": 0
+      }
+    ],
+    "Usage": {
+      "PromptTokens": 3,
+      "TotalTokens": 3
+    },
+    "Model": "embed-english-v3.0"
+  },
+  "HasValue": true
+},
+  ResponseMetadata: {
+    InternalEndpointName: Guid_1,
+    OpenAIHost: Guid_1,
+    ModelName: embed-english-v3.0,
+    Client: ,
+    CallType: Embeddings,
+    StreamingResponse: false,
+    Prompt:
+hello
+,
+    Response: ,
+    KnownTokens: {
+      Item1: 3,
+      Item3: 3
+    },
+    ResponseMetadata: {},
+    RemoteIpAddress: ,
+    StartDate: DateTimeOffset_1,
+    Success: true,
+    PromptTokens: 3,
+    CompletionTokens: 0,
+    TotalTokens: 3
+  }
+}

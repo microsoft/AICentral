@@ -32,6 +32,7 @@ AI Central gives you control over your AI services.
   - Powered by an extension ```graemefoster/aicentral.ratelimiting.distributedredis```
 - AI Search Vectorization endpoint
   - Powered by an extension ```graemefoster/aicentral.azureaisearchvectorizer```
+- Support for Azure Inference endpoint
 
 ## Configuration
 

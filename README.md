@@ -44,6 +44,7 @@
   - Powered by an extension ```graemefoster/AICentral.Dapr.Broadcast```
   - Simplifies using any DAPR Pub/Sub component for post-processing LLM requests
   - Simplifies using any DAPR Pub/Sub component for post-processing LLM requests
+- Support for Azure Inference endpoint
 
 > Extensibility model makes it easy to build your own plugins
 

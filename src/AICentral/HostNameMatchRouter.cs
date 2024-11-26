@@ -60,6 +60,21 @@ public class HostNameMatchRouter
                     (await handler(WrapContext(ctx), deploymentName, null, AICallType.Translation, cancellationToken)).ResultHandler)
             .RequireHost(_hostNames);
 
+        //support the Inference API
+        yield return application.MapMethods(
+                "/models/chat/completions",
+                new[] { "Post" },
+                async (HttpContext ctx, CancellationToken cancellationToken) =>
+                    (await handler(WrapContext(ctx), null, null, AICallType.Chat, cancellationToken)).ResultHandler)
+            .RequireHost(_hostNames);
+        
+        yield return application.MapMethods(
+                "/models/embeddings",
+                new[] { "Post" },
+                async (HttpContext ctx, CancellationToken cancellationToken) =>
+                    (await handler(WrapContext(ctx), null, null, AICallType.Embeddings, cancellationToken)).ResultHandler)
+            .RequireHost(_hostNames);
+
         yield return application.MapMethods(
                 ChatCompletionsRoute,
                 new[] { "Post" },
@@ -67,7 +82,7 @@ public class HostNameMatchRouter
                     (await handler(WrapContext(ctx), deploymentName, null, AICallType.Chat, cancellationToken)).ResultHandler)
             .RequireHost(_hostNames);
 
-            yield return application.MapMethods(
+        yield return application.MapMethods(
                     EmbeddingsRoute,
                     new[] { "Post" },
                     async (HttpContext ctx, CancellationToken cancellationToken, string deploymentName) =>
