@@ -8,7 +8,6 @@ public record LogEntry(
     string? ModelName,
     string? DeploymentName,
     string Client,
-    string CallType,
     bool? StreamingResponse,
     string? RawPrompt,
     string? Prompt,
