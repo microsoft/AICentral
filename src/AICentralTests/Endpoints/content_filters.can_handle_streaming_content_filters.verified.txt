@@ -58,6 +58,7 @@ Choice 0
     ResponseMetadata: {},
     RemoteIpAddress: ,
     StartDate: DateTimeOffset_1,
-    Success: true
+    Success: true,
+    RawPrompt: {"messages":[{"content":"You are a helpful assistant.","role":"system"}],"stream":true,"model":"ModelStream"}
   }
 }

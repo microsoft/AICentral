@@ -60,6 +60,7 @@ Test2
     RemoteIpAddress: ,
     StartDate: DateTimeOffset_1,
     Success: true,
+    RawPrompt: {"model":"adatest","input":["Test1","Test2"]},
     PromptTokens: 58,
     CompletionTokens: 0,
     TotalTokens: 126

@@ -96,6 +96,7 @@ Response two two two.
     RemoteIpAddress: ,
     StartDate: DateTimeOffset_1,
     Success: true,
+    RawPrompt: {"messages":[{"role":"user","content":"Do other Azure AI services support this too?"}],"max_tokens":5},
     PromptTokens: 29,
     CompletionTokens: 30,
     TotalTokens: 59

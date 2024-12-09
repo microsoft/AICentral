@@ -58,6 +58,7 @@ There,
     RemoteIpAddress: ,
     StartDate: DateTimeOffset_1,
     Success: true,
+    RawPrompt: {"messages":[{"role":"system","content":"You are a helpful assistant."}],"streaming":true,"stream_options":{"include_usage":true}},
     PromptTokens: 33,
     CompletionTokens: 39,
     TotalTokens: 72

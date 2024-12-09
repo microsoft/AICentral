@@ -96,7 +96,8 @@ public class JsonResponseHandler: IResponseHandler
                 context.RemoteIpAddress,
                 requestInformation.StartDate,
                 requestInformation.Duration,
-                true);
+                true,
+                requestInformation.RawRequest?.ToJsonString());
 
             return new AICentralResponse(
                 downstreamUsageInformation,
@@ -119,7 +120,8 @@ public class JsonResponseHandler: IResponseHandler
             context.RemoteIpAddress?.ToString() ?? "",
             requestInformation.StartDate,
             requestInformation.Duration,
-            false);
+            false,
+            requestInformation.RawRequest?.ToJsonString());
 
         return new AICentralResponse(
             chatRequestInformation,

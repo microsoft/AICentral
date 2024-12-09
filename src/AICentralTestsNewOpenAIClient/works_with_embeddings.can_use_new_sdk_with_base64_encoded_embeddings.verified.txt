@@ -37,6 +37,7 @@
     RemoteIpAddress: ,
     StartDate: DateTimeOffset_1,
     Success: true,
+    RawPrompt: {"input":"test","model":"text-embedding-ada-002","encoding_format":"base64"},
     PromptTokens: 4,
     CompletionTokens: 0,
     TotalTokens: 4

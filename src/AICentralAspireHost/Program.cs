@@ -1,17 +1,18 @@
+using Projects;
+
 var builder = DistributedApplication.CreateBuilder(args);
+var dapr = builder.AddDapr(options => { options.EnableTelemetry = true; })
+    .AddDaprPubSub("aicentralpubsub");
 
-var redis = builder.AddRedis("redis");
+var daprSubscriber = builder.AddProject<AICentral_Dapr_Audit>("aicentraldapraudit")
+    .WithDaprSidecar()
+    .WithReference(dapr)
+    ;
 
-var storageQueue = builder
-    .AddAzureStorage("storage")
-    .RunAsEmulator()
-    .AddQueues("storage-queue");
-
-builder.AddProject<Projects.AICentralExtensionsWeb>("aicentral")
-    .WithReference(redis)
-    .WithReference(storageQueue)
-    .WithEnvironment("AICentral__GenericSteps__0__Properties__StorageQueueConnectionString", storageQueue)
-    .WithEnvironment("AICentral__GenericSteps__1__Properties__RedisConfiguration", redis)
+var aicentral = builder.AddProject<AICentralWeb>("aicentralweb")
+        .WithEnvironment("ASPNETCORE_Environment", "DaprAudit")
+        .WithDaprSidecar()
+        .WithReference(dapr)
     ;
 
 builder.Build().Run();

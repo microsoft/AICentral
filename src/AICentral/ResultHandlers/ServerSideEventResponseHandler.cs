@@ -149,7 +149,9 @@ public class ServerSideEventResponseHandler: IResponseHandler
             context.RemoteIpAddress,
             requestInformation.StartDate,
             requestInformation.Duration,
-            openAiResponse.IsSuccessStatusCode);
+            openAiResponse.IsSuccessStatusCode,
+            requestInformation.RawRequest?.ToJsonString()
+            );
 
         if (usageProp != null && usageProp.Value.TryGetProperty("prompt_tokens", out var promptTokensElement) &&
             usageProp.Value.TryGetProperty("completion_tokens", out var completionTokensElement))
