@@ -1,6 +1,6 @@
-﻿namespace AICentral.Dapr.Broadcast;
+namespace AICentral.Dapr.Audit;
 
-internal record LogEntry(
+public record LogEntry(
     // ReSharper disable once InconsistentNaming
     string id,
     string? InternalEndpointName,
@@ -8,7 +8,6 @@ internal record LogEntry(
     string? ModelName,
     string? DeploymentName,
     string Client,
-    string CallType,
     bool? StreamingResponse,
     string? RawPrompt,
     string? Prompt,
@@ -22,6 +21,4 @@ internal record LogEntry(
     DateTimeOffset StartDate,
     TimeSpan Duration,
     bool? Success
-)
-{
-}
+);

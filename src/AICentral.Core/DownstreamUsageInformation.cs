@@ -1,4 +1,7 @@
-﻿namespace AICentral.Core;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
+
+namespace AICentral.Core;
 
 /// <summary>
 /// Represents information about the Downstream AI Service usage information
@@ -19,7 +22,8 @@ public record DownstreamUsageInformation(
     string RemoteIpAddress,
     DateTimeOffset StartDate,
     TimeSpan Duration,
-    bool? Success)
+    bool? Success,
+    string? RawPrompt)
 {
     
     public static DownstreamUsageInformation Empty(
@@ -44,7 +48,8 @@ public record DownstreamUsageInformation(
                 context.RemoteIpAddress,
                 context.Now, 
                 TimeSpan.Zero, 
-                null);
+                null,
+                incomingCallDetails.RequestContent?.ToJsonString());
     
     public int? PromptTokens => KnownTokens?.PromptTokens ?? EstimatedTokens?.Value.EstimatedPromptTokens;
     public int? CompletionTokens => KnownTokens?.CompletionTokens ?? EstimatedTokens?.Value.EstimatedCompletionTokens;

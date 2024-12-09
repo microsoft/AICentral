@@ -21,7 +21,27 @@ builder.Services.AddAICentral(
 
 ```
 
-```json
+```DAPR default configuration json (uses standard DAPR environmental variables)
+
+{
+  "AICentral": {
+    "GenericSteps": [
+      {
+        "Type": "DaprBroadcaster",
+        "Name": "dapr-broadcaster",
+        "Properties": {
+          "DaprPubSubComponentName": "PubSubComponentName",
+          "PubSubTopicName" : "PubSubTopicName"
+        }
+      }
+    ]    
+  }
+}
+
+```
+
+
+```Explicit DAPR configuration json
 
 {
   "AICentral": {

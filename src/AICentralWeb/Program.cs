@@ -8,6 +8,7 @@ using AICentral.QuickStarts;
 using AICentral.RateLimiting.DistributedRedis;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Microsoft.Extensions.Logging.Console;
+using OpenTelemetry;
 using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +36,25 @@ if (builder.Environment.EnvironmentName != "tests" && Environment.GetEnvironment
         .UseAzureMonitor(options => options.SamplingRatio = 0.1f);
 }
 
+if (builder.Environment.EnvironmentName != "tests" &&
+    Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") != null)
+{
+    builder.Services
+        .AddOpenTelemetry()
+        .WithMetrics(metrics => { metrics.AddMeter(ActivitySource.AICentralTelemetryName); })
+        .WithTracing(tracing =>
+        {
+            if (builder.Environment.IsDevelopment())
+            {
+                // We want to view all traces in development
+                tracing.SetSampler(new AlwaysOnSampler());
+            }
+
+            tracing.AddSource(ActivitySource.AICentralTelemetryName);
+        })
+        .UseOtlpExporter();
+}
+
 using var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddSimpleConsole(options =>
 {
     options.ColorBehavior = LoggerColorBehavior.Default;
@@ -50,6 +70,17 @@ if (builder.Environment.EnvironmentName == "APImProxyWithCosmosLogging")
     var config = new APImProxyWithCosmosLogging.Config();
     builder.Configuration.Bind("AICentral", config);
     var assembler = APImProxyWithCosmosLogging.BuildAssembler(config);
+
+    assembler.AddServices(
+        builder.Services,
+        startupLogger: startupLogger,
+        optionalHandler: null);
+}
+else if (builder.Environment.EnvironmentName == "DaprAudit")
+{
+    var config = new DaprAudit.Config();
+    builder.Configuration.Bind("AICentral", config);
+    var assembler = DaprAudit.BuildAssembler(config);
 
     assembler.AddServices(
         builder.Services,

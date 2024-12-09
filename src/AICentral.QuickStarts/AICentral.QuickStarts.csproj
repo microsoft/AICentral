@@ -9,6 +9,7 @@
     <ItemGroup>
       <ProjectReference Include="..\AICentral.AzureAISearchVectorizer\AICentral.AzureAISearchVectorizer.csproj" />
       <ProjectReference Include="..\AICentral.Core\AICentral.Core.csproj" />
+      <ProjectReference Include="..\AICentral.Dapr.Broadcast\AICentral.Dapr.Broadcast.csproj" />
       <ProjectReference Include="..\AICentral.Logging.PIIStripping\AICentral.Logging.PIIStripping.csproj" />
       <ProjectReference Include="..\AICentral\AICentral.csproj" />
     </ItemGroup>

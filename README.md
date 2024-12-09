@@ -52,9 +52,10 @@
 
 To make it easy to get up and running, we are creating QuickStart configurations. Simply pull the docker container, set a few environment variables, and you're away.
 
-| Quickstart                                                         | Features                                                                            |
-|--------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| [APImProxyWithCosmosLogging](./docs/apimproxywithcosmoslogging.md) | Run in-front of Azure APIm AI Gateway for easy PromptFlow and PII stripped logging. | 
+| Quickstart                                                       | Features                                                                                     |
+|------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| [APImProxyWithCosmosLogging](./docs/apimproxywithcosmoslogging.md) | Run in-front of Azure APIm AI Gateway for easy PromptFlow and PII stripped logging.          | 
+| DaprAudit                                   | Run in-front of Azure APIm AI Gateway using DAPR to broadcast and log PII redacted messages. | 
 
 ## Configuration
 

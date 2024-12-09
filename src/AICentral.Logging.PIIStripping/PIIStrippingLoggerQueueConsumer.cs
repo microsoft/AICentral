@@ -63,6 +63,9 @@ internal class PIIStrippingLoggerQueueConsumer(
                                 //log the response
                                 loggingMessage = loggingMessage with
                                 {
+                                    RawPrompt = string.IsNullOrWhiteSpace(loggingMessage.RawPrompt)
+                                        ? string.Empty
+                                        : redacted.Value[0].Entities.RedactedText,
                                     Prompt = string.IsNullOrWhiteSpace(loggingMessage.Prompt)
                                         ? string.Empty
                                         : redacted.Value[0].Entities.RedactedText,

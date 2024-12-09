@@ -78,6 +78,7 @@ Yes, other Azure AI services also support customer managed keys. Azure AI servic
     RemoteIpAddress: ,
     StartDate: DateTimeOffset_1,
     Success: true,
+    RawPrompt: {"messages":[{"content":[{"text":"I am some text","type":"text"},{"image_url":{"url":"http://image.localtest.me/1234"},"type":"image_url"},{"image_url":{"url":"http://image.localtest.me/1234","detail":"high"},"type":"image_url"},{"image_url":{"url":"http://image.localtest.me/1234"},"type":"image_url"},{"text":"And so am I!","type":"text"}],"role":"user"},{"name":"Function Message","content":"I am function output","role":"function"},{"content":"Assistant Message","role":"assistant"},{"content":"System content","role":"system"}],"model":"random"},
     PromptTokens: 58,
     CompletionTokens: 68,
     TotalTokens: 126

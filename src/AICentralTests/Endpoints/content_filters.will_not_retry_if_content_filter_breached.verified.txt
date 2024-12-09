@@ -34,6 +34,7 @@ system:
     ResponseMetadata: {},
     RemoteIpAddress: ,
     StartDate: DateTimeOffset_1,
-    Success: false
+    Success: false,
+    RawPrompt: {"messages":[{"content":"You are a helpful assistant.","role":"system"}],"model":"Model"}
   }
 }

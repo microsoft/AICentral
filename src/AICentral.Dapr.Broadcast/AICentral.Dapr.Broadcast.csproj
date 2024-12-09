@@ -14,7 +14,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AICentral.Core" Version="0.20.3" />
+      <PackageReference Include="AICentral.Core" Version="0.21.0-pullrequest0152-0003" />
       <PackageReference Include="Dapr.Client" Version="1.14.0" />
     </ItemGroup>
 

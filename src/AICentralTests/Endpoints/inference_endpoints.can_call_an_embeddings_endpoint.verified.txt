@@ -50,6 +50,7 @@ hello
     RemoteIpAddress: ,
     StartDate: DateTimeOffset_1,
     Success: true,
+    RawPrompt: {"input":["hello"],"model":"test"},
     PromptTokens: 3,
     CompletionTokens: 0,
     TotalTokens: 3
