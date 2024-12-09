@@ -13,6 +13,7 @@ internal record LogEntry(
     string Client,
     string CallType,
     bool? StreamingResponse,
+    string? RawPrompt,
     string? Prompt,
     string? Response,
     int? EstimatedPromptTokens, 

@@ -26,8 +26,8 @@ public static class DaprAudit
         public ClaimValueToSubscriptionKey[]? ClaimsToKeys { get; init; }
         public string[]? AllowedChatImageUriHostNames { get; init; }
         public string? ApimKeyHeaderName { get; set; }
-        public string DaprPubSubComponentName { get; set; }
-        public string PubSubTopicName { get; set; }
+        public string? DaprPubSubComponentName { get; set; }
+        public string? PubSubTopicName { get; set; }
     }
 
     public static AICentralPipelineAssembler BuildAssembler(Config config)
@@ -41,8 +41,8 @@ public static class DaprAudit
 
         var daprBroadcastOptions = new DaprBroadcastOptions()
         {
-            PubSubTopicName = config.PubSubTopicName,
-            DaprPubSubComponentName = config.DaprPubSubComponentName,
+            PubSubTopicName = config.PubSubTopicName!,
+            DaprPubSubComponentName = config.DaprPubSubComponentName!
         };
 
         var daprBroadcasterStepName = "daprBroadcaster";

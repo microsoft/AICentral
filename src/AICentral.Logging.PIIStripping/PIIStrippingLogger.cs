@@ -57,6 +57,7 @@ public class PIIStrippingLogger(
                         response.DownstreamUsageInformation.Client,
                         response.DownstreamUsageInformation.CallType.ToString(),
                         response.DownstreamUsageInformation.StreamingResponse,
+                        response.DownstreamUsageInformation.RawPrompt,
                         response.DownstreamUsageInformation.Prompt,
                         response.DownstreamUsageInformation.Response,
                         response.DownstreamUsageInformation.EstimatedTokens?.Value.EstimatedPromptTokens,

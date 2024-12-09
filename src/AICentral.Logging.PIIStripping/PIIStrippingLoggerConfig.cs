@@ -21,9 +21,6 @@ public class PIIStrippingLoggerConfig
     /// </summary>
     public string? CosmosConnectionString { get; init; }
     
-    /// <summary>
-    /// Used when no Managed Identity
-    /// </summary>
     public string? TextAnalyticsKey { get; init; }
 
     public required string QueueName { get; init; }

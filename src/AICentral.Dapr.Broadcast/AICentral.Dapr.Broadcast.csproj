@@ -14,15 +14,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="AICentral.Core" Version="0.21.0-pullrequest0152-0003" />
       <PackageReference Include="Dapr.Client" Version="1.14.0" />
     </ItemGroup>
 
     <ItemGroup>
         <None Include="readme.md" Pack="true" PackagePath="\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\AICentral.Core\AICentral.Core.csproj" />
     </ItemGroup>
     
 </Project>

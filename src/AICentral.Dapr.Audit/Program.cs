@@ -1,6 +1,9 @@
 using AICentral.Dapr.Audit;
+using Azure;
+using Azure.AI.TextAnalytics;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Dapr.Client;
+using Google.Api;
 using Microsoft.AspNetCore.Mvc;
 using OpenTelemetry;
 using OpenTelemetry.Trace;
@@ -44,11 +47,20 @@ var options = new AICentralDaprAuditOptions();
 builder.Configuration.Bind("AICentralDaprAudit", options);
 builder.Services.AddOptions<AICentralDaprAuditOptions>("AICentralDaprAudit");
 
+if (!options.PIIStrippingDisabled)
+{
+    builder.Services.AddSingleton(
+        new TextAnalyticsClient(new Uri(options.TextAnalyticsEndpoint!),
+            new AzureKeyCredential(options.TextAnalyticsKey!)));
+}
+
 var app = builder.Build();
 
 app.MapSubscribeHandler();
 
 app.MapPost("aicentralaudit", async (
+        HttpContext context,
+        CancellationToken cancellationToken,
         [FromBody] LogEntry logEntry,
         [FromServices] DaprClient daprClient,
         [FromServices] ILogger<AICentralDaprAuditOptions> logger) =>
@@ -56,22 +68,27 @@ app.MapPost("aicentralaudit", async (
         
         logger.LogDebug("Processing message from the queue");
 
-        if (!options.PIIStrippingDisabled) {
+        if (!options.PIIStrippingDisabled)
+        {
+            var client = context.RequestServices.GetRequiredService<TextAnalyticsClient>();
             
-            // var redacted = await textAnalyticsClient().RecognizePiiEntitiesBatchAsync(
-            //     [loggingMessage.Prompt, loggingMessage.Response],
-            //     cancellationToken: cancellationToken);
-            //
-            // //log the response
-            // loggingMessage = loggingMessage with
-            // {
-            //     Prompt = string.IsNullOrWhiteSpace(loggingMessage.Prompt)
-            //         ? string.Empty
-            //         : redacted.Value[0].Entities.RedactedText,
-            //     Response = string.IsNullOrWhiteSpace(loggingMessage.Response)
-            //         ? string.Empty
-            //         : redacted.Value[1].Entities.RedactedText
-            // };
+            var redacted = await client.RecognizePiiEntitiesBatchAsync(
+                [logEntry.Prompt, logEntry.Response],
+                cancellationToken: cancellationToken);
+            
+            //log the response
+            logEntry = logEntry with
+            {
+                RawPrompt = string.IsNullOrWhiteSpace(logEntry.RawPrompt)
+                    ? string.Empty
+                    : redacted.Value[0].Entities.RedactedText,
+                Prompt = string.IsNullOrWhiteSpace(logEntry.Prompt)
+                    ? string.Empty
+                    : redacted.Value[0].Entities.RedactedText,
+                Response = string.IsNullOrWhiteSpace(logEntry.Response)
+                    ? string.Empty
+                    : redacted.Value[1].Entities.RedactedText
+            };
         }
 
         //save the message
