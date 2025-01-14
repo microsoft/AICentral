@@ -6,6 +6,7 @@ using AICentralWeb;
 using Azure;
 using Azure.AI.OpenAI;
 using Azure.Core.Pipeline;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using OpenAIMock;
 using Shouldly;
@@ -62,7 +63,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
     {
         _factory.Services.SeedCompletions(TestPipelines.Endpoint200, "Model1",
             () => Task.FromResult(OpenAIFakeResponses.FakeCompletionsResponse()));
-        
+
         _factory.Services.SeedCompletions(TestPipelines.Endpoint200Number2, "Model1",
             () => Task.FromResult(OpenAIFakeResponses.FakeCompletionsResponse()));
 
@@ -124,7 +125,7 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         await using var stream =
             typeof(the_azure_openai_pipeline).Assembly.GetManifestResourceStream(
                 "AICentralTests.Assets.Recording.m4a")!;
-        
+
         var response = await client.GetAudioTranscriptionAsync(new AudioTranscriptionOptions()
         {
             Prompt = "I think it's something to do with programming",
@@ -154,10 +155,10 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
 
         result.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        await Verify(_factory.Services.VerifyRequestsAndResponses(result, validateResponseMetadata:true));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(result, validateResponseMetadata: true));
     }
 
-    
+
     [Fact]
     public async Task can_proxy_embedding_requests_array()
     {
@@ -176,11 +177,11 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         var response = await client.GetEmbeddingsAsync(new EmbeddingsOptions()
         {
             DeploymentName = "adatest",
-            Input = {"Test1", "Test2"}
+            Input = { "Test1", "Test2" }
         });
 
         response.Value.ShouldNotBeNull();
-        await Verify(_factory.Services.VerifyRequestsAndResponses(response, validateResponseMetadata:true));
+        await Verify(_factory.Services.VerifyRequestsAndResponses(response, validateResponseMetadata: true));
     }
 
     [Fact]
@@ -437,8 +438,8 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         result.GetRawResponse().Status.ShouldBe(200);
         await Verify(_factory.Services.VerifyRequestsAndResponses(result.GetRawResponse(), true));
     }
-    
-    
+
+
     [Fact]
     public async Task can_enforce_mapped_models()
     {
@@ -477,9 +478,94 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
         var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, "http://azure-openai-to-azure.localtest.me/");
         httpRequestMessage.Headers.Add("api-key", "ignore");
         var response = await _httpClient.SendAsync(httpRequestMessage);
-        
+
         response.StatusCode.ShouldNotBe(HttpStatusCode.InternalServerError);
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task can_handle_token_completion_prompts()
+    {
+        _factory.Services.Seed(
+            $"https://{TestPipelines.Endpoint200}/openai/deployments/completionstest/completions?api-version=2024-02-15-preview",
+            () => Task.FromResult(OpenAIFakeResponses.FakeCompletionsResponse()));
+
+        var result = await _httpClient.PostAsync(
+            "http://azure-openai-to-azure.localtest.me/openai/deployments/completionstest/completions?api-version=2024-02-15-preview",
+            new StringContent(JsonConvert.SerializeObject(new
+            {
+                prompt = (int[])
+                [
+                    200006,
+                    17360,
+                    200008
+                ],
+                max_tokens = 16384,
+                temperature = 1,
+                stream = false,
+                format = "tokens",
+                top_p = 1,
+                stop = (int[][])
+                [
+                    [
+                        200002
+                    ],
+                    [
+                        200007
+                    ]
+                ],
+                echo_stop = true,
+                seed = 5327214743670833000,
+                extensions =
+                    "{\"json_object_after_dynamic_select\": {\"name_start_token\": 200003, \"name_end_tokens\": [200008], \"eot_tokens\": [200002, 200007]}}"
+            }), Encoding.UTF8, "application/json"));
+        
+        await Verify(_factory.Services.VerifyRequestsAndResponses(result, validateResponseMetadata: true));
+
+    }
+
+    [Fact]
+    public async Task can_handle_arrays_of_token_completion_prompts()
+    {
+        _factory.Services.Seed(
+            $"https://{TestPipelines.Endpoint200}/openai/deployments/completionstest/completions?api-version=2024-02-15-preview",
+            () => Task.FromResult(OpenAIFakeResponses.FakeCompletionsResponse()));
+
+        var result = await _httpClient.PostAsync(
+            "http://azure-openai-to-azure.localtest.me/openai/deployments/completionstest/completions?api-version=2024-02-15-preview",
+            new StringContent(JsonConvert.SerializeObject(new
+            {
+                prompt = (int[][])
+                [
+                    [
+                        200006,
+                        17360,
+                        200008
+                    ],
+                    [12, 32, 54423]
+                ],
+                max_tokens = 16384,
+                temperature = 1,
+                stream = false,
+                format = "tokens",
+                top_p = 1,
+                stop = (int[][])
+                [
+                    [
+                        200002
+                    ],
+                    [
+                        200007
+                    ]
+                ],
+                echo_stop = true,
+                seed = 5327214743670833000,
+                extensions =
+                    "{\"json_object_after_dynamic_select\": {\"name_start_token\": 200003, \"name_end_tokens\": [200008], \"eot_tokens\": [200002, 200007]}}"
+            }), Encoding.UTF8, "application/json"));
+        
+        await Verify(_factory.Services.VerifyRequestsAndResponses(result, validateResponseMetadata: true));
+
     }
 
     public void Dispose()

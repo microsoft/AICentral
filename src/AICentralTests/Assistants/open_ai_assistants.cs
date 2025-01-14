@@ -24,6 +24,34 @@ public class open_ai_assistants : IClassFixture<TestWebApplicationFactory<Progra
     }
 
     [Fact]
+    public async Task can_handle_initial_create_request()
+    {
+        _factory.Services.Seed(
+            $"https://{TestPipelines.Endpoint200}/openai/assistants?api-version=2024-02-15-preview",
+            () => Task.FromResult(OpenAIFakeResponses.FakeAzureOpenAIAssistantResponse("ass-assistant-123-out")));
+
+        var client = new AssistantsClient(
+            new Uri("http://azure-openai-to-azure.localtest.me"),
+            new AzureKeyCredential("ignore-fake-key-123"),
+            new AssistantsClientOptions(version: AssistantsClientOptions.ServiceVersion.V2024_02_15_Preview)
+            {
+                Transport = new HttpClientTransport(_httpClient)
+            });
+
+        var assistant = await client.CreateAssistantAsync(
+            new AssistantCreationOptions("gpt-35-turbo")
+            {
+                Name = "ass-assistant-123-out",
+                Description = "you are an agent!",
+                Tools = { new CodeInterpreterToolDefinition() }
+            }
+        );
+        
+        await Verify(_factory.Services.VerifyRequestsAndResponses(assistant));
+        
+    }
+
+    [Fact]
     public async Task can_be_mapped_to_allow_load_balancing()
     {
         _factory.Services.Seed(

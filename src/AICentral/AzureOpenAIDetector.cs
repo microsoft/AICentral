@@ -115,13 +115,45 @@ public class AzureOpenAIDetector
                     : AICallResponseType.NonStreaming
                 : AICallResponseType.NonStreaming,
             prompt.GetValueKind() == JsonValueKind.Array
-                ? string.Join('\n',
-                    requestContent["prompt"]!.AsArray().Select(x => x!.GetValue<string>()))
+                ?  GetCompletionsPromptInput(prompt.AsArray())
                 : prompt.GetValue<string>(),
             deploymentName,
             null,
             requestContent,
             null);
+    }
+
+    /// <summary>
+    /// Don't bother with numbers or arrays of numbers. Just return strings. We write the raw prompt out in the debug anyway which
+    /// will capture the token arrays.
+    /// </summary>
+    /// <param name="requestContent"></param>
+    /// <returns></returns>
+    private static string GetCompletionsPromptInput(JsonArray requestContent)
+    {
+        if (requestContent.Count > 0)
+        {
+            var firstElement = requestContent[0];
+            if (firstElement != null)
+            {
+                if (firstElement.GetValueKind() == JsonValueKind.String)
+                {
+                    return string.Join('\n', requestContent.Select(x => x?.GetValue<string>()));
+                }
+
+                if (firstElement.GetValueKind() == JsonValueKind.Number)
+                {
+                    return string.Empty;
+                }
+
+                if (firstElement.GetValueKind() == JsonValueKind.Array)
+                {
+                    return string.Empty;
+                }
+            }
+        }
+
+        return string.Empty;
     }
 
     private async Task<IncomingCallDetails> DetectEmbeddings(string pipelineName, string deploymentName, IRequestContext request, CancellationToken cancellationToken)

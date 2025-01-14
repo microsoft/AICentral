@@ -1,0 +1,31 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/openai/assistants?api-version=2024-02-15-preview",
+    "Method": "POST",
+    "Headers": {
+      "Accept": "application/json",
+      "x-ms-return-client-request-id": "true",
+      "api-key": "ignore-fake-key-hr987345"
+    },
+    "ContentType": "application/json",
+    "Content": "{\"model\":\"gpt-35-turbo\",\"name\":\"ass-assistant-123-out\",\"description\":\"you are an agent!\",\"tools\":[{\"type\":\"code_interpreter\"}]}"
+  }
+],
+  Response:
+{
+  "Value": {
+    "Id": "ass-assistant-123-out",
+    "CreatedAt": "2023-12-14T03:43:11+00:00",
+    "Name": "fred fibnar",
+    "Description": null,
+    "Model": "gpt-4",
+    "Instructions": "You are Fred",
+    "Tools": null,
+    "FileIds": null,
+    "Metadata": null
+  },
+  "HasValue": true
+}
+}

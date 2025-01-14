@@ -1,0 +1,64 @@
+﻿{
+  Requests:
+[
+  {
+    "Uri": "/openai/deployments/completionstest/completions?api-version=2024-02-15-preview",
+    "Method": "POST",
+    "Headers": {
+      "api-key": "ignore-fake-key-hr987345"
+    },
+    "ContentType": "application/json",
+    "Content": "{\"prompt\":[[200006,17360,200008],[12,32,54423]],\"max_tokens\":16384,\"temperature\":1,\"stream\":false,\"format\":\"tokens\",\"top_p\":1,\"stop\":[[200002],[200007]],\"echo_stop\":true,\"seed\":5327214743670833000,\"extensions\":\"{\\u0022json_object_after_dynamic_select\\u0022: {\\u0022name_start_token\\u0022: 200003, \\u0022name_end_tokens\\u0022: [200008], \\u0022eot_tokens\\u0022: [200002, 200007]}}\"}"
+  }
+],
+  Response: {
+    Headers: [],
+    Content:
+{
+  "id": "chatcmpl-6v7mkQj980V1yBec6ETrKPRqFjNw9",
+  "object": "chat.completion",
+  "created": 1679072642,
+  "model": "gpt-35-turbo",
+  "usage": {
+    "prompt_tokens": 58,
+    "completion_tokens": 68,
+    "total_tokens": 126
+  },
+  "choices": [
+    {
+      "text": "Yes, other Azure AI services also support customer managed keys. Azure AI services offer multiple options for customers to manage keys, such as using Azure Key Vault, customer-managed keys in Azure Key Vault or customer-managed keys through Azure Storage service. This helps customers ensure that their data is secure and access to their services is controlled.",
+      "finish_reason": "stop",
+      "index": 0
+    }
+  ]
+}
+  },
+  ResponseMetadata: {
+    InternalEndpointName: Guid_1,
+    OpenAIHost: Guid_1,
+    ModelName: gpt-35-turbo,
+    DeploymentName: completionstest,
+    Client: ,
+    CallType: Completions,
+    StreamingResponse: false,
+    Prompt: ,
+    Response:
+Choice 0
+
+
+,
+    KnownTokens: {
+      Item1: 58,
+      Item2: 68,
+      Item3: 126
+    },
+    ResponseMetadata: {},
+    RemoteIpAddress: ,
+    StartDate: DateTimeOffset_1,
+    Success: true,
+    RawPrompt: {"prompt":[[200006,17360,200008],[12,32,54423]],"max_tokens":16384,"temperature":1,"stream":false,"format":"tokens","top_p":1,"stop":[[200002],[200007]],"echo_stop":true,"seed":5327214743670833000,"extensions":"{\u0022json_object_after_dynamic_select\u0022: {\u0022name_start_token\u0022: 200003, \u0022name_end_tokens\u0022: [200008], \u0022eot_tokens\u0022: [200002, 200007]}}"},
+    PromptTokens: 58,
+    CompletionTokens: 68,
+    TotalTokens: 126
+  }
+}
