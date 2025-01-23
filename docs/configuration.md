@@ -57,7 +57,7 @@ All endpoints are wrapped with a Polly Policy. We
 |-------------------------|-----------------------------------------------------------------------------------|
 | ModelMappings           | Maps incoming model names to backend model names.                                 |
 | EnforceMappedModels     | If true, only models in the ModelMappings will be allowed.                        |
-| ApiKey                  | Open AI API Key.                                                                  |
+| ApiKey                  | OpenAI API Key.                                                                  |
 | MaxConcurrency          | The maximum number of concurrent requests to the endpoint.                        |
 | AutoPopulateEmptyUserId | If true, the UserId will be populated with the incoming User Name if it is empty. |
 
