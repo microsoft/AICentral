@@ -44,7 +44,7 @@ public class JsonResponseHandler: IResponseHandler
         {
             var model = response.RootElement.TryGetProperty("model", out var prop) ? prop.GetString() : string.Empty;
 
-            var hasUsage = response.RootElement.TryGetProperty("usage", out var usage);
+            var hasUsage = response.RootElement.TryGetProperty("usage", out var usage) && usage.ValueKind != JsonValueKind.Null;
             var promptTokens = hasUsage
                 ? usage.TryGetProperty("prompt_tokens", out var promptTokensProp) ? promptTokensProp.GetInt32() : 0
                 : 0;
