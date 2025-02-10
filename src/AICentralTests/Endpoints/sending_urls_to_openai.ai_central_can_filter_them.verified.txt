@@ -46,7 +46,7 @@ user:
 user:
    image: http://somewherebad.com/myimage.jpeg
    image: http://somewheregood.com/myimage.jpeg
-   image: data data
+   image: data
 ,
     Response:
 Choice 0
