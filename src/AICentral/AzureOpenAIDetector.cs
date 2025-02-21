@@ -81,10 +81,9 @@ public class AzureOpenAIDetector
                                     if (uriNode != null)
                                     {
                                         var uriString = uriNode.GetValue<string>();
-                                        var uri = new Uri(uriString);
-                                        var uriValue = uri.Scheme.StartsWith("http")
+                                        var uriValue = uriString.StartsWith("http", StringComparison.OrdinalIgnoreCase)
                                             ? $"   image: {uriString}"
-                                            : $"   image: {uri.Scheme} data";
+                                            : "   image: data";
                                         arrayContent.AppendLine($"{uriValue}");
                                     }
                                 }
