@@ -8,18 +8,19 @@ public class BearerTokenPassThroughAuth : IEndpointAuthorisationHandler
     public virtual Task ApplyAuthorisationToRequest(IRequestContext incomingRequest,
         HttpRequestMessage outgoingRequest)
     {
-        var authHeader = incomingRequest.RequestHeaders.Authorization.FirstOrDefault();
+        var authHeader = incomingRequest.RequestHeaders.Authorization.FirstOrDefault() ?? string.Empty;
 
-        authHeader = string.IsNullOrWhiteSpace(authHeader)
-            ? throw new ArgumentException("Bearer Token Pass Through. Could not find auth header on incoming request") : authHeader;
-
-        var parts = authHeader.Split("Bearer ");
-        if (parts.Length != 2)
+        if (authHeader.StartsWith("bearer", StringComparison.InvariantCultureIgnoreCase))
         {
-            throw new ArgumentException("Bearer Token Pass Through. Unexpected Authorisation scheme on incoming request");
-        }
+            var parts = authHeader.Split(" ");
+            if (parts.Length != 2)
+            {
+                throw new ArgumentException(
+                    "Bearer Token Pass Through. Unexpected Authorisation scheme on incoming request");
+            }
 
-        outgoingRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", parts[1]);
+            outgoingRequest.Headers.Authorization = new AuthenticationHeaderValue(parts[0], parts[1]);
+        }
 
         return Task.CompletedTask;
     }

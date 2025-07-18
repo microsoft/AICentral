@@ -57,7 +57,7 @@ public class ApiKeyClientAuthFactory : IPipelineStepFactory
             {
                 ClientName = x.ClientName,
                 Key1 = x.Key1!.Substring(0,1) + "****" + x.Key1[^1],
-                Key2 = x.Key2!.Substring(0,1) + "****" + x.Key1[^1],
+                Key2 = x.Key2!.Substring(0,1) + "****" + x.Key2[^1],
             })
         };
     }
