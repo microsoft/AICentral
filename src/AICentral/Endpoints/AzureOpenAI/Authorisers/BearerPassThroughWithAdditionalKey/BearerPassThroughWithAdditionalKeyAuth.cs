@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using AICentral.Core;
 
 namespace AICentral.Endpoints.AzureOpenAI.Authorisers.BearerPassThroughWithAdditionalKey;
