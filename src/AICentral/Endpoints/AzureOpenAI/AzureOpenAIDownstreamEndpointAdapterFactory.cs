@@ -120,7 +120,9 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
             Mappings = _modelMappings,
             AssistantMappings = _assistantMappings,
             Auth = _authorisationHandlerFactory.WriteDebug(),
-            AutoPopulateEmptyUserId = _autoPopulateEmptyUserId
+            AutoPopulateEmptyUserId = _autoPopulateEmptyUserId,
+            EnforceModelMappings = _enforceMappedModels,
+            LogMissingModelMappingsAsInformation = _logMissingModelMappingsAsInformation,
         };
     }
 }

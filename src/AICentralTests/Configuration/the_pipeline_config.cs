@@ -33,6 +33,12 @@ public class the_pipeline_config
                             {
                                 AuthenticationType = "BearerPlusKeyName",
                                 LanguageEndpoint = "https://somehere.com",
+                                ModelMappings = new Dictionary<string, string>()
+                                {
+                                    ["Test"] = "TestMap"
+                                },
+                                EnforceMappedModels = true,
+                                LogMissingModelMappingsAsInformation = true,
                             }
                         },
                         new
