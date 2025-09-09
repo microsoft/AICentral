@@ -21,7 +21,9 @@
               Auth: {
                 Type: ApiKey
               },
-              AutoPopulateEmptyUserId: false
+              AutoPopulateEmptyUserId: false,
+              EnforceModelMappings: false,
+              LogMissingModelMappingsAsInformation: false
             }
           ]
         }
