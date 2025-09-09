@@ -16,7 +16,7 @@ public static class Guard
     }
 
     public static string NotNullOrEmptyOrWhitespace(string? input, string parameterName)
-    {   
+    {
         return string.IsNullOrWhiteSpace(input) ? throw new ArgumentException($"You must pass a value for {parameterName}") : input;
     }
 

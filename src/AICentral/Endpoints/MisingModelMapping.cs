@@ -8,6 +8,7 @@ internal class MisingModelMapping(string hostName, string missingModel, bool log
 
     public Task ExecuteAsync(HttpContext httpContext)
     {
-        throw new NotImplementedException();
+        var temp = Results.NotFound();
+        return temp.ExecuteAsync(httpContext);
     }
 }
