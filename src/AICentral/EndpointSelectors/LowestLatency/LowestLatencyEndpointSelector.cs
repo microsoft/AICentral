@@ -9,17 +9,15 @@ public class LowestLatencyEndpointSelector : IEndpointSelector
 {
     private readonly System.Random _rnd = new(Environment.TickCount);
     private readonly IEndpointDispatcher[] _openAiServers;
-    private readonly bool _logMissingModelMappingsAsInformation;
 
     private readonly ConcurrentDictionary<IEndpointDispatcher, ConcurrentQueue<double>> _recentLatencies =
         new();
 
     private const int RequiredCount = 10;
 
-    public LowestLatencyEndpointSelector(IEndpointDispatcher[] openAiServers, bool logMissingModelMappingsAsInformation)
+    public LowestLatencyEndpointSelector(IEndpointDispatcher[] openAiServers)
     {
         _openAiServers = openAiServers;
-        _logMissingModelMappingsAsInformation = logMissingModelMappingsAsInformation;
     }
 
     public async Task<AICentralResponse> Handle(
