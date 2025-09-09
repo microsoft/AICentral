@@ -467,6 +467,42 @@ public class the_azure_openai_pipeline : IClassFixture<TestWebApplicationFactory
                 DeploymentName = "not-mapped"
             }))).Status.ShouldBe(404);
     }
+    
+    [Fact]
+    public async Task can_enforce_mapped_models_where_not_all_endpoints_have_all_models()
+    {
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200, "mapped",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
+
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200Number2, "mapped",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
+
+        _factory.Services.SeedChatCompletions(TestPipelines.Endpoint200Number2, "mapped1",
+            () => Task.FromResult(OpenAIFakeResponses.FakeChatCompletionsResponse()));
+
+        var client = new OpenAIClient(
+            new Uri("http://azure-openai-to-azure-with-mismatched-mapped-models.localtest.me"),
+            new AzureKeyCredential("ignore"),
+            new OpenAIClientOptions()
+            {
+                Transport = new HttpClientTransport(_httpClient)
+            });
+
+        var response = await client.GetChatCompletionsAsync(
+            new ChatCompletionsOptions()
+            {
+                Messages =
+                {
+                    new ChatRequestUserMessage(
+                    [
+                        new ChatMessageTextContentItem("I am some text"),
+                    ]),
+                },
+                DeploymentName = "random1"
+            });
+        
+        response.GetRawResponse().Status.ShouldBe(200);
+    }
 
     [Fact]
     public async Task do_not_proxy_calls_to_the_base_path()

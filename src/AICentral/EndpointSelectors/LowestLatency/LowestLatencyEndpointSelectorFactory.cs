@@ -11,7 +11,7 @@ public class LowestLatencyEndpointSelectorFactory : IEndpointSelectorFactory
     {
         _openAiServers = openAiServers.ToArray();
         _endpointSelector = new Lazy<LowestLatencyEndpointSelector>(() => new LowestLatencyEndpointSelector(
-            _openAiServers.Select(x => x.Build()).ToArray()));
+            _openAiServers.Select(x => x.Build()).ToArray(), false));
     }
 
     public IEndpointSelector Build()

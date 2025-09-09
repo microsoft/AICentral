@@ -1,4 +1,5 @@
 ﻿using AICentral.Core;
+using AICentral.Endpoints;
 using Microsoft.Extensions.Primitives;
 
 namespace AICentral.EndpointSelectors.Random;
@@ -44,7 +45,21 @@ public class RandomEndpointSelector : IEndpointSelector
                     throw;
                 }
 
-                logger.LogWarning(e, "Failed to handle request. Trying another endpoint");
+                if (e is DownstreamRequestException { Result: MisingModelMapping mmm })
+                {
+                    if (mmm.LogAsWarning)
+                    {
+                        logger.LogWarning("Unable to dispatch to endpoint - trying another endpoint. Missing model mapping on endpoint {Endpoint} - {Model}", mmm.HostName, mmm.MissingModel);
+                    }
+                    else
+                    {
+                        logger.LogInformation("Unable to dispatch to endpoint - trying another endpoint. Missing model mapping on endpoint {Endpoint} - {Model}", mmm.HostName, mmm.MissingModel);
+                    } 
+                }
+                else
+                {
+                    logger.LogWarning(e, "Failed to handle request. Trying another endpoint");
+                }
             }
         }
 

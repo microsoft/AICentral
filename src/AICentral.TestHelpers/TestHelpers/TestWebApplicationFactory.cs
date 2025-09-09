@@ -60,7 +60,8 @@ public class TestWebApplicationFactory<TProgram> : WebApplicationFactory<TProgra
                 TestPipelines.TokenPlusKeyEndpoint(),
                 TestPipelines.AzureOpenAIServiceWithChatImageFiltering(),
                 TestPipelines.AzureOpenAIServiceWithCapacityBasedAzureOpenAIEndpoints(),
-                TestPipelines.AzureOpenAIServiceWithAzureAISearchRouteProxy()
+                TestPipelines.AzureOpenAIServiceWithAzureAISearchRouteProxy(),
+                TestPipelines.AzureOpenAIServiceWithTwoAzureOpenAIEndpointWithMismatchedMappedModel()
             };
 
             var assembler = pipelines.Aggregate(pipelines[0], (prev, current) => prev.CombineAssemblers(current));

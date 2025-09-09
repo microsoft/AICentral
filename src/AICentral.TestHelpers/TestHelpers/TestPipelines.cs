@@ -5,28 +5,28 @@ namespace AICentralTests.TestHelpers;
 
 public static class TestPipelines
 {
-     public static readonly string Endpoint500 = Guid.NewGuid().ToString();
-     public static readonly string Endpoint404 = Guid.NewGuid().ToString();
-     public static readonly string Endpoint200 = Guid.Parse("47bae1ca-d2f0-4584-b2ac-9897e7088919").ToString();
-     public static readonly string Endpoint200Number2 = Guid.Parse("84bae1ca-d2f0-4584-b2ac-9897e708891a").ToString();
-     public static readonly string FastEndpoint = Guid.NewGuid().ToString();
-     public static readonly string SlowEndpoint = Guid.NewGuid().ToString();
+    public static readonly string Endpoint500 = Guid.NewGuid().ToString();
+    public static readonly string Endpoint404 = Guid.NewGuid().ToString();
+    public static readonly string Endpoint200 = Guid.Parse("47bae1ca-d2f0-4584-b2ac-9897e7088919").ToString();
+    public static readonly string Endpoint200Number2 = Guid.Parse("84bae1ca-d2f0-4584-b2ac-9897e708891a").ToString();
+    public static readonly string FastEndpoint = Guid.NewGuid().ToString();
+    public static readonly string SlowEndpoint = Guid.NewGuid().ToString();
 
-     public static AICentralPipelineAssembler TokenPlusKeyEndpoint() =>
-         new TestAICentralPipelineBuilder()
-             .WithFakeEntraClientAuth()
-             .WithSingleEndpointBearerPlusKey(Endpoint200)
-             .WithBulkHead(5)
-             .Assemble("bearer-plus-key.localtest.me");
+    public static AICentralPipelineAssembler TokenPlusKeyEndpoint() =>
+        new TestAICentralPipelineBuilder()
+            .WithFakeEntraClientAuth()
+            .WithSingleEndpointBearerPlusKey(Endpoint200)
+            .WithBulkHead(5)
+            .Assemble("bearer-plus-key.localtest.me");
 
-     public static AICentralPipelineAssembler AzureOpenAILowestLatencyEndpoint() =>
-         new TestAICentralPipelineBuilder()
-             .WithLowestLatencyEndpoints(
-                 (FastEndpoint, "random", "Model1"),
-                 (SlowEndpoint, "random", "Model1")
-             )
-             .WithBulkHead(5)
-             .Assemble("lowest-latency-tester.localtest.me");
+    public static AICentralPipelineAssembler AzureOpenAILowestLatencyEndpoint() =>
+        new TestAICentralPipelineBuilder()
+            .WithLowestLatencyEndpoints(
+                (FastEndpoint, "random", "Model1"),
+                (SlowEndpoint, "random", "Model1")
+            )
+            .WithBulkHead(5)
+            .Assemble("lowest-latency-tester.localtest.me");
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithRateLimitingAndSingleEndpoint() =>
         new TestAICentralPipelineBuilder()
@@ -91,6 +91,21 @@ public static class TestPipelines
             .WithSingleMappedEndpoint(Endpoint200, "random", "mapped", true)
             .Assemble("azure-openai-to-azure-with-mapped-models.localtest.me");
 
+    public static AICentralPipelineAssembler AzureOpenAIServiceWithTwoAzureOpenAIEndpointWithMismatchedMappedModel() =>
+        new TestAICentralPipelineBuilder()
+            .WithMappedEndpoints(
+                [
+                    (Endpoint200, [
+                        ("random", "mapped")
+                    ]),
+                    (Endpoint200Number2, [
+                        ("random", "mapped"),
+                        ("random1", "mapped1"),
+                    ])
+                ]
+                , true)
+            .Assemble("azure-openai-to-azure-with-mismatched-mapped-models.localtest.me");
+
     public static AICentralPipelineAssembler AzureOpenAIServiceWithInBuiltJwtAuth()
     {
         return new TestAICentralPipelineBuilder()
@@ -152,11 +167,10 @@ public static class TestPipelines
     public static AICentralPipelineAssembler AzureOpenAIServiceWithRandomOpenAIEndpointsDifferentModelMappings() =>
         new TestAICentralPipelineBuilder()
             .WithRandomOpenAIEndpoints(
-                new[]
-                {
-                    ("openai-rnd1", "ignore-fake-key-67098981", "openaimodel1", "gpt-3.5-turbo"),
-                    ("openai-rnd2", "ignore-fake-key-67098982", "openaimodel2", "gpt-3.5-turbo")
-                })
+            [
+                ("openai-rnd1", "ignore-fake-key-67098981", "openaimodel1", "gpt-3.5-turbo"),
+                ("openai-rnd2", "ignore-fake-key-67098982", "openaimodel2", "gpt-3.5-turbo")
+            ])
             .Assemble("azure-openai-to-multiple-openai-different-model-mappings.localtest.me");
 
     public static AICentralPipelineAssembler AzureOpenAIServiceWithAuth() =>

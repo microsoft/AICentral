@@ -50,7 +50,7 @@ internal class DownstreamEndpointDispatcher : IEndpointDispatcher
                     ),
                     result!);
             }
-            throw new HttpRequestException("Failed to satisfy request");
+            throw new DownstreamRequestException(result!) {};
         }
 
         outboundRequest.Left(out var newRequest);

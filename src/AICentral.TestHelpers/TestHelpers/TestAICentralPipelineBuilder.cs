@@ -160,6 +160,28 @@ public class TestAICentralPipelineBuilder
         return this;
     }
 
+    public TestAICentralPipelineBuilder WithMappedEndpoints((string hostname, (string model, string mappedModel)[] models)[] endpoints, bool enforceMappedModels = false)
+    {
+        var builtEndpoints = endpoints.Select(x => 
+            new AzureOpenAIDownstreamEndpointAdapterFactory(
+                x.hostname,
+                $"https://{x.hostname}",
+                new KeyAuthFactory("ignore-fake-key-hr987345"),
+                x.models.ToDictionary(mm => mm.model, mm => mm.mappedModel),
+                new Dictionary<string, string>(),
+                enforceMappedModels,
+                logMissingModelMappingsAsInformation: true)).ToArray();
+
+        var endpointDispatcherFactories = builtEndpoints.Select(x => new DownstreamEndpointDispatcherFactory(x))
+            .ToArray<IEndpointDispatcherFactory>();
+        
+        _endpointFactory = new RandomEndpointSelectorFactory(endpointDispatcherFactories);
+            
+        _openAiEndpointDispatcherBuilders = endpointDispatcherFactories;
+
+        return this;
+    }
+
     public TestAICentralPipelineBuilder WithRandomOpenAIEndpoints(
         (string name, string apiKey, string model, string mappedModel)[] endpoints)
     {
