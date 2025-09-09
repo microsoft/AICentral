@@ -10,6 +10,7 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
     protected override string[] HeaderPrefixesToCopy => ["x-", "apim", "operation-location", "ms-azureml"];
     private readonly IEndpointAuthorisationHandler _authHandler;
     private readonly bool _enforceMappedModels;
+    private readonly bool _logMissingModelMappingsAsInformation;
 
     public AzureOpenAIDownstreamEndpointAdapter(string id,
         string languageUrl,
@@ -18,10 +19,12 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
         Dictionary<string, string> assistantMappings,
         IEndpointAuthorisationHandler authHandler, 
         bool enforceMappedModels, 
-        bool autoPopulateEmptyUserId): base(id, new Uri(languageUrl), endpointName, modelMappings, assistantMappings, autoPopulateEmptyUserId)
+        bool autoPopulateEmptyUserId,
+        bool logMissingModelMappingsAsInformation): base(id, new Uri(languageUrl), endpointName, modelMappings, assistantMappings, autoPopulateEmptyUserId)
     {
         _authHandler = authHandler;
         _enforceMappedModels = enforceMappedModels;
+        _logMissingModelMappingsAsInformation = logMissingModelMappingsAsInformation;
     }
 
     /// <summary>
@@ -56,6 +59,11 @@ public class AzureOpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpoint
 
         fixedModelName = callInformationIncomingModelName;
         return true;
+    }
+
+    protected override bool IsMissingModelMappingSerious()
+    {
+        return !_logMissingModelMappingsAsInformation;
     }
 
     private string AdjustAzureOpenAILocationToAICentralHost(

@@ -46,6 +46,11 @@ public class OpenAIDownstreamEndpointAdapter : OpenAILikeDownstreamEndpointAdapt
         return false;
     }
 
+    protected override bool IsMissingModelMappingSerious()
+    {
+        return true;
+    }
+
     protected override string BuildUri(IRequestContext context, IncomingCallDetails aiCallInformation, string? incomingAssistantName, string? mappedAssistantName, string? incomingModelName, string? mappedModelName)
     {
         var pathPiece = aiCallInformation.AICallType switch

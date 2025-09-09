@@ -53,7 +53,7 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
 
         if (callInformation.IncomingModelName != null && string.IsNullOrWhiteSpace(mappedModelName))
         {
-            return new Either<HttpRequestMessage, IResult>(Results.NotFound(new { message = "Unknown model mapping" }));
+            return new Either<HttpRequestMessage, IResult>(new MisingModelMapping(EndpointName, callInformation.IncomingModelName!, IsMissingModelMappingSerious()));
         }
 
         try
@@ -142,6 +142,8 @@ public abstract class OpenAILikeDownstreamEndpointAdapter : IDownstreamEndpointA
     /// </remarks>
     protected abstract bool IsFixedModelName(AICallType callType, string? callInformationIncomingModelName,
         out string? fixedModelName);
+
+    protected abstract bool IsMissingModelMappingSerious();
 
     private async Task<HttpRequestMessage> BuildNewRequest(
         IRequestContext context,

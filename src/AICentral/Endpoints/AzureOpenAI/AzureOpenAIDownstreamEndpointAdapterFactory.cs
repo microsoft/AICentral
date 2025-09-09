@@ -10,6 +10,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
     private readonly IEndpointAuthorisationHandlerFactory _authorisationHandlerFactory;
     private readonly Dictionary<string, string> _assistantMappings;
     private readonly bool _enforceMappedModels;
+    private readonly bool _logMissingModelMappingsAsInformation;
     private readonly Dictionary<string, string> _modelMappings;
     private readonly string _id;
     private readonly int? _maxConcurrency;
@@ -23,7 +24,8 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
         Dictionary<string, string> assistantMappings,
         bool enforceMappedModels = false,
         int? maxConcurrency = null,
-        bool autoPopulateEmptyUserId = false)
+        bool autoPopulateEmptyUserId = false,
+        bool logMissingModelMappingsAsInformation = false)
     {
         _id = Guid.NewGuid().ToString();
 
@@ -35,6 +37,7 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
         _enforceMappedModels = enforceMappedModels;
         _maxConcurrency = maxConcurrency;
         _autoPopulateEmptyUserId = autoPopulateEmptyUserId;
+        _logMissingModelMappingsAsInformation = logMissingModelMappingsAsInformation;
     }
 
     public void RegisterServices(HttpMessageHandler? httpMessageHandler, IServiceCollection services)
@@ -90,7 +93,8 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
             properties.AssistantMappings ?? new Dictionary<string, string>(),
             properties.EnforceMappedModels ?? false,
             properties.MaxConcurrency,
-            properties.AutoPopulateEmptyUserId ?? false);
+            properties.AutoPopulateEmptyUserId ?? false,
+            properties.LogMissingModelMappingsAsInformation ?? false);
     }
 
     public IDownstreamEndpointAdapter Build()
@@ -103,7 +107,8 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
             _assistantMappings,
             _authorisationHandlerFactory.Build(),
             _enforceMappedModels,
-            _autoPopulateEmptyUserId);
+            _autoPopulateEmptyUserId,
+            _logMissingModelMappingsAsInformation);
     }
 
     public object WriteDebug()
@@ -115,7 +120,9 @@ public class AzureOpenAIDownstreamEndpointAdapterFactory : IDownstreamEndpointAd
             Mappings = _modelMappings,
             AssistantMappings = _assistantMappings,
             Auth = _authorisationHandlerFactory.WriteDebug(),
-            AutoPopulateEmptyUserId = _autoPopulateEmptyUserId
+            AutoPopulateEmptyUserId = _autoPopulateEmptyUserId,
+            EnforceModelMappings = _enforceMappedModels,
+            LogMissingModelMappingsAsInformation = _logMissingModelMappingsAsInformation,
         };
     }
 }

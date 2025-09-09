@@ -10,7 +10,8 @@ public class RandomEndpointSelectorFactory : IEndpointSelectorFactory
     public RandomEndpointSelectorFactory(IEndpointDispatcherFactory[] openAiServers)
     {
         _openAiServers = openAiServers.ToArray();
-        _endpointSelector = new Lazy<RandomEndpointSelector>(() => new RandomEndpointSelector(_openAiServers.Select(x => x.Build()).ToArray()));
+        _endpointSelector = new Lazy<RandomEndpointSelector>(() => new RandomEndpointSelector(
+            _openAiServers.Select(x => x.Build()).ToArray()));
     }
 
     public IEndpointSelector Build()
@@ -25,7 +26,7 @@ public class RandomEndpointSelectorFactory : IEndpointSelectorFactory
     public static string ConfigName => "RandomCluster";
 
     public static IEndpointSelectorFactory BuildFromConfig(
-        ILogger logger, 
+        ILogger logger,
         TypeAndNameConfig config,
         Dictionary<string, IEndpointDispatcherFactory> endpoints)
     {
@@ -35,9 +36,10 @@ public class RandomEndpointSelectorFactory : IEndpointSelectorFactory
         return new RandomEndpointSelectorFactory(
             Guard.NotNull(properties!.Endpoints, "Endpoints")
                 .Select(x => endpoints.TryGetValue(x, out var ep) ? ep : Guard.NotNull(ep, "Endpoint"))
-                .ToArray());
+                .ToArray()
+        );
     }
-    
+
     public object WriteDebug()
     {
         return new

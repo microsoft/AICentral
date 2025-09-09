@@ -16,6 +16,9 @@
         {
           Type: AzureOpenAI,
           Url: https://somehere.com,
+          Mappings: {
+            Test: TestMap
+          },
           Auth: {
             Type: BearerPlusKey,
             IncomingClaim: test,
@@ -25,7 +28,9 @@
               User2...
             ]
           },
-          AutoPopulateEmptyUserId: false
+          AutoPopulateEmptyUserId: false,
+          EnforceModelMappings: true,
+          LogMissingModelMappingsAsInformation: true
         }
       ]
     },
